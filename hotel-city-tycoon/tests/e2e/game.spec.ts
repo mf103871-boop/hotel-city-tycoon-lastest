@@ -22,7 +22,10 @@ function captureConsole(page: Page): ConsoleMessage[] {
   return messages;
 }
 
-async function bootFresh(page: Page): Promise<ConsoleMessage[]> {
+async function bootFresh(
+  page: Page,
+  options: { dismissGift?: boolean } = {},
+): Promise<ConsoleMessage[]> {
   const messages = captureConsole(page);
   // Start from a clean hotel so tests do not inherit each other's saves.
   await page.addInitScript(() => {
@@ -30,6 +33,16 @@ async function bootFresh(page: Page): Promise<ConsoleMessage[]> {
   });
   await page.goto('/');
   await expect(page.getByRole('button', { name: /open hotel/i })).toBeVisible({ timeout: 20_000 });
+  if (options.dismissGift ?? true) {
+    try {
+      const collect = page.getByRole('button', { name: /^collect$|^اجمع/i }).first();
+      await collect.waitFor({ state: 'visible', timeout: 3_000 });
+      await collect.click();
+      await page.locator('div.z-40').first().waitFor({ state: 'hidden', timeout: 5_000 });
+    } catch {
+      // The daily gift is optional during test boot.
+    }
+  }
   return messages;
 }
 
@@ -339,7 +352,7 @@ test('the upgrades panel shows what a tier would change', async ({ page }) => {
 
 test('the daily gift is offered without being hunted for', async ({ page }) => {
   // A reward a player has to go looking for is not a reason to come back.
-  await bootFresh(page);
+  await bootFresh(page, { dismissGift: false });
   const gift = page.getByRole('heading', { name: /daily gift/i });
   await expect(gift).toBeVisible({ timeout: 10_000 });
 

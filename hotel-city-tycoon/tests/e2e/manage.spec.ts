@@ -18,6 +18,14 @@ async function bootRich(page: Page): Promise<void> {
   });
   await page.goto('/');
   await expect(page.getByRole('button', { name: /open hotel/i })).toBeVisible({ timeout: 20_000 });
+  try {
+    const collect = page.getByRole('button', { name: /^collect$|^اجمع/i }).first();
+    await collect.waitFor({ state: 'visible', timeout: 3_000 });
+    await collect.click();
+    await page.locator('div.z-40').first().waitFor({ state: 'hidden', timeout: 5_000 });
+  } catch {
+    // The daily gift is optional during test boot.
+  }
   // The read-only handle exists only in a VITE_E2E build, which is what
   // Playwright's webServer starts. A shipped bundle carries no trace of it.
   // No grant hook: the handle is read-only. A test that needs money earns it

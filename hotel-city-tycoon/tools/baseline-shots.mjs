@@ -103,6 +103,14 @@ async function bootPage(context) {
     state: 'visible',
     timeout: 20_000,
   });
+  try {
+    const collect = page.getByRole('button', { name: /^collect$|^اجمع/i }).first();
+    await collect.waitFor({ state: 'visible', timeout: 3_000 });
+    await collect.click();
+    await page.locator('div.z-40').first().waitFor({ state: 'hidden', timeout: 5_000 });
+  } catch {
+    // The daily gift is optional during baseline capture.
+  }
   return page;
 }
 
