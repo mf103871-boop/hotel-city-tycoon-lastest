@@ -19,14 +19,24 @@ jobs:
           cache-dependency-path: hotel-city-tycoon/package-lock.json
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npx playwright test --reporter=line
-      - if: always()
-        run: node tools/baseline-shots.mjs
-      - if: always()
+      - name: e2e tests
+        run: |
+          set -o pipefail
+          mkdir -p docs
+          npx playwright test --reporter=line 2>&1 | tee docs/ci-run.log
+      - name: baseline shots
+        if: always()
+        run: |
+          set -o pipefail
+          node tools/baseline-shots.mjs 2>&1 | tee docs/ci-shots.log
+      - name: upload results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: e2e-results
           path: |
+            hotel-city-tycoon/docs/ci-run.log
+            hotel-city-tycoon/docs/ci-shots.log
             hotel-city-tycoon/test-results/
             hotel-city-tycoon/docs/baseline-screens/
           if-no-files-found: warn
