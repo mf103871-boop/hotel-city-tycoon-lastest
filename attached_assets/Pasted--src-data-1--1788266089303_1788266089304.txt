@@ -1,0 +1,66 @@
+نفّذ ثلاثة تعديلات محددة ثم اختبارًا محليا ثم دفعًا، من دون لمس src أو data أو الاختبارات.
+
+1) أعد كتابة /home/runner/workspace/.github/workflows/e2e.yml بهذا المحتوى حرفيًا كاملًا:
+
+name: e2e
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+defaults:
+  run:
+    working-directory: hotel-city-tycoon
+jobs:
+  e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: install deps
+        run: |
+          set -o pipefail
+          mkdir -p docs
+          npm ci 2>&1 | tee docs/ci-npm.log
+      - name: install browser
+        if: always()
+        run: |
+          set -o pipefail
+          npx playwright install --with-deps chromium 2>&1 | tee docs/ci-install.log
+      - name: e2e tests
+        if: always()
+        run: |
+          set -o pipefail
+          npx playwright test --reporter=line 2>&1 | tee docs/ci-run.log
+      - name: baseline shots
+        if: always()
+        run: |
+          set -o pipefail
+          node tools/baseline-shots.mjs 2>&1 | tee docs/ci-shots.log
+      - name: upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: |
+            hotel-city-tycoon/docs/ci-npm.log
+            hotel-city-tycoon/docs/ci-install.log
+            hotel-city-tycoon/docs/ci-run.log
+            hotel-city-tycoon/docs/ci-shots.log
+            hotel-city-tycoon/test-results/
+            hotel-city-tycoon/docs/baseline-screens/
+          if-no-files-found: warn
+
+2) في hotel-city-tycoon/tools/baseline-shots.mjs عدّل سطر الاستيراد الأول فقط من playwright إلى '@playwright/test' بحيث يصبح: import { chromium } from '@playwright/test'; من دون أي تغيير آخر في الملف.
+
+3) اختبار الفرضية محليًا: داخل hotel-city-tycoon نفّذ npm ci 2>&1 | tail -15 وسجّل رمز الخروج. إن فشل محليًا فهذا هو العطل نفسه: اطبع رسالة الخطأ كاملة وتوقف قبل أي دفع وأبلغ بها. وإن نجح فأكمل.
+
+4) الدفع بنفس قواعد الأمان: ممنوع طباعة قيمة المفتاح، ومرّر مخرجات الشبكة عبر sed -E 's/(ghp_|github_pat_)[A-Za-z0-9_]*/TOKEN/g':
+
+cd /home/runner/workspace
+CLEAN="$(printf %s "${GH_TOKEN:-${GH_TOKEN_}}" | tr -cd 'A-Za-z0-9_')"
+git add .github/workflows/e2e.yml hotel-city-tycoon/tools/baseline-shots.mjs
+git commit -m "HC-P0: per-step CI logs + robust shots import"
+git push "https://x-access-token:${CLEAN}@github.com/mf103871
