@@ -21,7 +21,7 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p docs
-          npm ci 2>&1 | tee docs/ci-npm.log
+          npm install --no-audit --no-fund 2>&1 | tee docs/ci-npm.log
       - name: install browser
         run: |
           set -o pipefail
