@@ -1,0 +1,71 @@
+عدّل ملف /home/runner/workspace/.github/workflows/e2e.yml فقط ثم ادفعه. ممنوع لمس package-lock.json أو src أو data أو الاختبارات.
+
+1) أعد كتابة الملف بهذا المحتوى حرفيًا كاملًا:
+
+name: e2e
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+defaults:
+  run:
+    working-directory: hotel-city-tycoon
+jobs:
+  e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: sanitize lockfile
+        run: sed -i 's|http://package-firewall.replit.local/npm|https://registry.npmjs.org|g' package-lock.json
+      - name: install deps
+        run: |
+          set -o pipefail
+          mkdir -p docs
+          npm install --no-audit --no-fund 2>&1 | tee docs/ci-npm.log
+      - name: install browser
+        run: |
+          set -o pipefail
+          npx playwright install --with-deps chromium 2>&1 | tee docs/ci-install.log
+      - name: e2e tests
+        run: |
+          set -o pipefail
+          npx playwright test --reporter=line 2>&1 | tee docs/ci-run.log
+      - name: baseline shots
+        if: always()
+        run: |
+          set -o pipefail
+          node tools/baseline-shots.mjs 2>&1 | tee docs/ci-shots.log
+      - name: upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: |
+            hotel-city-tycoon/docs/ci-npm.log
+            hotel-city-tycoon/docs/ci-install.log
+            hotel-city-tycoon/docs/ci-run.log
+            hotel-city-tycoon/docs/ci-shots.log
+            hotel-city-tycoon/test-results/
+            hotel-city-tycoon/docs/baseline-screens/
+          if-no-files-found: warn
+
+2) محاكاة محلية للتأكد قبل الدفع:
+rm -rf /tmp/ci-check && mkdir -p /tmp/ci-check
+cd /home/runner/workspace/hotel-city-tycoon
+cp package.json package-lock.json .npmrc /tmp/ci-check/
+cd /tmp/ci-check && npm install --no-audit --no-fund 2>&1 | tail -6
+سجّل رمز الخروج؛ يجب أن يكون 0 ويطبع عدد الحزم المضافة. إن فشل فتوقف وأبلغ بالخطأ كاملًا قبل الدفع. ثم احذف /tmp/ci-check.
+
+3) ادفع بنفس قواعد الأمان: ممنوع طباعة قيمة المفتاح، مرّر مخرجات الشبكة عبر sed -E 's/(ghp_|github_pat_)[A-Za-z0-9_]*/TOKEN/g':
+
+cd /home/runner/workspace
+CLEAN="$(printf %s "${GH_TOKEN:-${GH_TOKEN_}}" | tr -cd 'A-Za-z0-9_')"
+git add .github/workflows/e2e.yml
+git commit -m "HC-P0: use npm install in CI to resolve platform optional deps"
+git push "https://x-access-token:${CLEAN}@github.com/mf103871-boop/Hotel-City-Tycoon.git" HEAD:main 2>&1 | sed -E 's/(ghp_|github_pat_)[A-Za-z0-9_]*/TOKEN/g'
+
+واختم بسطر واحد: PUSH_OK أو سبب التوقف بالحرف.
