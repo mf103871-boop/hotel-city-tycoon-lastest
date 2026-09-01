@@ -1,0 +1,21 @@
+نفّذ HC-P0-S5: التراجع عن أعلام الرسوم البطيئة، وإصلاح إنهاء سكربت اللقطات، وتوثيق أول خط أساس مكتمل. ممنوع تعديل src أو data أو package.json أو package-lock.json أو playwright.config.ts أو أي توكيد اختبار. لا تشغّل E2E محليًا.
+
+1) في .github/workflows/e2e.yml بجذر مساحة العمل: اجعل قيمة PLAYWRIGHT_EXTRA_ARGS في env هي --enable-unsafe-swiftshader فقط. احذف خطوة start server كاملة واحذف سطر hotel-city-tycoon/docs/ci-server.log من مسارات upload-artifact. أضف إلى خطوة baseline shots السطر timeout-minutes: 15 تحت اسمها. أبقِ كل ما عدا ذلك كما هو.
+
+2) في tools/baseline-shots.mjs ثلاثة تعديلات: أولًا شغّل خادم Vite الفرعي بخيار detached: true واحفظ pid، وفي كتلة finally نهائية اقتل مجموعة العملية كاملة بـprocess.kill(-pid, 'SIGTERM') ثم استدعِ process.exit برمز 1 إن فشلت أي لقطة أو 0 إن نجحت الخمس، بحيث لا يبقى السكربت حيًا أبدًا بعد الطباعة النهائية. ثانيًا اجعل كل لقطة تبدأ من صفحة جديدة: goto إلى عنوان الخادم ثم انتظار الإقلاع ثم إغلاق الهدية، ثم خطوات اللقطة، بدل الاعتماد على حالة الصفحة السابقة. ثالثًا ارفع مهلة انتظار زر الهدية من 3000 إلى 8000 ملي ثانية. لا تغيّر أسماء اللقطات ولا محدداتها.
+
+3) في tests/e2e/game.spec.ts وtests/e2e/manage.spec.ts: داخل منطق إغلاق الهدية فقط، ارفع مهلة انتظار زر الجمع من 3000 إلى 8000 ملي ثانية. لا تلمس أي سطر آخر.
+
+4) تحقق: npm run typecheck ثم npm run lint داخل hotel-city-tycoon، ويجب أن يكون رمز الخروج 0 لكليهما قبل الدفع.
+
+5) أنشئ docs/HC-P0-S5-REPORT.md يوثّق: أول تشغيل مكتمل للـ82 بنتيجة 17 ناجح و60 فاشل و5 متخطى في 54.4 دقيقة؛ وأن السبب الرئيسي للفشل هو بطء الإقلاع الناتج عن علمي angle وswiftshader المضافين في S4 بدليل أن الاختبارات 1 و2 و3 نجحت في ثانيتين بتشغيل S3؛ وأن سكربت اللقطات لم يكن ينهي نفسه فاستُهلك سقف الوقت. ثم جدول المؤجل بمعرّفات جديدة: حزمة الشخصيات 0 من 36 محمّلة في CI مع ربطها المرجّح بتحذير Vite عن استيراد public/assets/manifest.json، وغياب زر باسم economy في قائمة البناء بينما الاختبارات تتوقعه مع زر presidential، وزر توسيع القطعة معطّل على الهاتف بعد bootRich، وأخطاء PixiJS shader في console عند الإقلاع تحت الرسوم البرمجية، وعدم العثور على open-manage في لقطة 04 بعد لقطة 03. حدث صف P0 في «سجل الحالة الحالي» بالمرجع بهذه الأرقام كخط أساس مقاس أول، مع ذكر أن الخط الأساس المعتمد سيكون من تشغيل S5.
+
+6) ادفع مع منع طباعة قيمة المفتاح وتمرير مخرجات الشبكة عبر sed -E 's/(ghp_|github_pat_)[A-Za-z0-9_]*/TOKEN/g':
+
+cd /home/runner/workspace
+CLEAN="$(printf %s "${GH_TOKEN:-${GH_TOKEN_}}" | tr -cd 'A-Za-z0-9_')"
+git add -A
+git commit -m "HC-P0-S5: revert slow GL flags, self-terminating shots script, first full baseline"
+git push "https://x-access-token:${CLEAN}@github.com/mf103871-boop/Hotel-City-Tycoon.git" HEAD:main 2>&1 | sed -E 's/(ghp_|github_pat_)[A-Za-z0-9_]*/TOKEN/g'
+
+اختم بسطر واحد: PUSH_OK أو سبب التوقف بالحرف.

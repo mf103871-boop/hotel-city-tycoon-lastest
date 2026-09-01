@@ -49,6 +49,7 @@ const shots = [
 
 const failures = [];
 let server;
+let serverPid;
 let browser;
 
 function errorMessage(error) {
@@ -80,21 +81,6 @@ async function waitForServer() {
   throw new Error(`server was not ready within ${SERVER_TIMEOUT_MS}ms: ${lastError}`);
 }
 
-async function stopServer() {
-  if (!server || server.exitCode !== null) return;
-  await new Promise((resolve) => {
-    const timer = setTimeout(() => {
-      if (server.exitCode === null) server.kill('SIGKILL');
-      resolve();
-    }, 5_000);
-    server.once('exit', () => {
-      clearTimeout(timer);
-      resolve();
-    });
-    server.kill('SIGTERM');
-  });
-}
-
 async function bootPage(context) {
   const page = await context.newPage();
   await page.addInitScript(() => {
@@ -107,7 +93,7 @@ async function bootPage(context) {
   });
   try {
     const collect = page.getByRole('button', { name: /^collect$|^اجمع/i }).first();
-    await collect.waitFor({ state: 'visible', timeout: 3_000 });
+    await collect.waitFor({ state: 'visible', timeout: 8_000 });
     await collect.click();
     await page.locator('div.z-40').first().waitFor({ state: 'hidden', timeout: 5_000 });
   } catch {
@@ -147,7 +133,9 @@ try {
       VITE_E2E: '1',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
+    detached: true,
   });
+  serverPid = server.pid;
   server.stdout.on('data', (chunk) => process.stdout.write(`[server] ${chunk}`));
   server.stderr.on('data', (chunk) => process.stderr.write(`[server] ${chunk}`));
   server.once('error', (error) => console.error(`[server] ERROR\n${errorMessage(error)}`));
@@ -177,12 +165,19 @@ try {
   await browser?.close().catch((error) => {
     console.error(`[baseline] browser cleanup ERROR\n${errorMessage(error)}`);
   });
-  await stopServer();
-}
-
-if (failures.length > 0) {
-  console.error(`[baseline] ${failures.length}/${shots.length} shots failed`);
-  process.exitCode = 1;
-} else {
-  console.log(`[baseline] completed ${shots.length}/${shots.length} shots`);
+  if (failures.length > 0) {
+    console.error(`[baseline] ${failures.length}/${shots.length} shots failed`);
+  } else {
+    console.log(`[baseline] completed ${shots.length}/${shots.length} shots`);
+  }
+  if (serverPid) {
+    try {
+      process.kill(-serverPid, 'SIGTERM');
+    } catch (error) {
+      if (error?.code !== 'ESRCH') {
+        console.error(`[baseline] server cleanup ERROR\n${errorMessage(error)}`);
+      }
+    }
+  }
+  process.exit(failures.length > 0 ? 1 : 0);
 }

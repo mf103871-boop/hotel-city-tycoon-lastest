@@ -20,7 +20,7 @@ async function bootRich(page: Page): Promise<void> {
   await expect(page.getByRole('button', { name: /open hotel/i })).toBeVisible({ timeout: 20_000 });
   try {
     const collect = page.getByRole('button', { name: /^collect$|^اجمع/i }).first();
-    await collect.waitFor({ state: 'visible', timeout: 3_000 });
+    await collect.waitFor({ state: 'visible', timeout: 8_000 });
     await collect.click();
     await page.locator('div.z-40').first().waitFor({ state: 'hidden', timeout: 5_000 });
   } catch {
