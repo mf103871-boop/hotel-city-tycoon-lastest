@@ -1,5 +1,0 @@
-modules = ["nodejs-24", "python-base-3.13"]
-
-[nix]
-channel = "stable-25_05"
-packages = ["glib", "nss", "atk", "at-spi2-atk", "gtk3", "alsa-lib", "libdrm", "mesa", "chromium", "libgbm", "libxkbcommon", "xvfb-run"]

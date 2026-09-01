@@ -1,0 +1,29 @@
+نفّذ مزامنة GitHub بمفتاح GH_TOKEN من الأسرار، بقواعد أمان صارمة: ممنوع طباعة قيمة GH_TOKEN أو أي URL يحتويه في أي ناتج أو سجل، وممنوع حفظه في git remote أو أي ملف؛ استخدمه فقط داخل متغير بيئة لحظة تنفيذ الأمر. ممنوع تعديل أي ملف مشروع. سجّل الخلاصات فقط في hotel-city-tycoon/docs/HC-P0-S2E-git.log.
+
+cd /home/runner/workspace
+
+1) تحقق من وجود المفتاح من دون كشفه: نفّذ test -n "$GH_TOKEN" && echo TOKEN_PRESENT || echo TOKEN_MISSING. إن ظهر TOKEN_MISSING توقف وأبلغ أن السر GH_TOKEN غير مضاف في خزنة Secrets.
+
+2) تحقق أن HEAD المحلي يحوي كل المطلوب:
+git ls-tree -r --name-only HEAD | grep -c "^\.github/workflows/e2e.yml"
+git ls-tree -r --name-only HEAD | grep -c "^hotel-city-tycoon/package.json"
+git ls-tree -r --name-only HEAD | wc -l
+يجب أن يطبع الأولان 1 والثالث عددًا يقارب 570. إن غاب ملف الـworkflow من HEAD فتوقف وأبلغ بما ظهر.
+
+3) اجلب حالة البعيد باستخدام المفتاح لحظيًا:
+GITURL="https://x-access-token:${GH_TOKEN}@github.com/mf103871-boop/Hotel-City-Tycoon.git"
+git fetch "$GITURL" main:refs/remotes/origin-tk/main 2>&1 | sed 's/ghp_[A-Za-z0-9]*/TOKEN/g'
+ثم اطبع مقارنة موجزة:
+git rev-parse HEAD
+git rev-parse refs/remotes/origin-tk/main 2>/dev/null || echo REMOTE_EMPTY
+git ls-tree -r --name-only refs/remotes/origin-tk/main 2>/dev/null | grep -c "^\.github/workflows/e2e.yml" || true
+git ls-tree -r --name-only refs/remotes/origin-tk/main 2>/dev/null | wc -l || true
+
+4) ادفع المحلي ليصبح هو الحقيقة على البعيد، محاولة واحدة:
+git push --force-with-lease "$GITURL" HEAD:main 2>&1 | sed 's/ghp_[A-Za-z0-9]*/TOKEN/g'
+إن فشل برسالة تخص workflow scope فأبلغ أن المفتاح أنشئ بلا صلاحية workflow وتوقف. وإن فشل بسبب force-with-lease فأعد الجلب في الخطوة 3 مرة واحدة ثم أعد الدفع مرة أخيرة واحدة فقط.
+
+5) بعد نجاح الدفع تحقق نهائيًا:
+git fetch "$GITURL" main:refs/remotes/origin-tk/main 2>&1 | sed 's/ghp_[A-Za-z0-9]*/TOKEN/g'
+git ls-tree -r --name-only refs/remotes/origin-tk/main | grep "^\.github/workflows/"
+واختم بسطر واحد: PUSH_OK مع عدد ملفات البعيد، أو سبب التوقف. أبلغ المالك أن التالي هو فتح تبويب Actions في GitHub وتشغيل e2e.

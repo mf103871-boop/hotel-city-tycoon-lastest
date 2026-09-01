@@ -1,2 +1,0 @@
-	libxkbcommon.so.0 => not found
-	libgbm.so.1 => not found
