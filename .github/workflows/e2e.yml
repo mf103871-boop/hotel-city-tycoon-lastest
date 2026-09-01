@@ -10,6 +10,8 @@ jobs:
   e2e:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
+    env:
+      npm_config_registry: https://registry.npmjs.org
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,15 +23,12 @@ jobs:
           mkdir -p docs
           npm ci 2>&1 | tee docs/ci-npm.log
       - name: install browser
-        if: always()
         run: |
           set -o pipefail
           npx playwright install --with-deps chromium 2>&1 | tee docs/ci-install.log
       - name: e2e tests
-        if: always()
         run: |
           set -o pipefail
-          mkdir -p docs
           npx playwright test --reporter=line 2>&1 | tee docs/ci-run.log
       - name: baseline shots
         if: always()
