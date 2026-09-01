@@ -1,0 +1,86 @@
+اقرأ docs/HOTEL_CITY_MASTER_REFERENCE_AR.md قبل أي عمل. نفّذ الآن HC-P0-S4 وحدها: تشغيل خادم واحد مشترك في CI بدل إعادة إقلاعه لكل اختبار، وتمرير أعلام الرسوم لسكربت اللقطات. ابدأ بقسم «فحص المرجع» ثم قالب الخطة ثم «مطابقة الخطة مع المرجع». ممنوع تعديل src أو data أو package.json أو package-lock.json أو أي توكيد أو منطق اختبار. المسموح: playwright.config.ts بسطر واحد محدد أدناه، وworkflow، وtools/baseline-shots.mjs بحدود أدناه. ممنوع تشغيل E2E محليًا على Replit.
+
+خلاصة معتمدة من تشغيل CI الأخير: إصلاح الهدية نجح، فمرّت الاختبارات 1 و2 و3 و5 واختفت رسالة intercepts pointer events نهائيًا، والتُقطت 01-main و02-build و03-decor بنجاح. العائق الجديد أن webServer يعيد إقلاع Vite لكل اختبار بسبب reuseExistingServer=false، فتتراكم العمليات ويُقتل التشغيل برمز 143 بعد ثوانٍ لا بمهلة زمنية.
+
+1) في playwright.config.ts عدّل سطر reuseExistingServer داخل كتلة webServer ليصبح حرفيًا:
+reuseExistingServer: true,
+لا تغيّر أي سطر آخر في الملف إطلاقًا.
+
+2) في tools/baseline-shots.mjs: عند إطلاق المتصفح، مرّر args تتضمن دائمًا --disable-dev-shm-usage، وأضف إليها العناصر الناتجة عن تقسيم process.env.PLAYWRIGHT_EXTRA_ARGS على المسافة إن كان المتغير موجودًا. لا تغيّر أسماء اللقطات ولا محدداتها ولا ترتيبها ولا منطق إغلاق الهدية. وارفع مهلة الالتقاط والنقر في السكربت من 30000 إلى 60000 ملي ثانية.
+
+3) أعد كتابة /home/runner/workspace/.github/workflows/e2e.yml بهذا المحتوى حرفيًا كاملًا:
+
+name: e2e
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+defaults:
+  run:
+    working-directory: hotel-city-tycoon
+jobs:
+  e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      PLAYWRIGHT_EXTRA_ARGS: --enable-unsafe-swiftshader --use-gl=angle --use-angle=swiftshader
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: sanitize lockfile
+        run: sed -i 's|http://package-firewall.replit.local/npm|https://registry.npmjs.org|g' package-lock.json
+      - name: install deps
+        run: |
+          set -o pipefail
+          mkdir -p docs
+          npm install --no-audit --no-fund 2>&1 | tee docs/ci-npm.log
+      - name: install browser
+        run: |
+          set -o pipefail
+          npx playwright install --with-deps chromium 2>&1 | tee docs/ci-install.log
+      - name: start server
+        run: |
+          set -o pipefail
+          nohup env HOST=127.0.0.1 PORT=5173 VITE_E2E=1 npm run dev > docs/ci-server.log 2>&1 &
+          npx wait-on http://127.0.0.1:5173 --timeout 120000
+      - name: e2e tests
+        run: |
+          set -o pipefail
+          npx playwright test --reporter=line 2>&1 | tee docs/ci-run.log
+      - name: baseline shots
+        if: always()
+        run: |
+          set -o pipefail
+          node tools/baseline-shots.mjs 2>&1 | tee docs/ci-shots.log
+      - name: upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: |
+            hotel-city-tycoon/docs/ci-npm.log
+            hotel-city-tycoon/docs/ci-install.log
+            hotel-city-tycoon/docs/ci-server.log
+            hotel-city-tycoon/docs/ci-run.log
+            hotel-city-tycoon/docs/ci-shots.log
+            hotel-city-tycoon/test-results/
+            hotel-city-tycoon/docs/baseline-screens/
+          if-no-files-found: warn
+
+ملاحظة: خطوة start server تستخدم wait-on عبر npx وهي أداة تُجلب عند الحاجة؛ إن لم تتوفر فاستبدل سطر wait-on بحلقة انتظار بسيطة تفحص المنفذ 5173 بـcurl كل ثانية حتى 120 ثانية ثم تفشل إن لم يستجب.
+
+4) تحقق محليًا: npm run typecheck ثم npm run lint داخل hotel-city-tycoon، ويجب أن يكون رمز الخروج 0 لكليهما قبل الدفع. إن فشل أيهما فأصلح خطأك في تعديلك فقط.
+
+5) حدّث docs/HC-P0-S3-REPORT.md بإضافة قسم نتائج التشغيل الثاني: نجاح إصلاح الهدية بدليل مرور الاختبارات 1 و2 و3 و5 والتقاط ثلاث لقطات، والعائق الجديد وهو إعادة إقلاع الخادم لكل اختبار والقتل برمز 143، وأن PixiJS shader لم يُحل بـswiftshader وحده. ثم أنشئ docs/HC-P0-S4-REPORT.md بفرق التعديلات ونتائج typecheck وlint.
+
+6) ادفع بنفس قواعد الأمان: ممنوع طباعة قيمة المفتاح، ومرّر مخرجات الشبكة عبر sed -E 's/(ghp_|github_pat_)[A-Za-z0-9_]*/TOKEN/g':
+
+cd /home/runner/workspace
+CLEAN="$(printf %s "${GH_TOKEN:-${GH_TOKEN_}}" | tr -cd 'A-Za-z0-9_')"
+git add -A
+git commit -m "HC-P0-S4: shared dev server in CI + graphics flags for shots"
+git push "https://x-access-token:${CLEAN}@github.com/mf103871-boop/Hotel-City-Tycoon.git" HEAD:main 2>&1 | sed -E 's/(ghp_|github_pat_)[A-Za-z0-9_]*/TOKEN/g'
+
+اختم بـ«مطابقة التنفيذ مع المرجع» وأسطر نهاية الجلسة الخمسة، وسطر أخير: PUSH_OK أو سبب التوقف بالحرف.

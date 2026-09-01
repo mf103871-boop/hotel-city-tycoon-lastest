@@ -58,7 +58,7 @@ export default defineConfig({
     // Never reuse: a server already running without VITE_E2E has no test
     // handle, and every assertion that reads state would fail for a reason
     // that has nothing to do with the game.
-    reuseExistingServer: false,
+    reuseExistingServer: true,
     timeout: 120_000,
   },
 });

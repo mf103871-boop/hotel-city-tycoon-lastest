@@ -100,7 +100,7 @@ async function bootPage(context) {
   await page.addInitScript(() => {
     void indexedDB.deleteDatabase('hotel-city-tycoon');
   });
-  await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+  await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 60_000 });
   await page.getByRole('button', { name: /open hotel/i }).waitFor({
     state: 'visible',
     timeout: 20_000,
@@ -154,7 +154,13 @@ try {
 
   await waitForServer();
   const channel = process.env.CHROMIUM_CHANNEL;
-  browser = await chromium.launch(channel ? { channel } : {});
+  const extraArgs = process.env.PLAYWRIGHT_EXTRA_ARGS?.trim()
+    ? process.env.PLAYWRIGHT_EXTRA_ARGS.trim().split(/\s+/)
+    : [];
+  browser = await chromium.launch({
+    ...(channel ? { channel } : {}),
+    args: ['--disable-dev-shm-usage', ...extraArgs],
+  });
 
   for (const shot of shots) {
     await captureShot(shot);
