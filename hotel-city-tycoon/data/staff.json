@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "tuningStatus": "original-snapshot-3A",
+  "assetKeyConvention": "staff.<roleId>.<variant>  |  variants: idle, walk, work, rest, thumb",
+  "note": "3B, decision 12a: the seven original roles only. barista/attendant/therapist/launderer/engineer/concierge removed; save migration v13->14 drops any hired staff holding a removed role. 4B: the cafe, arcade and disco are staffless as the original listed them, so each role serves exactly one room. Wages and hire costs stay zero (decision 10a) and grades stay neutralised. 4A: tempWagePerHour is the original's dearer TEMP worker — an unstaffed slot is covered automatically at this rate while a shift runs; hiring the permanent (free, wage 0) removes it. That restores the original incentive without touching the shift table: a fully staffed hotel still pays exactly 25/90/225/1,781/14,145.",
+  "roles": [
+    {
+      "id": "receptionist",
+      "nameKey": "staff.receptionist.name",
+      "assetKey": "staff.receptionist.idle",
+      "roomTypes": [
+        "lobby"
+      ],
+      "wagePerHour": 0,
+      "hireCost": 0,
+      "unlockLevel": 1,
+      "tempWagePerHour": 3
+    },
+    {
+      "id": "cleaner",
+      "nameKey": "staff.cleaner.name",
+      "assetKey": "staff.cleaner.idle",
+      "roomTypes": [
+        "housekeeping"
+      ],
+      "wagePerHour": 0,
+      "hireCost": 0,
+      "unlockLevel": 1,
+      "tempWagePerHour": 3
+    },
+    {
+      "id": "trainer",
+      "nameKey": "staff.trainer.name",
+      "assetKey": "staff.trainer.idle",
+      "roomTypes": [
+        "gym"
+      ],
+      "wagePerHour": 0,
+      "hireCost": 0,
+      "unlockLevel": 3,
+      "tempWagePerHour": 2
+    },
+    {
+      "id": "chef",
+      "nameKey": "staff.chef.name",
+      "assetKey": "staff.chef.idle",
+      "roomTypes": [
+        "restaurant"
+      ],
+      "wagePerHour": 0,
+      "hireCost": 0,
+      "unlockLevel": 9,
+      "tempWagePerHour": 3
+    },
+    {
+      "id": "bartender",
+      "nameKey": "staff.bartender.name",
+      "assetKey": "staff.bartender.idle",
+      "roomTypes": [
+        "bar"
+      ],
+      "wagePerHour": 0,
+      "hireCost": 0,
+      "unlockLevel": 12,
+      "tempWagePerHour": 2
+    },
+    {
+      "id": "usher",
+      "nameKey": "staff.usher.name",
+      "assetKey": "staff.usher.idle",
+      "roomTypes": [
+        "cinema"
+      ],
+      "wagePerHour": 0,
+      "hireCost": 0,
+      "unlockLevel": 17,
+      "tempWagePerHour": 2
+    },
+    {
+      "id": "lifeguard",
+      "nameKey": "staff.lifeguard.name",
+      "assetKey": "staff.lifeguard.idle",
+      "roomTypes": [
+        "pool"
+      ],
+      "wagePerHour": 0,
+      "hireCost": 0,
+      "unlockLevel": 24,
+      "tempWagePerHour": 3
+    }
+  ],
+  "grades": [
+    {
+      "id": "bronze",
+      "nameKey": "staff.grade.bronze",
+      "efficiency": 1.0,
+      "wageMultiplier": 1.0,
+      "weight": 70
+    },
+    {
+      "id": "silver",
+      "nameKey": "staff.grade.silver",
+      "efficiency": 1.0,
+      "wageMultiplier": 1.0,
+      "weight": 25
+    },
+    {
+      "id": "gold",
+      "nameKey": "staff.grade.gold",
+      "efficiency": 1.0,
+      "wageMultiplier": 1.0,
+      "weight": 5
+    }
+  ]
+}

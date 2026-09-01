@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "tuningStatus": "designed-P1",
+  "note": "The rotating shop, as the original game had it. Hotel City refreshed its catalogue weekly, and that refresh was the reason players came back on a schedule rather than when they felt like it. The offer is derived from the save's seed and the week number, so it is identical every time the same week is computed — offline, on reload, and in a test.",
+  "refreshHours": 168,
+  "slots": 6,
+  "discount": {
+    "min": 0.15,
+    "max": 0.45
+  },
+  "featured": {
+    "note": "One slot each week is a premium piece at a steep discount — the reason to look rather than the reason to buy.",
+    "discount": 0.6
+  }
+}

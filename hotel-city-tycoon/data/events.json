@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "tuningStatus": "original-model-4C",
+  "assetKeyConvention": "event.<id>.<variant>  |  variants: icon, overlay, fx",
+  "events": [
+    {
+      "id": "pest",
+      "nameKey": "event.pest.name",
+      "assetKey": "event.pest.overlay",
+      "trigger": {
+        "kind": "cleanlinessBelow",
+        "threshold": 0.05
+      },
+      "scope": "room",
+      "blocksIncome": true,
+      "clearCost": {
+        "currency": "coins",
+        "amount": 300
+      },
+      "clearRewardXp": 0,
+      "cooldownSec": 600,
+      "unlockLevel": 1
+    },
+    {
+      "id": "fire",
+      "nameKey": "event.fire.name",
+      "assetKey": "event.fire.overlay",
+      "trigger": {
+        "kind": "randomPerHour",
+        "chance": 0.04
+      },
+      "scope": "room",
+      "blocksIncome": true,
+      "clearCost": {
+        "currency": "coins",
+        "amount": 0
+      },
+      "clearRewardCoins": {
+        "first": 260,
+        "repeat": 65,
+        "decayAfter": 1
+      },
+      "clearRewardXp": 30,
+      "cooldownSec": 1800,
+      "unlockLevel": 8
+    },
+    {
+      "id": "inspection",
+      "nameKey": "event.inspection.name",
+      "assetKey": "event.inspection.icon",
+      "trigger": {
+        "kind": "guestSpecial",
+        "guestTypeId": "inspector"
+      },
+      "scope": "hotel",
+      "blocksIncome": false,
+      "rewardCoinsPerStar": 500,
+      "rewardXp": 200,
+      "temporaryStarBoost": {
+        "amount": 0.5,
+        "durationSec": 3600
+      },
+      "cooldownSec": 7200,
+      "unlockLevel": 5
+    },
+    {
+      "id": "ghost",
+      "nameKey": "event.ghost.name",
+      "assetKey": "event.ghost.overlay",
+      "trigger": {
+        "kind": "randomPerHour",
+        "chance": 0.03
+      },
+      "scope": "room",
+      "blocksIncome": true,
+      "clearCost": {
+        "currency": "coins",
+        "amount": 500
+      },
+      "clearRewardXp": 40,
+      "cooldownSec": 3600,
+      "unlockLevel": 12
+    },
+    {
+      "id": "heatWave",
+      "nameKey": "event.heatWave.name",
+      "assetKey": "event.heatWave.icon",
+      "trigger": {
+        "kind": "randomPerHour",
+        "chance": 0.02
+      },
+      "scope": "hotel",
+      "blocksIncome": false,
+      "incomeMultiplier": 0.5,
+      "durationSec": 28800,
+      "clearCost": {
+        "currency": "coins",
+        "amount": 400
+      },
+      "cooldownSec": 14400,
+      "unlockLevel": 15
+    },
+    {
+      "id": "coldSnap",
+      "nameKey": "event.coldSnap.name",
+      "assetKey": "event.coldSnap.icon",
+      "trigger": {
+        "kind": "randomPerHour",
+        "chance": 0.02
+      },
+      "scope": "hotel",
+      "blocksIncome": false,
+      "incomeMultiplier": 0.5,
+      "durationSec": 28800,
+      "clearCost": {
+        "currency": "coins",
+        "amount": 400
+      },
+      "cooldownSec": 14400,
+      "unlockLevel": 15
+    }
+  ],
+  "note": "4C: the original May-2010 incidents complete the set. The ghost haunts one guest room at a time (blocks it like a fire) and only the GHOSTBUSTER phone call clears it — tapping does nothing, exactly the original. Heat waves and cold snaps are hotel-wide: guests pay half while the hotel is uncomfortable, the REPAIR call ends it for a fee, or the weather passes on its own after durationSec. Chances, fees and the 8-hour duration are our tuning; the incidents, the phone, and who-fixes-what are the documented original. vipArrival removed in 3B with the vip guest type (decision 13a)."
+}

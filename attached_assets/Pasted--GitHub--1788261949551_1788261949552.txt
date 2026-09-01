@@ -1,0 +1,73 @@
+نفّذ تشخيصًا ثم إصلاح مزامنة GitHub وفق الحالة المكتشفة. قواعد صارمة: ممنوع طباعة قيمة المفتاح أو أي URL يحتويه؛ مرّر كل ناتج شبكة عبر sed 's/ghp_[A-Za-z0-9]*/TOKEN/g'. ممنوع تعديل src أو data أو الاختبارات أو الحزم. سجّل الخلاصات في hotel-city-tycoon/docs/HC-P0-S2E-git.log إن وُجد هذا المسار على القرص.
+
+صفر) حل المفتاح من دون كشفه: TOKEN="${GH_TOKEN:-${GH_TOKEN_}}" ثم test -n "$TOKEN" && echo TOKEN_OK || echo TOKEN_MISSING. عند TOKEN_MISSING توقف وأبلغ.
+GITURL="https://x-access-token:${TOKEN}@github.com/mf103871-boop/Hotel-City-Tycoon.git"
+
+1) التشخيص، واطبع كل ناتج:
+git rev-parse --show-toplevel
+git log --oneline -5
+git ls-tree --name-only HEAD
+ls -a "$(git rev-parse --show-toplevel)" | head -30
+test -f /home/runner/workspace/.github/workflows/e2e.yml && echo WS_WF_ON_DISK || echo WS_WF_ABSENT
+test -f /home/runner/workspace/hotel-city-tycoon/package.json && echo PROJ_ON_DISK || echo PROJ_ABSENT
+
+2) الحالة أ — إذا كان toplevel هو /home/runner/workspace:
+تأكد من وجود .github/workflows/e2e.yml على القرص في الجذر؛ إن غاب أنشئه من جديد بمحتوى نسخة working-directory الموثقة في hotel-city-tycoon/docs/CI-E2E.md وتقرير HC-P0-S2E. ثم:
+git add -A
+git status --short | wc -l
+git commit -m "HC-P0: restore CI workflow and project sync"
+git ls-tree -r --name-only HEAD | grep -c "^\.github/workflows/e2e.yml"
+git ls-tree -r --name-only HEAD | grep -c "^hotel-city-tycoon/package.json"
+يجب أن يطبع الفحصان 1 قبل المتابعة.
+
+3) الحالة ب — إذا كان toplevel هو /home/runner/workspace/hotel-city-tycoon:
+المستودع صار جذره مجلد المشروع نفسه، فالمطلوب نسخة الجذر من الملف: أنشئ داخل المشروع .github/workflows/e2e.yml بهذا المحتوى حرفيًا:
+
+name: e2e
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+jobs:
+  e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --reporter=line
+      - if: always()
+        run: node tools/baseline-shots.mjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: |
+            test-results/
+            docs/baseline-screens/
+          if-no-files-found: warn
+
+ثم:
+git add -A
+git status --short | wc -l
+git commit -m "HC-P0: restore CI workflow at project-root layout"
+git ls-tree -r --name-only HEAD | grep -c "^\.github/workflows/e2e.yml"
+git ls-tree -r --name-only HEAD | grep -c "^package.json"
+يجب أن يطبع الفحصان 1 قبل المتابعة.
+
+4) وإن كان toplevel غير الحالتين: توقف واطبع قيمته وأبلغ من دون أي إصلاح.
+
+5) الدفع:
+git push "$GITURL" HEAD:main 2>&1 | sed 's/ghp_[A-Za-z0-9]*/TOKEN/g'
+إن رُفض لكونه non-fast-forward: نفّذ git fetch "$GITURL" main 2>&1 | sed 's/ghp_[A-Za-z0-9]*/TOKEN/g' ثم git push --force-with-lease "$GITURL" HEAD:main مرة أخيرة واحدة بنفس التمرير عبر sed. وإن ذكر الرفض workflow scope فأبلغ أن المفتاح بلا صلاحية workflow وتوقف.
+
+6) التحقق النهائي:
+git fetch "$GITURL" main:refs/remotes/verify/main 2>&1 | sed 's/ghp_[A-Za-z0-9]*/TOKEN/g'
+git ls-tree -r --name-only refs/remotes/verify/main | grep "^\.github/workflows/"
+git ls-tree -r --name-only refs/remotes/verify/main | wc -l
+واختم بسطر واحد: PUSH_OK مع الحالة المطبقة أ أو ب وعدد ملفات البعيد، أو سبب التوقف بالحرف.

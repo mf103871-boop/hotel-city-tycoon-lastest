@@ -1,0 +1,80 @@
+import { z } from 'zod';
+import { FileHeader, Id, NonNegInt, PosInt, Ratio, AssetKey } from './common.ts';
+
+export const EconomySchema = z.object({
+  ...FileHeader,
+  $schema: z.string().optional(),
+  start: z.object({
+    coins: NonNegInt, gems: NonNegInt,
+    level: z.number().int().min(1), stars: z.number().min(1).max(5),
+    plotBlocks: PosInt, prebuiltRooms: z.array(Id),
+  }),
+  currencies: z.record(z.string(), z.object({ id: z.string(), kind: z.enum(['soft', 'hard']), assetKey: AssetKey })),
+  simulation: z.object({
+    tickMs: PosInt, ticksPerSecond: PosInt,
+    offlineResolution: z.literal('analytic'),
+    analyticThroughputFactor: z.number().positive(),
+    offlineNote: z.string().optional(),
+    maxOfflineHours: PosInt, autosaveIntervalSec: PosInt,
+    offlineEfficiency: Ratio,
+  }),
+  cleanliness: z.object({
+    roomsPerCleaner: PosInt,
+    dirtRatePerGuestCheckout: Ratio,
+    cleanRatePerCleanerPerSec: z.number().positive(),
+    incomeGateThreshold: Ratio,
+    pestThreshold: Ratio,
+    pestBlocksIncome: z.boolean(),
+  }),
+  guests: z.object({
+    baseArrivalPerMinute: z.number().positive(),
+    arrivalRoomCountBonus: z.number().min(0),
+    maxLobbyQueue: PosInt,
+    walkAwayIfNoRoom: z.boolean(),
+    dragToLobbyEnabled: z.boolean(),
+    dragToLobbyCooldownSec: NonNegInt,
+    walkAwaySec: PosInt,
+    checkInSec: z.number().positive(),
+    requireReceptionist: z.boolean(),
+    tempReceptionistEfficiency: z.number().positive(),
+    checkInNote: z.string().optional(),
+  }),
+  decorMeter: z.object({
+    fillCurve: z.enum(['linear', 'easeOut']),
+    maxIncomeBonusAtFull: z.number(),
+    emptyIncomePenalty: z.number(),
+    note: z.string().optional(),
+  }),
+  satisfaction: z.object({
+    base: z.number().min(0).max(100),
+    roomQualityWeight: NonNegInt, cleanlinessWeight: NonNegInt, serviceWeight: NonNegInt,
+    amenityMetBonus: NonNegInt, unmetDesirePenalty: NonNegInt,
+    waitPenaltyMax: NonNegInt, incidentPenalty: NonNegInt,
+    tipThreshold: z.number().min(0).max(100), tipMaxRatio: Ratio,
+    reviewWindowSec: z.number().positive(), reputationStart: z.number().min(0).max(100),
+    desireChanceEarlyScale: Ratio, desireChanceEarlyUntilLevel: NonNegInt,
+    note: z.string().optional(),
+  }),
+  roomQuality: z.object({
+    repeatFalloff: Ratio,
+    varietyTargetCategories: PosInt,
+    varietyFloor: Ratio,
+    hazardConditionPenalty: Ratio,
+    slotTypeRooms: z.array(z.object({ slotType: z.string(), categories: z.array(z.string()) })),
+    note: z.string().optional(),
+  }),
+  poke: z.object({
+    minCoins: NonNegInt, maxCoins: NonNegInt, dailyCap: NonNegInt,
+    note: z.string().optional(),
+  }),
+  upkeep: z.object({
+    perRoomPerHour: NonNegInt,
+    tierMultiplier: Ratio,
+    note: z.string().optional(),
+  }),
+  sellback: z.object({ ratio: Ratio, refundCurrency: z.enum(['coins', 'gems']), gemPurchasesRefundable: z.boolean() }),
+  shiftCostScaling: z.object({ formula: z.string(), perLevel: z.number().min(0) }),
+  xp: z.object({ grantOnGuestCheckout: z.boolean(), grantOnRoomBuild: z.number(), grantOnDecorPlace: z.number(), note: z.string().optional() }),
+  limits: z.object({ maxRoomsPerHotel: PosInt, maxDecorPerRoom: PosInt, maxSaveSlots: PosInt }),
+});
+export type Economy = z.infer<typeof EconomySchema>;

@@ -1,0 +1,84 @@
+Listing tests:
+  [desktop] › game.spec.ts:38:1 › the game boots past the loading screen
+  [desktop] › game.spec.ts:46:1 › a renderer initialises and says which one
+  [desktop] › game.spec.ts:53:1 › the room art actually loads
+  [desktop] › game.spec.ts:64:1 › no errors reach the console on a clean boot
+  [desktop] › game.spec.ts:73:1 › the shift countdown ticks every second
+  [desktop] › game.spec.ts:88:1 › guests appear once the hotel is open
+  [desktop] › game.spec.ts:106:1 › the build menu lists every room and explains what is locked
+  [desktop] › game.spec.ts:117:1 › building a room adds it to the hotel
+  [desktop] › game.spec.ts:131:1 › tapping a room opens its sheet, and decorating moves the meter
+  [desktop] › game.spec.ts:157:1 › the objective card appears and advances when claimed
+  [desktop] › game.spec.ts:172:1 › a facility can be built and staffed
+  [desktop] › game.spec.ts:185:1 › characters are drawn, not left as placeholder shapes
+  [desktop] › game.spec.ts:201:1 › the debug badge can be turned on in a deployed build
+  [desktop] › game.spec.ts:207:1 › switching to Arabic sets the document direction
+  [desktop] › game.spec.ts:216:1 › the game is operable with reduced motion
+  [desktop] › game.spec.ts:231:1 › every control can be reached and named
+  [desktop] › game.spec.ts:242:1 › controls are large enough to hit on a phone
+  [desktop] › game.spec.ts:254:1 › a render error shows a recovery screen, not a blank page
+  [desktop] › game.spec.ts:269:1 › the game starts even when storage is unavailable
+  [desktop] › game.spec.ts:287:1 › the shop offers a discounted shelf that can be bought from
+  [desktop] › game.spec.ts:299:1 › the shop says when its stock changes
+  [desktop] › game.spec.ts:307:1 › the city shows rivals and says plainly what they are
+  [desktop] › game.spec.ts:318:1 › visiting a rival pays once and then stops
+  [desktop] › game.spec.ts:329:1 › the upgrades panel shows what a tier would change
+  [desktop] › game.spec.ts:340:1 › the daily gift is offered without being hunted for
+  [desktop] › game.spec.ts:350:1 › a refusal explains itself instead of doing nothing
+  [desktop] › game.spec.ts:361:1 › every bottom-bar destination opens
+  [desktop] › game.spec.ts:379:1 › the hotel survives a full reload
+  [desktop] › game.spec.ts:403:1 › the language switch flips the HUD without flipping the canvas
+  [desktop] › game.spec.ts:414:1 › a save can be exported
+  [desktop] › game.spec.ts:426:1 › sound can be turned off
+  [desktop] › game.spec.ts:437:1 › the hotel cannot be dragged off screen
+  [desktop] › manage.spec.ts:42:1 › the plot can be expanded, and the panel says what it costs
+  [desktop] › manage.spec.ts:58:1 › an expansion that cannot be afforded explains itself and stays open
+  [desktop] › manage.spec.ts:73:1 › a room can be moved to a valid square
+  [desktop] › manage.spec.ts:99:1 › the placement preview refuses a square that does not fit
+  [desktop] › manage.spec.ts:119:1 › a room can be stored and put back, keeping what was in it
+  [desktop] › manage.spec.ts:142:1 › an occupied or dirty room offers no Store button at all
+  [desktop] › manage.spec.ts:161:1 › decor can be removed, appears in the inventory, and goes back for free
+  [desktop] › manage.spec.ts:182:1 › an unplaced piece can be sold, and asks first
+  [desktop] › manage.spec.ts:206:1 › everything done here survives a full reload
+  [phone] › game.spec.ts:38:1 › the game boots past the loading screen
+  [phone] › game.spec.ts:46:1 › a renderer initialises and says which one
+  [phone] › game.spec.ts:53:1 › the room art actually loads
+  [phone] › game.spec.ts:64:1 › no errors reach the console on a clean boot
+  [phone] › game.spec.ts:73:1 › the shift countdown ticks every second
+  [phone] › game.spec.ts:88:1 › guests appear once the hotel is open
+  [phone] › game.spec.ts:106:1 › the build menu lists every room and explains what is locked
+  [phone] › game.spec.ts:117:1 › building a room adds it to the hotel
+  [phone] › game.spec.ts:131:1 › tapping a room opens its sheet, and decorating moves the meter
+  [phone] › game.spec.ts:157:1 › the objective card appears and advances when claimed
+  [phone] › game.spec.ts:172:1 › a facility can be built and staffed
+  [phone] › game.spec.ts:185:1 › characters are drawn, not left as placeholder shapes
+  [phone] › game.spec.ts:201:1 › the debug badge can be turned on in a deployed build
+  [phone] › game.spec.ts:207:1 › switching to Arabic sets the document direction
+  [phone] › game.spec.ts:216:1 › the game is operable with reduced motion
+  [phone] › game.spec.ts:231:1 › every control can be reached and named
+  [phone] › game.spec.ts:242:1 › controls are large enough to hit on a phone
+  [phone] › game.spec.ts:254:1 › a render error shows a recovery screen, not a blank page
+  [phone] › game.spec.ts:269:1 › the game starts even when storage is unavailable
+  [phone] › game.spec.ts:287:1 › the shop offers a discounted shelf that can be bought from
+  [phone] › game.spec.ts:299:1 › the shop says when its stock changes
+  [phone] › game.spec.ts:307:1 › the city shows rivals and says plainly what they are
+  [phone] › game.spec.ts:318:1 › visiting a rival pays once and then stops
+  [phone] › game.spec.ts:329:1 › the upgrades panel shows what a tier would change
+  [phone] › game.spec.ts:340:1 › the daily gift is offered without being hunted for
+  [phone] › game.spec.ts:350:1 › a refusal explains itself instead of doing nothing
+  [phone] › game.spec.ts:361:1 › every bottom-bar destination opens
+  [phone] › game.spec.ts:379:1 › the hotel survives a full reload
+  [phone] › game.spec.ts:403:1 › the language switch flips the HUD without flipping the canvas
+  [phone] › game.spec.ts:414:1 › a save can be exported
+  [phone] › game.spec.ts:426:1 › sound can be turned off
+  [phone] › game.spec.ts:437:1 › the hotel cannot be dragged off screen
+  [phone] › manage.spec.ts:42:1 › the plot can be expanded, and the panel says what it costs
+  [phone] › manage.spec.ts:58:1 › an expansion that cannot be afforded explains itself and stays open
+  [phone] › manage.spec.ts:73:1 › a room can be moved to a valid square
+  [phone] › manage.spec.ts:99:1 › the placement preview refuses a square that does not fit
+  [phone] › manage.spec.ts:119:1 › a room can be stored and put back, keeping what was in it
+  [phone] › manage.spec.ts:142:1 › an occupied or dirty room offers no Store button at all
+  [phone] › manage.spec.ts:161:1 › decor can be removed, appears in the inventory, and goes back for free
+  [phone] › manage.spec.ts:182:1 › an unplaced piece can be sold, and asks first
+  [phone] › manage.spec.ts:206:1 › everything done here survives a full reload
+Total: 82 tests in 2 files
