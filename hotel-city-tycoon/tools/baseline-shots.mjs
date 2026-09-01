@@ -1,3 +1,5 @@
+/* global URL, fetch, indexedDB */
+
 import { spawn } from 'node:child_process';
 import { mkdir, rm } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
@@ -12,7 +14,7 @@ const shots = [
   {
     name: '01-main.png',
     viewport: VIEWPORT,
-    step: async (page) => {},
+    step: async () => Promise.resolve(),
   },
   {
     name: '02-build.png',
@@ -41,7 +43,7 @@ const shots = [
   {
     name: '05-phone.png',
     viewport: { width: 412, height: 915 },
-    step: async (page) => {},
+    step: async () => Promise.resolve(),
   },
 ];
 
