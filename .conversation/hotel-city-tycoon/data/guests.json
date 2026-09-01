@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "tuningStatus": "original-model-3B",
+  "assetKeyConvention": "guest.<id>.<variant>  |  variants: idle, walk, sleep, happy, angry, thumb",
+  "desireTags": [
+    "food",
+    "fitness",
+    "nightlife",
+    "entertainment"
+  ],
+  "types": [
+    {
+      "id": "standard",
+      "nameKey": "guest.standard.name",
+      "assetKey": "guest.standard.idle",
+      "spawnWeight": 100,
+      "payMultiplier": 1.0,
+      "stayMultiplier": 1.0,
+      "patienceSec": 60,
+      "minTier": 1,
+      "maxTier": 9,
+      "desireChance": 0.25,
+      "unlockLevel": 1
+    },
+    {
+      "id": "inspector",
+      "nameKey": "guest.inspector.name",
+      "assetKey": "guest.inspector.idle",
+      "spawnWeight": 3,
+      "payMultiplier": 1.0,
+      "stayMultiplier": 1.0,
+      "patienceSec": 45,
+      "minTier": 1,
+      "maxTier": 9,
+      "desireChance": 0.0,
+      "unlockLevel": 5,
+      "special": "inspector"
+    }
+  ],
+  "note": "3B, decision 13a: one generic guest plus the secret inspector, as in the original. standard.maxTier=9 so the gem suites host guests. The five typed guests are gone; migration v13->14 re-types them in old saves. wellness left the desire list with the spa: the disco answers nightlife."
+}

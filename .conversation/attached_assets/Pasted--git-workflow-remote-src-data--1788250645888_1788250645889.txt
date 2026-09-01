@@ -1,0 +1,54 @@
+نفّذ تهيئة git وتصحيح موضع workflow فقط، من دون أي دفع إلى remote ومن دون لمس src أو data أو الاختبارات أو الحزم. سجّل ناتج كل أمر حرفيًا في docs/HC-P0-S2E-git.log داخل مجلد المشروع.
+
+1) تحقق من البنية واطبع: pwd ثم ls -a /home/runner/workspace ثم ls -a /home/runner/workspace/hotel-city-tycoon | head -30. أكد أن المشروع في المجلد الفرعي hotel-city-tycoon وأن .github موجودة داخله حاليًا.
+
+2) انقل مجلد الـworkflows إلى جذر مساحة العمل: mkdir -p /home/runner/workspace/.github/workflows ثم انقل الملف من hotel-city-tycoon/.github/workflows/e2e.yml إليه، واحذف مجلد hotel-city-tycoon/.github الفارغ.
+
+3) أعد كتابة /home/runner/workspace/.github/workflows/e2e.yml بهذا المحتوى حرفيًا كاملًا:
+
+name: e2e
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+defaults:
+  run:
+    working-directory: hotel-city-tycoon
+jobs:
+  e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: hotel-city-tycoon/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --reporter=line
+      - if: always()
+        run: node tools/baseline-shots.mjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: |
+            hotel-city-tycoon/test-results/
+            hotel-city-tycoon/docs/baseline-screens/
+          if-no-files-found: warn
+
+4) أنشئ /home/runner/workspace/.gitignore بالمحتوى الحرفي التالي سطرًا سطرًا:
+
+.cache/
+.config/
+.local/
+.npm/
+.upm/
+
+5) هيئ المستودع في جذر مساحة العمل: cd /home/runner/workspace ثم git init -b main ثم git add -A ثم اعرض git status --short | head -40 وتحقق صراحة أن node_modules غير ظاهرة ضمن الملفات المضافة؛ إن ظهرت hotel-city-tycoon/node_modules أضف سطر hotel-city-tycoon/node_modules/ إلى /home/runner/workspace/.gitignore وأعد git add -A والتحقق. ثم اطبع عدد الملفات المضافة بالأمر git status --short | wc -l ونفذ git commit -m "HC-P0-S2E: repo init + CI workflow at repo root".
+
+6) أضف في نهاية hotel-city-tycoon/docs/CI-E2E.md قسمًا قصيرًا بعنوان بنية المستودع يوضح: جذر المستودع هو مساحة العمل، المشروع في المجلد الفرعي hotel-city-tycoon، والـworkflow في .github بجذر المستودع ويعمل بworking-directory موجه للمجلد الفرعي، وأن الدفع والربط بGitHub يتمان من لوحة Git في واجهة Replit ثم يشغل المالك workflow باسم e2e من تبويب Actions.
+
+اختم بطباعة ناتج git log --oneline -1 وأبلغ أن المستودع جاهز للربط والدفع من لوحة Git، من دون تنفيذ أي دفع بنفسك.

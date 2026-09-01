@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "tuningStatus": "designed-P1",
+  "note": "Seasonal events. The original ran these across all of Playfish's games at once, with exclusive items and free currency. Dates are month and day so an event recurs every year without anyone editing data. Ranges may wrap across new year.",
+  "seasons": [
+    {
+      "id": "newYear",
+      "nameKey": "season.newYear.name",
+      "descKey": "season.newYear.desc",
+      "from": "12-26",
+      "to": "01-06",
+      "incomeMultiplier": 1.25,
+      "arrivalMultiplier": 1.2,
+      "dailyGems": 2,
+      "decorDiscount": 0.3
+    },
+    {
+      "id": "spring",
+      "nameKey": "season.spring.name",
+      "descKey": "season.spring.desc",
+      "from": "03-15",
+      "to": "04-05",
+      "incomeMultiplier": 1.15,
+      "arrivalMultiplier": 1.3,
+      "dailyGems": 1,
+      "decorDiscount": 0.25
+    },
+    {
+      "id": "summer",
+      "nameKey": "season.summer.name",
+      "descKey": "season.summer.desc",
+      "from": "07-01",
+      "to": "07-21",
+      "incomeMultiplier": 1.2,
+      "arrivalMultiplier": 1.35,
+      "dailyGems": 1,
+      "decorDiscount": 0.25
+    },
+    {
+      "id": "harvest",
+      "nameKey": "season.harvest.name",
+      "descKey": "season.harvest.desc",
+      "from": "10-20",
+      "to": "11-05",
+      "incomeMultiplier": 1.2,
+      "arrivalMultiplier": 1.15,
+      "dailyGems": 1,
+      "decorDiscount": 0.3
+    }
+  ]
+}

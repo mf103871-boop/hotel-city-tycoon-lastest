@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "tuningStatus": "original-model-4B",
+  "note": "Decision 15a: the coin streak is gone. The daily claim IS the home money bag (the star bonus, 400..430 by rating), and once a week the catalogue's free ITEM rides along — the original's weekly free gift, made single-player. The item rotates deterministically per week over every coin decor piece at or under maxItemCost, the same shelf for every player, as the original catalogue rotated for everyone at once.",
+  "resetHours": 24,
+  "itemPeriodDays": 7,
+  "maxItemCost": 900
+}

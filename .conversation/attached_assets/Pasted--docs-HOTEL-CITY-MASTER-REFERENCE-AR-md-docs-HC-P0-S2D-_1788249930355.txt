@@ -1,0 +1,45 @@
+اقرأ docs/HOTEL_CITY_MASTER_REFERENCE_AR.md وdocs/HC-P0-S2D-REPORT.md قبل أي عمل. نفّذ الآن HC-P0-S2E وحدها وفق قرار المالك: محاولة أخيرة واحدة بذاكرة مؤقتة RAM، وعند فشلها تجهيز مسار GitHub Actions كاملًا في نفس الجلسة من دون محاولات Replit إضافية. ابدأ بقسم «فحص المرجع» ثم قالب الخطة ثم «مطابقة الخطة مع المرجع» قبل التنفيذ. ممنوع تعديل src/ أو data/ أو package-lock.json أو package.json أو playwright.config.ts أو منطق أي اختبار في tests/e2e. الملفات الجديدة المسموحة فقط: tools/baseline-shots.mjs و.github/workflows/e2e.yml وdocs/CI-E2E.md والتقرير. ممنوع توليد أي صور أو رسوم أو sprite sheets أو animation. ممنوع --disable-gpu. لا خادم يدوي مع الإعداد الرئيسي.
+
+1) الرصاصة الأخيرة على Replit، محاولة واحدة بسقف صارم:
+
+mkdir -p /dev/shm/pw-tmp
+timeout 240s env -u PLAYWRIGHT_CHROMIUM_PATH TMPDIR=/dev/shm/pw-tmp PLAYWRIGHT_FULL_CHROMIUM=1 PLAYWRIGHT_NO_CAPTURE=1 npx playwright test --project=desktop -g "boots past the loading screen"
+
+احفظ الناتج الحرفي ورمز الخروج في docs/HC-P0-S2E-ramtmp.log. إن نجح: شغّل فورًا بنفس البيئة حرفيًا npm run test:e2e واحفظ docs/HC-P0-S2E-e2e-full.log بأرقام المخطط 82 والمنفذ والناجح والفاشل لكل مشروع والمدة وأسماء الفاشل، من دون إصلاح أي فشل تطبيقي بل أضفه لجدول المؤجل بمعرّف ووصف وخطورة ومرحلة مقترحة، ثم أنشئ tools/baseline-shots.mjs والتقط اللقطات الخمس كما في البند 3 واعتبر البند 2 ملغى، وحدّث صف P0 إلى VERIFIED بالأدلة.
+
+2) إن فشل البند 1 أو انتهى بـtimeout: أنشئ ملف .github/workflows/e2e.yml بهذا المحتوى حرفيًا:
+
+name: e2e
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+jobs:
+  e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --reporter=line
+      - if: always()
+        run: node tools/baseline-shots.mjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: |
+            test-results/
+            docs/baseline-screens/
+          if-no-files-found: warn
+
+3) أنشئ tools/baseline-shots.mjs بمواصفات دقيقة: يشغّل بنفسه خادم اللعبة بعملية فرعية HOST=127.0.0.1 PORT=5173 VITE_E2E=1 npm run dev وينتظر جاهزية http://127.0.0.1:5173 بمهلة قصوى 120 ثانية، ثم يستخدم chromium من playwright بالإطلاق الافتراضي مع دعم اختياري لمتغير CHROMIUM_CHANNEL إن وُجد يمرره كـchannel، ويلتقط خمس لقطات إلى docs/baseline-screens/ بالأسماء 01-main.png و02-build.png و03-decor.png و04-manage.png و05-phone.png: الأولى للشاشة الرئيسية بعد التحميل، والثانية بعد فتح لوحة البناء، والثالثة بعد فتح متجر الديكور، والرابعة بعد فتح لوحة الإدارة، والخامسة للشاشة الرئيسية بviewport مقاس 412 في 915. للوصول إلى اللوحات اقرأ tests/e2e/game.spec.ts وtests/e2e/manage.spec.ts وأعد استخدام نفس المحددات والخطوات المستخدمة هناك من دون تعديل ملفات الاختبارات، وينهي السكربت الخادم دائمًا ويخرج برمز 0 عند اكتمال الخمس أو 1 مع طباعة أي لقطة تعذرت وسببها.
+
+4) أنشئ docs/CI-E2E.md يشرح للمالك بالعربية: أن المصفوفة تعمل الآن عبر GitHub Actions بسبب عطل I/O موثق في بيئة Replit بتقارير S2 حتى S2E، وكيف يدفع الكود إلى GitHub من Replit عبر لوحة Git أو بالأوامر git add -A ثم git commit -m "HC-P0-S2E: CI e2e lane" ثم git push origin main، وكيف يشغّل الworkflow يدويًا من تبويب Actions بزر Run workflow عند الحاجة، وكيف ينزّل artifact باسم e2e-results ويرسل محتواه للمراجعة، وأن حراس playwright.config.ts تبقى خاملة في CI لأن متغيراتها غير مضبوطة هناك.
+
+5) أنشئ docs/HC-P0-S2E-REPORT.md بالنتائج الحرفية: نتيجة رصاصة RAM برمز الخروج، وما أُنشئ من ملفات بمحتواها المرجعي، وما لم يُنفذ ولماذا، وحالة صف P0. حدّث «سجل الحالة الحالي» في المرجع: إن نجح البند 1 فالمسار كما في نهايته، وإلا يبقى P0 بحالة BLOCKED على Replit مع ملاحظة أن ممر CI جاهز بانتظار أول تشغيل يدفعه المالك، وأن أرقام الـ82 واللقطات الخمس ستُعتمد من أول تشغيل CI ناجح. اختم بـ«مطابقة التنفيذ مع المرجع» وأسطر نهاية الجلسة الخمسة، والخطوة التالية الوحيدة: دفع المالك للكود وتشغيل workflow ثم إرسال artifact للمراجعة، من دون تنفيذها.

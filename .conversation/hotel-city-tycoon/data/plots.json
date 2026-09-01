@@ -1,0 +1,177 @@
+{
+  "version": 1,
+  "tuningStatus": "original-snapshot-3A",
+  "note": "The original 17-step expansion table (Gamezebo A.3), landscape-transposed grids. Decision 2a: 66 blocks unlocks at L16 (the only level consistent with the sequence). Decision 4a: 130 blocks costs 147,000 — the source said 135,000, cheaper than the 120-block step, a documented anomaly; 147,000 keeps the ladder monotonic between 144,000 and 150,000. plot_180 removed: the original ended at 150.",
+  "expansions": [
+    {
+      "id": "plot_12",
+      "blocks": 12,
+      "grid": {
+        "w": 4,
+        "h": 3
+      },
+      "cost": 0,
+      "unlockLevel": 1
+    },
+    {
+      "id": "plot_24",
+      "blocks": 24,
+      "grid": {
+        "w": 6,
+        "h": 4
+      },
+      "cost": 1000,
+      "unlockLevel": 3
+    },
+    {
+      "id": "plot_28",
+      "blocks": 28,
+      "grid": {
+        "w": 7,
+        "h": 4
+      },
+      "cost": 3000,
+      "unlockLevel": 6
+    },
+    {
+      "id": "plot_32",
+      "blocks": 32,
+      "grid": {
+        "w": 8,
+        "h": 4
+      },
+      "cost": 4000,
+      "unlockLevel": 7
+    },
+    {
+      "id": "plot_40",
+      "blocks": 40,
+      "grid": {
+        "w": 8,
+        "h": 5
+      },
+      "cost": 8000,
+      "unlockLevel": 8
+    },
+    {
+      "id": "plot_45",
+      "blocks": 45,
+      "grid": {
+        "w": 9,
+        "h": 5
+      },
+      "cost": 10000,
+      "unlockLevel": 10
+    },
+    {
+      "id": "plot_50",
+      "blocks": 50,
+      "grid": {
+        "w": 10,
+        "h": 5
+      },
+      "cost": 16000,
+      "unlockLevel": 12
+    },
+    {
+      "id": "plot_60",
+      "blocks": 60,
+      "grid": {
+        "w": 10,
+        "h": 6
+      },
+      "cost": 25000,
+      "unlockLevel": 14
+    },
+    {
+      "id": "plot_66",
+      "blocks": 66,
+      "grid": {
+        "w": 11,
+        "h": 6
+      },
+      "cost": 35000,
+      "unlockLevel": 16
+    },
+    {
+      "id": "plot_77",
+      "blocks": 77,
+      "grid": {
+        "w": 11,
+        "h": 7
+      },
+      "cost": 50000,
+      "unlockLevel": 19
+    },
+    {
+      "id": "plot_84",
+      "blocks": 84,
+      "grid": {
+        "w": 12,
+        "h": 7
+      },
+      "cost": 65000,
+      "unlockLevel": 21
+    },
+    {
+      "id": "plot_96",
+      "blocks": 96,
+      "grid": {
+        "w": 12,
+        "h": 8
+      },
+      "cost": 120000,
+      "unlockLevel": 24
+    },
+    {
+      "id": "plot_108",
+      "blocks": 108,
+      "grid": {
+        "w": 12,
+        "h": 9
+      },
+      "cost": 132000,
+      "unlockLevel": 28
+    },
+    {
+      "id": "plot_120",
+      "blocks": 120,
+      "grid": {
+        "w": 12,
+        "h": 10
+      },
+      "cost": 144000,
+      "unlockLevel": 32
+    },
+    {
+      "id": "plot_130",
+      "blocks": 130,
+      "grid": {
+        "w": 13,
+        "h": 10
+      },
+      "cost": 147000,
+      "unlockLevel": 36
+    },
+    {
+      "id": "plot_140",
+      "blocks": 140,
+      "grid": {
+        "w": 14,
+        "h": 10
+      },
+      "cost": 150000,
+      "unlockLevel": 40
+    },
+    {
+      "id": "plot_150",
+      "blocks": 150,
+      "grid": {
+        "w": 15,
+        "h": 10
+      },
+      "cost": 170000,
+      "unlockLevel": 43
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "tuningStatus": "original-snapshot-3A",
+  "note": "Decision 10a: baseCost is the original April-2010 snapshot (25/90/225/1,781/14,145), taken as the level-1 price. Actual cost = baseCost * (1 + economy.shiftCostScaling.perLevel * (level - 1)); the original documented costs rising with level. Staff wages and upkeep are zeroed (see staff.json / economy.json) so the shown price IS the table; a per-worker component returns with the temp-staff model in the mechanics phase.",
+  "shifts": [
+    {
+      "id": "shift_2h",
+      "nameKey": "shift.2h",
+      "durationSec": 7200,
+      "baseCost": 25,
+      "currency": "coins",
+      "unlockLevel": 1,
+      "assetKey": "ui.shift.2h",
+      "incomeMultiplier": 1.0
+    },
+    {
+      "id": "shift_6h",
+      "nameKey": "shift.6h",
+      "durationSec": 21600,
+      "baseCost": 90,
+      "currency": "coins",
+      "unlockLevel": 1,
+      "assetKey": "ui.shift.6h",
+      "incomeMultiplier": 1.0
+    },
+    {
+      "id": "shift_12h",
+      "nameKey": "shift.12h",
+      "durationSec": 43200,
+      "baseCost": 225,
+      "currency": "coins",
+      "unlockLevel": 3,
+      "assetKey": "ui.shift.12h",
+      "incomeMultiplier": 1.0
+    },
+    {
+      "id": "shift_24h",
+      "nameKey": "shift.24h",
+      "durationSec": 86400,
+      "baseCost": 1781,
+      "currency": "coins",
+      "unlockLevel": 7,
+      "assetKey": "ui.shift.24h",
+      "incomeMultiplier": 1.0
+    },
+    {
+      "id": "shift_48h",
+      "nameKey": "shift.48h",
+      "durationSec": 172800,
+      "baseCost": 14145,
+      "currency": "coins",
+      "unlockLevel": 12,
+      "assetKey": "ui.shift.48h",
+      "incomeMultiplier": 1.0
+    }
+  ],
+  "closedHotel": {
+    "incomeMultiplier": 0,
+    "dirtRateMultiplier": 1.4,
+    "pestChanceMultiplier": 2.5,
+    "guestsWalkAway": true
+  },
+  "graceSec": 0,
+  "graceNote": "Decision 5a: the original closed hard at the end of a shift, so there is no grace window. The field stays for the schema; 0 means endsAtTick and graceEndsAtTick coincide.",
+  "tuningNote": "Decision 9a: per-shift incomeMultiplier removed (all 1.0) — not in the original. The long-shift dominance it patched is now priced away by the original table itself: 48h costs 566x the 2h shift."
+}
