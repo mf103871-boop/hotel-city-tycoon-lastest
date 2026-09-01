@@ -15,11 +15,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
-          cache-dependency-path: hotel-city-tycoon/package-lock.json
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - name: install deps
+        run: |
+          set -o pipefail
+          mkdir -p docs
+          npm ci 2>&1 | tee docs/ci-npm.log
+      - name: install browser
+        if: always()
+        run: |
+          set -o pipefail
+          npx playwright install --with-deps chromium 2>&1 | tee docs/ci-install.log
       - name: e2e tests
+        if: always()
         run: |
           set -o pipefail
           mkdir -p docs
@@ -35,6 +42,8 @@ jobs:
         with:
           name: e2e-results
           path: |
+            hotel-city-tycoon/docs/ci-npm.log
+            hotel-city-tycoon/docs/ci-install.log
             hotel-city-tycoon/docs/ci-run.log
             hotel-city-tycoon/docs/ci-shots.log
             hotel-city-tycoon/test-results/

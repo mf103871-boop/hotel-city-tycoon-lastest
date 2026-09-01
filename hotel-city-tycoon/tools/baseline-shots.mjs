@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 import { mkdir, rm } from 'node:fs/promises';
-import { chromium } from 'playwright';
+import { chromium } from '@playwright/test';
 
 const ROOT = new URL('../', import.meta.url).pathname;
 const BASE_URL = 'http://127.0.0.1:5173';
