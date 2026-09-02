@@ -1,3 +1,7 @@
+نفّذ HC-P0-S7: مسار CI حتمي بلا WebGL، ومسبار GPU منفصل، وقراءة كود إقلاع المحرك. ممنوع تعديل src أو data أو package.json أو package-lock.json أو playwright.config.ts أو أي توكيد اختبار. لا تشغّل E2E محليًا.
+
+1) أعد كتابة /home/runner/workspace/.github/workflows/e2e.yml بهذا المحتوى حرفيًا كاملًا:
+
 name: e2e
 on:
   workflow_dispatch:
@@ -93,3 +97,19 @@ jobs:
             hotel-city-tycoon/docs/probe-${{ matrix.name }}.log
             hotel-city-tycoon/test-results/
           if-no-files-found: warn
+
+2) قراءة فقط: ابحث في src عن موضع النص renderer starting وعن كود إقلاع محرك الرسم، واكتب في التقرير وصفًا دقيقًا مع أسماء الملفات وأرقام الأسطر: ما تسلسل المحاولات بين webgpu وwebgl، وماذا يحدث إن رمى الإقلاع استثناءً، وماذا يحدث إن لم يُرجع الإقلاع نتيجة أبدًا، وهل توجد مهلة أو مسار تعافٍ أو fallback إلى canvas 2D، وهل يوجد أي تكرار أو حلقة إعادة محاولة. لا تعدّل شيئًا.
+
+3) تحقق: npm run typecheck ثم npm run lint داخل hotel-city-tycoon، ويجب أن يكون رمز الخروج 0 لكليهما.
+
+4) أنشئ docs/HC-P0-S7-REPORT.md يوثّق: نتيجة تشغيل S6 وهي 82 منفذة و29 ناجح و50 فاشل و3 متخطى في 37.9 دقيقة ولقطتان من خمس؛ وأن شارة التصحيح ما زالت renderer starting وfps 0 مع Chrome الكامل، وأن أخطاء PixiJS shader تكررت، وأن التجمد المتقطع للصفحة مثبت من فشل سكربت اللقطات في إيجاد أزرار الشريط السفلي في سياقات جديدة؛ وقرار المالك بفصل المسارين: مسار CI حتمي بلا WebGL لقياس طبقة القوائم والمنطق، ومسبار GPU لاختبار المحرك وحده تحت تركيبتين. أضف قسم قراءة كود الإقلاع من البند 2.
+
+5) ادفع مع منع طباعة قيمة المفتاح وتمرير مخرجات الشبكة عبر sed -E 's/(ghp_|github_pat_)[A-Za-z0-9_]*/TOKEN/g':
+
+cd /home/runner/workspace
+CLEAN="$(printf %s "${GH_TOKEN:-${GH_TOKEN_}}" | tr -cd 'A-Za-z0-9_')"
+git add -A
+git commit -m "HC-P0-S7: deterministic no-3D CI lane + GPU probe matrix"
+git push "https://x-access-token:${CLEAN}@github.com/mf103871-boop/Hotel-City-Tycoon.git" HEAD:main 2>&1 | sed -E 's/(ghp_|github_pat_)[A-Za-z0-9_]*/TOKEN/g'
+
+اختم بسطر واحد: PUSH_OK أو سبب التوقف بالحرف.
