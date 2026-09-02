@@ -20,7 +20,7 @@ const shots = [
     name: '02-build.png',
     viewport: VIEWPORT,
     step: async (page) => {
-      await page.getByRole('button', { name: /\+ build/i }).click();
+      await page.getByRole('button', { name: /\+ build/i }).click({ timeout: 60_000 });
       await page.getByRole('heading', { name: /build/i }).waitFor({ state: 'visible' });
     },
   },
@@ -28,7 +28,7 @@ const shots = [
     name: '03-decor.png',
     viewport: VIEWPORT,
     step: async (page) => {
-      await page.getByRole('button', { name: /^shop$/i }).click();
+      await page.getByRole('button', { name: /^shop$/i }).click({ timeout: 60_000 });
       await page.getByRole('heading', { name: /^shop$/i }).waitFor({ state: 'visible' });
     },
   },
@@ -36,7 +36,7 @@ const shots = [
     name: '04-manage.png',
     viewport: VIEWPORT,
     step: async (page) => {
-      await page.getByTestId('open-manage').click();
+      await page.getByTestId('open-manage').click({ timeout: 60_000 });
       await page.getByTestId('manage-tab-plot').waitFor({ state: 'visible' });
     },
   },
@@ -94,7 +94,7 @@ async function bootPage(context) {
   try {
     const collect = page.getByRole('button', { name: /^collect$|^اجمع/i }).first();
     await collect.waitFor({ state: 'visible', timeout: 8_000 });
-    await collect.click();
+    await collect.click({ timeout: 60_000 });
     await page.locator('div.z-40').first().waitFor({ state: 'hidden', timeout: 5_000 });
   } catch {
     // The daily gift is optional during baseline capture.
@@ -109,7 +109,7 @@ async function captureShot(shot) {
     const page = await bootPage(context);
     await shot.step(page);
     const path = new URL(`../docs/baseline-screens/${shot.name}`, import.meta.url).pathname;
-    await page.screenshot({ path });
+    await page.screenshot({ path, timeout: 60_000 });
     console.log(`[baseline] ${shot.name}: OK`);
   } catch (error) {
     recordFailure(shot.name, errorMessage(error));
@@ -141,7 +141,9 @@ try {
   server.once('error', (error) => console.error(`[server] ERROR\n${errorMessage(error)}`));
 
   await waitForServer();
-  const channel = process.env.CHROMIUM_CHANNEL;
+  const channel = process.env.PLAYWRIGHT_FULL_CHROMIUM === '1'
+    ? 'chromium'
+    : process.env.CHROMIUM_CHANNEL;
   const extraArgs = process.env.PLAYWRIGHT_EXTRA_ARGS?.trim()
     ? process.env.PLAYWRIGHT_EXTRA_ARGS.trim().split(/\s+/)
     : [];

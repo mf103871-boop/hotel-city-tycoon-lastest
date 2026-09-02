@@ -11,7 +11,9 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     env:
-      PLAYWRIGHT_EXTRA_ARGS: --enable-unsafe-swiftshader
+      PLAYWRIGHT_FULL_CHROMIUM: "1"
+      PLAYWRIGHT_NO_CAPTURE: "1"
+      PLAYWRIGHT_EXTRA_ARGS: --enable-unsafe-swiftshader --ignore-gpu-blocklist
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

@@ -1,0 +1,27 @@
+نفّذ HC-P0-S6: تشغيل Chrome الكامل بوضع headless الجديد في CI لإقلاع WebGL، وإطفاء الالتقاط، وتحصين سكربت اللقطات. ممنوع تعديل src أو data أو package.json أو package-lock.json أو أي توكيد اختبار. لا تشغّل E2E محليًا.
+
+1) تحقق أن playwright.config.ts يحوي الحراس الثلاثة PLAYWRIGHT_FULL_CHROMIUM وPLAYWRIGHT_NO_CAPTURE وPLAYWRIGHT_EXTRA_ARGS بالأمر grep -n "PLAYWRIGHT_" playwright.config.ts واطبع الناتج. إن غاب أي منها فأضفه حرفيًا داخل use من دون أي تغيير آخر:
+...(process.env.PLAYWRIGHT_FULL_CHROMIUM === '1' ? { channel: 'chromium' } : {}),
+...(process.env.PLAYWRIGHT_NO_CAPTURE === '1' ? { trace: 'off', screenshot: 'off', video: 'off' } : {}),
+...(process.env.PLAYWRIGHT_EXTRA_ARGS ? { launchOptions: { args: ['--disable-dev-shm-usage', ...process.env.PLAYWRIGHT_EXTRA_ARGS.split(' ')] } } : {}),
+مع مراعاة أن حارس NO_CAPTURE يجب أن يأتي بعد سطري trace وscreenshot الأصليين ليتغلب عليهما.
+
+2) في .github/workflows/e2e.yml بجذر مساحة العمل اجعل مقطع env تحت jobs.e2e يحوي هذه الأسطر الثلاثة فقط:
+      PLAYWRIGHT_FULL_CHROMIUM: "1"
+      PLAYWRIGHT_NO_CAPTURE: "1"
+      PLAYWRIGHT_EXTRA_ARGS: --enable-unsafe-swiftshader --ignore-gpu-blocklist
+أبقِ بقية الملف كما هو.
+
+3) في tools/baseline-shots.mjs: عند الإطلاق مرّر channel: 'chromium' إذا كان PLAYWRIGHT_FULL_CHROMIUM يساوي '1'، وأبقِ تمرير args من PLAYWRIGHT_EXTRA_ARGS مع --disable-dev-shm-usage. اجعل كل لقطة تُنفذ في browser context جديد يُغلق بعدها، لا في صفحة مشتركة، بحيث لا يؤثر فشل لقطة على التي تليها. تأكد أن كل مهلة نقر والتقاط في الملف تساوي 60000 بالفعل لأن السجل الأخير ما زال يطبع 30000. أبقِ منطق الإنهاء الذاتي وقتل الخادم كما هو.
+
+4) تحقق: npm run typecheck ثم npm run lint داخل hotel-city-tycoon، ويجب أن يكون رمز الخروج 0 لكليهما قبل الدفع.
+
+5) أنشئ docs/HC-P0-S6-REPORT.md يوثّق: نتيجة تشغيل S5 وهي 82 منفذة و25 ناجح و55 فاشل و2 متخطى في 47.5 دقيقة ولقطتان من خمس؛ والسبب الجذري المثبت من لقطة 03-decor.png حيث تظهر شارة التصحيح renderer starting وfps 0 وrooms 0/0 مع قماشة رمادية فارغة، أي أن WebGL لا يقلع في headless shell؛ وأن آثار 45 اختبارًا تُظهر انتهاء الفعل في المتصفح خلال 8 ثوانٍ مع عدم استلام النتيجة حتى إغلاق السياق بعد 54 ثانية بسبب تجمّد الالتقاط. ثم أضف إلى جدول المؤجل بمعرّفات جديدة: محدد زر الوردية 2h وساعتان بينما الواجهة تعرض hours، ومحدد footer p يطابق عنصرين، وزر التوسيع معطّل على الهاتف بعد bootRich، وعنوان الهدية اليومية غير مرئي خلال 10 ثوانٍ على الهاتف، وتسمية economy وpresidential، وعدم توفر أصول الغرف والشخصيات في CI مع تحذير Vite عن public/assets/manifest.json كمرشح لخطوة مستقلة. حدّث صف P0 في «سجل الحالة الحالي» بالمرجع بأرقام S5 وسبب الفشل الجذري.
+
+6) ادفع مع منع طباعة قيمة المفتاح وتمرير مخرجات الشبكة عبر sed -E 's/(ghp_|github_pat_)[A-Za-z0-9_]*/TOKEN/g':
+
+cd /home/runner/workspace
+CLEAN="$(printf %s "${GH_TOKEN:-${GH_TOKEN_}}" | tr -cd 'A-Za-z0-9_')"
+git add -A
+git commit -m "HC-P0-S6: full Chrome new-headless in CI for WebGL, capture off, isolated shots"
+git push "https://x-access-token:${CLEAN}@github.com/mf103871-bo
