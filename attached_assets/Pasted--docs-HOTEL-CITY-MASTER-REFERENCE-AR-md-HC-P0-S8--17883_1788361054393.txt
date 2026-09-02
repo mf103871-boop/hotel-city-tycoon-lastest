@@ -1,0 +1,29 @@
+اقرأ docs/HOTEL_CITY_MASTER_REFERENCE_AR.md قبل أي عمل. نفّذ HC-P0-S8: إغلاق خط الأساس بإصلاح عيوب الاختبارات المثبتة وتوثيق القرار. ممنوع تعديل src أو data أو package.json أو package-lock.json أو playwright.config.ts. تصريح مالك محدود بتعديل tests/e2e في البنود المحددة فقط، ومن دون تغيير أي توكيد آخر. لا تشغّل E2E محليًا.
+
+1) في .github/workflows/e2e.yml بجذر مساحة العمل: احذف وظيفة gpu-probe كاملة وأبقِ وظيفة e2e كما هي حرفيًا.
+
+2) أسماء الغرف: اقرأ ملف بيانات الغرف في المشروع واستخرج الاسم الظاهر للغرفة الأرخص المتاحة في المستوى 1 وهو Budget Room بحسب اللقطة، والاسم الظاهر لأعلى غرفة مقفلة بالمستوى، والنص الحرفي الذي تعرضه واجهة البناء لسبب القفل بالمستوى. ثم في tests/e2e/game.spec.ts استبدل كل محدد /economy/i بالاسم الفعلي للغرفة الأرخص، وكل محدد /presidential/i بالاسم الفعلي لأعلى غرفة مقفلة، وطابق تعبير unlocks at level مع النص الفعلي إن اختلف. سجّل في التقرير الأسماء المستخرجة ومصدرها.
+
+3) في tests/e2e/game.spec.ts: في اختبار building a room adds it to the hotel استبدل locator('footer p') بمحدد يقصد سطر عدّاد الغرف حصرًا وهو page.locator('footer p').filter({ hasText: /rooms/ }).
+
+4) في tests/e2e/manage.spec.ts: في اختبار an occupied or dirty room استبدل المحدد /2h|ساعتان/i بالمحدد /hours/i مع .first() كما تفعل بقية الاختبارات. وفي اختبار an expansion that cannot be afforded أضف بعد التحقق من ظهور زر open hotel نفس كتلة إغلاق الهدية المتسامحة المستخدمة في bootRich حرفيًا.
+
+5) اختبارات التوسيع الثلاثة في manage.spec.ts وهي the plot can be expanded وa room can be moved to a valid square وeverything done here survives a full reload: قبل النقر على زر expand أضف فحصًا يقرأ حالة الزر، وإن كان معطّلًا فنفّذ test.skip بسبب نصي واضح مفاده أن الفندق الجديد لا يملك ثمن التوسيع ولا يوجد hook لمنح المال، بنفس نمط test.skip المستخدم في اختبارات القماشة. لا تغيّر توكيدات هذه الاختبارات.
+
+6) اختبارا tapping a room opens its sheet في game.spec.ts: أضف في أعلى الملف ثابتًا NO_3D يقرأ process.env.PLAYWRIGHT_EXTRA_ARGS ويتحقق من احتوائه على --disable-3d-apis، وفي بداية هذا الاختبار نفّذ test.skip(NO_3D, 'canvas lane is disabled on CI runners') قبل أي نقر على القماشة.
+
+7) تحقق: npm run typecheck ثم npm run lint داخل hotel-city-tycoon، ويجب أن يكون رمز الخروج 0 لكليهما قبل الدفع.
+
+8) في المرجع docs/HOTEL_CITY_MASTER_REFERENCE_AR.md: أضف إلى دفتر القرارات قرارًا جديدًا برقم تاليًا لآخر رقم موجود بعنوان فصل مسارات التحقق، نصه: مسار CI على GitHub يعمل بتعطيل WebGL وWebGPU ويقيس طبقة الواجهة والمنطق فقط، لأن المحرك لا يقلع على خوادم بلا بطاقة رسوم بدليل مسبارَي S7؛ والتحقق البصري من القماشة يتم على أجهزة حقيقية ضمن مراجعات Codex البصرية في P1 وما بعدها؛ ويُعاد النظر في خادم بمعالج رسوم لاحقًا. ثم حدّث صف P0 في «سجل الحالة الحالي» إلى VERIFIED بالأدلة: تشغيل S7 بنتيجة 82 منفذة و54 ناجح و20 فاشل و8 متخطى في 11.7 دقيقة، واللقطات الخمس في docs/baseline-screens، ومسبارا GPU انتهت مهلتهما عند 120 ثانية تحت تركيبتي swiftshader وangle، مع ذكر أن أرقام تشغيل S8 ستُلحق عند المراجعة.
+
+9) أنشئ docs/HC-P0-S8-REPORT.md يوثّق: تصنيف الفشل العشرين إلى 16 عيب اختبارات و2 قماشة و2 عيب أصول على واجهة الهاتف، وفرق كل تعديل بأسطره، والأسماء المستخرجة للغرف، ونتائج typecheck وlint، وأضف إلى جدول المؤجل عنصرًا بأولوية عالية: فشل تحميل أصول الغرف والشخصيات على مشروع phone فقط مع فرضية طلب أصول بمعامل كثافة غير موجود. اختم بـ«مطابقة التنفيذ مع المرجع» وأسطر نهاية الجلسة الخمسة، والخطوة التالية الوحيدة كما يحددها المرجع بعد إغلاق P0 من دون تنفيذها.
+
+10) ادفع مع منع طباعة قيمة المفتاح وتمرير مخرجات الشبكة عبر sed -E 's/(ghp_|github_pat_)[A-Za-z0-9_]*/TOKEN/g':
+
+cd /home/runner/workspace
+CLEAN="$(printf %s "${GH_TOKEN:-${GH_TOKEN_}}" | tr -cd 'A-Za-z0-9_')"
+git add -A
+git commit -m "HC-P0-S8: close baseline — fix test harness defects, record CI lane decision"
+git push "https://x-access-token:${CLEAN}@github.com/mf103871-boop/Hotel-City-Tycoon.git" HEAD:main 2>&1 | sed -E 's/(ghp_|github_pat_)[A-Za-z0-9_]*/TOKEN/g'
+
+اختم بسطر واحد: PUSH_OK أو سبب التوقف بالحرف.

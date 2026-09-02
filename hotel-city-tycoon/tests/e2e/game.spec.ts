@@ -15,6 +15,8 @@
 import { test, expect } from '@playwright/test';
 import type { Page, ConsoleMessage } from '@playwright/test';
 
+const NO_3D = process.env.PLAYWRIGHT_EXTRA_ARGS?.includes('--disable-3d-apis') ?? false;
+
 /** Collect console output so a test can assert on what the game reported. */
 function captureConsole(page: Page): ConsoleMessage[] {
   const messages: ConsoleMessage[] = [];
@@ -122,18 +124,18 @@ test('the build menu lists every room and explains what is locked', async ({ pag
   await expect(page.getByRole('heading', { name: /build/i })).toBeVisible();
 
   // A level-1 player can build an economy room and cannot build a suite.
-  await expect(page.getByRole('button', { name: /economy/i }).first()).toBeEnabled();
-  await expect(page.getByRole('button', { name: /presidential/i }).first()).toBeDisabled();
+  await expect(page.getByRole('button', { name: /Budget Room/i }).first()).toBeEnabled();
+  await expect(page.getByRole('button', { name: /High Ceiling Room/i }).first()).toBeDisabled();
   await expect(page.getByText(/unlocks at level/i).first()).toBeVisible();
 });
 
 test('building a room adds it to the hotel', async ({ page }) => {
   await bootFresh(page);
-  const count = page.locator('footer p');
+  const count = page.locator('footer p').filter({ hasText: /rooms/ });
   const before = (await count.textContent()) ?? '';
 
   await page.getByRole('button', { name: /\+ build/i }).click();
-  await page.getByRole('button', { name: /economy/i }).first().click();
+  await page.getByRole('button', { name: /Budget Room/i }).first().click();
 
   await expect(count).not.toHaveText(before);
   await expect(count).toContainText(/\d+ rooms/);
@@ -142,6 +144,7 @@ test('building a room adds it to the hotel', async ({ page }) => {
 // ---------------------------------------------------------------- the meter
 
 test('tapping a room opens its sheet, and decorating moves the meter', async ({ page }) => {
+  test.skip(NO_3D, 'canvas lane is disabled on CI runners');
   // The decor meter is the mechanic the whole economy hangs on, and it was
   // unreachable through the UI for four phases.
   await bootFresh(page);
@@ -395,9 +398,9 @@ test('the hotel survives a full reload', async ({ page }) => {
   await bootFresh(page);
 
   await page.getByRole('button', { name: /\+ build/i }).click();
-  await page.getByRole('button', { name: /economy/i }).first().click();
+  await page.getByRole('button', { name: /Budget Room/i }).first().click();
   await page.getByRole('button', { name: /\+ build/i }).click();
-  await page.getByRole('button', { name: /economy/i }).first().click();
+  await page.getByRole('button', { name: /Budget Room/i }).first().click();
 
   const count = page.locator('footer p');
   const before = await count.textContent();
