@@ -191,3 +191,17 @@ mtime_ms = 1788363397462
 storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:48c85c8f-a3e9-4d09-abd9-0bedf15851a3/323b7d0e-39b2-4506-b6eb-d343af71fcdd/bc4da4e2-8781-4e97-8a96-ee6a38cc4ecd"
 storage_version_token = "1788373252455708"
 content_type = "text/markdown"
+
+[[outputs]]
+id = "_aRj9wcIdSnOXB_4jgdzB"
+uri = "file://downloads/hotel-city-tycoon-latest.zip"
+type = "unspecified"
+title = "Hotel City Tycoon — Latest Project"
+description = "نسخة ZIP من المشروع بعد آخر تحديث، بدون مجلدات .git و node_modules لتقليل الحجم."
+logical_id = "b91aa661-b344-4549-ab23-df419c390123"
+content_hash = "sha256:ccb0e4b849850ab01ac0c2f5f3a2e5876589d0b67a1a468f9d382aa4125342dc"
+size = 4157199
+mtime_ms = 1788373306735
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:48c85c8f-a3e9-4d09-abd9-0bedf15851a3/b91aa661-b344-4549-ab23-df419c390123/a420a663-ac84-4f9d-9efb-aaadcf6d7773"
+storage_version_token = "1788373313575271"
+content_type = "application/octet-stream"
