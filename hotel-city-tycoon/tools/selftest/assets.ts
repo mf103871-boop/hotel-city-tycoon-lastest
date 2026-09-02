@@ -141,19 +141,52 @@ await check('the required payload fits the 3MB initial budget', () => {
   console.log(`      estimated required payload ~${mb.toFixed(2)}MB at @1x`);
 });
 
-await await check('resolution tiers resolve sensibly for real devices', () => {
-  // src/render/assets.ts imports Pixi, which cannot load headlessly, so the
-  // tier rule is reimplemented here against the same manifest it reads.
-  const tiers = [...(manifest.resolutions as number[])].sort((a, b) => a - b);
-  const pick = (dpr: number) => {
-    let chosen = tiers[0] ?? 1;
-    for (const t of tiers) if (dpr >= t) chosen = t;
-    return chosen;
-  };
+// The tier rule from src/render/assets.ts, reimplemented against the same
+// manifest it reads (the loader imports Pixi, which cannot load headlessly).
+const tiers = [...(manifest.resolutions as number[])].sort((a, b) => a - b);
+const pick = (dpr: number) => {
+  let chosen = tiers[0] ?? 1;
+  for (const t of tiers) if (dpr >= t) chosen = t;
+  return chosen;
+};
+const tierPath = (tier: number, file: string) =>
+  tier > 1 ? `public/assets/@${tier}x/${file}` : `public/assets/${file}`;
+
+await check('every declared resolution tier has every file on disk', () => {
+  // HC-P1-S2 / BL-016. The manifest declared [1, 2] while no @2x tree had ever
+  // been drawn. The previous version of this suite asserted that a 2x screen
+  // takes the 2x tier — it enshrined the bug. A tier is a promise; the promise
+  // is checked here file by file, so the manifest can no longer send every
+  // phone to 241 URLs that 404.
+  assert(tiers.length > 0 && tiers[0] === 1, 'the 1x tier must always be declared first');
+  for (const tier of tiers) {
+    const absent = entries.filter((e) => !fs.existsSync(tierPath(tier, e.file)));
+    assert(absent.length === 0,
+      `tier @${tier}x is declared but ${absent.length} of ${entries.length} files are absent — ` +
+      `first: ${absent.slice(0, 3).map((e) => e.file).join(', ')}`);
+  }
+  console.log(`      declared tiers ${JSON.stringify(tiers)}, all ${entries.length} files present at each`);
+});
+
+await check('a phone never resolves to a tier that is not shipped', () => {
+  const highest = tiers[tiers.length - 1] ?? 1;
   eq(pick(1), 1, 'a 1x screen should take the 1x tier');
-  eq(pick(2), 2, 'a 2x screen should take the 2x tier');
-  eq(pick(3), 2, 'a 3x screen should cap at the highest tier shipped');
   eq(pick(0.75), 1, 'a sub-1x screen should still get something');
+  eq(pick(2), highest, 'a 2x screen should take the highest tier actually shipped');
+  eq(pick(3), highest, 'a 3x screen should cap at the highest tier actually shipped');
+  assert(tiers.includes(pick(2)) && tiers.includes(pick(3)),
+    'a device resolved to a tier the manifest does not declare');
+});
+
+await check('the loader falls back to 1x when a higher-tier file is absent', () => {
+  // Belt to the manifest's braces: if a @2x tree is ever delivered in part,
+  // the missing files must draw at 1x, not as placeholders. Structural check
+  // on the source, since the loader cannot run headlessly.
+  const loader = fs.readFileSync('src/render/assets.ts', 'utf8');
+  assert(/urlFor\(entry,\s*1\)/.test(loader),
+    'loadBundle never retries a failed entry at the 1x URL');
+  assert(/if \(tier <= 1\) throw/.test(loader),
+    'the fallback must only apply above 1x — a miss at 1x is a real miss');
 });
 
 await check('the art is served from a directory the bundler publishes', () => {

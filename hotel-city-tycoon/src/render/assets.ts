@@ -103,32 +103,53 @@ export function urlFor(entry: AssetEntry, tier: number): string {
  * Load one bundle. Individual failures are absorbed: one bad file must not
  * take down the twenty good ones beside it.
  */
-export async function loadBundle(bundle: string, tier = 1): Promise<{ loaded: number; missing: string[] }> {
-  if (loadedBundles.has(bundle)) return { loaded: 0, missing: [] };
+export async function loadBundle(
+  bundle: string,
+  tier = 1,
+): Promise<{ loaded: number; missing: string[]; fellBack: number }> {
+  if (loadedBundles.has(bundle)) return { loaded: 0, missing: [], fellBack: 0 };
   const entries = BY_BUNDLE.get(bundle) ?? [];
 
   const results = await Promise.allSettled(
     entries.map(async (entry) => {
-      const texture = await Assets.load<Texture>({ alias: entry.key, src: urlFor(entry, tier) });
-      return { key: entry.key, texture };
+      try {
+        const texture = await Assets.load<Texture>({ alias: entry.key, src: urlFor(entry, tier) });
+        return { key: entry.key, texture, fellBack: false };
+      } catch (error) {
+        // HC-P1-S2 (BL-016). A tier above 1x is a nicer copy of the same
+        // picture, never the only copy. When the @2x file is absent — a
+        // partial delivery, or a stale deployment — the 1x file is drawn
+        // instead of a placeholder. Only a miss at 1x counts as missing.
+        if (tier <= 1) throw error;
+        // Loaded by URL, then filed under the key directly: the failed attempt
+        // already bound the alias to the higher-tier URL in Pixi's resolver,
+        // and `texture()` reads the cache by key, not the resolver.
+        const texture = await Assets.load<Texture>(urlFor(entry, 1));
+        Assets.cache.set(entry.key, texture);
+        return { key: entry.key, texture, fellBack: true };
+      }
     }),
   );
 
   let loaded = 0;
+  let fellBack = 0;
   const failures: string[] = [];
   results.forEach((result, i) => {
     const entry = entries[i];
     if (!entry) return;
-    if (result.status === 'fulfilled') loaded++;
+    if (result.status === 'fulfilled') { loaded++; if (result.value.fellBack) fellBack++; }
     else { missing.add(entry.key); failures.push(entry.key); }
   });
 
   loadedBundles.add(bundle);
   generation++;
+  if (fellBack > 0) {
+    console.info(`[assets] bundle "${bundle}": ${fellBack} of ${loaded} served at @1x (no @${tier}x file)`);
+  }
   if (failures.length > 0) {
     console.warn(`[assets] bundle "${bundle}": ${loaded} loaded, ${failures.length} missing (placeholders will be used)`);
   }
-  return { loaded, missing: failures };
+  return { loaded, missing: failures, fellBack };
 }
 
 /**

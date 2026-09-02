@@ -1,0 +1,60 @@
+أنت تفحص تسليم HC-P1-S2 لمشروع hotel-city-tycoon. لا تعدّل أي ملف في src أو data أو tools أو docs. نفذ الأوامر بالترتيب، وأوقف عند أول فشل وأرسل آخر 40 سطرًا من مخرجاته. في التقرير النهائي اذكر لكل أمر: الأمر حرفيًا، رمز الخروج، والأرقام الظاهرة. ممنوع كتابة «كل الاختبارات ناجحة» بلا أرقام.
+
+## 0. الأرشيف والملفات
+1. فك hotel-city-tycoon-P1-S2.zip فوق المشروع (استبدال).
+2. تأكد من وجود هذه الملفات واذكر نتيجة كل واحد (موجود/غير موجود):
+   - .github/workflows/e2e.yml
+   - docs/HC-P1-S2-REPORT.md
+   - docs/history/PROJECT-STATE-2026-09-02-pre-HC-P1-S2.md
+   - package-lock.json
+   - عدم وجود pnpm-lock.yaml
+3. أرسل: `git status --short` كاملًا.
+
+## 1. التثبيت
+npm ci
+- المطلوب: exit 0، بلا ERR!.
+
+## 2. سلامة المانيفست (قلب هذه الخطوة)
+node -e "const m=require('./public/assets/manifest.json');console.log('resolutions=',JSON.stringify(m.resolutions),'entries=',m.entries.length)"
+- المطلوب: resolutions= [1] و entries= 241.
+ls public/assets/@2x 2>&1
+- المطلوب: المجلد غير موجود (رسالة No such file).
+npm run gen:assets && git diff --stat public/assets/manifest.json
+- المطلوب: المولّد يطبع "resolutions [1] (no complete @2x tree on disk)" وأن git diff فارغ (التوليد idempotent).
+
+## 3. الفحص الذاتي للأصول + التجربة السلبية
+node --experimental-strip-types tools/selftest/assets.ts
+- المطلوب: "22 checks passed" وظهور هذه الأسطر الثلاثة بعلامة ✓:
+  every declared resolution tier has every file on disk
+  a phone never resolves to a tier that is not shipped
+  the loader falls back to 1x when a higher-tier file is absent
+ثم التجربة السلبية (إثبات أن الحارس يعضّ):
+node -e "const fs=require('fs');const p='public/assets/manifest.json';const m=JSON.parse(fs.readFileSync(p));m.resolutions=[1,2];fs.writeFileSync(p,JSON.stringify(m,null,2)+'\n')"
+node --experimental-strip-types tools/selftest/assets.ts; echo "exit=$?"
+- المطلوب: exit غير صفري، وسطر ✗ يحتوي "tier @2x is declared but 241 of 241 files are absent".
+ثم أعد التوليد: npm run gen:assets && git diff --quiet public/assets/manifest.json && echo RESTORED
+- المطلوب: RESTORED.
+
+## 4. التحقق الكامل
+npm run verify
+- أرسل لكل مجموعة العدد ورمز الخروج: validate:data (refs + schema)، typecheck، lint (المطلوب 0 errors؛ 4 تحذيرات no-console معروفة مقبولة — اذكر عددها الفعلي)، test:logic (عدد الاختبارات)، test:selftest (28 وحدة — أرسل رقم "checks passed" لكل وحدة، المجموع المتوقع 630).
+
+## 5. البناء
+npm run build
+- المطلوب: exit 0، وأرسل سطور check:budget الثلاثة (initial art / audio / all assets) كما تظهر.
+
+## 6. E2E عبر CI (لا تشغّل Playwright داخل Replit — قرار DEC-009)
+git add -A && git commit -m "HC-P1-S2: resolution tiers derived from disk + 1x fallback (BL-016)" && git push origin main
+ثم من GitHub → Actions → workflow "e2e" → انتظر اكتماله وأرسل:
+- عدد الاختبارات: المخطط/المنفذ/الناجح/الفاشل/المتخطى لكل project (desktop و phone).
+- المدة.
+- حالة هذين الاختبارين تحديدًا على مشروع phone:
+  "the room art actually loads"
+  "characters are drawn, not left as placeholder shapes"
+- أسماء كل الاختبارات الفاشلة إن وُجدت، بنصها.
+- هل اكتملت اللقطات الخمس في artifact e2e-results (01-main … 05-phone)؟
+- من سجل المتصفح في الاختبار الأول على phone: سطر "[assets] N room textures loaded at @1x" — اقتبسه حرفيًا.
+إذا لم يكن الملف .github/workflows/e2e.yml موجودا في المستودع، توقف هنا وأبلغ ذلك بدل محاولة إنشائه.
+
+## 7. صيغة التقرير النهائي
+جدول بأعمدة: الخطوة | الأمر | exit | الأرقام/الملاحظة. ثم سطر واحد: هل شرط إغلاق BL-016 (نجاح الاختبارين على phone في CI) تحقق؟ نعم/لا.

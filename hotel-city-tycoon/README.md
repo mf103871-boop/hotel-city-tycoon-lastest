@@ -3,11 +3,12 @@
 A 2D hotel management game. Mechanics modelled on Playfish's *Hotel City* (2010);
 everything else — code, art, architecture — is new.
 
-**Where the project stands lives in one place: `PROJECT-STATE.md`.** The full
-game — simulation, renderer, save system, live-ops — is built and verified
-headlessly. The current direction is closing the remaining gaps against the
-original *Hotel City*; the gap map is `docs/AUDIT-AND-PARITY-REPORT.md`, and
-every phase report lives under `docs/`.
+**Where the project stands is summarised in `PROJECT-STATE.md`; the governing
+reference for every decision and the order of work is
+`docs/HOTEL_CITY_MASTER_REFERENCE_AR.md`.** The full game — simulation,
+renderer, save system, live-ops — is built and verified headlessly and in CI.
+Current phase: P1, the visible decor system. Step reports live under `docs/`
+as `HC-P{phase}-S{step}-REPORT.md`.
 
 ---
 
@@ -23,8 +24,8 @@ On Replit: press Run. The dev server reads `PORT` and `BASE_PATH` from the
 environment and accepts the proxy hostname, so no configuration is needed.
 
 Replit's package firewall blocks some published versions; `vitest` is pinned to
-`^4.0.0` for that reason. The workspace uses `pnpm`, so `pnpm-lock.yaml` is the
-lockfile to commit — not `package-lock.json`.
+`^4.0.0` for that reason. The lockfile is `package-lock.json` (npm); CI runs
+`npm ci` against it. Do not add a second lockfile.
 
 ## Scripts
 
