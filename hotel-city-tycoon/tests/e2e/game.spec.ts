@@ -402,7 +402,7 @@ test('the hotel survives a full reload', async ({ page }) => {
   await page.getByRole('button', { name: /\+ build/i }).click();
   await page.getByRole('button', { name: /Budget Room/i }).first().click();
 
-  const count = page.locator('footer p');
+  const count = page.locator('footer p').filter({ hasText: /rooms/ });
   const before = await count.textContent();
   // Give the autosave a chance to run.
   await page.waitForTimeout(1500);

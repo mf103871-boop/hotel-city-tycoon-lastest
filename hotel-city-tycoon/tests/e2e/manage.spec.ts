@@ -83,8 +83,10 @@ test('an expansion that cannot be afforded explains itself and stays open', asyn
 
   // A fresh hotel cannot afford the next plot; the row must say so and the
   // sheet must still be there afterwards.
-  await expect(page.getByTestId('manage-plot')).toBeVisible();
-  await page.getByTestId('manage-plot').getByRole('button').first().click();
+  const plot = page.getByTestId('manage-plot');
+  await expect(plot).toBeVisible();
+  await expect(plot.getByRole('button').first()).toBeDisabled();
+  await expect(plot.getByText('Not enough coins', { exact: true })).toBeVisible();
   await expect(page.getByTestId('manage-tab-plot')).toBeVisible();
 });
 

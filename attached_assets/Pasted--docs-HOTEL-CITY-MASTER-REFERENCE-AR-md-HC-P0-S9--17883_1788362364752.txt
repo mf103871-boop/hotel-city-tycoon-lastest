@@ -1,0 +1,21 @@
+اقرأ docs/HOTEL_CITY_MASTER_REFERENCE_AR.md قبل أي عمل. نفّذ HC-P0-S9: إغلاق خط الأساس رسميًا. ممنوع تعديل src أو data أو package.json أو package-lock.json أو playwright.config.ts أو workflow. تصريح مالك محدود بتعديل tests/e2e في البندين 1 و2 فقط. لا تشغّل E2E محليًا.
+
+1) في tests/e2e/game.spec.ts داخل اختبار the hotel survives a full reload: استبدل كل استخدام لـlocator('footer p') بالمحدد page.locator('footer p').filter({ hasText: /rooms/ })، قبل إعادة التحميل وبعدها. لا تغيّر شيئًا آخر.
+
+2) في tests/e2e/manage.spec.ts داخل اختبار an expansion that cannot be afforded explains itself and stays open: اقرأ كود واجهة لوحة الإدارة لتحديد النص الحرفي الذي يظهر عندما لا يمكن تحمل التوسيع. ثم استبدل سطر النقر على الزر الأول داخل manage-plot بثلاثة توكيدات: الزر الأول داخل manage-plot معطّل عبر toBeDisabled، ونص السبب مرئي داخل manage-plot بمطابقة النص الفعلي، ثم أبقِ التوكيد الأخير بأن manage-tab-plot ما زال مرئيًا. سجّل في التقرير أن هذا التعديل يوائم الاختبار مع مبدأ الرفض المشروح على وجه الزر.
+
+3) تحقق: npm run typecheck ثم npm run lint داخل hotel-city-tycoon، ويجب أن يكون رمز الخروج 0 لكليهما قبل الدفع.
+
+4) في المرجع: حدّث صف P0 في «سجل الحالة الحالي» إلى VERIFIED مغلقة بأرقام تشغيل S8: 82 منفذة و60 ناجح و6 فاشل و16 متخطى في 4.3 دقيقة واللقطات الخمس مكتملة، مع تصنيف الستة: زوج محدد footer p أُصلح في S9، وزوج توكيد التوسيع غير المتحمل أُصلح في S9، وزوج عيب أصول واجهة الهاتف مؤجل بأولوية عالية. ثم اقرأ قائمة خطوات P0 كما وردت في خطة المرجع الأصلية وحدد أي خطوة مخططة لم تُنفذ بعد إن وُجدت، واكتب تحت الصف ملاحظة بذلك.
+
+5) أنشئ docs/HC-P0-S9-REPORT.md يحوي: فرق التعديلين، النص المستخرج لسبب التوسيع، نتائج typecheck وlint، وقسم إغلاق P0 يجمع كل عناصر جدول المؤجل من تقارير S1 حتى S9 في جدول واحد مرتب بالأولوية، وفي رأسه فشل أصول الغرف والشخصيات على مشروع phone بفرضية طلب أصول بمعامل كثافة غير موجود، ثم تسمية economy التاريخية، ثم أخطاء PixiJS shader تحت الرسوم البرمجية كملاحظة بيئة. اختم بـ«مطابقة التنفيذ مع المرجع» وأسطر نهاية الجلسة الخمسة، ثم فقرة بعنوان الخطوة التالية الوحيدة تذكر بالحرف ما يحدده المرجع بعد إغلاق P0 من دون تنفيذه، بما في ذلك دور Codex في ART-0 وART-1 إن كان هذا ما ينص عليه.
+
+6) ادفع مع منع طباعة قيمة المفتاح وتمرير مخرجات الشبكة عبر sed -E 's/(ghp_|github_pat_)[A-Za-z0-9_]*/TOKEN/g':
+
+cd /home/runner/workspace
+CLEAN="$(printf %s "${GH_TOKEN:-${GH_TOKEN_}}" | tr -cd 'A-Za-z0-9_')"
+git add -A
+git commit -m "HC-P0-S9: baseline closed — last harness fixes, deferred table consolidated"
+git push "https://x-access-token:${CLEAN}@github.com/mf103871-boop/Hotel-City-Tycoon.git" HEAD:main 2>&1 | sed -E 's/(ghp_|github_pat_)[A-Za-z0-9_]*/TOKEN/g'
+
+اختم بسطر واحد: PUSH_OK ثم انسخ لي فقرة الخطوة التالية الوحيدة كما كتبتها في التقرير.
