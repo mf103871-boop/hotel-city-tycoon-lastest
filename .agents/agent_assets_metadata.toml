@@ -135,3 +135,59 @@ storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/conversation:7265426e-
 storage_version_token = "1788250360731749"
 content_type = "application/octet-stream"
 source_uri = "file://hotel-city-tycoon-HC-P0-S2E.zip"
+
+[[outputs]]
+id = "g7PHTnSruO2t3UVniAhJa"
+uri = "file://hotel-city-tycoon/docs/HC-P1-S1-PLACEMENT-DECISION.md"
+type = "text"
+title = "HC-P1-S1 Placement Decision"
+description = "قرار نموذج موضع قطع الديكور وشبكة anchors وخطة الحفظ والهجرة."
+logical_id = "17051649-07e0-48f7-addb-dde0970325f5"
+content_hash = "sha256:903b74dfda8504cf996adac545c8cbeb4bc42a0e6777af05aab5608c3d73ff11"
+size = 18458
+mtime_ms = 1788363329390
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:48c85c8f-a3e9-4d09-abd9-0bedf15851a3/17051649-07e0-48f7-addb-dde0970325f5/83d22743-100e-4a71-9a8e-f26b54c865b2"
+storage_version_token = "1788373248722567"
+content_type = "text/markdown"
+
+[[outputs]]
+id = "bh-q4B3grq1rz53KezSim"
+uri = "file://hotel-city-tycoon/docs/ASSET_REQUEST-ART-1.md"
+type = "text"
+title = "ART-1 Technical Asset Request"
+description = "طلب الأصول التقني لغرفة economy وعشر قطع ديكور، بحالة REQUESTED."
+logical_id = "64b6e0e1-33df-44ca-babb-874010cded1c"
+content_hash = "sha256:e704ab33051ded55e778839a21221e38a3dd0a88fc7b8fca5a3f885fb9666cf0"
+size = 12893
+mtime_ms = 1788363378274
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:48c85c8f-a3e9-4d09-abd9-0bedf15851a3/64b6e0e1-33df-44ca-babb-874010cded1c/0aa085fe-6670-479c-8a03-77e6979ab95f"
+storage_version_token = "1788373249996188"
+content_type = "text/markdown"
+
+[[outputs]]
+id = "8XwS2eAgZApDr_5ec8yiq"
+uri = "file://hotel-city-tycoon/docs/HC-P1-S1-REPORT.md"
+type = "text"
+title = "HC-P1-S1 Report"
+description = "تقرير الفحص والنتائج والاختبارات الخاصة بالخطوة HC-P1-S1."
+logical_id = "c38593cc-f5db-43db-aa41-7e7281e7792d"
+content_hash = "sha256:2e76ae4287b164f9db956e92eb380dc69d82e4b90fc91b95f414e83813997cb0"
+size = 7034
+mtime_ms = 1788363445386
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:48c85c8f-a3e9-4d09-abd9-0bedf15851a3/c38593cc-f5db-43db-aa41-7e7281e7792d/8b2b0bed-0bc8-492d-bbe6-0f0d6877f040"
+storage_version_token = "1788373251246359"
+content_type = "text/markdown"
+
+[[outputs]]
+id = "_s6Zyr4o3BJi0sIlq7Qg6"
+uri = "file://hotel-city-tycoon/docs/HOTEL_CITY_MASTER_REFERENCE_AR.md"
+type = "text"
+title = "Hotel City Master Reference"
+description = "المرجع الرئيسي المحدث مع حالة P1 والقرار DEC-010."
+logical_id = "323b7d0e-39b2-4506-b6eb-d343af71fcdd"
+content_hash = "sha256:42dfc429e5637436f29ef9382eb8591dbffdc64338d1c98d528f880b5e05e39c"
+size = 55379
+mtime_ms = 1788363397462
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:48c85c8f-a3e9-4d09-abd9-0bedf15851a3/323b7d0e-39b2-4506-b6eb-d343af71fcdd/bc4da4e2-8781-4e97-8a96-ee6a38cc4ecd"
+storage_version_token = "1788373252455708"
+content_type = "text/markdown"
