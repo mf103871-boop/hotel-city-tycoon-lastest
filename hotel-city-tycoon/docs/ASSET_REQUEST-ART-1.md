@@ -1,6 +1,6 @@
 # ASSET_REQUEST-ART-1 — غرفة economy وحزمة ديكور أولية
 
-- **الحالة:** `REQUESTED`
+- **الحالة:** `DELIVERED` — سُلّمت ودُمجت 03-09-2026؛ انظر `docs/ART-1-VERIFY-MERGE-REPORT.md` و`docs/ART-1_METADATA.md`
 - **المالك الفني للأصول والأنيميشن:** Codex
 - **مالك المواصفة والدمج البرمجي:** Fable
 - **المرحلة:** HC-P1-S1
