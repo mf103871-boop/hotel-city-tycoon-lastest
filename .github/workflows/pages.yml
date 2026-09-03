@@ -1,0 +1,52 @@
+name: pages
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - hotel-city-tycoon/**
+      - .github/workflows/pages.yml
+# The site is one build of one branch: let a running deploy finish rather than
+# cancelling it, or a half-uploaded artifact becomes the live site.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+defaults:
+  run:
+    working-directory: hotel-city-tycoon
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: configure pages
+        uses: actions/configure-pages@v5
+        with:
+          # Turns Pages on for this repository the first time, so nobody has to
+          # find the setting by hand.
+          enablement: true
+      - name: install deps
+        run: npm ci --no-audit --no-fund
+      - name: build for the repository subpath
+        # A project site is served from /<repo>/, so the bundle, the service
+        # worker and every asset URL have to be built against that prefix —
+        # BASE_PATH is what vite.config.ts reads for it. Everything else in the
+        # app resolves through import.meta.env.BASE_URL, so nothing else needs
+        # to know where the game is deployed.
+        run: BASE_PATH="/${{ github.event.repository.name }}/" npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: hotel-city-tycoon/dist
+      - id: deploy
+        uses: actions/deploy-pages@v4

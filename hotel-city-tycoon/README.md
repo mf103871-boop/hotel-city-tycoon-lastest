@@ -12,6 +12,13 @@ as `HC-P{phase}-S{step}-REPORT.md`.
 
 ---
 
+## Play it
+
+**https://mf103871-boop.github.io/hotel-city-tycoon-lastest/** — built from `main`
+on every change and installable on a phone. `docs/DEPLOY-PAGES.md` covers the
+deploy, the `BASE_PATH` a project site needs, and the `?debug=1` / `?fresh=1`
+handles.
+
 ## Run it
 
 ```bash
