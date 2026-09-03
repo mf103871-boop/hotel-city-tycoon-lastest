@@ -91,6 +91,43 @@ export function decorBandFor(category: string | null): DecorBand {
 }
 
 /**
+ * Categories that are a SURFACE rather than a thing standing on one.
+ *
+ * A wallpaper is the wall's finish and a flooring is the floor's; neither is
+ * an object at a coordinate. The delivered art says so plainly — measured,
+ * `wallpaper_plain.png` is opaque across its whole canvas (alpha 238-255) and
+ * `flooring_concrete.png` is a tiling pattern that fills its own (alpha
+ * 79-255), while every other piece has a real transparent surround. Drawn as
+ * point sprites they read as a blank panel hung on the wall and a paving slab
+ * dropped on the floor, which is exactly what they looked like.
+ *
+ * So they are drawn as a fill over their band instead, tiled at 1:1. The
+ * anchor a surface carries is meaningless and kept only so the save format,
+ * the decor meter and the slot accounting do not have to change.
+ */
+const DECOR_SURFACE = new Set(['wallpaper', 'flooring']);
+
+export function isDecorSurface(category: string | null): boolean {
+  return !!category && DECOR_SURFACE.has(category);
+}
+
+/** The rectangle a surface finish covers: its whole band, inside the frame. */
+export function surfaceRectFor(
+  bands: RoomBands,
+  category: string | null,
+): { x: number; y: number; w: number; h: number } {
+  const wall = decorBandFor(category) === 'wall';
+  const top = wall ? bands.ceilingBottom : bands.floorTop;
+  const bottom = wall ? bands.wallBottom : bands.floorBottom;
+  return {
+    x: bands.inset,
+    y: top,
+    w: Math.max(0, bands.width - bands.inset * 2),
+    h: Math.max(0, bottom - top + 1),
+  };
+}
+
+/**
  * A piece's drawn width in whole anchor units — how far apart two of them have
  * to sit before they read as two things rather than one smudge.
  */

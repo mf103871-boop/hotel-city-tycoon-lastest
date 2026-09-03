@@ -7,11 +7,11 @@
  * stood in for decor until ART-1 arrived — and it is why a file that fails to
  * load costs a picture rather than the room.
  */
-import { Container, Graphics, Sprite, Text } from 'pixi.js';
+import { Container, Graphics, Sprite, Text, TilingSprite } from 'pixi.js';
 import { texture, assetGeneration } from './assets.ts';
 import type { Rect } from '../core/state/grid.ts';
 import { roomWorldRect, BLOCK_W, BLOCK_H, orderDecor } from './layout.ts';
-import { resolveDecorRect } from '../core/systems/decorPlacement.ts';
+import { resolveDecorRect, isDecorSurface, surfaceRectFor } from '../core/systems/decorPlacement.ts';
 import type { RoomBands } from '../core/systems/decorPlacement.ts';
 
 /** Category colours, chosen to read at a glance while zoomed out. */
@@ -195,7 +195,37 @@ export class RoomView extends Container {
    */
   private drawDecor(pieces: RoomViewDecorItem[], bands: RoomBands): void {
     this.decorLayer.removeChildren();
+
+    /*
+     * Surface finishes first, and as a fill rather than a sprite.
+     *
+     * A wallpaper is the wall's finish, not an object hung on it, and the art
+     * was drawn that way — a swatch that fills its own canvas edge to edge.
+     * Blitting that at 53x40 in the middle of a 124x54 wall is what made it
+     * read as a blank panel. Tiled across the band at 1:1 it reads as what it
+     * is. Only the topmost of each kind is drawn: stacking four wallpapers
+     * paints the same region four times, and one of them is enough.
+     */
+    for (const kind of ['wallpaper', 'flooring']) {
+      const piece = pieces.filter((p) => p.category === kind).sort((a, b) => a.zBias - b.zBias).pop();
+      if (!piece) continue;
+      const art = piece.assetKey ? texture(piece.assetKey) : null;
+      if (!art) continue;
+      const rect = surfaceRectFor(bands, piece.category);
+      if (rect.w <= 0 || rect.h <= 0) continue;
+      const fill = new TilingSprite({ texture: art, width: rect.w, height: rect.h });
+      fill.position.set(rect.x, rect.y);
+      /*
+       * A floor swatch is phased from the BOTTOM of its band and a wall swatch
+       * from the top, so the edge of the pattern that meets the room's own trim
+       * is the edge the artist drew as an edge.
+       */
+      if (kind === 'flooring') fill.tilePosition.y = rect.h % art.height;
+      this.decorLayer.addChild(fill);
+    }
+
     for (const piece of orderDecor(pieces)) {
+      if (isDecorSurface(piece.category)) continue;
       /*
        * The rectangle comes from the placement rules, not from the stored
        * anchor directly.
