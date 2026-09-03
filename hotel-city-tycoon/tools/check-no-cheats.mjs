@@ -11,7 +11,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const DIST = 'dist';
-const FORBIDDEN = ['__hct', 'VITE_E2E'];
+// The third is the error boundary's test-only trip wire, gated the same way.
+const FORBIDDEN = ['__hct', 'VITE_E2E', 'hct-force-error'];
 
 if (!fs.existsSync(DIST)) {
   console.error('dist/ not found — run `npm run build` first');

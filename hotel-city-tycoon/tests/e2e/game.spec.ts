@@ -14,6 +14,7 @@
  */
 import { test, expect } from '@playwright/test';
 import type { Page, ConsoleMessage } from '@playwright/test';
+import { tapRoom } from './rooms.ts';
 
 const NO_3D = process.env.PLAYWRIGHT_EXTRA_ARGS?.includes('--disable-3d-apis') ?? false;
 
@@ -154,12 +155,10 @@ test('tapping a room opens its sheet, and decorating moves the meter', async ({ 
   // unreachable through the UI for four phases.
   await bootFresh(page);
 
-  const canvas = page.locator('canvas');
-  const box = await canvas.boundingBox();
-  expect(box, 'there is no canvas to tap').toBeTruthy();
-
-  // The starting rooms sit along the bottom of the plot, near the middle.
-  await canvas.click({ position: { x: box!.width * 0.5, y: box!.height * 0.62 } });
+  // Where the renderer says a room is, not a coordinate that held on one
+  // viewport: on the phone profile the old fixed point missed every room.
+  const tapped = await tapRoom(page);
+  expect(tapped, 'no room is on screen to tap').toBeTruthy();
 
   const sheet = page.locator('section').filter({ hasText: /decor/i }).first();
   await expect(sheet, 'tapping a room opened nothing').toBeVisible({ timeout: 5000 });
@@ -212,7 +211,10 @@ test('characters are drawn, not left as placeholder shapes', async ({ page }) =>
   await page.getByRole('button', { name: /hours/i }).first().click();
   await page.waitForTimeout(8000);
 
-  const gaps = messages.find((m) => /\[assets\].*missing overall/.test(m.text()));
+  // The message the game actually prints ("N of M declared textures missing").
+  // This looked for "missing overall", a phrase no source line has ever
+  // contained, so it could not fail and the two capsule staff went unnoticed.
+  const gaps = messages.find((m) => /\[assets\].*declared textures missing/.test(m.text()));
   expect(gaps?.text(), 'textures were missing after every bundle loaded').toBeUndefined();
 
   const characterFailures = messages.find((m) => /bundle "characters".*missing/.test(m.text()));
@@ -276,15 +278,18 @@ test('a render error shows a recovery screen, not a blank page', async ({ page }
   // Without a boundary, one thrown error emptied the page and the player saw
   // what looked exactly like having lost their hotel.
   await bootFresh(page);
+  // The boundary listens for this in a VITE_E2E build only (which is what the
+  // web server here starts) and renders a child that throws, so the real
+  // catch path runs. The event used to have no listener at all, and the test
+  // then asserted the canvas was still there — which it always was.
   await page.evaluate(() => {
-    // Force React to throw on its next render.
-    const root = document.getElementById('root');
-    if (root) root.dispatchEvent(new Event('hct-force-error'));
-    throw new Error('deliberate');
-  }).catch(() => { /* the throw is the point */ });
+    document.getElementById('root')?.dispatchEvent(new Event('hct-force-error'));
+  });
 
-  // The game itself must still be standing.
-  await expect(page.locator('canvas')).toBeVisible();
+  // The recovery screen, with the save offered before anything else.
+  await expect(page.getByRole('heading', { name: /something broke/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /download my hotel/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^reload$/i })).toBeVisible();
 });
 
 test('the game starts even when storage is unavailable', async ({ page }) => {
@@ -478,7 +483,8 @@ test('the hotel cannot be dragged off screen', async ({ page }) => {
     await page.mouse.move(box.x + box.width * 0.95, box.y + box.height * 0.95, { steps: 8 });
     await page.mouse.up();
   }
-  await canvas.click({ position: { x: box.width * 0.5, y: box.height * 0.62 } });
-  // Either a room sheet opened, or the tap missed — but the page must be alive.
+  // The clamp must have kept a room on screen; tapping it must still work.
+  const tapped = await tapRoom(page);
+  if (tapped) await expect(page.locator('section[role="dialog"]')).toBeVisible();
   await expect(page.locator('canvas')).toBeVisible();
 });

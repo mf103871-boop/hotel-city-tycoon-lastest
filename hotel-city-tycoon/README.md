@@ -15,7 +15,7 @@ as `HC-P{phase}-S{step}-REPORT.md`.
 ## Run it
 
 ```bash
-npm install          # or: pnpm install
+npm ci                    # one lockfile, package-lock.json (npm), generated on Node 22
 npm run validate:data     # must pass before anything else
 npm run dev
 ```
@@ -37,7 +37,9 @@ Replit's package firewall blocks some published versions; `vitest` is pinned to
 | `npm run typecheck` | `tsc` in strict mode. |
 | `npm run lint` | ESLint, including the layer-boundary rules. |
 | `npm run test:logic` | Vitest unit tests. |
-| `npm run build` | Validate → typecheck → Vite build. |
+| `npm run verify` | Data → typecheck → lint → unit tests → the headless self-test suite. |
+| `npm run test:e2e` | Playwright, desktop and phone projects. On a machine without a GPU run it the way CI does (see `docs/CI-E2E.md`). |
+| `npm run build` | Validate → typecheck → Vite build → stamp the service worker → budget and cheat checks. |
 
 ---
 
@@ -62,20 +64,22 @@ deterministic, testable, replayable, and portable to a server later.
 
 ```
 data/          balance data — the source of truth
-src/core/      pure simulation (empty until P2)
+src/core/      pure simulation: deterministic, no Pixi, React, DOM or clock
 src/data/      Zod schemas + typed access to data/
-src/render/    Pixi canvas (P3)
-src/bridge/    core ↔ React (P2/P3)
-src/ui/        React HUD
-src/save/      IndexedDB + migrations (P6)
-tools/         validators and the balance simulator
+src/render/    Pixi v8 canvas: camera, culling, pools, gestures, characters
+src/bridge/    core ↔ React: engine, store, selectors, notifications
+src/ui/        React HUD, sheets, settings
+src/save/      IndexedDB + migrations + export/import
+src/audio/     WebAudio, one manager
+public/assets/ art, audio and manifest.json (regenerate with gen:assets)
+tools/         generators, validators, balance simulators, the self-test suite
 tests/         unit / determinism / e2e
 ```
 
 ## Asset key convention
 
-Art is wired in at P3, but every data record already carries the key it will
-load:
+Every data record carries the key of the art it loads, and the manifest and
+loader resolve it:
 
 | Kind | Pattern | Example |
 |---|---|---|
@@ -89,4 +93,4 @@ load:
 Room variants: `base`, `night`, `dirty`, `pest`, `thumb`.
 Character variants: `idle`, `walk`, `work`/`sleep`, `happy`, `angry`, `thumb`.
 
-The validator rejects any malformed key, so P3 can trust every key it reads.
+The validator rejects any malformed key, so the loader can trust every key it reads.

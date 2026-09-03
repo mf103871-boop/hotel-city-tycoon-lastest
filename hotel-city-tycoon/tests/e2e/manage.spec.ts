@@ -10,6 +10,7 @@
  */
 import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { tapRoom, emptySquares } from './rooms.ts';
 
 /** A clean hotel, with enough money and level to reach every control. */
 /** Wipes the save once per test — not on every navigation, or a reload test wipes its own evidence. */
@@ -88,12 +89,14 @@ test('an expansion that cannot be afforded explains itself and stays open', asyn
   }
   await openManage(page);
 
-  // A fresh hotel cannot afford the next plot; the row must say so and the
-  // sheet must still be there afterwards.
+  // A fresh hotel cannot take the next plot; the row must say why and the
+  // sheet must still be there afterwards. The first expansion is gated on
+  // level 3 before it is gated on coins (plots.json), so the reason a fresh
+  // level-1 hotel sees is the level, not the price.
   const plot = page.getByTestId('manage-plot');
   await expect(plot).toBeVisible();
   await expect(plot.getByRole('button').first()).toBeDisabled();
-  await expect(plot.getByText('Not enough coins', { exact: true })).toBeVisible();
+  await expect(plot.getByText(/^(Not enough coins|Unlocks at level \d+)$/)).toBeVisible();
   await expect(page.getByTestId('manage-tab-plot')).toBeVisible();
 });
 
@@ -111,7 +114,7 @@ test('a room can be moved to a valid square', async ({ page }) => {
   await page.keyboard.press('Escape').catch(() => {});
   await page.getByRole('button', { name: '✕' }).first().click();
 
-  await page.locator('canvas').click({ position: { x: 120, y: 260 } });
+  await tapRoom(page);
   const move = page.getByTestId('room-move');
   if (!(await move.isVisible().catch(() => false))) test.skip(true, 'no room under that tap');
   await move.click();
@@ -119,9 +122,9 @@ test('a room can be moved to a valid square', async ({ page }) => {
   await expect(page.getByTestId('placement-bar')).toBeVisible();
   await expect(page.getByTestId('placement-status')).toHaveAttribute('data-valid', 'none');
 
-  // Tap around until the preview reports a square that fits.
-  for (const x of [60, 180, 260, 320]) {
-    await page.locator('canvas').click({ position: { x, y: 200 } });
+  // Tap the free rows above the rooms until the preview reports a square that fits.
+  for (const p of await emptySquares(page)) {
+    await page.mouse.click(p.x, p.y);
     if (await page.getByTestId('placement-status').getAttribute('data-valid') === 'yes') break;
   }
   await expect(page.getByTestId('placement-status')).toHaveAttribute('data-valid', 'yes');
@@ -131,14 +134,14 @@ test('a room can be moved to a valid square', async ({ page }) => {
 
 test('the placement preview refuses a square that does not fit', async ({ page }) => {
   await bootRich(page);
-  await page.locator('canvas').click({ position: { x: 120, y: 260 } });
+  await tapRoom(page);
   const move = page.getByTestId('room-move');
   if (!(await move.isVisible().catch(() => false))) test.skip(true, 'no room under that tap');
   await move.click();
 
-  // The lobby sits at the bottom left; tapping it should read as blocked and
-  // Confirm must stay disabled.
-  await page.locator('canvas').click({ position: { x: 20, y: 300 } });
+  // Tapping an occupied square — the room itself — should read as blocked
+  // and Confirm must stay disabled.
+  await tapRoom(page);
   const status = page.getByTestId('placement-status');
   if (await status.getAttribute('data-valid') === 'no') {
     await expect(page.getByTestId('placement-confirm')).toBeDisabled();
@@ -151,7 +154,7 @@ test('the placement preview refuses a square that does not fit', async ({ page }
 
 test('a room can be stored and put back, keeping what was in it', async ({ page }) => {
   await bootRich(page);
-  await page.locator('canvas').click({ position: { x: 120, y: 260 } });
+  await tapRoom(page);
   const store = page.getByTestId('room-store');
   if (!(await store.isVisible().catch(() => false))) test.skip(true, 'the tapped room cannot be stored');
   await store.click();
@@ -164,8 +167,8 @@ test('a room can be stored and put back, keeping what was in it', async ({ page 
   await placeBack.click();
 
   await expect(page.getByTestId('placement-bar')).toBeVisible();
-  for (const x of [60, 180, 260, 320]) {
-    await page.locator('canvas').click({ position: { x, y: 200 } });
+  for (const p of await emptySquares(page)) {
+    await page.mouse.click(p.x, p.y);
     if (await page.getByTestId('placement-status').getAttribute('data-valid') === 'yes') break;
   }
   await page.getByTestId('placement-confirm').click();
@@ -179,7 +182,7 @@ test('an occupied or dirty room offers no Store button at all', async ({ page })
   await page.getByRole('button', { name: /open hotel/i }).click();
   await page.getByRole('button', { name: /hours/i }).first().click().catch(() => {});
   await page.waitForTimeout(3000);
-  await page.locator('canvas').click({ position: { x: 120, y: 260 } });
+  await tapRoom(page);
   const sheet = page.getByTestId('room-store');
   const visible = await sheet.isVisible().catch(() => false);
   if (visible) {
@@ -194,16 +197,23 @@ test('an occupied or dirty room offers no Store button at all', async ({ page })
 test('decor can be removed, appears in the inventory, and goes back for free',
   async ({ page }) => {
     await bootRich(page);
-    await page.locator('canvas').click({ position: { x: 120, y: 260 } });
+    await tapRoom(page);
     const decorate = page.getByRole('button', { name: /decorate|زيّن/i });
     if (!(await decorate.isVisible().catch(() => false))) test.skip(true, 'no decorable room');
     await decorate.click();
-    await page.getByRole('button').nth(2).click();
-
-    await page.locator('canvas').click({ position: { x: 120, y: 260 } });
+    // The first piece that can be placed: catalogue rows carry "+N · x% of
+    // meter". (`getByRole('button').nth(2)` was the third button on the whole
+    // page — a HUD control under the sheet — and this test never got this far
+    // while its fixed tap coordinate missed every room.)
+    await page.locator('section[role="dialog"] button:enabled').filter({ hasText: /\+\d+/ }).first().click();
+    // Back to the room's overview, where what was placed is listed.
+    await page.getByRole('button', { name: '✕' }).first().click();
     const placed = page.getByTestId('placed-decor');
     await expect(placed).toBeVisible();
     await placed.getByRole('button').first().click();
+    // The room sheet covers the bottom bar; close it before reaching for Manage.
+    await page.getByRole('button', { name: '✕' }).first().click();
+    await expect(page.locator('section[role="dialog"]')).toHaveCount(0);
 
     await openManage(page);
     await page.getByTestId('manage-tab-decor').click();
@@ -214,13 +224,15 @@ test('decor can be removed, appears in the inventory, and goes back for free',
 
 test('an unplaced piece can be sold, and asks first', async ({ page }) => {
   await bootRich(page);
-  await page.locator('canvas').click({ position: { x: 120, y: 260 } });
+  await tapRoom(page);
   const decorate = page.getByRole('button', { name: /decorate|زيّن/i });
   if (!(await decorate.isVisible().catch(() => false))) test.skip(true, 'no decorable room');
   await decorate.click();
-  await page.getByRole('button').nth(2).click();
-  await page.locator('canvas').click({ position: { x: 120, y: 260 } });
+  await page.locator('section[role="dialog"] button:enabled').filter({ hasText: /\+\d+/ }).first().click();
+  await page.getByRole('button', { name: '✕' }).first().click();
   await page.getByTestId('placed-decor').getByRole('button').first().click();
+  await page.getByRole('button', { name: '✕' }).first().click();
+  await expect(page.locator('section[role="dialog"]')).toHaveCount(0);
 
   await openManage(page);
   await page.getByTestId('manage-tab-decor').click();

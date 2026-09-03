@@ -21,13 +21,42 @@ interface Props {
 interface State {
   error: Error | null;
   info: string | null;
+  /** Set by the browser test to make a child throw on the next render. */
+  detonate: boolean;
+}
+
+/** Throws the moment it renders. Mounted only when the test asks for it. */
+function Detonator(): never {
+  throw new Error('forced by the browser test');
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  override state: State = { error: null, info: null };
+  override state: State = { error: null, info: null, detonate: false };
 
   static getDerivedStateFromError(error: Error): Partial<State> {
     return { error };
+  }
+
+  override componentDidMount(): void {
+    /*
+     * The browser test's way of tripping this boundary.
+     *
+     * Gated at build time like the e2e handle: in a shipped bundle this block
+     * is dead code and the minifier removes it, and `check:cheats` fails the
+     * build if the event name survives. The test used to dispatch this event
+     * with nothing listening, and then asserted the canvas was still there —
+     * which it always was.
+     */
+    if (import.meta.env.VITE_E2E === '1') {
+      document.getElementById('root')?.addEventListener('hct-force-error', this.detonate);
+    }
+  }
+
+  override componentWillUnmount(): void {
+    // Gated too, or the event name alone survives into the bundle.
+    if (import.meta.env.VITE_E2E === '1') {
+      document.getElementById('root')?.removeEventListener('hct-force-error', this.detonate);
+    }
   }
 
   override componentDidCatch(error: Error, info: ErrorInfo): void {
@@ -36,6 +65,10 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error('[hotel-city-tycoon] interface error', error, info.componentStack);
     this.setState({ info: info.componentStack ?? null });
   }
+
+  private detonate = (): void => {
+    this.setState({ detonate: true });
+  };
 
   private exportSave = (): void => {
     try {
@@ -54,8 +87,15 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   override render(): ReactNode {
-    const { error, info } = this.state;
-    if (!error) return this.props.children;
+    const { error, info, detonate } = this.state;
+    if (!error) {
+      return (
+        <>
+          {this.props.children}
+          {detonate && <Detonator />}
+        </>
+      );
+    }
 
     return (
       <div className="flex h-full items-center justify-center bg-ink-950 px-6">

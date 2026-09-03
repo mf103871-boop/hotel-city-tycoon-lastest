@@ -2,6 +2,24 @@ import { defineConfig, devices } from '@playwright/test';
 
 const PORT = Number(process.env.PORT ?? 5000);
 
+/*
+ * One launchOptions object, built from every guard that contributes to it.
+ *
+ * Each guard used to spread its own `launchOptions`, and a later spread
+ * replaced the earlier one wholesale: setting PLAYWRIGHT_EXTRA_ARGS together
+ * with PLAYWRIGHT_CHROMIUM_PATH dropped the executable path and Playwright
+ * went looking for a browser it had never downloaded.
+ */
+const extraArgs = process.env.PLAYWRIGHT_EXTRA_ARGS?.split(' ').filter(Boolean) ?? [];
+const args = [
+  ...(process.env.PLAYWRIGHT_DISABLE_DEV_SHM === '1' || extraArgs.length > 0 ? ['--disable-dev-shm-usage'] : []),
+  ...extraArgs,
+];
+const launchOptions = {
+  ...(process.env.PLAYWRIGHT_CHROMIUM_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH } : {}),
+  ...(args.length > 0 ? { args } : {}),
+};
+
 /**
  * Two projects on purpose.
  *
@@ -23,20 +41,12 @@ export default defineConfig({
     ...(process.env.PLAYWRIGHT_NO_CAPTURE === '1'
       ? { trace: 'off', screenshot: 'off', video: 'off' }
       : {}),
-    ...(process.env.PLAYWRIGHT_CHROMIUM_PATH
-      ? { launchOptions: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH } }
-      : {}),
-    ...(process.env.PLAYWRIGHT_DISABLE_DEV_SHM === '1'
-      ? { launchOptions: { args: ['--disable-dev-shm-usage'] } }
-      : {}),
+    ...(Object.keys(launchOptions).length > 0 ? { launchOptions } : {}),
     ...(process.env.PLAYWRIGHT_FULL_CHROMIUM === '1'
       ? { channel: 'chromium' }
       : {}),
     ...(process.env.PLAYWRIGHT_HEADED === '1'
       ? { headless: false }
-      : {}),
-    ...(process.env.PLAYWRIGHT_EXTRA_ARGS
-      ? { launchOptions: { args: ['--disable-dev-shm-usage', ...process.env.PLAYWRIGHT_EXTRA_ARGS.split(' ')] } }
       : {}),
   },
   projects: [
@@ -57,8 +67,9 @@ export default defineConfig({
     url: `http://127.0.0.1:${PORT}`,
     // Never reuse: a server already running without VITE_E2E has no test
     // handle, and every assertion that reads state would fail for a reason
-    // that has nothing to do with the game.
-    reuseExistingServer: true,
+    // that has nothing to do with the game. (This said `true` under the same
+    // comment for a while.)
+    reuseExistingServer: false,
     timeout: 120_000,
   },
 });

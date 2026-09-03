@@ -12,8 +12,9 @@
 
 - يعمل تلقائيًا عند push إلى `main`.
 - يمكن تشغيله يدويًا عبر `workflow_dispatch`.
-- يستخدم Ubuntu 24.04 وNode.js 24.
-- ينفذ `npm ci` ثم يثبت Chromium مع اعتمادياته.
+- يستخدم Ubuntu 24.04 وNode.js 22 (الإصدار الذي يعلنه `.replit` والذي وُلّد عليه ملف القفل؛ كان CI على 24 حتى تدقيق 03-09-2026).
+- ينفذ `npm ci` ثم يثبت Chromium مع اعتمادياته. (بين S8 وتدقيق 03-09-2026 كان CI ينفذ `npm install` لأن `npm ci` كان يفشل بـ`EUSAGE` على قفل لا يسجل تبعيات `@tailwindcss/oxide-wasm32-wasi`؛ أُعيد توليد القفل على Node 22 وعاد `npm ci`.)
+- يضبط ثلاثة متغيرات وفق DEC-009: `PLAYWRIGHT_FULL_CHROMIUM=1` و`PLAYWRIGHT_NO_CAPTURE=1` و`PLAYWRIGHT_EXTRA_ARGS=--disable-3d-apis`.
 - يشغل Playwright مع تقرير line.
 - يشغل `tools/baseline-shots.mjs` دائمًا بعد الاختبارات.
 - يرفع artifact باسم `e2e-results` ويضم `test-results/` و`docs/baseline-screens/`.
@@ -53,16 +54,25 @@ git push origin main
 
 ## حراس Playwright
 
-تبقى حراس `playwright.config.ts` خاملة في CI لأن متغيراتها غير مضبوطة هناك. لذلك لا تُستخدم في GitHub Actions:
+حراس `playwright.config.ts` متغيرات بيئة اختيارية. منذ DEC-009 يضبط CI ثلاثة منها (`PLAYWRIGHT_FULL_CHROMIUM=1`، `PLAYWRIGHT_NO_CAPTURE=1`، `PLAYWRIGHT_EXTRA_ARGS=--disable-3d-apis`) ويترك الباقي:
 
-- `PLAYWRIGHT_CHROMIUM_PATH`
-- `PLAYWRIGHT_DISABLE_DEV_SHM`
-- `PLAYWRIGHT_FULL_CHROMIUM`
-- `PLAYWRIGHT_HEADED`
-- `PLAYWRIGHT_NO_CAPTURE`
-- `PLAYWRIGHT_EXTRA_ARGS`
+- `PLAYWRIGHT_CHROMIUM_PATH` — مسار Chromium مثبت مسبقًا بدل تنزيل Playwright.
+- `PLAYWRIGHT_DISABLE_DEV_SHM` — يضيف `--disable-dev-shm-usage`.
+- `PLAYWRIGHT_HEADED` — متصفح مرئي.
 
-يستخدم CI تثبيت Chromium الخاص به وإعداد Playwright العادي. لا تُضاف `--disable-gpu`؛ قرار S2B يمنع استخدامها لأنها كسرت التقاط اللقطات.
+منذ تدقيق 03-09-2026 تُدمج كل الحراس في كائن `launchOptions` واحد؛ قبل ذلك كان ضبط `PLAYWRIGHT_EXTRA_ARGS` مع `PLAYWRIGHT_CHROMIUM_PATH` يُسقط مسار المتصفح. لا تُضاف `--disable-gpu`؛ قرار S2B يمنع استخدامها لأنها كسرت التقاط اللقطات.
+
+## تشغيل مسار CI نفسه محليًا على جهاز بلا GPU
+
+المسار الافتراضي (`npm run test:e2e` بلا متغيرات) يعتمد على WebGL؛ على خادم بلا بطاقة رسوم يشغّل Chromium مصيّرًا برمجيًا (SwiftShader) وتتجمد الصفحة بعد سطر `renderer: webgl` حتى انتهاء المهلة (45 ثانية) في معظم الاختبارات — هذه حالة البيئة لا اللعبة، وقد أُثبت في تدقيق 03-09-2026 أن المسار نفسه مع تعطيل 3D يمر بلا توقف واحد. لذلك على جهاز بلا GPU شغّل دائمًا مسار DEC-009:
+
+```bash
+PLAYWRIGHT_EXTRA_ARGS=--disable-3d-apis PLAYWRIGHT_NO_CAPTURE=1 npx playwright test
+# مع Chromium مثبت مسبقًا (حين يكون تنزيل cdn.playwright.dev محظورًا):
+PLAYWRIGHT_CHROMIUM_PATH=/path/to/chromium PLAYWRIGHT_EXTRA_ARGS=--disable-3d-apis PLAYWRIGHT_NO_CAPTURE=1 npx playwright test --project=phone
+```
+
+الاختبارات التي تحتاج القماشة تتخطى نفسها في هذا المسار (`NO_3D`)؛ ما عداها يقيس الواجهة والمنطق والحفظ كما في CI. اختبارات النقر على الغرف تسأل المصيّر عن مواضع الغرف عبر `window.hct.roomRects()` (`tests/e2e/rooms.ts`) بدل إحداثيات ثابتة.
 
 ## حدود هذه الخطوة
 
