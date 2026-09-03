@@ -52,6 +52,7 @@ function toSnapshot(state: GameState): SceneSnapshot {
         defId: p.defId,
         category: p.category,
         slotType: p.slotType,
+        assetKey: p.assetKey,
         localX: p.localX,
         localY: p.localY,
         flipX: p.flipX,

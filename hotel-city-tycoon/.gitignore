@@ -6,6 +6,7 @@ test-results/
 tsconfig.tsbuildinfo
 *.local
 .DS_Store
+__pycache__/
 
 # public/assets/ is NOT ignored.
 #

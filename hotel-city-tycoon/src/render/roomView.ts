@@ -7,9 +7,13 @@
  * outside this file should need to change when they do.
  */
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
-import { texture, assetGeneration } from './assets.ts';
+import { texture, assetGeneration, entryFor } from './assets.ts';
 import type { Rect } from '../core/state/grid.ts';
 import { roomWorldRect, BLOCK_W, BLOCK_H, anchorToLocalPx } from './layout.ts';
+import {
+  decorArtSpec, decorDrawSize, compareDecorDraw, decorBox, clampDecorBox,
+} from './decorArt.ts';
+import type { DecorBox } from './decorArt.ts';
 
 /** Category colours, chosen to read at a glance while zoomed out. */
 const SHELL = {
@@ -24,13 +28,15 @@ const METER_LOW = 0xf07858;
 const METER_HIGH = 0x7fc4a0;
 
 /**
- * PLACEHOLDER decor colours — a technical stand-in for ART-1
- * (docs/ASSET_REQUEST-ART-1.md, still `REQUESTED`), not a palette decision.
- * §5A forbids Fable from generating final art or letting a placeholder pass
- * as one; nothing here is meant to be read as a finished look. It exists so
- * DEC-010's position/flip/save pipeline can be proven end to end before any
- * art exists. Swapping to `texture(defId's assetKey)` is the follow-up once
- * Codex delivers ART-1.
+ * PLACEHOLDER decor colours — a technical stand-in, not a palette decision.
+ *
+ * Since HC-P1-S4 a piece is drawn with its real ART-1 texture whenever one is
+ * loaded; this box is what the other 67 catalogue entries still get, and what
+ * any piece gets while its bundle is still loading. §5A forbids letting a
+ * placeholder pass as finished art, so it stays a flat labelled box — but it
+ * is now laid out by the same anchor and scale contract as the real sprite
+ * (decorArt.ts), so it stands where its art will stand and takes up the room
+ * its art will take up.
  */
 const DECOR_PLACEHOLDER = {
   wall: 0x6c8ebf,
@@ -40,9 +46,9 @@ const DECOR_PLACEHOLDER = {
 } as const;
 const DECOR_PLACEHOLDER_DEFAULT = 0x8a8478;
 const DECOR_PLACEHOLDER_BORDER = 0x241b14;
-/** Half-extents of the placeholder box, in world pixels. */
-const DECOR_PLACEHOLDER_HALF_W = 12;
-const DECOR_PLACEHOLDER_HALF_H = 9;
+/** Fallback box size when the piece has no manifest entry to size it from. */
+const DECOR_PLACEHOLDER_W = 24;
+const DECOR_PLACEHOLDER_H = 18;
 
 /** One placed decor piece, as RoomView needs it. See RoomSummaryDecor. */
 export interface RoomViewDecorItem {
@@ -50,6 +56,8 @@ export interface RoomViewDecorItem {
   defId: string;
   category: string;
   slotType: string;
+  /** ART-1 art for this piece. Empty or unloaded falls back to the placeholder. */
+  assetKey: string;
   localX: number;
   localY: number;
   flipX: boolean;
@@ -104,7 +112,7 @@ export class RoomView extends Container {
    */
   update(data: RoomViewData, plotHeight: number): void {
     const decorKey = data.decor
-      .map((p) => `${p.id}:${p.localX}:${p.localY}:${p.flipX ? 1 : 0}:${p.zBias}`)
+      .map((p) => `${p.id}:${p.assetKey}:${p.localX}:${p.localY}:${p.flipX ? 1 : 0}:${p.zBias}`)
       .join('|');
     const key = `${assetGeneration()},${data.rect.x},${data.rect.y},${data.rect.w},${data.rect.h},${data.category},` +
       `${data.fill.toFixed(2)},${data.showMeter},${data.hasPest},${data.hasFire},${data.hasGhost},${data.occupants},` +
@@ -134,7 +142,7 @@ export class RoomView extends Container {
       this.shell.roundRect(1, 1, w - 2, h - 2, 6).fill(SHELL[data.category]).stroke({ width: 2, color: BORDER });
     }
 
-    this.drawDecor(data.decor);
+    this.drawDecor(data.decor, w, h);
 
     this.meter.clear();
     if (data.showMeter) {
@@ -179,40 +187,78 @@ export class RoomView extends Container {
   }
 
   /**
-   * PLACEHOLDER decor (see DECOR_PLACEHOLDER above) at each piece's DEC-010
-   * anchor. Rebuilt in full on every dirty update — the catalogue caps a room
-   * at 24 pieces (data/economy.json limits.maxDecorPerRoom), cheap enough
-   * that this does not need RoomView's own texture-reuse tricks.
+   * The room's decor, at each piece's DEC-010 anchor.
+   *
+   * HC-P1-S4: real ART-1 art when the texture is loaded, the labelled
+   * placeholder box when it is not — the catalogue still has 67 pieces Codex
+   * has not drawn. Both paths use the same anchor, scale and ordering
+   * contract (decorArt.ts), so a piece does not jump when its art lands.
+   *
+   * Rebuilt in full on every dirty update — the catalogue caps a room at 24
+   * pieces (data/economy.json limits.maxDecorPerRoom), cheap enough that this
+   * does not need RoomView's own texture-reuse tricks.
    */
-  private drawDecor(pieces: RoomViewDecorItem[]): void {
+  private drawDecor(pieces: RoomViewDecorItem[], roomW: number, roomH: number): void {
     this.decorLayer.removeChildren();
-    // zBias breaks ties among pieces that would otherwise overlap; Pixi
-    // draws children back-to-front in addChild order, so lowest goes first.
-    const ordered = [...pieces].sort((a, b) => a.zBias - b.zBias);
+    // Pixi draws children back-to-front in addChild order, so the comparator's
+    // "lowest first" is literally the draw order.
+    const ordered = [...pieces].sort(compareDecorDraw);
     for (const piece of ordered) {
-      const at = anchorToLocalPx(piece.localX, piece.localY);
-      const box = new Container();
-      box.position.set(at.x, at.y);
-      box.scale.x = piece.flipX ? -1 : 1;
+      const spec = decorArtSpec(piece.category, piece.slotType);
+      const art = piece.assetKey ? texture(piece.assetKey) : null;
+      // Sized from what the manifest declares, not from the texture: a file
+      // that ships one pixel off must not shift the room's layout.
+      const entry = piece.assetKey ? entryFor(piece.assetKey) : undefined;
+      const size = entry
+        ? decorDrawSize(entry.width, entry.height)
+        : art
+          ? decorDrawSize(art.width, art.height)
+          : { w: DECOR_PLACEHOLDER_W, h: DECOR_PLACEHOLDER_H };
+      // A room draws its own decor and nobody else's, whatever anchor an older
+      // save handed it (decorArt.ts's clampDecorBox).
+      const box = clampDecorBox(
+        decorBox(anchorToLocalPx(piece.localX, piece.localY), size, spec),
+        roomW, roomH,
+      );
 
-      const fill = DECOR_PLACEHOLDER[piece.slotType as keyof typeof DECOR_PLACEHOLDER] ?? DECOR_PLACEHOLDER_DEFAULT;
-      const g = new Graphics();
-      g.roundRect(
-        -DECOR_PLACEHOLDER_HALF_W, -DECOR_PLACEHOLDER_HALF_H,
-        DECOR_PLACEHOLDER_HALF_W * 2, DECOR_PLACEHOLDER_HALF_H * 2, 3,
-      ).fill({ color: fill, alpha: 0.85 }).stroke({ width: 1, color: DECOR_PLACEHOLDER_BORDER });
-      box.addChild(g);
+      const holder = new Container();
+      // Mirroring around the box's own centre is what flipX means: the piece
+      // turns in place, it does not slide.
+      holder.position.set(box.left + box.w / 2, box.top + box.h / 2);
+      holder.scale.x = piece.flipX ? -1 : 1;
 
-      const label = new Text({
-        text: piece.category.slice(0, 4).toUpperCase(),
-        style: { fontSize: 7, fill: 0x1a130e, fontFamily: 'system-ui, sans-serif' },
-      });
-      label.resolution = 2;
-      label.anchor.set(0.5);
-      box.addChild(label);
+      if (art) {
+        const sprite = new Sprite(art);
+        sprite.anchor.set(0.5);
+        sprite.width = box.w;
+        sprite.height = box.h;
+        holder.addChild(sprite);
+      } else {
+        holder.addChild(this.decorPlaceholder(piece, box));
+      }
 
-      this.decorLayer.addChild(box);
+      this.decorLayer.addChild(holder);
     }
+  }
+
+  /** The stand-in for a piece with no art, in the box its art will occupy. */
+  private decorPlaceholder(piece: RoomViewDecorItem, box: DecorBox): Container {
+    const holder = new Container();
+    const fill = DECOR_PLACEHOLDER[piece.slotType as keyof typeof DECOR_PLACEHOLDER] ?? DECOR_PLACEHOLDER_DEFAULT;
+    const g = new Graphics();
+    g.roundRect(-box.w / 2, -box.h / 2, box.w, box.h, 3)
+      .fill({ color: fill, alpha: 0.85 })
+      .stroke({ width: 1, color: DECOR_PLACEHOLDER_BORDER });
+    holder.addChild(g);
+
+    const label = new Text({
+      text: piece.category.slice(0, 4).toUpperCase(),
+      style: { fontSize: 7, fill: 0x1a130e, fontFamily: 'system-ui, sans-serif' },
+    });
+    label.resolution = 2;
+    label.anchor.set(0.5);
+    holder.addChild(label);
+    return holder;
   }
 
   reset(): void {
