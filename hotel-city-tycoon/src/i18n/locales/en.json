@@ -359,7 +359,7 @@
   "ui.roomOccupied": "A guest is still inside",
   "ui.rooms": "rooms",
   "ui.save": "save",
-  "ui.saveCorrupt": "That save could not be read. Your old one has been kept.",
+  "ui.saveCorrupt": "Your previous save could not be read by this version, so nothing is saved over it. Reload after updating, or start over from Settings.",
   "ui.saveFailing": "Your progress is not being saved. Export your hotel now to keep it.",
   "ui.sell": "Sell",
   "ui.settings": "Settings",

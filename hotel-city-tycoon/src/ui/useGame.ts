@@ -149,8 +149,20 @@ function boot(): Promise<Booted> {
     }
     // 'empty' is the normal first-run path, not a problem worth reporting.
     const saveProblem = loaded.reason === 'empty' ? null : loaded.reason;
+    /*
+     * A save that exists but could not be used is never written over.
+     *
+     * The fallback hotel used to boot with the full ports, so its first
+     * autosave — thirty seconds later — replaced the player's real save with
+     * an empty one. A newer client's save (a rollback deployment, a second
+     * device on an older build) had not even been quarantined. The fallback
+     * now runs without a persist port: it can be played, and Settings can
+     * still import a file or start over deliberately, but nothing lands on
+     * the old key by accident.
+     */
+    const portsForFallback = saveProblem ? { clock: ports.clock, scheduler: ports.scheduler } : ports;
     return {
-      engine: GameEngine.newGame(data, ports, systemClock.now() >>> 0),
+      engine: GameEngine.newGame(data, portsForFallback, systemClock.now() >>> 0),
       saves: coordinator,
       resumed: false,
       saveProblem,

@@ -181,6 +181,31 @@ await check('a cancelled pointer leaves no state behind', () => {
   eq(g.up(3, { x: 50, y: 50 }).kind, 'tap', 'the tracker did not recover after a cancel');
 });
 
+// ── AUDIT 2026-09-03 (D2): a save written by a newer client was refused
+//    without being quarantined, and the fresh hotel that boot started in its
+//    place autosaved over it within thirty seconds. A rollback deployment
+//    silently erased the player's game.
+await check('a save from a newer client is quarantined, and the key is left alone', async () => {
+  const storage = new MemoryStorage();
+  const raw = JSON.stringify({ format: 1, version: SCHEMA_VERSION + 1, savedAtMs: 5, state: { future: true } });
+  await storage.set(SAVE_KEY, raw);
+  const outcome = await new SaveManager(storage, data).load();
+  assert(!outcome.ok && outcome.reason === 'fromFuture', `expected fromFuture, got ${JSON.stringify(outcome).slice(0, 60)}`);
+  eq(await storage.get('hct:save:quarantine'), raw, 'the newer save was not quarantined');
+  eq(await storage.get(SAVE_KEY), raw, 'load() touched the save key');
+});
+
+await check('a fallback hotel booted over an unusable save has no persist port', () => {
+  // Structural: the boot path lives in a React hook. The fallback engine must
+  // be built from ports that carry no `persist`, or its first autosave lands
+  // on the save it could not read.
+  const boot = fs.readFileSync(path.join('src', 'ui', 'useGame.ts'), 'utf8');
+  assert(/const portsForFallback = saveProblem \? \{ clock: ports\.clock, scheduler: ports\.scheduler \} : ports/.test(boot),
+    'the fallback ports are not stripped of persist when the save could not be used');
+  assert(/GameEngine\.newGame\(data, portsForFallback/.test(boot),
+    'the fallback engine is not built from the stripped ports');
+});
+
 // ── AUDIT 2026-09-03 (D1): Pixi 8 never forwards DOM `pointercancel`, so the
 //    scene's stage listener for it was dead. One OS-cancelled touch left a
 //    finger registered for the rest of the session: every later tap read as

@@ -220,8 +220,11 @@ export function App() {
               </button>
             </div>
           )}
+          {/* Below the Settings gear, not over it: at top-24 this banner sat on
+              the gear with the same z-index and swallowed every tap on it —
+              in exactly the case where Settings is the only way out. */}
           {saveProblem && (
-            <div className="absolute inset-x-3 top-24 z-20 rounded-lg border border-amber-500/30 bg-amber-950/80 px-4 py-3 text-sm text-amber-200">
+            <div className="absolute inset-x-3 top-36 z-20 rounded-lg border border-amber-500/30 bg-amber-950/80 px-4 py-3 text-sm text-amber-200">
               {translate(locale, 'ui.saveCorrupt')}
             </div>
           )}
