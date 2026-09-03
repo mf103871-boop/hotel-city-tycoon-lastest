@@ -137,8 +137,13 @@ export async function loadBundle(
   results.forEach((result, i) => {
     const entry = entries[i];
     if (!entry) return;
-    if (result.status === 'fulfilled') { loaded++; if (result.value.fellBack) fellBack++; }
-    else { missing.add(entry.key); failures.push(entry.key); }
+    if (result.status === 'fulfilled') {
+      loaded++;
+      if (result.value.fellBack) fellBack++;
+      // A view may have asked for this key before the bundle landed. Now that
+      // the file is here, that earlier miss must not outlive it.
+      missing.delete(entry.key);
+    } else { missing.add(entry.key); failures.push(entry.key); }
   });
 
   loadedBundles.add(bundle);
@@ -161,8 +166,20 @@ export async function loadBundle(
 export function texture(key: string): Texture | null {
   if (missing.has(key)) return null;
   const found = Assets.cache.has(key) ? Assets.get<Texture>(key) : null;
-  if (!found) missing.add(key);
-  return found ?? null;
+  if (found) return found;
+  /*
+   * A miss only counts once the key's bundle has actually been loaded.
+   *
+   * The scene draws as soon as the rooms land while the other bundles are
+   * still on their way. Recording those early lookups as "missing" made the
+   * placeholder permanent: the bundle arrived, refreshArt() asked again, and
+   * this function said no without looking. A fresh hotel's two staff were
+   * drawn as capsules for the whole session on every boot. A key the manifest
+   * does not know at all is missing for good and is recorded at once.
+   */
+  const bundle = BY_KEY.get(key)?.bundle;
+  if (bundle === undefined || loadedBundles.has(bundle)) missing.add(key);
+  return null;
 }
 
 export function hasTexture(key: string): boolean {

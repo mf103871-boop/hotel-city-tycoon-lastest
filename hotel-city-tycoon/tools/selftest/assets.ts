@@ -295,6 +295,22 @@ await check('the incident art is drawn, not just shipped (5A)', () => {
     'the climate banner does not show the incident art');
 });
 
+await check('a lookup made before its bundle lands does not poison the key for the session', () => {
+  // AUDIT 2026-09-03 (D8). The scene draws once the rooms land while the other
+  // bundles are still loading; recording those early misses permanently left
+  // a fresh hotel's two staff as capsules on every boot. Structural, since
+  // the loader cannot run headlessly; scratch experiment neg-cache.ts is the
+  // behavioural proof.
+  const loader = fs.readFileSync('src/render/assets.ts', 'utf8');
+  assert(/loadedBundles\.has\(bundle\)/.test(loader),
+    'texture() records a miss before the key\'s bundle has loaded');
+  assert(/missing\.delete\(entry\.key\)/.test(loader),
+    'loadBundle never clears an earlier miss once the file arrives');
+  const characters = fs.readFileSync('src/render/characterView.ts', 'utf8');
+  assert(/walkFramesGeneration/.test(characters),
+    'a walk sheet that was not there yet is cached as absent for ever');
+});
+
 console.log(line);
 if (failures.length === 0) console.log(`  ${passed} checks passed`);
 else { console.log(`  ${passed} passed, ${failures.length} FAILED`); failures.forEach(f => console.log(`    ✗ ${f}`)); }
