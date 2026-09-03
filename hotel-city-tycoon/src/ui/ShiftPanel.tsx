@@ -23,7 +23,7 @@ export function ShiftPanel({ locale, onClose }: { locale: Locale; onClose: () =>
     <Sheet title={t('ui.openHotel')} subtitle={t('ui.shiftHint')} onClose={onClose}>
       {shiftOptions(state).map((option) => {
         const parts = shiftBreakdown(state, option.id);
-        const blocked = !option.unlocked ? t('ui.notUnlocked', { level: '?' })
+        const blocked = !option.unlocked ? t('ui.notUnlocked', { level: option.unlockLevel })
           : !option.affordable ? t('ui.cannotAfford') : null;
         return (
           <OptionRow

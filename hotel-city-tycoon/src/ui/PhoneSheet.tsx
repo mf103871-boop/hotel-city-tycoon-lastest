@@ -60,7 +60,8 @@ export function PhoneSheet({ locale, onClose }: { locale: Locale; onClose: () =>
   return (
     <Sheet title={t('ui.phone')} {...(quiet ? { subtitle: t('ui.allQuiet') } : {})} onClose={onClose}>
       <div className="flex items-center justify-between gap-3 rounded-xl bg-white/[0.04] px-4 py-3">
-        <img src="/assets/effects/ghost.png" alt="" className={`h-8 w-8 shrink-0 ${view.haunted === 0 ? 'opacity-40' : ''}`} />
+        {/* Under the Vite base, like the loader: an absolute /assets/ path 404s on a deployment served under a path prefix. */}
+        <img src={`${import.meta.env.BASE_URL}assets/effects/ghost.png`} alt="" className={`h-8 w-8 shrink-0 ${view.haunted === 0 ? 'opacity-40' : ''}`} />
         <div className="me-auto">
           <div className="font-semibold text-cream-100">{t('ui.ghostbuster')}</div>
           <div className="mt-0.5 text-[12px] text-slate-400">
@@ -79,7 +80,7 @@ export function PhoneSheet({ locale, onClose }: { locale: Locale; onClose: () =>
 
       <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-white/[0.04] px-4 py-3">
         {view.climate
-          ? <img src={`/assets/effects/${view.climate.eventId}.png`} alt="" className="h-8 w-8 shrink-0" />
+          ? <img src={`${import.meta.env.BASE_URL}assets/effects/${view.climate.eventId}.png`} alt="" className="h-8 w-8 shrink-0" />
           : <span className="h-8 w-8 shrink-0" />}
         <div className="me-auto">
           <div className="font-semibold text-cream-100">{t('ui.repairCrew')}</div>

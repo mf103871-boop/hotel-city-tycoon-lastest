@@ -15,6 +15,7 @@ import { GameEngine, fakeClock } from '../../src/bridge/engine.ts';
 import { SaveManager, MemoryStorage, validateState, SAVE_KEY } from '../../src/save/index.ts';
 import { SCHEMA_VERSION } from '../../src/core/state/types.ts';
 import { GestureTracker, TAP_SLOP_PX } from '../../src/render/gestures.ts';
+import { initSelectors, shiftOptions } from '../../src/bridge/selectors.ts';
 
 const data = loadSimData();
 let passed = 0;
@@ -241,6 +242,53 @@ await check('the Upgrades button is hidden while no track can unlock at the leve
   eq(reachable, false, `upgrades.json now reaches the cap (${cap}) — the guard above still holds, this line only documents DEC #14`);
 });
 
+// ── AUDIT 2026-09-03, the small interface defects (D10, D12, D15, D16, D18, D21, D22).
+await check('interface art is addressed under the Vite base, never at an absolute /assets/ path', () => {
+  const offenders = fs.readdirSync(path.join('src', 'ui'))
+    .filter((f) => f.endsWith('.tsx'))
+    .filter((f) => /["'`]\/assets\//.test(fs.readFileSync(path.join('src', 'ui', f), 'utf8')));
+  assert(offenders.length === 0, `absolute /assets/ paths (404 under a path prefix): ${offenders.join(', ')}`);
+});
+
+await check('a locked shift names the level that unlocks it', () => {
+  const panel = fs.readFileSync(path.join('src', 'ui', 'ShiftPanel.tsx'), 'utf8');
+  assert(!/level: '\?'/.test(panel), 'the shift picker still says "Unlocks at level ?"');
+  initSelectors(data);
+  const s = newState();
+  const locked = shiftOptions(s).find((o) => !o.unlocked);
+  assert(locked && locked.unlockLevel > s.player.level, 'shiftOptions carries no usable unlockLevel');
+});
+
+await check('a guest check that found nothing does not swallow the tap on the room', () => {
+  const canvas = fs.readFileSync(path.join('src', 'ui', 'HotelCanvas.tsx'), 'utf8');
+  assert(/nothingFound/.test(canvas), 'HotelCanvas treats every ok TAP_GUEST as handled');
+});
+
+await check('the daily gift is offered whenever it becomes available, not only at boot', () => {
+  const app = fs.readFileSync(path.join('src', 'ui', 'App.tsx'), 'utf8');
+  assert(/\[giftAvailable\]/.test(app), 'the gift effect is still keyed on the boot seed');
+});
+
+await check('the HUD bars respect the safe area and can be measured by the canvas', () => {
+  const hud = fs.readFileSync(path.join('src', 'ui', 'Hud.tsx'), 'utf8');
+  assert(/safe-area-inset-top/.test(hud) && /safe-area-inset-bottom/.test(hud), 'no safe-area padding on the HUD bars');
+  assert(/data-hud="top"/.test(hud) && /data-hud="bottom"/.test(hud), 'the canvas cannot find the HUD bars to measure them');
+  const canvas = fs.readFileSync(path.join('src', 'ui', 'HotelCanvas.tsx'), 'utf8');
+  assert(/setInsets\(/.test(canvas), 'the canvas never hands the HUD height to the camera');
+});
+
+await check('the diagnostics badge follows the document direction so it never covers the gear in Arabic', () => {
+  const badge = fs.readFileSync(path.join('src', 'ui', 'DebugBadge.tsx'), 'utf8');
+  const button = badge.slice(badge.indexOf('<button'), badge.indexOf('>', badge.indexOf('<button')));
+  assert(!/dir="ltr"/.test(button), 'dir="ltr" on the badge button makes start-3 resolve to the left in RTL too');
+});
+
+await check('a sheet is a dialog: labelled, focused on open, closed by Escape', () => {
+  const sheet = fs.readFileSync(path.join('src', 'ui', 'Sheet.tsx'), 'utf8');
+  assert(/role="dialog"/.test(sheet) && /aria-modal="true"/.test(sheet) && /aria-labelledby/.test(sheet), 'the sheet has no dialog semantics');
+  assert(/\.focus\(\)/.test(sheet) && /'Escape'/.test(sheet), 'the sheet neither takes focus nor closes on Escape');
+});
+
 // ── AUDIT 2026-09-03 (D1): Pixi 8 never forwards DOM `pointercancel`, so the
 //    scene's stage listener for it was dead. One OS-cancelled touch left a
 //    finger registered for the rest of the session: every later tap read as
@@ -263,6 +311,19 @@ await check('the scene listens for pointercancel on the canvas itself, not only 
     'no DOM pointercancel listener on the canvas — Pixi will never deliver the stage one');
   assert(/canvas\.addEventListener\(\s*'lostpointercapture'/.test(scene),
     'no lostpointercapture listener on the canvas');
+});
+
+// ── AUDIT 2026-09-03 (D20, found while proving it): a touch tap opened the
+//    room sheet on pointerup, and the browser's synthetic click that follows
+//    a tap then landed on the sheet's backdrop and closed it in the same
+//    instant. On a phone every room read as untappable; a mouse never showed
+//    it. The canvas cancels the touch's default so no click follows a tap.
+await check('a touch tap on the canvas does not click whatever the tap opened', () => {
+  const scene = fs.readFileSync(path.join('src', 'render', 'scene.ts'), 'utf8');
+  const touchend = scene.match(/canvas\.addEventListener\(\s*'touchend'[^;]*;/);
+  assert(touchend, 'no touchend listener on the canvas: the synthetic click after a tap will hit the sheet the tap opened');
+  assert(/preventDefault\(\)/.test(touchend![0]), 'the touchend listener does not cancel the default, so the click still follows');
+  assert(/passive:\s*false/.test(touchend![0]), 'a passive touchend listener cannot cancel the click');
 });
 
 await check('pinch reports a zoom factor and a centre between the fingers', () => {

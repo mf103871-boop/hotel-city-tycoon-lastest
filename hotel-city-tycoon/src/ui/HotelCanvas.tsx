@@ -138,11 +138,23 @@ export function HotelCanvas({ onRoomTap, onEmptyTap, onStats }: HotelCanvasProps
           if (!target) return false;
           // Someone on their way out gets called back; someone resting gets
           // checked on, in case they are the inspector.
-          return target.draggable
-            ? engine.dispatch({ type: 'DRAG_GUEST', guestId: target.id }).ok
-            : engine.dispatch({ type: 'TAP_GUEST', guestId: target.id }).ok;
+          if (target.draggable) return engine.dispatch({ type: 'DRAG_GUEST', guestId: target.id }).ok;
+          const checked = engine.dispatch({ type: 'TAP_GUEST', guestId: target.id });
+          // A check that found nothing (the daily pokes are spent, or the
+          // guest is awake) must not swallow the room underneath: the tap
+          // falls through and opens the room as it would have anyway.
+          return checked.ok && !checked.events.every((e) => e.type === 'nothingFound');
         },
       });
+      // How much of the screen the HUD covers, so the camera can keep the
+      // ground row out from under the bottom bar. Re-measured on resize and
+      // with the stats tick, since the footer grows when the objective card
+      // appears.
+      const hudInsets = () => ({
+        top: document.querySelector('[data-hud="top"]')?.getBoundingClientRect().height ?? 0,
+        bottom: document.querySelector('[data-hud="bottom"]')?.getBoundingClientRect().height ?? 0,
+      });
+      scene.setInsets(hudInsets());
       scene.setSnapshot(toSnapshot(engine.getState()));
       scene.focusHotel();
 
@@ -153,6 +165,7 @@ export function HotelCanvas({ onRoomTap, onEmptyTap, onStats }: HotelCanvasProps
 
       // Twice a second is enough for a readout and costs nothing.
       const statsTimer = setInterval(() => {
+        scene?.setInsets(hudInsets());
         if (!scene || !onStats) return;
         const perf = scene.perfReport(handle.backend);
         onStats({
@@ -177,11 +190,15 @@ export function HotelCanvas({ onRoomTap, onEmptyTap, onStats }: HotelCanvasProps
           return r;
         },
         resetPerf: () => { scene?.frames.reset(); console.log('[perf] sampling restarted'); },
+        // Where the rooms are on screen, so a browser test taps a room rather
+        // than a coordinate that happened to hold on one viewport.
+        roomRects: () => scene?.roomScreenRects() ?? [],
       };
 
       const onResize = () => {
         const next = holder.current?.getBoundingClientRect();
         if (next) scene?.resize({ width: next.width, height: next.height });
+        scene?.setInsets(hudInsets());
       };
       window.addEventListener('resize', onResize);
 

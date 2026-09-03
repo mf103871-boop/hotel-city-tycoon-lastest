@@ -145,6 +145,8 @@ export interface ShiftOption {
   cost: number;
   affordable: boolean;
   unlocked: boolean;
+  /** So a locked shift can say which level unlocks it, not "level ?". */
+  unlockLevel: number;
   nameKey: string;
 }
 
@@ -157,6 +159,7 @@ export function shiftOptions(state: GameState): ShiftOption[] {
       cost,
       affordable: state.player.coins >= cost,
       unlocked: s.unlockLevel <= state.player.level,
+      unlockLevel: s.unlockLevel,
       nameKey: `shift.${s.durationSec / 3600}h`,
     };
   });

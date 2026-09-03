@@ -113,10 +113,13 @@ export function App() {
   const [giftOpen, setGiftOpen] = useState(false);
   const [phoneOpen, setPhoneOpen] = useState(false);
   const state = useGameStore((s) => s.state);
+  // Keyed on availability itself, not on the boot: a session that crosses
+  // the daily reset, or a PWA resumed the next morning, is offered the new
+  // gift the moment it exists rather than after the next reload.
+  const giftAvailable = ready && state !== null && dailyGift(state, state.epochMs).available;
   useEffect(() => {
-    if (!ready || !state) return;
-    if (dailyGift(state, state.epochMs).available) setGiftOpen(true);
-  }, [ready, state?.seed]);
+    if (giftAvailable) setGiftOpen(true);
+  }, [giftAvailable]);
   useEffect(() => {
     onSaveTrouble(() => setSaveTrouble(true));
     return () => onSaveTrouble(null);
@@ -204,7 +207,7 @@ export function App() {
             type="button"
             aria-label="Settings"
             onClick={() => setPanel('settings')}
-            className="absolute end-3 top-24 z-20 rounded-lg border border-white/10 bg-midnight-900/85
+            className="absolute end-3 top-24 z-20 min-h-11 rounded-lg border border-white/10 bg-midnight-900/85
                        px-4 py-2.5 text-sm text-slate-300 backdrop-blur"
           >
             ⚙

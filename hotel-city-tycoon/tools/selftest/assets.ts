@@ -287,11 +287,12 @@ await check('the incident art is drawn, not just shipped (5A)', () => {
     assert(roomView.includes(key), `roomView does not draw ${key}`);
   }
   const phone = fs.readFileSync('src/ui/PhoneSheet.tsx', 'utf8');
-  assert(phone.includes('/assets/effects/ghost.png'), 'the phone sheet does not show the ghost');
-  assert(phone.includes('/assets/effects/${view.climate.eventId}.png'.replace('${view.climate.eventId}', '')) || phone.includes('view.climate.eventId'),
+  // Paths are relative to BASE_URL since the audit (D10), so no leading slash.
+  assert(phone.includes('assets/effects/ghost.png'), 'the phone sheet does not show the ghost');
+  assert(phone.includes('assets/effects/${view.climate.eventId}.png'.replace('${view.climate.eventId}', '')) || phone.includes('view.climate.eventId'),
     'the phone sheet does not show the active weather icon');
   const banner = fs.readFileSync('src/ui/ClimateBanner.tsx', 'utf8');
-  assert(banner.includes('climate.eventId') && banner.includes('/assets/effects/'),
+  assert(banner.includes('climate.eventId') && banner.includes('assets/effects/'),
     'the climate banner does not show the incident art');
 });
 

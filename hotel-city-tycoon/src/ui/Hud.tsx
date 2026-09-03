@@ -55,7 +55,17 @@ export function Hud({
 
   return (
     <>
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-10 p-3">
+      {/*
+        `data-hud` lets the canvas measure how much of the screen the HUD
+        covers, so the camera can keep the hotel out from under it. The
+        safe-area padding keeps the bars clear of a notch or home indicator
+        when the game is installed (viewport-fit=cover, standalone).
+      */}
+      <header
+        data-hud="top"
+        className="pointer-events-none absolute inset-x-0 top-0 z-10 p-3"
+        style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top, 0px))' }}
+      >
         <div className="pointer-events-auto flex items-center gap-4 rounded-xl border border-white/5 bg-midnight-900/85 px-4 py-2.5 backdrop-blur">
           <Readout label={t('ui.coins')} value={coins(locale, state.player.coins)} />
           <Readout label={t('ui.gems')} value={String(state.player.gems)} />
@@ -73,7 +83,11 @@ export function Hud({
         </div>
       </header>
 
-      <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-10 p-3">
+      <footer
+        data-hud="bottom"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-10 p-3"
+        style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
+      >
         {objective}
         <div className="pointer-events-auto rounded-xl border border-white/5 bg-midnight-900/85 px-4 py-3 backdrop-blur">
           {open ? (
