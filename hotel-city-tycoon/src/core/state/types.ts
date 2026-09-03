@@ -28,11 +28,17 @@ import type { RngCursors } from '../rng/index.ts';
  *        whether the hotel was profitable or the player was living on gifts.
  * 12 → 13: the star bonus day. Every star tier has promised a daily payout
  *        since P1 and nothing ever paid it.
+ * 16 → 17: the last original incidents (4C) — see the 16 step below.
+ * 17 → 18: decor gets a place to stand. `slot` said which bucket of the room
+ *        a piece filled and nothing about where it stood, so nothing could
+ *        ever draw it. DEC-010 (docs/HC-P1-S1-PLACEMENT-DECISION.md) adds a
+ *        local anchor (`localX`/`localY`, 16 units per block), one flip axis
+ *        and a draw-order bias; `slot` is untouched.
  *
  * Each step gives an older save the field a fresh game would have started
  * with, so migrating never costs a player anything.
  */
-export const SCHEMA_VERSION = 17;
+export const SCHEMA_VERSION = 18;
 
 // ---------------------------------------------------------------- pieces
 
@@ -41,8 +47,19 @@ export interface PlacedDecor {
   id: string;
   /** Points at decor.json items[]. */
   defId: string;
-  /** Which slot in the room it occupies. */
+  /** Which slot in the room it occupies. Ownership/uniqueness bookkeeping only. */
   slot: number;
+  /**
+   * Position within the room, in anchor units (16 per block; DEC-010).
+   * Relative to the room's own top-left, independent of the room's size or
+   * the camera. Always in bounds for the room's current footprint.
+   */
+  localX: number;
+  localY: number;
+  /** The only orientation change allowed (DEC-010): no free rotation. */
+  flipX: boolean;
+  /** Draw-order tiebreaker among decor in the same room; 0 is the default. */
+  zBias: number;
 }
 
 export interface RoomInstance {

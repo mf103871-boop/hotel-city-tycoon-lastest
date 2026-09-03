@@ -44,6 +44,7 @@ let injected: SimData | null = null;
 export function initSelectors(simulationData: SimData): void {
   injected = simulationData;
   roomIndex = null;
+  decorIndex = null;
 }
 
 function D(): SimData {
@@ -59,6 +60,26 @@ export function simData(): SimData {
 }
 
 // ---------------------------------------------------------------- hotel
+
+/**
+ * One placed decor piece, as the renderer needs to see it (DEC-010).
+ *
+ * `category`/`slotType` travel with the piece rather than making RoomView
+ * look them up, for the same reason RoomSummary itself carries `assetKey`
+ * instead of a bare defId: the render layer reads state, it does not query
+ * the data tables.
+ */
+export interface RoomSummaryDecor {
+  id: string;
+  defId: string;
+  category: string;
+  slotType: string;
+  /** Anchor units (16 per block) from the room's own top-left. */
+  localX: number;
+  localY: number;
+  flipX: boolean;
+  zBias: number;
+}
 
 export interface RoomSummary {
   id: string;
@@ -78,6 +99,7 @@ export interface RoomSummary {
   nameKey: string;
   /** Base art for this room. The renderer falls back if the file is absent. */
   assetKey: string;
+  decor: RoomSummaryDecor[];
 }
 
 /**
@@ -95,6 +117,30 @@ let roomIndex: Map<string, RoomDef> | null = null;
 export function roomDefOf(defId: string): RoomDef | undefined {
   roomIndex ??= new Map(D().rooms.map((r) => [r.id, r]));
   return roomIndex.get(defId);
+}
+
+/** Same reasoning as roomIndex, for the decor catalogue's 77 entries. */
+let decorIndex: Map<string, { category: string; slotType: string }> | null = null;
+
+function decorInfoOf(defId: string): { category: string; slotType: string } | undefined {
+  decorIndex ??= new Map(D().decor.map((d) => [d.id, { category: d.category, slotType: d.slotType }]));
+  return decorIndex.get(defId);
+}
+
+function summariseDecor(room: RoomInstance): RoomSummaryDecor[] {
+  return room.decor.map((piece) => {
+    const info = decorInfoOf(piece.defId);
+    return {
+      id: piece.id,
+      defId: piece.defId,
+      category: info?.category ?? 'unknown',
+      slotType: info?.slotType ?? 'floor',
+      localX: piece.localX,
+      localY: piece.localY,
+      flipX: piece.flipX,
+      zBias: piece.zBias,
+    };
+  });
 }
 
 export function summariseRoom(room: RoomInstance): RoomSummary {
@@ -115,6 +161,7 @@ export function summariseRoom(room: RoomInstance): RoomSummary {
     occupants: room.occupants.length,
     nameKey: def?.nameKey ?? `room.${room.defId}.name`,
     assetKey: def?.assetKey ?? `room.${room.defId}.base`,
+    decor: summariseDecor(room),
   };
 }
 
