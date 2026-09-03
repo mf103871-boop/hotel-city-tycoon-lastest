@@ -836,6 +836,7 @@ npm run test:e2e
 | BL-027 | الورقة `max-h-[68%]` ومتصفحها الداخلي `68vh`؛ مع شريط عنوان ديناميكي على الهاتف تُقص الصفوف الأخيرة | منخفضة | P2 | قراءة `Sheet.tsx` | `BACKLOG` |
 | BL-028 | طلب WebGPU حتى بلا `navigator.gpu` يطبع تحذيرين عند كل إقلاع | منخفضة | P2 | مسبار 03-09-2026 | `BACKLOG` |
 | BL-029 | `@playwright/test ^1.49` يحل إلى 1.62 ويطلب Chromium 1234؛ أي بيئة بلا `cdn.playwright.dev` تحتاج `PLAYWRIGHT_CHROMIUM_PATH` | منخفضة | P0 | التدقيق 03-09-2026 | `BACKLOG` — اقتراح تثبيت إصدار دقيق |
+| BL-030 | نشر GitHub Pages يفشل: `pages` (أول تشغيل، `720ead1`) توقف عند `actions/configure-pages@v5` بـ`Create Pages site failed. Error: Resource not accessible by integration`. السبب أن `GITHUB_TOKEN` لا يملك صلاحية **إنشاء** موقع Pages؛ `enablement: true` لا تكفي. الحل بيد المالك وحده: Settings → Pages → Source = «GitHub Actions»، ثم إعادة تشغيل الـworkflow (لا تغيير مطلوب في الملف بعدها) | متوسطة | P1 | تشغيل `pages` رقم 1، 03-09-2026 | `BLOCKED_ON_OWNER` — يعطّل المراجعة البصرية على الهاتف التي ينتظرها HC-P1-S3 |
 
 ---
 
