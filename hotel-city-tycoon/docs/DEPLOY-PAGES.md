@@ -4,7 +4,25 @@
 
 **https://mf103871-boop.github.io/hotel-city-tycoon-lastest/**
 
-يُبنى من `main` تلقائيًا عند كل تغيير داخل `hotel-city-tycoon/` عبر `.github/workflows/pages.yml`، ويمكن تشغيله يدويًا من Actions ← **pages** ← Run workflow. أول تشغيل يفعّل Pages بنفسه (`actions/configure-pages` مع `enablement: true`)؛ إن رفض التفعيل لسبب صلاحيات، فعّله يدويًا مرة واحدة: **Settings ← Pages ← Build and deployment ← Source: GitHub Actions**، ثم أعد تشغيل العمل.
+يُبنى من `main` تلقائيًا عند كل تغيير داخل `hotel-city-tycoon/` عبر `.github/workflows/pages.yml`، ويمكن تشغيله يدويًا من Actions ← **pages** ← Run workflow.
+
+## التفعيل لأول مرة — ما حدث فعلًا (03-09-2026)
+
+`enablement: true` في `actions/configure-pages` **لا تكفي**: فشلت التشغيلات الأربعة الأولى كلها عند تلك الخطوة بالنص نفسه:
+
+```
+Get Pages site failed.    Error: Not Found
+Create Pages site failed. Error: Resource not accessible by integration
+```
+
+`GITHUB_TOKEN` يستطيع النشر إلى موقع Pages قائم، ولا يستطيع **إنشاءه**. الإنشاء بيد المالك مرة واحدة:
+
+1. **Settings ← Pages ← Build and deployment ← Source: `GitHub Actions`** (يُحفظ فور الاختيار، بلا زر Save).
+2. Actions ← **pages** ← Run workflow (أو أعد تشغيل أي تشغيل فاشل).
+
+بعدها لا يتكرر الأمر أبدًا. **الدليل:** تشغيل `pages` رقم 5، `workflow_dispatch` على `main` عند `2980e1a`، 23:30–23:31 UTC: الخطوات الثماني كلها ناجحة، ومنها `configure pages` و`deploy-pages`.
+
+إن رُفض تشغيل يدوي على فرع غير `main` برسالة `Branch is not allowed to deploy to github-pages`، فإما الدمج في `main` أو إضافة الفرع في **Settings ← Environments ← github-pages ← Deployment branches**.
 
 ## لماذا `BASE_PATH`
 
