@@ -30,7 +30,12 @@ async function bootFresh(
 ): Promise<ConsoleMessage[]> {
   const messages = captureConsole(page);
   // Start from a clean hotel so tests do not inherit each other's saves.
+  // Once per test, not once per navigation: an init script runs again on
+  // every reload, and this one used to wipe the save the reload test had
+  // just written — "6 rooms" before, "4 rooms" after, whatever the game did.
   await page.addInitScript(() => {
+    if (sessionStorage.getItem('hct-e2e-fresh')) return;
+    sessionStorage.setItem('hct-e2e-fresh', '1');
     void indexedDB.deleteDatabase('hotel-city-tycoon');
   });
   await page.goto('/');
@@ -404,9 +409,13 @@ test('the hotel survives a full reload', async ({ page }) => {
 
   const count = page.locator('footer p').filter({ hasText: /rooms/ });
   const before = await count.textContent();
-  // Give the autosave a chance to run.
+  // Every accepted command saves at once; the pause only lets the queued
+  // write land. (A synthetic `visibilitychange` used to be dispatched here,
+  // but the handler reads document.visibilityState, which stays "visible",
+  // so it never flushed — the test passed only when the autosave happened
+  // to run first.)
   await page.waitForTimeout(1500);
-  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
   await page.waitForTimeout(500);
 
   await page.reload();

@@ -12,10 +12,17 @@ import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
 /** A clean hotel, with enough money and level to reach every control. */
-async function bootRich(page: Page): Promise<void> {
+/** Wipes the save once per test — not on every navigation, or a reload test wipes its own evidence. */
+async function freshHotel(page: Page): Promise<void> {
   await page.addInitScript(() => {
+    if (sessionStorage.getItem('hct-e2e-fresh')) return;
+    sessionStorage.setItem('hct-e2e-fresh', '1');
     void indexedDB.deleteDatabase('hotel-city-tycoon');
   });
+}
+
+async function bootRich(page: Page): Promise<void> {
+  await freshHotel(page);
   await page.goto('/');
   await expect(page.getByRole('button', { name: /open hotel/i })).toBeVisible({ timeout: 20_000 });
   try {
@@ -68,7 +75,7 @@ test('the plot can be expanded, and the panel says what it costs', async ({ page
 });
 
 test('an expansion that cannot be afforded explains itself and stays open', async ({ page }) => {
-  await page.addInitScript(() => { void indexedDB.deleteDatabase('hotel-city-tycoon'); });
+  await freshHotel(page);
   await page.goto('/');
   await expect(page.getByRole('button', { name: /open hotel/i })).toBeVisible({ timeout: 20_000 });
   try {

@@ -197,10 +197,15 @@ export function useGame(): BootResult {
       else engine.resume();
     };
     document.addEventListener('visibilitychange', onVisibility);
+    // Navigation and tab close fire pagehide; on iOS it is the only reliable
+    // signal, since beforeunload never fires there.
+    const onPageHide = () => { void engine?.flush(); };
+    window.addEventListener('pagehide', onPageHide);
 
     return () => {
       cancelled = true;
       document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('pagehide', onPageHide);
       // Stop the loop and save, but leave the engine alive: StrictMode will
       // remount immediately, and a real unmount is a page teardown anyway.
       void engine?.flush();

@@ -206,6 +206,27 @@ await check('a fallback hotel booted over an unusable save has no persist port',
     'the fallback engine is not built from the stripped ports');
 });
 
+// ── AUDIT 2026-09-03 (D19): saving happened only on the 30 s autosave and a
+//    best-effort flush on hide, so a room built two seconds before a reload
+//    was gone afterwards ("6 rooms" before, "4 rooms" after in the CI lane).
+await check('an accepted command is saved at once, a refused one is not', async () => {
+  let writes = 0;
+  const engine = GameEngine.newGame(data, { clock: fakeClock(0), persist: async () => { writes++; return true; } }, 9);
+  const accepted = engine.dispatch({ type: 'START_SHIFT', shiftId: 'shift_2h' });
+  assert(accepted.ok, 'the test command was refused');
+  await new Promise((r) => setTimeout(r, 0));
+  eq(writes, 1, 'an accepted command did not save');
+  const refused = engine.dispatch({ type: 'START_SHIFT', shiftId: 'shift_2h' });
+  assert(!refused.ok, 'the second shift should have been refused (alreadyOpen)');
+  await new Promise((r) => setTimeout(r, 0));
+  eq(writes, 1, 'a refused command saved anyway');
+});
+
+await check('the page saves on pagehide, not only when hidden', () => {
+  const boot = fs.readFileSync(path.join('src', 'ui', 'useGame.ts'), 'utf8');
+  assert(/addEventListener\('pagehide'/.test(boot), 'no pagehide listener — iOS never fires beforeunload');
+});
+
 // ── AUDIT 2026-09-03 (D1): Pixi 8 never forwards DOM `pointercancel`, so the
 //    scene's stage listener for it was dead. One OS-cancelled touch left a
 //    finger registered for the rest of the session: every later tap read as
