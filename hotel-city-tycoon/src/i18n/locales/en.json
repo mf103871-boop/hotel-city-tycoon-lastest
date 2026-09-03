@@ -182,7 +182,7 @@
   "reject.plotTooSmall": "You already own a bigger plot",
   "reject.queueFull": "Reception is full",
   "reject.roleMismatch": "That role does not belong here",
-  "reject.roomHasHazard": "Deal with the fire or pests first",
+  "reject.roomHasHazard": "Deal with the fire, pests or ghost first",
   "reject.roomLimitReached": "Your hotel is full",
   "reject.roomOccupied": "A guest is still inside",
   "reject.roomRequired": "The hotel needs this room",

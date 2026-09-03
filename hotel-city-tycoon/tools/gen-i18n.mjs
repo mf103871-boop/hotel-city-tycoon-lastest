@@ -324,7 +324,7 @@ const FILE_ADDITIONS = {
   "reject.notOwned":["You do not own one of those","لا تملك واحدة منها"],
   "reject.notRefundable":["That cannot be sold back","لا يمكن إعادة بيع هذه"],
   "reject.notStored":["That room is not in storage","هذه الغرفة ليست في المخزن"],
-  "reject.roomHasHazard":["Deal with the fire or pests first","عالج الحريق أو الآفات أولًا"],
+  "reject.roomHasHazard":["Deal with the fire, pests or ghost first","عالج الحريق أو الآفات أو الشبح أولًا"],
   "reject.roomRequired":["The hotel needs this room","الفندق يحتاج هذه الغرفة"],
   "reject.roomTooDirty":["Clean the room before putting it away","نظّف الغرفة قبل تخزينها"],
   "reject.sameSpot":["It is already there","هي هناك بالفعل"],

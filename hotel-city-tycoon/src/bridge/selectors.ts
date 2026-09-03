@@ -449,7 +449,8 @@ export function roomDetail(state: GameState, roomId: string): RoomDetail | null 
     staffAssigned: room.staffId !== null,
     staffGradeId: state.staff.find((s) => s.id === room.staffId)?.gradeId ?? null,
     sellRefund: refund,
-    canSell: !required && room.occupants.length === 0,
+    // The same question the command asks, so the button never lies.
+    canSell: !required && room.occupants.length === 0 && !room.hasFire && !room.hasPest && !room.hasGhost,
     /*
      * Why the room cannot be put away, or null when it can.
      *

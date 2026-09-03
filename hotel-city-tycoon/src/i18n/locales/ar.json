@@ -182,7 +182,7 @@
   "reject.plotTooSmall": "لديك أرض أكبر بالفعل",
   "reject.queueFull": "الاستقبال ممتلئ",
   "reject.roleMismatch": "هذه الوظيفة لا تناسب المكان",
-  "reject.roomHasHazard": "عالج الحريق أو الآفات أولًا",
+  "reject.roomHasHazard": "عالج الحريق أو الآفات أو الشبح أولًا",
   "reject.roomLimitReached": "فندقك ممتلئ",
   "reject.roomOccupied": "ما زال هناك نزيل بالداخل",
   "reject.roomRequired": "الفندق يحتاج هذه الغرفة",

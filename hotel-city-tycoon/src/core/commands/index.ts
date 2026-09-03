@@ -127,8 +127,11 @@ export function execute(data: SimData, state: GameState, cmd: Command): CommandR
       if (room.occupants.length > 0) return reject('roomOccupied');
       // A burning room cannot be sold out from under the fire. Selling was the
       // one hazard exit that cost nothing: the refund arrived, the incident
-      // vanished, and clearing it properly was strictly worse value.
-      if (room.hasFire || room.hasPest) return reject('roomHasHazard');
+      // vanished, and clearing it properly was strictly worse value. The
+      // ghost joined the list late (4C added it, this check was not updated):
+      // selling a haunted room paid a third of its price AND skipped the
+      // ghostbuster's fee.
+      if (room.hasFire || room.hasPest || room.hasGhost) return reject('roomHasHazard');
       const def = roomDef(data, room.defId);
       if ('required' in def && def.required) return reject('roomRequired');
 
@@ -613,7 +616,9 @@ export function execute(data: SimData, state: GameState, cmd: Command): CommandR
       const def = roomDef(data, room.defId);
       if ('required' in def && def.required) return reject('roomRequired');
       if (room.occupants.length > 0) return reject('roomOccupied');
-      if (room.hasFire || room.hasPest) return reject('roomHasHazard');
+      // A haunting is a hazard too: storing the room and placing it back used
+      // to return it with `hasGhost: false`, a free exorcism.
+      if (room.hasFire || room.hasPest || room.hasGhost) return reject('roomHasHazard');
       // Storage is not a broom cupboard for problems. A filthy room drags the
       // hotel's average down; letting it be put away would make cleaning
       // optional and the rating a lie.
