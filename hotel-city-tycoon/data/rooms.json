@@ -27,6 +27,13 @@
       "function": {
         "kind": "entrance",
         "queueCapacity": 8
+      },
+      "interior": {
+        "inset": 0,
+        "ceilingBottom": 22,
+        "wallBottom": 67,
+        "floorTop": 73,
+        "floorBottom": 95
       }
     },
     {
@@ -53,6 +60,13 @@
       "function": {
         "kind": "cleaning",
         "roomsServed": 14
+      },
+      "interior": {
+        "inset": 0,
+        "ceilingBottom": 23,
+        "wallBottom": 49,
+        "floorTop": 60,
+        "floorBottom": 95
       }
     },
     {
@@ -80,6 +94,14 @@
         "kind": "cleaningBoost",
         "roomsServedBonus": 6,
         "dirtRateMultiplier": 0.85
+      },
+      "interior": {
+        "inset": 3,
+        "ceilingBottom": 33,
+        "wallBottom": 80,
+        "floorTop": 81,
+        "floorBottom": 92,
+        "reviewed": true
       }
     },
     {
@@ -107,6 +129,13 @@
         "kind": "wageDiscount",
         "wageMultiplier": 0.9,
         "stacksMax": 3
+      },
+      "interior": {
+        "inset": 3,
+        "ceilingBottom": 25,
+        "wallBottom": 70,
+        "floorTop": 77,
+        "floorBottom": 92
       }
     },
     {
@@ -134,6 +163,14 @@
         "kind": "hazardReduction",
         "fireChanceMultiplier": 0.5,
         "stacksMax": 2
+      },
+      "interior": {
+        "inset": 3,
+        "ceilingBottom": 33,
+        "wallBottom": 83,
+        "floorTop": 84,
+        "floorBottom": 92,
+        "reviewed": true
       }
     },
     {
@@ -161,6 +198,13 @@
         "kind": "arrivalBoost",
         "arrivalRateMultiplier": 1.12,
         "stacksMax": 3
+      },
+      "interior": {
+        "inset": 0,
+        "ceilingBottom": 32,
+        "wallBottom": 68,
+        "floorTop": 74,
+        "floorBottom": 95
       }
     },
     {
@@ -184,7 +228,14 @@
       "xpPerGuest": 1,
       "stayDurationSec": 120,
       "decorSlots": 4,
-      "decorTarget": 100
+      "decorTarget": 100,
+      "interior": {
+        "inset": 2,
+        "ceilingBottom": 10,
+        "wallBottom": 63,
+        "floorTop": 64,
+        "floorBottom": 93
+      }
     },
     {
       "id": "standard",
@@ -207,7 +258,14 @@
       "xpPerGuest": 3,
       "stayDurationSec": 180,
       "decorSlots": 6,
-      "decorTarget": 200
+      "decorTarget": 200,
+      "interior": {
+        "inset": 0,
+        "ceilingBottom": 17,
+        "wallBottom": 70,
+        "floorTop": 77,
+        "floorBottom": 95
+      }
     },
     {
       "id": "double",
@@ -230,7 +288,14 @@
       "xpPerGuest": 7,
       "stayDurationSec": 240,
       "decorSlots": 8,
-      "decorTarget": 380
+      "decorTarget": 380,
+      "interior": {
+        "inset": 0,
+        "ceilingBottom": 18,
+        "wallBottom": 70,
+        "floorTop": 77,
+        "floorBottom": 95
+      }
     },
     {
       "id": "family",
@@ -253,7 +318,14 @@
       "xpPerGuest": 10,
       "stayDurationSec": 240,
       "decorSlots": 10,
-      "decorTarget": 600
+      "decorTarget": 600,
+      "interior": {
+        "inset": 4,
+        "ceilingBottom": 16,
+        "wallBottom": 56,
+        "floorTop": 59,
+        "floorBottom": 91
+      }
     },
     {
       "id": "deluxe",
@@ -276,7 +348,14 @@
       "xpPerGuest": 12,
       "stayDurationSec": 300,
       "decorSlots": 12,
-      "decorTarget": 160
+      "decorTarget": 160,
+      "interior": {
+        "inset": 3,
+        "ceilingBottom": 22,
+        "wallBottom": 68,
+        "floorTop": 74,
+        "floorBottom": 92
+      }
     },
     {
       "id": "executive",
@@ -299,7 +378,14 @@
       "xpPerGuest": 24,
       "stayDurationSec": 360,
       "decorSlots": 14,
-      "decorTarget": 220
+      "decorTarget": 220,
+      "interior": {
+        "inset": 5,
+        "ceilingBottom": 27,
+        "wallBottom": 48,
+        "floorTop": 57,
+        "floorBottom": 92
+      }
     },
     {
       "id": "honeymoon",
@@ -322,7 +408,15 @@
       "xpPerGuest": 24,
       "stayDurationSec": 360,
       "decorSlots": 16,
-      "decorTarget": 200
+      "decorTarget": 200,
+      "interior": {
+        "inset": 0,
+        "ceilingBottom": 23,
+        "wallBottom": 72,
+        "floorTop": 73,
+        "floorBottom": 90,
+        "reviewed": true
+      }
     },
     {
       "id": "luxurySuite",
@@ -345,7 +439,14 @@
       "xpPerGuest": 42,
       "stayDurationSec": 360,
       "decorSlots": 18,
-      "decorTarget": 240
+      "decorTarget": 240,
+      "interior": {
+        "inset": 0,
+        "ceilingBottom": 33,
+        "wallBottom": 56,
+        "floorTop": 72,
+        "floorBottom": 95
+      }
     },
     {
       "id": "presidential",
@@ -368,7 +469,14 @@
       "xpPerGuest": 32,
       "stayDurationSec": 360,
       "decorSlots": 22,
-      "decorTarget": 300
+      "decorTarget": 300,
+      "interior": {
+        "inset": 6,
+        "ceilingBottom": 26,
+        "wallBottom": 152,
+        "floorTop": 159,
+        "floorBottom": 182
+      }
     },
     {
       "id": "cafe",
@@ -393,7 +501,14 @@
       "staffSlots": 0,
       "desireTag": "food",
       "decorSlots": 8,
-      "decorTarget": 350
+      "decorTarget": 350,
+      "interior": {
+        "inset": 0,
+        "ceilingBottom": 19,
+        "wallBottom": 58,
+        "floorTop": 59,
+        "floorBottom": 95
+      }
     },
     {
       "id": "gym",
@@ -418,7 +533,14 @@
       "staffSlots": 1,
       "desireTag": "fitness",
       "decorSlots": 8,
-      "decorTarget": 400
+      "decorTarget": 400,
+      "interior": {
+        "inset": 0,
+        "ceilingBottom": 15,
+        "wallBottom": 69,
+        "floorTop": 77,
+        "floorBottom": 95
+      }
     },
     {
       "id": "restaurant",
@@ -443,7 +565,15 @@
       "staffSlots": 1,
       "desireTag": "food",
       "decorSlots": 12,
-      "decorTarget": 700
+      "decorTarget": 700,
+      "interior": {
+        "inset": 4,
+        "ceilingBottom": 10,
+        "wallBottom": 87,
+        "floorTop": 88,
+        "floorBottom": 91,
+        "reviewed": true
+      }
     },
     {
       "id": "bar",
@@ -468,7 +598,14 @@
       "staffSlots": 1,
       "desireTag": "nightlife",
       "decorSlots": 10,
-      "decorTarget": 550
+      "decorTarget": 550,
+      "interior": {
+        "inset": 0,
+        "ceilingBottom": 31,
+        "wallBottom": 69,
+        "floorTop": 70,
+        "floorBottom": 95
+      }
     },
     {
       "id": "arcade",
@@ -493,7 +630,15 @@
       "staffSlots": 0,
       "desireTag": "entertainment",
       "decorSlots": 8,
-      "decorTarget": 450
+      "decorTarget": 450,
+      "interior": {
+        "inset": 0,
+        "ceilingBottom": 15,
+        "wallBottom": 79,
+        "floorTop": 80,
+        "floorBottom": 89,
+        "reviewed": true
+      }
     },
     {
       "id": "cinema",
@@ -518,7 +663,15 @@
       "staffSlots": 1,
       "desireTag": "entertainment",
       "decorSlots": 10,
-      "decorTarget": 800
+      "decorTarget": 800,
+      "interior": {
+        "inset": 4,
+        "ceilingBottom": 19,
+        "wallBottom": 86,
+        "floorTop": 87,
+        "floorBottom": 93,
+        "reviewed": true
+      }
     },
     {
       "id": "spa",
@@ -543,7 +696,15 @@
       "staffSlots": 0,
       "desireTag": "nightlife",
       "decorSlots": 12,
-      "decorTarget": 1100
+      "decorTarget": 1100,
+      "interior": {
+        "inset": 6,
+        "ceilingBottom": 20,
+        "wallBottom": 78,
+        "floorTop": 80,
+        "floorBottom": 93,
+        "reviewed": true
+      }
     },
     {
       "id": "pool",
@@ -568,8 +729,15 @@
       "staffSlots": 1,
       "desireTag": "fitness",
       "decorSlots": 12,
-      "decorTarget": 1400
+      "decorTarget": 1400,
+      "interior": {
+        "inset": 3,
+        "ceilingBottom": 11,
+        "wallBottom": 62,
+        "floorTop": 67,
+        "floorBottom": 93
+      }
     }
   ],
-  "note": "3B: the original catalogue. Guest rooms carry the April-2010 coin table (3,000/8,500/23,000/45,500 at L1/2/14/32, income=XP=1/3/7/10, stays 2-4 min) on the existing ids — the ID is internal, the display name is i18n, so economy IS the Budget Room and art and saves survive. The five premium rooms are gem-priced (6/12/15/20/22) with the original coin payouts (12/24/24/42/32; the non-monotone Large-vs-Presidential pair is faithful). Amenities carry table A.2; `spa` is the Disco by display name (id kept for saves/art; the redraw belongs to the art phase). 4B: cafe, arcade and the disco run WITHOUT staff, exactly as the original listed them; every other slot is covered by the temp model (see staff.json). laundry/staffRoom/maintenance/business are PARKED at level 53 (decision 11a): schema-valid, beyond the 52-level game, exempt from the level table by validator convention."
+  "note": "3B: the original catalogue. Guest rooms carry the April-2010 coin table (3,000/8,500/23,000/45,500 at L1/2/14/32, income=XP=1/3/7/10, stays 2-4 min) on the existing ids \u2014 the ID is internal, the display name is i18n, so economy IS the Budget Room and art and saves survive. The five premium rooms are gem-priced (6/12/15/20/22) with the original coin payouts (12/24/24/42/32; the non-monotone Large-vs-Presidential pair is faithful). Amenities carry table A.2; `spa` is the Disco by display name (id kept for saves/art; the redraw belongs to the art phase). 4B: cafe, arcade and the disco run WITHOUT staff, exactly as the original listed them; every other slot is covered by the temp model (see staff.json). laundry/staffRoom/maintenance/business are PARKED at level 53 (decision 11a): schema-valid, beyond the 52-level game, exempt from the level table by validator convention."
 }

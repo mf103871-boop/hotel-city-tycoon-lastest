@@ -15,6 +15,21 @@
 export interface Price { currency: 'coins' | 'gems'; amount: number }
 export interface Blocks { w: number; h: number }
 
+/**
+ * Where the ceiling, wall and floor are inside this room's own art, in
+ * room-local pixels at 1x. Decor is placed against these, not against the
+ * room's bounding box. See data/rooms.json and src/data/schemas/rooms.ts.
+ */
+export interface RoomInterior {
+  inset: number;
+  ceilingBottom: number;
+  wallBottom: number;
+  floorTop: number;
+  floorBottom: number;
+  /** Set when a human corrected the measurement by hand. */
+  reviewed?: boolean;
+}
+
 interface RoomBase {
   id: string;
   nameKey: string;
@@ -24,6 +39,7 @@ interface RoomBase {
   unlockLevel: number;
   decorSlots: number;
   decorTarget: number;
+  interior: RoomInterior;
 }
 
 export interface GuestRoomDef extends RoomBase {

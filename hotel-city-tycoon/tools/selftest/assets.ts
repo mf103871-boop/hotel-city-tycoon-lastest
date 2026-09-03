@@ -304,20 +304,39 @@ await check('the decor art is drawn, not just shipped (HC-P1-S4)', () => {
   const roomView = fs.readFileSync('src/render/roomView.ts', 'utf8');
   assert(/texture\(piece\.assetKey\)/.test(roomView),
     'RoomView never asks for a decor piece’s texture');
-  assert(/decorAnchorFor\(/.test(roomView),
-    'RoomView pins every piece the same way instead of by category');
   assert(/orderDecor\(/.test(roomView),
     'RoomView does not use the footY draw order');
 
+  /*
+   * The renderer must resolve a piece through the SAME function that placed
+   * it, against the room's declared bands. Drawing at the stored anchor
+   * directly is what painted concrete onto the wall and hung lamps over the
+   * cornice: the anchor is a lattice coordinate, not a position.
+   */
+  assert(/resolveDecorRect\(/.test(roomView),
+    'RoomView draws at the raw anchor instead of resolving it against the room bands');
+  assert(/data\.bands/.test(roomView), 'RoomView never reads the room interior');
+
   // Characters and decor must shrink by the same factor, or a guest cannot sit
-  // in a chair. Neither view is allowed its own literal.
+  // in a chair. Neither is allowed its own literal.
+  const placement = fs.readFileSync('src/core/systems/decorPlacement.ts', 'utf8');
+  assert(/export const DECOR_ART_SCALE\b/.test(placement), 'the art scale has no single home');
   const layout = fs.readFileSync('src/render/layout.ts', 'utf8');
-  assert(/export const ART_SCALE\b/.test(layout), 'ART_SCALE is not defined in layout');
-  for (const file of ['src/render/roomView.ts', 'src/render/characterView.ts']) {
+  assert(/ART_SCALE = DECOR_ART_SCALE/.test(layout), 'layout keeps a second copy of the art scale');
+  for (const file of ['src/core/systems/decorPlacement.ts', 'src/render/characterView.ts']) {
     const source = fs.readFileSync(file, 'utf8');
-    assert(/ART_SCALE/.test(source), `${file} does not use the shared art scale`);
-    assert(!/\*\s*0\.55\b/.test(source), `${file} still hard-codes a scale of its own`);
+    assert(!/\*\s*0\.55\b/.test(source), `${file} hard-codes a scale of its own`);
   }
+
+  // Every room must declare where its own surfaces are; the fallback exists
+  // only for a defId a legacy save points at that no longer exists.
+  const rooms = JSON.parse(fs.readFileSync('data/rooms.json', 'utf8')) as {
+    rooms: Array<{ id: string; interior?: Record<string, number> }>;
+  };
+  const undeclared = rooms.rooms.filter((r) => !r.interior).map((r) => r.id);
+  assert(undeclared.length === 0,
+    `${undeclared.length} rooms have no measured interior: ${undeclared.slice(0, 5).join(', ')}`);
+  console.log(`      all ${rooms.rooms.length} rooms declare a measured interior`);
 
   // The decor bundle has to be loaded for any of the above to resolve.
   const canvas = fs.readFileSync('src/ui/HotelCanvas.tsx', 'utf8');

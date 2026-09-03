@@ -8,11 +8,11 @@
  * load costs a picture rather than the room.
  */
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
-import { texture, entryFor, assetGeneration } from './assets.ts';
+import { texture, assetGeneration } from './assets.ts';
 import type { Rect } from '../core/state/grid.ts';
-import {
-  roomWorldRect, BLOCK_W, BLOCK_H, ART_SCALE, anchorToLocalPx, orderDecor, decorAnchorFor,
-} from './layout.ts';
+import { roomWorldRect, BLOCK_W, BLOCK_H, orderDecor } from './layout.ts';
+import { resolveDecorRect } from '../core/systems/decorPlacement.ts';
+import type { RoomBands } from '../core/systems/decorPlacement.ts';
 
 /** Category colours, chosen to read at a glance while zoomed out. */
 const SHELL = {
@@ -65,6 +65,8 @@ export interface RoomViewDecorItem {
 export interface RoomViewData {
   /** Asset key for the finished art. Falls back to a drawn shell when absent. */
   assetKey?: string;
+  /** Where this room's own art puts its ceiling, wall and floor. */
+  bands: RoomBands;
   rect: Rect;
   category: 'guest' | 'commercial' | 'functional';
   label: string;
@@ -114,7 +116,7 @@ export class RoomView extends Container {
       .join('|');
     const key = `${assetGeneration()},${data.rect.x},${data.rect.y},${data.rect.w},${data.rect.h},${data.category},` +
       `${data.fill.toFixed(2)},${data.showMeter},${data.hasPest},${data.hasFire},${data.hasGhost},${data.occupants},` +
-      `${data.label},${data.assetKey ?? ''},${decorKey}`;
+      `${data.label},${data.assetKey ?? ''},${data.bands.floorTop},${decorKey}`;
     if (key === this.lastKey) return;
     this.lastKey = key;
 
@@ -140,7 +142,7 @@ export class RoomView extends Container {
       this.shell.roundRect(1, 1, w - 2, h - 2, 6).fill(SHELL[data.category]).stroke({ width: 2, color: BORDER });
     }
 
-    this.drawDecor(data.decor);
+    this.drawDecor(data.decor, data.bands);
 
     this.meter.clear();
     if (data.showMeter) {
@@ -191,35 +193,34 @@ export class RoomView extends Container {
    * pieces (data/economy.json limits.maxDecorPerRoom), cheap enough that this
    * does not need RoomView's own texture-reuse tricks.
    */
-  private drawDecor(pieces: RoomViewDecorItem[]): void {
+  private drawDecor(pieces: RoomViewDecorItem[], bands: RoomBands): void {
     this.decorLayer.removeChildren();
     for (const piece of orderDecor(pieces)) {
-      const at = anchorToLocalPx(piece.localX, piece.localY);
+      /*
+       * The rectangle comes from the placement rules, not from the stored
+       * anchor directly.
+       *
+       * `resolveDecorRect` is the same function that chose the anchor in the
+       * first place, and it is total: it puts the piece on the surface its
+       * category belongs to and inside the room whatever integers it is
+       * handed. Drawing at the raw anchor instead is what put concrete on the
+       * wall and hung lamps over the cornice — and going through the resolver
+       * is also why saves written against the old fractional bands need no
+       * migration. They are repaired as they are drawn.
+       */
+      const rect = resolveDecorRect(bands, piece.category, piece.slotType, piece.localX, piece.localY);
       const box = new Container();
-      box.position.set(at.x, at.y);
-      // The container flips about the anchor, so a mirrored piece keeps its
-      // contact point rather than sliding half its width sideways.
+      box.position.set(rect.x + rect.w / 2, rect.y + rect.h);
+      // The container flips about the contact point, so a mirrored piece keeps
+      // its footing rather than sliding half its width sideways.
       box.scale.x = piece.flipX ? -1 : 1;
 
       const art = piece.assetKey ? texture(piece.assetKey) : null;
       if (art) {
-        /*
-         * Sized from the manifest, not from the texture.
-         *
-         * `art.width` is the file's pixel width, which doubles on a @2x tier —
-         * the same picture would be drawn twice as large on a phone that
-         * happened to get the higher tier. The manifest's width is the piece's
-         * size in world pixels at any tier, which is the number that belongs
-         * in a world-space layout.
-         */
-        const entry = entryFor(piece.assetKey);
-        const w = (entry?.width ?? art.width) * ART_SCALE;
-        const h = (entry?.height ?? art.height) * ART_SCALE;
-        const [ax, ay] = decorAnchorFor(piece.category);
         const sprite = new Sprite(art);
-        sprite.anchor.set(ax, ay);
-        sprite.width = w;
-        sprite.height = h;
+        sprite.anchor.set(0.5, 1);
+        sprite.width = rect.w;
+        sprite.height = rect.h;
         box.addChild(sprite);
       } else {
         const fill = DECOR_PLACEHOLDER[piece.slotType as keyof typeof DECOR_PLACEHOLDER] ?? DECOR_PLACEHOLDER_DEFAULT;

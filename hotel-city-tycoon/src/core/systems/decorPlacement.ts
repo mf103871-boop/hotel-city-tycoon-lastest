@@ -68,75 +68,200 @@ export function decorAnchorFor(category: string | null): readonly [number, numbe
 }
 
 /**
- * The anchors at which this piece is wholly inside the room.
+ * Which surface a category belongs to.
  *
- * DEC-010: "كل قطعة يجب أن تقع داخل مستطيل الغرفة ... لا clipping ولا تسرب
- * إلى الغرفة المجاورة" — the *piece* must fit, and a mask is explicitly not
- * the way to make it. That rule was unenforceable until ART-1: a piece was a
- * 24x18 placeholder box, so any anchor one unit from the edge looked fine. A
- * real armchair is 40px wide and a real bed 57px, and the same anchor hangs
- * them halfway into the room next door.
- *
- * So the inset is the piece's own reach from its anchor, not a flat 1/16
- * block — the flat inset stays as the floor under it.
+ * `slotType` cannot answer this: `floor` covers an armchair, which STANDS on
+ * the floor, and a rug, which LIES on it. The two want opposite things from
+ * the same band — one puts its base on the floor line, the other puts its
+ * middle there — and answering them the same way is why a rug ended up half
+ * on the wall.
  */
-/** A piece's drawn width in whole anchor units — how far apart two of them
- * have to sit before they read as two things rather than one smudge. */
+export type DecorBand = 'ceiling' | 'wall' | 'floorStand' | 'floorFlat';
+
+const DECOR_BAND: Record<string, DecorBand> = {
+  lighting: 'ceiling',
+  wallpaper: 'wall', wallArt: 'wall',
+  bed: 'floorStand', seating: 'floorStand', table: 'floorStand',
+  plant: 'floorStand', luxury: 'floorStand',
+  flooring: 'floorFlat', rug: 'floorFlat',
+};
+
+export function decorBandFor(category: string | null): DecorBand {
+  return (category ? DECOR_BAND[category] : undefined) ?? 'floorStand';
+}
+
+/**
+ * A piece's drawn width in whole anchor units — how far apart two of them have
+ * to sit before they read as two things rather than one smudge.
+ */
 export function decorWidthUnits(slotType: string | null): number {
   const [pw] = (slotType ? SLOT_SIZE[slotType] : undefined) ?? SLOT_SIZE_DEFAULT;
   return Math.max(1, Math.ceil((pw * DECOR_ART_SCALE) / ANCHOR_PX_X));
 }
 
-export function anchorRangeFor(
-  bounds: AnchorBounds,
-  category: string | null,
-  slotType: string | null,
-): { minX: number; maxX: number; minY: number; maxY: number } {
+/** The piece's drawn size in room pixels. */
+export function decorSizePx(slotType: string | null): { w: number; h: number } {
   const [pw, ph] = (slotType ? SLOT_SIZE[slotType] : undefined) ?? SLOT_SIZE_DEFAULT;
-  const [ax, ay] = decorAnchorFor(category);
-  const w = pw * DECOR_ART_SCALE;
-  const h = ph * DECOR_ART_SCALE;
-  const roomW = bounds.w * ANCHOR_PX_X;
-  const roomH = bounds.h * ANCHOR_PX_Y;
-
-  // How far the sprite reaches from its anchor, on each side.
-  const left = w * ax, right = w * (1 - ax);
-  const up = h * ay, down = h * (1 - ay);
-
-  const inset = clampInset(bounds.w);
-  const insetY = clampInset(bounds.h);
-  const span = (reachLo: number, reachHi: number, room: number, unit: number, units: number, flat: number) => {
-    const lo = Math.max(flat, Math.ceil(reachLo / unit));
-    const hi = Math.min(units - 1 - flat, Math.floor((room - reachHi) / unit));
-    // A piece too big for the room still gets one legal anchor rather than an
-    // empty range: better centred and overhanging than not placed at all.
-    return hi >= lo ? { lo, hi } : { lo: Math.floor((units - 1) / 2), hi: Math.floor((units - 1) / 2) };
-  };
-  const x = span(left, right, roomW, ANCHOR_PX_X, bounds.w, inset);
-  const y = span(up, down, roomH, ANCHOR_PX_Y, bounds.h, insetY);
-  return { minX: x.lo, maxX: x.hi, minY: y.lo, maxY: y.hi };
-}
-
-export interface AnchorBounds {
-  /** Room width in anchor units. */
-  w: number;
-  /** Room height in anchor units. */
-  h: number;
+  return { w: pw * DECOR_ART_SCALE, h: ph * DECOR_ART_SCALE };
 }
 
 /**
- * The room's footprint in anchor units, from its definition.
+ * The anchors at which this piece sits on its own surface, wholly inside the
+ * room.
  *
- * Falls back to the smallest legal room (1x1 block) when the room's
- * definition cannot be found — an unknown `data`, or a `defId` a legacy save
- * points at that no longer exists. That fallback is always safe: no real
- * room is smaller than 1x1 block, so an anchor valid there is valid anywhere.
+ * Two rules at once, and the old code had neither. DEC-010:159 — the piece is
+ * inside the room rectangle, "لا clipping ولا تسرب إلى الغرفة المجاورة" —
+ * gives the outer limit. DEC-010:108 and :183 — wall and ceiling pieces on
+ * their own surface, floor pieces on the floor region with their contact base
+ * on the ground — give the band. The old inset was a flat 1/16 block applied
+ * to the anchor POINT, so a 57px bed one unit from the edge hung half of
+ * itself into the room next door, and "the floor region" was a fraction of the
+ * bounding box that no room's art agreed with.
  */
-export function anchorBoundsFor(data: SimData | null, roomDefId: string | undefined): AnchorBounds {
+export function anchorRangeFor(
+  bands: RoomBands,
+  category: string | null,
+  slotType: string | null,
+): { minX: number; maxX: number; minY: number; maxY: number; preferredY: number } {
+  const { w, h } = decorSizePx(slotType);
+  const [ax, ay] = decorAnchorFor(category);
+  const band = decorBandFor(category);
+
+  // How far the sprite reaches from its anchor, on each side.
+  const left = w * ax, right = w * (1 - ax), up = h * ay, down = h * (1 - ay);
+
+  const minX = Math.ceil((bands.inset + left) / ANCHOR_PX_X);
+  const maxX = Math.floor((bands.width - bands.inset - right) / ANCHOR_PX_X);
+
+  /*
+   * The band the piece must touch, expressed as the range its ANCHOR may take.
+   * A pendant hangs from the cornice line; a picture is centred on the wall; a
+   * chair puts its feet on the floor; a rug puts its middle there.
+   */
+  let bandLo: number, bandHi: number, want: number;
+  if (band === 'ceiling') {
+    bandLo = bands.ceilingBottom; bandHi = bands.ceilingBottom; want = bands.ceilingBottom;
+  } else if (band === 'wall') {
+    bandLo = bands.ceilingBottom + up; bandHi = bands.wallBottom - down;
+    want = (bands.ceilingBottom + bands.wallBottom) / 2;
+  } else if (band === 'floorStand') {
+    bandLo = bands.floorTop; bandHi = bands.floorBottom; want = bands.floorBottom;
+  } else {
+    bandLo = bands.floorTop + up; bandHi = bands.floorBottom - down;
+    /*
+     * Centred on the floor when the floor is big enough to centre on, and
+     * otherwise sitting on its front edge.
+     *
+     * Several rooms draw fixtures over most of their floor — the cafe's
+     * counter leaves a 5px strip, the lobby 7 — and a 40px rug centred on a
+     * 7px strip is three quarters wall. Aligning its bottom with the floor's
+     * front edge instead is both what a floor covering does and the position
+     * that overlaps the floor most.
+     */
+    want = Math.min((bands.floorTop + bands.floorBottom) / 2, bands.floorBottom - down);
+  }
+
+  /*
+   * Containment beats the band, always.
+   *
+   * Several rooms draw a floor thinner than a decor piece is tall — the cafe's
+   * counter leaves 5px, the cinema's seating 7 — and no anchor puts a 40px rug
+   * inside a 5px band. Given the choice, the piece stays in the room and sits
+   * as close to its surface as it can: a rug slightly overlapping the skirting
+   * is a blemish, a rug drawn into the room next door is the bug DEC-010:159
+   * exists to forbid. So the room's limits are computed first and the band's
+   * preference is fitted inside them, never the other way round.
+   */
+  const rowLo = Math.ceil(up / ANCHOR_PX_Y);
+  const rowHi = Math.max(rowLo, Math.floor((bands.height - down) / ANCHOR_PX_Y));
+  /*
+   * Which way to round onto the 6px lattice matters at the edges of a band.
+   * A pendant rounded to the nearest row hangs 1px ABOVE the cornice in a room
+   * whose cornice ends at 25; it must land on the trim or below it, never over
+   * it. Feet round the other way for the same reason.
+   */
+  const snap = band === 'ceiling' ? Math.ceil : band === 'floorStand' ? Math.floor : Math.round;
+  const clampRow = (px: number) => Math.min(rowHi, Math.max(rowLo, snap(px / ANCHOR_PX_Y)));
+
+  let minY = Math.max(rowLo, Math.ceil(bandLo / ANCHOR_PX_Y));
+  let maxY = Math.min(rowHi, Math.floor(bandHi / ANCHOR_PX_Y));
+  if (maxY < minY) { minY = maxY = clampRow(want); }
+  const preferredY = Math.min(maxY, Math.max(minY, clampRow(want)));
+
+  return { minX, maxX: Math.max(minX, maxX), minY, maxY, preferredY };
+}
+
+/**
+ * Where the surfaces of one room are, in room-local pixels.
+ *
+ * This is the thing the old code did not have and could not do without. It
+ * placed against the room's bounding box, splitting it into fractions — and
+ * the floor line is at 0.70 of room height in the ART-1 economy interior and
+ * 0.95 in the cafe. Every piece that is supposed to touch a surface therefore
+ * touched an imaginary one: flooring painted 16px of concrete onto the wall,
+ * rugs floated above the floorboards, ceiling lamps hung over the cornice.
+ */
+export interface RoomBands {
+  /** Room size in room-local pixels. */
+  width: number;
+  height: number;
+  /** Usable interior in pixels: [inset, width - inset). */
+  inset: number;
+  /** Last row of the cornice. The wall band runs (ceilingBottom, wallBottom]. */
+  ceilingBottom: number;
+  wallBottom: number;
+  /** The floor surface, inclusive both ends. Furniture stands on it. */
+  floorTop: number;
+  floorBottom: number;
+  /** Room footprint in anchor units, for the lattice `localX`/`localY` live on. */
+  unitsW: number;
+  unitsH: number;
+  /** False when the room's art has no measured interior and this is a guess. */
+  declared: boolean;
+}
+
+/**
+ * Proportions for a room whose interior has never been measured.
+ *
+ * Only reachable for a `defId` no longer in the catalogue — every shipped room
+ * declares an `interior` and the schema requires it. Kept because a legacy save
+ * can point at a room that has been removed, and DEC-010 says a piece is always
+ * placed somewhere rather than deleted.
+ */
+const UNMEASURED = { inset: 2, ceilingBottom: 0.11, wallBottom: 0.66, floorTop: 0.70, floorBottom: 0.97 };
+
+export function roomBandsFor(data: SimData | null, roomDefId: string | undefined): RoomBands {
   const def = data && roomDefId ? roomById(data, roomDefId) : undefined;
-  const w = def?.blocks.w ?? 1;
-  const h = def?.blocks.h ?? 1;
-  return { w: w * ANCHOR_UNITS_PER_BLOCK, h: h * ANCHOR_UNITS_PER_BLOCK };
+  const blocksW = def?.blocks.w ?? 1;
+  const blocksH = def?.blocks.h ?? 1;
+  const width = blocksW * BLOCK_W;
+  const height = blocksH * BLOCK_H;
+  const i = def?.interior;
+  const base = {
+    width, height,
+    unitsW: blocksW * ANCHOR_UNITS_PER_BLOCK,
+    unitsH: blocksH * ANCHOR_UNITS_PER_BLOCK,
+  };
+  if (!i) {
+    return {
+      ...base,
+      inset: UNMEASURED.inset,
+      ceilingBottom: Math.round(height * UNMEASURED.ceilingBottom),
+      wallBottom: Math.round(height * UNMEASURED.wallBottom),
+      floorTop: Math.round(height * UNMEASURED.floorTop),
+      floorBottom: Math.round(height * UNMEASURED.floorBottom),
+      declared: false,
+    };
+  }
+  return {
+    ...base,
+    inset: i.inset,
+    ceilingBottom: i.ceilingBottom,
+    wallBottom: i.wallBottom,
+    floorTop: i.floorTop,
+    floorBottom: i.floorBottom,
+    declared: true,
+  };
 }
 
 /** A decor definition's `slotType` (wall/ceiling/floor/bed), or null without `data`. */
@@ -151,60 +276,29 @@ export function categoryFor(data: SimData | null, defId: string): string | null 
   return data.decor.find((d) => d.id === defId)?.category ?? null;
 }
 
-function clampInset(bound: number): number {
-  // A room narrower or shorter than 2 * inset (should not happen at the
-  // 1-block floor, but this keeps the scan finite either way) still gets a
-  // usable single-cell range instead of an empty one.
-  return Math.min(ANCHOR_EDGE_INSET, Math.max(0, Math.floor(bound / 2) - 1));
-}
-
 /**
- * The first free anchor for a piece, preferring the surface band its
- * `slotType` belongs on: near the ceiling, mid-wall, or near the floor.
- * `taken` holds `"x,y"` keys already used by other pieces in the same room —
- * the caller decides what counts as "the same room" (a fresh Set per room).
+ * The first free anchor for a piece, on the surface its category belongs to.
  *
- * The horizontal scan runs *outward from the middle* rather than left to
- * right. Left-to-right put the first piece against the left wall and stacked
- * the next ones beside it, which was invisible while a piece was a 24x18 box
- * and obvious the moment ART-1 gave them real widths: a room's furniture piled
- * into its left quarter with the first piece half in the room next door. From
- * the middle out, the pieces a player is most likely to own spread across the
- * room, and the anchors nearest the walls are used last.
+ * The horizontal scan runs outward from the middle in strides of one piece
+ * width. Left to right put a room's furniture against its left wall and
+ * stacked the rest beside it; outward in single anchor units then stacked it
+ * in the middle, because one unit is 8px and an armchair is 40px wide.
  *
- * Deterministic: the same inputs always produce the same anchor, in the same
- * fixed order. Never throws and never refuses — a piece is always placed
- * somewhere, per DEC-010's "does not delete the piece" rule.
+ * Deterministic: the same inputs always produce the same anchor. Never throws
+ * and never refuses — a piece is always placed somewhere, per DEC-010's
+ * "does not delete the piece" rule.
  */
 export function firstFreeAnchor(
-  bounds: AnchorBounds,
+  bands: RoomBands,
   category: string | null,
   slotType: string | null,
   taken: ReadonlySet<string>,
 ): { x: number; y: number } {
-  const { minX, maxX, minY, maxY } = anchorRangeFor(bounds, category, slotType);
-
-  const preferredY = slotType === 'ceiling' ? minY
-    : slotType === 'wall' ? minY + Math.round((maxY - minY) * 0.3)
-      // floor, bed, and unknown (no `data`) all default to the floor line —
-      // most of the catalogue (bed/seating/table/plant/rug/luxury) stands on
-      // it, and a wall piece resting there is still in bounds, just not yet
-      // where a human would put it by hand.
-      : maxY;
+  const { minX, maxX, minY, maxY, preferredY } = anchorRangeFor(bands, category, slotType);
 
   const rows = [preferredY];
   for (let y = minY; y <= maxY; y++) if (y !== preferredY) rows.push(y);
 
-  /*
-   * Middle first, then outward — in strides of one piece width before filling
-   * in between.
-   *
-   * Stepping outward one anchor unit at a time is only 8px, and a piece is
-   * 40px wide: the first four pieces a player bought landed almost exactly on
-   * top of each other. A stride of the piece's own width spreads them across
-   * the room first, and the finer positions stay available afterwards so the
-   * room still holds its full decor cap.
-   */
   const mid = Math.round((minX + maxX) / 2);
   const columns: number[] = [];
   const push = (x: number) => { if (x >= minX && x <= maxX && !columns.includes(x)) columns.push(x); };
@@ -222,7 +316,30 @@ export function firstFreeAnchor(
       if (!taken.has(key)) return { x, y };
     }
   }
-  return { x: minX, y: minY };
+  return { x: minX, y: preferredY };
+}
+
+/**
+ * Where a stored anchor actually draws, in room-local pixels.
+ *
+ * Total: any integer pair resolves to a rectangle on the right band and inside
+ * the room. That is what lets the save format stay untouched — a piece stored
+ * against the old fractional bands is repaired when it is drawn, rather than
+ * migrated. The renderer calls this and nothing else.
+ */
+export function resolveDecorRect(
+  bands: RoomBands,
+  category: string | null,
+  slotType: string | null,
+  localX: number,
+  localY: number,
+): { x: number; y: number; w: number; h: number } {
+  const { w, h } = decorSizePx(slotType);
+  const [ax, ay] = decorAnchorFor(category);
+  const range = anchorRangeFor(bands, category, slotType);
+  const x = Math.min(range.maxX, Math.max(range.minX, localX)) * ANCHOR_PX_X;
+  const y = Math.min(range.maxY, Math.max(range.minY, localY)) * ANCHOR_PX_Y;
+  return { x: x - w * ax, y: y - h * ay, w, h };
 }
 
 /** Convenience: the `"x,y"` key `firstFreeAnchor`'s `taken` set expects. */

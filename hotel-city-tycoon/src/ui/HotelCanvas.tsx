@@ -41,6 +41,7 @@ function toSnapshot(state: GameState): SceneSnapshot {
       category: r.category,
       label: r.defId,
       assetKey: r.assetKey,
+      bands: r.bands,
       fill: r.fill,
       showMeter: r.showMeter,
       hasPest: r.hasPest,

@@ -15,7 +15,7 @@ import type { SimData } from '../core/data-source.ts';
 import { checkInvariants } from '../core/state/invariants.ts';
 import { SCHEMA_VERSION } from '../core/state/types.ts';
 import {
-  anchorBoundsFor, anchorKey, categoryFor, firstFreeAnchor, slotTypeFor,
+  anchorKey, categoryFor, firstFreeAnchor, roomBandsFor, slotTypeFor,
 } from '../core/systems/decorPlacement.ts';
 
 export const SAVE_KEY = 'hct:save';
@@ -417,14 +417,14 @@ export const MIGRATIONS: Record<number, Migration> = {
    * `zBias: 0`. `data`, when the caller has it, lets a piece prefer the
    * surface band its slotType belongs on and avoid the exact anchor another
    * piece in the same room already took; without it every piece still lands
-   * somewhere valid (see decorPlacement.ts's `anchorBoundsFor`), just closer
+   * somewhere valid (see decorPlacement.ts's `roomBandsFor`), just closer
    * to the floor by default. This is a starting position, not a finished
    * layout — nothing here deletes a piece or moves it to a different room.
    */
   17: (state, data) => {
     const migrateRoomDecor = (list: unknown, roomDefId: string | undefined): unknown => {
       if (!Array.isArray(list)) return list;
-      const bounds = anchorBoundsFor(data, roomDefId);
+      const bounds = roomBandsFor(data, roomDefId);
       const taken = new Set<string>();
       return list.map((raw) => {
         if (!raw || typeof raw !== 'object') return raw;

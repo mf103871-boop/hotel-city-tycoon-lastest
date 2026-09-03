@@ -12,6 +12,8 @@
 import type { GameState, RoomInstance, SimEvent } from '../core/state/types.ts';
 import type { RoomDef, SimData } from '../core/data-source.ts';
 import { decorFill } from '../core/systems/decor.ts';
+import { roomBandsFor } from '../core/systems/decorPlacement.ts';
+import type { RoomBands } from '../core/systems/decorPlacement.ts';
 import { tierFor } from '../core/systems/stars.ts';
 import { owned as ownedCount, sellValue } from '../core/systems/inventory.ts';
 import { slotAllowed } from '../core/systems/quality.ts';
@@ -101,6 +103,14 @@ export interface RoomSummary {
   nameKey: string;
   /** Base art for this room. The renderer falls back if the file is absent. */
   assetKey: string;
+  /**
+   * Where this room's own art puts its ceiling, wall and floor.
+   *
+   * Travels with the room for the same reason `assetKey` does: the render
+   * layer reads state, it does not query the data tables. Decor is positioned
+   * against these bands rather than against the room's bounding box.
+   */
+  bands: RoomBands;
   decor: RoomSummaryDecor[];
 }
 
@@ -160,6 +170,7 @@ export function summariseRoom(room: RoomInstance): RoomSummary {
     y: room.y,
     w: def?.blocks.w ?? 1,
     h: def?.blocks.h ?? 1,
+    bands: roomBandsFor(D(), room.defId),
     fill: def ? decorFill(def, room) : 1,
     showMeter: (def?.decorTarget ?? 0) > 0,
     hasPest: room.hasPest,

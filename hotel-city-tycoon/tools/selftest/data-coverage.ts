@@ -174,6 +174,8 @@ const RESERVED = new Map<string, string>([
   ['roomTypes', 'Phase 4 — nothing validates that a role may be assigned to the room it is assigned to.'],
 
   // --- Phase 5: room quality, decor, stars
+  ['reviewed', 'Read by tools/art/measure-interiors.mjs, not by the game: it marks an interior a human corrected by hand so the detector will not overwrite it. The bands beside it are read by roomBandsFor.'],
+
 
   // --- Phase 6: economy, shifts, XP, progression
   ['formula', 'Phase 6 — a written formula on economy.shiftCostScaling and levels.curve; the code implements its own.'],

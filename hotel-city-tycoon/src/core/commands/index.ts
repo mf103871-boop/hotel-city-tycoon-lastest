@@ -19,7 +19,7 @@ import { clearHazard } from '../systems/events.ts';
 import { queueCapacity, receptionEfficiency } from '../systems/guests.ts';
 import { owned, grant, consume, sellValue } from '../systems/inventory.ts';
 import { slotAllowed } from '../systems/quality.ts';
-import { anchorBoundsFor, anchorKey, firstFreeAnchor } from '../systems/decorPlacement.ts';
+import { anchorKey, firstFreeAnchor, roomBandsFor } from '../systems/decorPlacement.ts';
 import { Rng } from '../rng/index.ts';
 import { nextTier } from '../systems/upgrades.ts';
 import { shopOffers, shopPeriod, isOfferTaken, giftState, weekIndexOf, activeSeason } from '../systems/liveops.ts';
@@ -185,7 +185,7 @@ export function execute(data: SimData, state: GameState, cmd: Command): CommandR
       // DEC-010: a freshly placed piece needs somewhere to stand, not just a
       // slot index. The room's own current pieces are what it must not land
       // on top of; slotType picks which surface band it prefers.
-      const bounds = anchorBoundsFor(data, room.defId);
+      const bounds = roomBandsFor(data, room.defId);
       const takenAnchors = new Set(room.decor.map((p) => anchorKey(p.localX, p.localY)));
       const anchor = firstFreeAnchor(bounds, def.category, def.slotType, takenAnchors);
       room.decor.push({
