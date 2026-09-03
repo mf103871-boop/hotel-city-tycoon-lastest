@@ -63,6 +63,8 @@ export class HotelScene {
   private visibleCount = 0;
 
   private readonly gestures = new GestureTracker();
+  /** Detaches every DOM listener this scene adds to the canvas. */
+  private readonly domListeners = new AbortController();
   /** A rolling window of frame times, for the performance report. */
   readonly frames = new FrameSampler();
   /** True once the first snapshot has been drawn, so the grid appears at boot. */
@@ -242,11 +244,28 @@ export class HotelScene {
     stage.on('pointerupoutside', end);
     stage.on('pointercancel', () => this.gestures.cancel());
 
-    this.handle.app.canvas.addEventListener('wheel', (e: WheelEvent) => {
+    /*
+     * The cancel has to come from the DOM as well.
+     *
+     * Pixi's EventSystem listens for pointerdown/move/up on the canvas and
+     * window but never for `pointercancel`, so the stage handler above is
+     * never called on a real phone. When the OS took a touch away — a
+     * notification, a call, an edge swipe — the tracker kept that finger
+     * registered, every later single-finger touch counted as the second
+     * finger of a pinch, and the hotel could not be tapped or panned again
+     * until the page was reloaded.
+     */
+    const canvas = this.handle.app.canvas;
+    const { signal } = this.domListeners;
+    const cancel = () => this.gestures.cancel();
+    canvas.addEventListener('pointercancel', cancel, { signal });
+    canvas.addEventListener('lostpointercapture', cancel, { signal });
+
+    canvas.addEventListener('wheel', (e: WheelEvent) => {
       e.preventDefault();
       const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
       this.camera = zoomAt(this.camera, factor, { x: e.offsetX, y: e.offsetY }, this.view, this.world);
-    }, { passive: false });
+    }, { passive: false, signal });
   }
 
   private handleTap(screen: { x: number; y: number }): void {
@@ -272,6 +291,7 @@ export class HotelScene {
   }
 
   destroy(): void {
+    this.domListeners.abort();
     this.rooms.clear();
     this.characters.clear();
     this.grid.destroy();

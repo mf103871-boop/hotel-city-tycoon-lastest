@@ -181,6 +181,30 @@ await check('a cancelled pointer leaves no state behind', () => {
   eq(g.up(3, { x: 50, y: 50 }).kind, 'tap', 'the tracker did not recover after a cancel');
 });
 
+// ── AUDIT 2026-09-03 (D1): Pixi 8 never forwards DOM `pointercancel`, so the
+//    scene's stage listener for it was dead. One OS-cancelled touch left a
+//    finger registered for the rest of the session: every later tap read as
+//    the second finger of a pinch and the hotel could not be tapped or panned
+//    until a reload. The cancel now also comes straight from the canvas.
+await check('a touch the OS takes away would otherwise poison every later tap', () => {
+  const g = new GestureTracker();
+  g.down(1, { x: 100, y: 100 });            // cancelled by the OS: no up ever arrives
+  g.down(2, { x: 200, y: 200 });
+  const stuck = g.up(2, { x: 200, y: 200 });
+  assert(stuck.kind !== 'tap', 'the failure mode this guard documents no longer reproduces; revisit the guard');
+  g.cancel();                               // what the DOM pointercancel listener now does
+  g.down(3, { x: 200, y: 200 });
+  eq(g.up(3, { x: 200, y: 200 }).kind, 'tap', 'cancel() did not restore tapping');
+});
+
+await check('the scene listens for pointercancel on the canvas itself, not only on the Pixi stage', () => {
+  const scene = fs.readFileSync(path.join('src', 'render', 'scene.ts'), 'utf8');
+  assert(/canvas\.addEventListener\(\s*'pointercancel'/.test(scene),
+    'no DOM pointercancel listener on the canvas — Pixi will never deliver the stage one');
+  assert(/canvas\.addEventListener\(\s*'lostpointercapture'/.test(scene),
+    'no lostpointercapture listener on the canvas');
+});
+
 await check('pinch reports a zoom factor and a centre between the fingers', () => {
   const g = new GestureTracker();
   g.down(1, { x: 100, y: 200 });
