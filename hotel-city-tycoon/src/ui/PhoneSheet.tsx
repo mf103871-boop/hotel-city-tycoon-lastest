@@ -20,11 +20,18 @@ export function PhoneButton({ onOpen }: { onOpen: () => void }) {
   const attention = view.haunted + (view.climate ? 1 : 0);
 
   return (
+    /*
+     * Beside the Settings gear, under the header — not floating over the
+     * bottom bar. At `bottom-24 end-3 z-30` it sat on the right end of the
+     * "Open hotel" button and the shift countdown, and, being rendered after
+     * the panels with the same z-index, on top of every sheet's rows too.
+     * z-20 keeps it beneath the sheets.
+     */
     <button
       type="button"
       onClick={onOpen}
       aria-label="phone"
-      className="absolute bottom-24 end-3 z-30 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-midnight-900/90 text-xl backdrop-blur"
+      className="absolute end-16 top-24 z-20 flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 bg-midnight-900/85 text-lg backdrop-blur"
     >
       <span aria-hidden>📞</span>
       {attention > 0 && (

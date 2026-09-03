@@ -146,6 +146,8 @@ export function App() {
             onEmptyTap={onEmptyTap}
           />
           <DebugBadge stats={stats} />
+          {/* Rendered before the panels so every sheet stacks above it. */}
+          <PhoneButton onOpen={() => setPhoneOpen(true)} />
           <Hud
             locale={locale}
             onOpenBuild={() => setPanel('build')}
@@ -180,7 +182,6 @@ export function App() {
             />
           )}
           {giftOpen && <DailyGift locale={locale} onClose={() => setGiftOpen(false)} />}
-          <PhoneButton onOpen={() => setPhoneOpen(true)} />
           {phoneOpen && <PhoneSheet locale={locale} onClose={() => setPhoneOpen(false)} />}
           <SeasonBanner locale={locale} />
           <ClimateBanner locale={locale} />

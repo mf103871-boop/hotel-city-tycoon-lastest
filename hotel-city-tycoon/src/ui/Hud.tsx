@@ -11,7 +11,7 @@
 import type { ReactNode } from 'react';
 import { useGameStore } from '../bridge/index.ts';
 import {
-  hotelIsOpen, shiftSecondsLeft, bestAffordableShift, levelBarProgress, urgentRooms,
+  hotelIsOpen, shiftSecondsLeft, bestAffordableShift, levelBarProgress, urgentRooms, upgradesReachable,
 } from '../bridge/selectors.ts';
 import { translate } from '../i18n/index.ts';
 import { coins } from '../i18n/format.ts';
@@ -95,25 +95,31 @@ export function Hud({
             </button>
           )}
 
+          {/*
+            `min-w-0`: a flex item's minimum width is its content, so five
+            `flex-1` buttons could not shrink below their labels and the last
+            one was pushed past the bar — off the screen on a 390 px phone.
+            The buttons now share the width and, as a last resort, truncate.
+          */}
           <div className="mt-3 flex gap-2">
             <button
               type="button"
               onClick={onOpenBuild}
-              className="flex-1 rounded-lg border border-white/10 px-3 py-2.5 text-sm text-slate-200 hover:border-brass-500/60"
+              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-slate-200 hover:border-brass-500/60"
             >
               + {t('ui.build')}
             </button>
             <button
               type="button"
               onClick={onOpenShop}
-              className="flex-1 rounded-lg border border-white/10 px-3 py-2.5 text-sm text-slate-200 hover:border-brass-500/60"
+              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-slate-200 hover:border-brass-500/60"
             >
               {t('ui.shop')}
             </button>
             <button
               type="button"
               onClick={onOpenCity}
-              className="flex-1 rounded-lg border border-white/10 px-3 py-2.5 text-sm text-slate-200 hover:border-brass-500/60"
+              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-slate-200 hover:border-brass-500/60"
             >
               {t('ui.city')}
             </button>
@@ -121,17 +127,21 @@ export function Hud({
               type="button"
               data-testid="open-manage"
               onClick={onOpenManage}
-              className="flex-1 rounded-lg border border-white/10 px-3 py-2.5 text-sm text-slate-200 hover:border-brass-500/60"
+              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-slate-200 hover:border-brass-500/60"
             >
               {t('ui.manage')}
             </button>
-            <button
-              type="button"
-              onClick={onOpenUpgrades}
-              className="flex-1 rounded-lg border border-white/10 px-3 py-2.5 text-sm text-slate-200 hover:border-brass-500/60"
-            >
-              {t('ui.upgrades')}
-            </button>
+            {/* Hidden while no track can ever unlock (DEC #14): a panel of
+                disabled rows is not a destination. */}
+            {upgradesReachable(state) && (
+              <button
+                type="button"
+                onClick={onOpenUpgrades}
+                className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-slate-200 hover:border-brass-500/60"
+              >
+                {t('ui.upgrades')}
+              </button>
+            )}
           </div>
 
           <p className="mt-2 text-center text-[11px] text-slate-500">

@@ -227,6 +227,20 @@ await check('the page saves on pagehide, not only when hidden', () => {
   assert(/addEventListener\('pagehide'/.test(boot), 'no pagehide listener — iOS never fires beforeunload');
 });
 
+// ── AUDIT 2026-09-03 (D4): five `flex-1` buttons with content-sized minimum
+//    widths pushed the fifth (Upgrades) past the bottom bar and off a 390 px
+//    screen — and it opened a panel of rows that DEC #14 disables for good.
+await check('the Upgrades button is hidden while no track can unlock at the level cap', () => {
+  const cap = data.levels.reduce((max, l) => Math.max(max, l.level), 0);
+  const reachable = data.upgrades.some((u) => u.unlockLevel <= cap);
+  const hud = fs.readFileSync(path.join('src', 'ui', 'Hud.tsx'), 'utf8');
+  assert(/upgradesReachable\(state\) && \(/.test(hud), 'the HUD renders the Upgrades button unconditionally');
+  assert(/min-w-0 flex-1 truncate/.test(hud), 'the bottom-bar buttons can still not shrink below their labels');
+  // With the shipped data every track unlocks past the cap, so the button is
+  // hidden; the moment the data changes, it comes back on its own.
+  eq(reachable, false, `upgrades.json now reaches the cap (${cap}) — the guard above still holds, this line only documents DEC #14`);
+});
+
 // ── AUDIT 2026-09-03 (D1): Pixi 8 never forwards DOM `pointercancel`, so the
 //    scene's stage listener for it was dead. One OS-cancelled touch left a
 //    finger registered for the rest of the session: every later tap read as
