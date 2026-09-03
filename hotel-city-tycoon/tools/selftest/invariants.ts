@@ -154,10 +154,23 @@ check('a version 1 save migrates all the way to the current one', () => {
     delete g['everCheckedIn']; delete g['satisfaction']; delete g['satisfactionLog'];
   }
 
-  const migrated = migrate(modern, 1, SCHEMA_VERSION);
+  // A genuinely old save has no way to have an empty decor array either —
+  // it has a piece with only id/defId/slot, from before localX/localY/
+  // flipX/zBias (17→18) existed. Without one here the chain's newest step
+  // is only ever exercised against zero pieces.
+  const hotel = modern['hotel'] as { rooms: Array<Record<string, unknown>> };
+  hotel.rooms[0]!['decor'] = [{ id: 'chain-test-decor', defId: 'wallpaper_plain', slot: 0 }];
+  hotel.rooms[0]!['decorPoints'] = data.decor.find((d) => d.id === 'wallpaper_plain')!.decorPoints;
+
+  const migrated = migrate(modern, 1, SCHEMA_VERSION, data);
   const problems = validateState(migrated);
   assert(problems.length === 0, `a version 1 save does not survive the chain: ${problems.join('; ')}`);
   sound(migrated as unknown as GameState, 'after migrating from version 1');
+
+  const migratedPiece = ((migrated['hotel'] as { rooms: Array<{ decor: Array<Record<string, unknown>> }> })
+    .rooms[0]!.decor[0]!);
+  assert(Number.isInteger(migratedPiece['localX']) && Number.isInteger(migratedPiece['localY']),
+    'the version-1 decor piece has no anchor after the full chain');
 });
 
 check('a save round-trips and stays sound', async () => {

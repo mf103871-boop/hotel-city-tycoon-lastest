@@ -14,6 +14,7 @@ import type { GameState } from '../core/state/types.ts';
 import type { SimData } from '../core/data-source.ts';
 import { checkInvariants } from '../core/state/invariants.ts';
 import { SCHEMA_VERSION } from '../core/state/types.ts';
+import { anchorBoundsFor, anchorKey, firstFreeAnchor, slotTypeFor } from '../core/systems/decorPlacement.ts';
 
 export const SAVE_KEY = 'hct:save';
 export const QUARANTINE_KEY = 'hct:save:quarantine';
@@ -113,8 +114,14 @@ export interface SaveEnvelope {
  * The chain is currently trivial because P2 defined version 1. It exists now
  * rather than later precisely because writing migrations is cheap while the
  * shape is fresh and expensive once four phases have changed it.
+ *
+ * `data` is optional and most steps ignore it — the state itself is normally
+ * everything a migration needs. It exists for the one step (17→18) that
+ * benefits from knowing a room's real footprint and a decor piece's
+ * slotType; without it that step still produces a valid result, just a less
+ * tidy one (see decorPlacement.ts).
  */
-export type Migration = (state: Record<string, unknown>) => Record<string, unknown>;
+export type Migration = (state: Record<string, unknown>, data: SimData | null) => Record<string, unknown>;
 
 export const MIGRATIONS: Record<number, Migration> = {
   /**
@@ -396,14 +403,65 @@ export const MIGRATIONS: Record<number, Migration> = {
       climate: (state['climate'] as unknown) ?? null,
     };
   },
+
+  /**
+   * 17 → 18: decor gets a place to stand (DEC-010,
+   * docs/HC-P1-S1-PLACEMENT-DECISION.md).
+   *
+   * `slot` said which bucket of the room a piece filled and nothing about
+   * where it stood, so SceneSnapshot and RoomView have never been able to
+   * draw it. Every piece keeps its `slot` untouched and gains a local anchor
+   * (16 units per block, from the room's own top-left), `flipX: false`, and
+   * `zBias: 0`. `data`, when the caller has it, lets a piece prefer the
+   * surface band its slotType belongs on and avoid the exact anchor another
+   * piece in the same room already took; without it every piece still lands
+   * somewhere valid (see decorPlacement.ts's `anchorBoundsFor`), just closer
+   * to the floor by default. This is a starting position, not a finished
+   * layout — nothing here deletes a piece or moves it to a different room.
+   */
+  17: (state, data) => {
+    const migrateRoomDecor = (list: unknown, roomDefId: string | undefined): unknown => {
+      if (!Array.isArray(list)) return list;
+      const bounds = anchorBoundsFor(data, roomDefId);
+      const taken = new Set<string>();
+      return list.map((raw) => {
+        if (!raw || typeof raw !== 'object') return raw;
+        const piece = raw as Record<string, unknown>;
+        const slotType = slotTypeFor(data, piece['defId'] as string);
+        const anchor = firstFreeAnchor(bounds, slotType, taken);
+        taken.add(anchorKey(anchor.x, anchor.y));
+        return { localX: anchor.x, localY: anchor.y, flipX: false, zBias: 0, ...piece };
+      });
+    };
+
+    const hotel = state['hotel'] as { rooms?: Array<Record<string, unknown>> } | undefined;
+    const rooms = (hotel?.rooms ?? []).map((r) => ({
+      ...r,
+      decor: migrateRoomDecor(r['decor'], r['defId'] as string | undefined),
+    }));
+    const storedRooms = Array.isArray(state['storedRooms'])
+      ? (state['storedRooms'] as Array<Record<string, unknown>>).map((r) => ({
+          ...r,
+          decor: migrateRoomDecor(r['decor'], r['defId'] as string | undefined),
+        }))
+      : state['storedRooms'];
+
+    return {
+      ...state,
+      ...(hotel ? { hotel: { ...hotel, rooms } } : {}),
+      ...(storedRooms !== undefined ? { storedRooms } : {}),
+    };
+  },
 };
 
-export function migrate(raw: Record<string, unknown>, from: number, to: number): Record<string, unknown> {
+export function migrate(
+  raw: Record<string, unknown>, from: number, to: number, data: SimData | null = null,
+): Record<string, unknown> {
   let state = raw;
   for (let v = from; v < to; v++) {
     const step = MIGRATIONS[v];
     if (!step) throw new Error(`No migration from save version ${v} to ${v + 1}`);
-    state = step(state);
+    state = step(state, data);
   }
   return state;
 }
@@ -482,6 +540,17 @@ export function validateState(value: unknown): string[] {
       if (!Number.isInteger(p['slot']) || (p['slot'] as number) < 0) {
         fail(`${where} decor ${j} has no valid slot`);
       }
+      // DEC-010, schema 18. Migration always runs before this check, so a
+      // piece reaching here has already been given a position — there is no
+      // schema-version branch to take.
+      if (!Number.isInteger(p['localX']) || (p['localX'] as number) < 0) {
+        fail(`${where} decor ${j} has no valid localX`);
+      }
+      if (!Number.isInteger(p['localY']) || (p['localY'] as number) < 0) {
+        fail(`${where} decor ${j} has no valid localY`);
+      }
+      if (typeof p['flipX'] !== 'boolean') fail(`${where} decor ${j} has no flipX`);
+      if (!Number.isInteger(p['zBias'])) fail(`${where} decor ${j} has no zBias`);
     });
   };
 
@@ -713,7 +782,7 @@ export class SaveManager {
     const migratedFrom = env.version < SCHEMA_VERSION ? env.version : null;
     if (migratedFrom !== null) {
       try {
-        state = migrate(env.state as unknown as Record<string, unknown>, env.version, SCHEMA_VERSION);
+        state = migrate(env.state as unknown as Record<string, unknown>, env.version, SCHEMA_VERSION, this.data);
       } catch (e) {
         await this.quarantine(raw);
         return { ok: false, reason: 'unmigratable', detail: (e as Error).message };
@@ -814,7 +883,7 @@ export class SaveManager {
     let state: unknown = env.state;
     if (env.version < SCHEMA_VERSION) {
       try {
-        state = migrate(env.state as unknown as Record<string, unknown>, env.version, SCHEMA_VERSION);
+        state = migrate(env.state as unknown as Record<string, unknown>, env.version, SCHEMA_VERSION, this.data);
       } catch (e) {
         return { ok: false, reason: 'unmigratable', detail: (e as Error).message };
       }

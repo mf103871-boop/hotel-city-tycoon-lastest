@@ -19,6 +19,7 @@ import { clearHazard } from '../systems/events.ts';
 import { queueCapacity, receptionEfficiency } from '../systems/guests.ts';
 import { owned, grant, consume, sellValue } from '../systems/inventory.ts';
 import { slotAllowed } from '../systems/quality.ts';
+import { anchorBoundsFor, anchorKey, firstFreeAnchor } from '../systems/decorPlacement.ts';
 import { Rng } from '../rng/index.ts';
 import { nextTier } from '../systems/upgrades.ts';
 import { shopOffers, shopPeriod, isOfferTaken, giftState, weekIndexOf, activeSeason } from '../systems/liveops.ts';
@@ -181,7 +182,16 @@ export function execute(data: SimData, state: GameState, cmd: Command): CommandR
         pay(state, def.cost, 'decorBuy');
       }
 
-      room.decor.push({ id: `d${state.counters.decor++}`, defId: cmd.defId, slot: cmd.slot });
+      // DEC-010: a freshly placed piece needs somewhere to stand, not just a
+      // slot index. The room's own current pieces are what it must not land
+      // on top of; slotType picks which surface band it prefers.
+      const bounds = anchorBoundsFor(data, room.defId);
+      const takenAnchors = new Set(room.decor.map((p) => anchorKey(p.localX, p.localY)));
+      const anchor = firstFreeAnchor(bounds, def.slotType, takenAnchors);
+      room.decor.push({
+        id: `d${state.counters.decor++}`, defId: cmd.defId, slot: cmd.slot,
+        localX: anchor.x, localY: anchor.y, flipX: false, zBias: 0,
+      });
       room.decorPoints = computeDecorPoints(data, room);
       // XP is for the purchase, not for moving a piece between rooms. Paying it
       // on a stored item would make take-down-and-replace an XP tap.

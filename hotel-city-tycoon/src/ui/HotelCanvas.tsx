@@ -47,6 +47,16 @@ function toSnapshot(state: GameState): SceneSnapshot {
       hasFire: r.hasFire,
       hasGhost: r.hasGhost,
       occupants: r.occupants,
+      decor: r.decor.map((p) => ({
+        id: p.id,
+        defId: p.defId,
+        category: p.category,
+        slotType: p.slotType,
+        localX: p.localX,
+        localY: p.localY,
+        flipX: p.flipX,
+        zBias: p.zBias,
+      })),
     })),
   };
 }

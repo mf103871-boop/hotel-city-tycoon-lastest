@@ -38,6 +38,7 @@ import {
   effectiveDecorPoints, variety, condition, hotelScore, amenityCoverage,
 } from '../../src/core/systems/quality.ts';
 import { computeStars, structuralCeiling, incomeMultiplier, effectiveStars, tierFor } from '../../src/core/systems/stars.ts';
+import { slotAllowed } from '../../src/core/systems/quality.ts';
 import { GameEngine, fakeClock } from '../../src/bridge/engine.ts';
 import { SaveManager, MemoryStorage, migrate, validateState, SAVE_KEY, QUARANTINE_KEY } from '../../src/save/index.ts';
 import { SCHEMA_VERSION } from '../../src/core/state/types.ts';
@@ -1180,7 +1181,7 @@ check('stacking the cheapest piece has diminishing returns', () => {
 
   const points: number[] = [];
   for (let i = 0; i < 4; i++) {
-    room.decor.push({ id: `x${i}`, defId: cheap.id, slot: i });
+    room.decor.push({ id: `x${i}`, defId: cheap.id, slot: i, localX: i, localY: 0, flipX: false, zBias: 0 });
     points.push(effectiveDecorPoints(data, room));
   }
   const first = points[0]!;
@@ -1196,8 +1197,8 @@ check('repeats keep diminishing returns; variety is neutralised (decision 8b)', 
   const items = data.decor.filter((d) => d.slotType !== 'bed' && d.unlockLevel <= 5);
   if (items.length < 4 || same === mixed) return;
 
-  same.decor = [0, 1, 2, 3].map((i) => ({ id: `s${i}`, defId: items[0]!.id, slot: i }));
-  mixed.decor = [0, 1, 2, 3].map((i) => ({ id: `m${i}`, defId: items[i % items.length]!.id, slot: i }));
+  same.decor = [0, 1, 2, 3].map((i) => ({ id: `s${i}`, defId: items[0]!.id, slot: i, localX: i, localY: 0, flipX: false, zBias: 0 }));
+  mixed.decor = [0, 1, 2, 3].map((i) => ({ id: `m${i}`, defId: items[i % items.length]!.id, slot: i, localX: i, localY: 0, flipX: false, zBias: 0 }));
   // Decision 8b: the variety requirement is neutralised (varietyFloor = 1)...
   eq(variety(data, mixed), variety(data, same), 'variety is supposed to be neutralised');
   eq(variety(data, same), 1, 'varietyFloor is no longer 1');
@@ -1292,7 +1293,7 @@ check('five stars cannot be bought with the cheapest piece repeated', () => {
     room.cleanliness = 1;
     const def = data.rooms.find((d) => d.id === room.defId)!;
     room.decor = Array.from({ length: Math.min(20, def.decorSlots) }, (_, i) => ({
-      id: `c${room.id}_${i}`, defId: cheap.id, slot: i,
+      id: `c${room.id}_${i}`, defId: cheap.id, slot: i, localX: i, localY: 0, flipX: false, zBias: 0,
     }));
     room.decorPoints = effectiveDecorPoints(data, room);
   }
@@ -1746,6 +1747,162 @@ check('expansion, move, store and inventory all survive a reload', async () => {
   assert(back.state.hotel.plotId === plotAfter, 'the expanded plot did not survive');
   assert(back.state.storedRooms.length === storedBefore, 'the stored room did not survive');
   assert(owned(back.state, 'wallpaper_plain') === ownedBefore, 'the owned decor did not survive');
+});
+
+// ---------------------------------------------------------- DEC-010 position
+
+check('a freshly placed piece gets a real, in-bounds anchor — not the same spot twice', () => {
+  const state = fresh();
+  state.player.coins += 5_000_000;
+  state.player.level = 40;
+  execute(data, state, { type: 'BUILD_ROOM', defId: 'standard' });
+  const room = state.hotel.rooms[state.hotel.rooms.length - 1]!;
+  const rdef = roomDef(data, room.defId);
+
+  const wall = data.decor.find((d) => d.slotType === 'wall' && d.unlockLevel <= 40)!;
+  const floor = data.decor.find((d) => d.slotType !== 'wall' && d.slotType !== 'ceiling' && d.unlockLevel <= 40
+    && slotAllowed(data, rdef, d.id))!;
+  assert(execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: wall.id, slot: 0 }).ok, 'wall piece refused');
+  assert(execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: floor.id, slot: 1 }).ok, 'floor piece refused');
+  const [a, b] = room.decor;
+
+  for (const piece of [a!, b!]) {
+    assert(Number.isInteger(piece.localX) && piece.localX >= 0 && piece.localX < rdef.blocks.w * 16,
+      `localX ${piece.localX} out of the room's ${rdef.blocks.w}-block width`);
+    assert(Number.isInteger(piece.localY) && piece.localY >= 0 && piece.localY < rdef.blocks.h * 16,
+      `localY ${piece.localY} out of the room's ${rdef.blocks.h}-block height`);
+    assert(piece.flipX === false, 'a freshly placed piece starts flipped');
+    assert(piece.zBias === 0, 'a freshly placed piece starts with a non-zero zBias');
+  }
+  assert(a!.localX !== b!.localX || a!.localY !== b!.localY, 'both pieces landed on the same anchor');
+  // Room-local Y grows downward (RoomView draws top-left origin, height
+  // going down) — a wall piece belongs nearer the top than a floor piece.
+  assert(a!.localY < b!.localY, `the wall piece (y=${a!.localY}) is not above the floor piece (y=${b!.localY})`);
+});
+
+check('placing two of the same piece never reuses an anchor', () => {
+  const state = fresh();
+  state.player.coins += 5_000_000;
+  state.player.level = 40;
+  assert(execute(data, state, { type: 'BUILD_ROOM', defId: 'standard' }).ok, 'could not build the room');
+  const room = state.hotel.rooms[state.hotel.rooms.length - 1]!;
+  const rug = data.decor.find((d) => d.slotType === 'floor' && d.unlockLevel <= 40)!;
+  const seen = new Set<string>();
+  let placed = 0;
+  for (let slot = 0; slot < roomDef(data, room.defId).decorSlots && placed < 6; slot++) {
+    if (!execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: rug.id, slot }).ok) continue;
+    placed++;
+  }
+  assert(placed >= 4, `only placed ${placed} copies of the same piece — cannot check anchor spread`);
+  for (const piece of room.decor) {
+    const key = `${piece.localX},${piece.localY}`;
+    assert(!seen.has(key), `two copies of ${rug.id} share anchor ${key}`);
+    seen.add(key);
+  }
+});
+
+check('decor position, flip and z-bias survive a reload', async () => {
+  const state = fresh();
+  state.player.coins += 5_000_000;
+  state.player.level = 40;
+  execute(data, state, { type: 'BUILD_ROOM', defId: 'standard' });
+  const room = state.hotel.rooms[state.hotel.rooms.length - 1]!;
+  execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
+  const piece = room.decor[0]!;
+  // Nothing sets flipX/zBias to anything but the defaults yet (no MOVE_DECOR
+  // or FLIP_DECOR command exists — HC-P1-S3's own scope note), so the round
+  // trip is checked against those defaults directly rather than against a
+  // hand-mutated value the game cannot actually produce.
+
+  const saves = new SaveManager(new MemoryStorage());
+  assert((await saves.save(state, state.epochMs)).ok, 'the save did not write');
+  const back = await saves.load();
+  assert(back.ok, 'the save did not load');
+  const restored = back.state.hotel.rooms.find((r) => r.id === room.id)!.decor[0]!;
+  assert(restored.localX === piece.localX && restored.localY === piece.localY,
+    `anchor moved on reload: (${piece.localX},${piece.localY}) -> (${restored.localX},${restored.localY})`);
+  assert(restored.flipX === piece.flipX, 'flipX did not survive a reload');
+  assert(restored.zBias === piece.zBias, 'zBias did not survive a reload');
+});
+
+check('migration 17→18 gives every legacy piece a valid anchor, with no SimData at all', () => {
+  const legacyRoom = {
+    id: 'r1', defId: 'standard', x: 0, y: 0, cleanliness: 1,
+    hasPest: false, hasFire: false, hasGhost: false, occupants: [],
+    decor: [
+      { id: 'd0', defId: 'wallpaper_plain', slot: 0 },
+      { id: 'd1', defId: 'bed_single', slot: 1 },
+      { id: 'd2', defId: 'seating_armchair', slot: 2 },
+    ],
+  };
+  const legacyStored = {
+    id: 's1', defId: 'economy', decorPoints: 0, cleanliness: 1, builtAtTick: 0,
+    decor: [{ id: 'd3', defId: 'rug_mat', slot: 0 }],
+  };
+  const raw = {
+    hotel: { rooms: [legacyRoom] },
+    storedRooms: [legacyStored],
+  };
+  // No fourth argument: this is the call every existing selftest already
+  // makes, and the one a SaveManager built without SimData still makes too.
+  const migrated = migrate(raw as unknown as Record<string, unknown>, 17, 18) as {
+    hotel: { rooms: Array<{ decor: Array<Record<string, unknown>> }> };
+    storedRooms: Array<{ decor: Array<Record<string, unknown>> }>;
+  };
+
+  const allPieces = [...migrated.hotel.rooms[0]!.decor, ...migrated.storedRooms[0]!.decor];
+  const anchors = new Set<string>();
+  for (const p of allPieces) {
+    assert(Number.isInteger(p['localX']) && (p['localX'] as number) >= 0 && (p['localX'] as number) < 16,
+      `${p['id']} localX ${p['localX']} is outside the safe 1x1-block fallback`);
+    assert(Number.isInteger(p['localY']) && (p['localY'] as number) >= 0 && (p['localY'] as number) < 16,
+      `${p['id']} localY ${p['localY']} is outside the safe 1x1-block fallback`);
+    eq(p['flipX'], false, `${p['id']} did not default to flipX=false`);
+    eq(p['zBias'], 0, `${p['id']} did not default to zBias=0`);
+  }
+  eq(migrated.hotel.rooms[0]!.decor[0]!['slot'], 0, 'slot was touched by the migration');
+  eq(migrated.hotel.rooms[0]!.decor[1]!['defId'], 'bed_single', 'defId was touched by the migration');
+  for (const p of migrated.hotel.rooms[0]!.decor) {
+    const key = `${p['localX']},${p['localY']}`;
+    assert(!anchors.has(key), `two pieces in the same room share anchor ${key}`);
+    anchors.add(key);
+  }
+});
+
+check('migration 17→18 with SimData respects the room\'s real footprint and surface bands', () => {
+  const rdef = roomDef(data, 'presidential'); // 3x2 blocks — bigger than the 1x1 fallback
+  const legacyRoom = {
+    id: 'r1', defId: 'presidential', x: 0, y: 0, cleanliness: 1,
+    hasPest: false, hasFire: false, hasGhost: false, occupants: [],
+    decor: [
+      { id: 'wall0', defId: 'wallpaper_plain', slot: 0 }, // slotType: wall
+      { id: 'floor0', defId: 'bed_single', slot: 1 },      // slotType: bed
+    ],
+  };
+  const migrated = migrate(
+    { hotel: { rooms: [legacyRoom] } } as unknown as Record<string, unknown>, 17, 18, data,
+  ) as { hotel: { rooms: Array<{ decor: Array<Record<string, unknown>> }> } };
+  const [wall, floor] = migrated.hotel.rooms[0]!.decor;
+
+  const maxX = rdef.blocks.w * 16 - 1;
+  const maxY = rdef.blocks.h * 16 - 1;
+  for (const p of [wall!, floor!]) {
+    assert((p['localX'] as number) <= maxX, `${p['id']} escaped the room's real ${rdef.blocks.w}-block width`);
+    assert((p['localY'] as number) <= maxY, `${p['id']} escaped the room's real ${rdef.blocks.h}-block height`);
+  }
+  // presidential is taller than the 1x1 fallback (32 vs 16 anchor units), so
+  // this only proves something if the real footprint was actually used.
+  assert(maxY > 15, 'test fixture stopped being bigger than the fallback room');
+  assert((wall!['localY'] as number) < (floor!['localY'] as number),
+    `with real data the wall piece (y=${wall!['localY']}) should sit above the bed (y=${floor!['localY']})`);
+});
+
+check('a decor piece missing its DEC-010 fields is refused, not silently accepted', () => {
+  const state = JSON.parse(JSON.stringify(fresh())) as Record<string, unknown>;
+  const hotel = state['hotel'] as { rooms: Array<Record<string, unknown>> };
+  hotel.rooms[0]!['decor'] = [{ id: 'd0', defId: 'wallpaper_plain', slot: 0 }]; // no localX/localY/flipX/zBias
+  const problems = validateState(state);
+  assert(problems.some((p) => p.includes('localX')), `missing localX was not caught: ${problems.join('; ')}`);
 });
 
 check('the plot ladder cannot be skipped', () => {

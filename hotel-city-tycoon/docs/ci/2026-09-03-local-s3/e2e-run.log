@@ -1,0 +1,415 @@
+
+Running 82 tests using 1 worker
+
+[1/82] [desktop] › tests/e2e/game.spec.ts:59:1 › the game boots past the loading screen
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[2/82] [desktop] › tests/e2e/game.spec.ts:67:1 › a renderer initialises and says which one
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[3/82] [desktop] › tests/e2e/game.spec.ts:74:1 › the room art actually loads
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[4/82] [desktop] › tests/e2e/game.spec.ts:85:1 › no errors reach the console on a clean boot
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[5/82] [desktop] › tests/e2e/game.spec.ts:94:1 › the shift countdown ticks every second
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[6/82] [desktop] › tests/e2e/game.spec.ts:109:1 › guests appear once the hotel is open
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[7/82] [desktop] › tests/e2e/game.spec.ts:127:1 › the build menu lists every room and explains what is locked
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[8/82] [desktop] › tests/e2e/game.spec.ts:138:1 › building a room adds it to the hotel
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[9/82] [desktop] › tests/e2e/game.spec.ts:152:1 › tapping a room opens its sheet, and decorating moves the meter
+[10/82] [desktop] › tests/e2e/game.spec.ts:177:1 › the objective card appears and advances when claimed
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[11/82] [desktop] › tests/e2e/game.spec.ts:192:1 › a facility can be built and staffed
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[12/82] [desktop] › tests/e2e/game.spec.ts:205:1 › characters are drawn, not left as placeholder shapes
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[13/82] [desktop] › tests/e2e/game.spec.ts:224:1 › the debug badge can be turned on in a deployed build
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[14/82] [desktop] › tests/e2e/game.spec.ts:230:1 › switching to Arabic sets the document direction
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[15/82] [desktop] › tests/e2e/game.spec.ts:239:1 › the game is operable with reduced motion
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[16/82] [desktop] › tests/e2e/game.spec.ts:254:1 › every control can be reached and named
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[17/82] [desktop] › tests/e2e/game.spec.ts:265:1 › controls are large enough to hit on a phone
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[18/82] [desktop] › tests/e2e/game.spec.ts:277:1 › a render error shows a recovery screen, not a blank page
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[19/82] [desktop] › tests/e2e/game.spec.ts:295:1 › the game starts even when storage is unavailable
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[20/82] [desktop] › tests/e2e/game.spec.ts:313:1 › the shop offers a discounted shelf that can be bought from
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[21/82] [desktop] › tests/e2e/game.spec.ts:325:1 › the shop says when its stock changes
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[22/82] [desktop] › tests/e2e/game.spec.ts:333:1 › the city shows rivals and says plainly what they are
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[23/82] [desktop] › tests/e2e/game.spec.ts:344:1 › visiting a rival pays once and then stops
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[24/82] [desktop] › tests/e2e/game.spec.ts:355:1 › the upgrades panel shows what a tier would change
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[25/82] [desktop] › tests/e2e/game.spec.ts:370:1 › the daily gift is offered without being hunted for
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[26/82] [desktop] › tests/e2e/game.spec.ts:380:1 › a refusal explains itself instead of doing nothing
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[27/82] [desktop] › tests/e2e/game.spec.ts:391:1 › every bottom-bar destination opens
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[28/82] [desktop] › tests/e2e/game.spec.ts:412:1 › the hotel survives a full reload
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[29/82] [desktop] › tests/e2e/game.spec.ts:440:1 › the language switch flips the HUD without flipping the canvas
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[30/82] [desktop] › tests/e2e/game.spec.ts:451:1 › a save can be exported
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[31/82] [desktop] › tests/e2e/game.spec.ts:463:1 › sound can be turned off
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[32/82] [desktop] › tests/e2e/game.spec.ts:474:1 › the hotel cannot be dragged off screen
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[33/82] [desktop] › tests/e2e/manage.spec.ts:58:1 › the plot can be expanded, and the panel says what it costs
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[34/82] [desktop] › tests/e2e/manage.spec.ts:78:1 › an expansion that cannot be afforded explains itself and stays open
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[35/82] [desktop] › tests/e2e/manage.spec.ts:105:1 › a room can be moved to a valid square
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[36/82] [desktop] › tests/e2e/manage.spec.ts:135:1 › the placement preview refuses a square that does not fit
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[37/82] [desktop] › tests/e2e/manage.spec.ts:155:1 › a room can be stored and put back, keeping what was in it
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[38/82] [desktop] › tests/e2e/manage.spec.ts:178:1 › an occupied or dirty room offers no Store button at all
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[39/82] [desktop] › tests/e2e/manage.spec.ts:197:1 › decor can be removed, appears in the inventory, and goes back for free
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[40/82] [desktop] › tests/e2e/manage.spec.ts:225:1 › an unplaced piece can be sold, and asks first
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[41/82] [desktop] › tests/e2e/manage.spec.ts:251:1 › everything done here survives a full reload
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[42/82] [phone] › tests/e2e/game.spec.ts:59:1 › the game boots past the loading screen
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[43/82] [phone] › tests/e2e/game.spec.ts:67:1 › a renderer initialises and says which one
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[44/82] [phone] › tests/e2e/game.spec.ts:74:1 › the room art actually loads
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[45/82] [phone] › tests/e2e/game.spec.ts:85:1 › no errors reach the console on a clean boot
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[46/82] [phone] › tests/e2e/game.spec.ts:94:1 › the shift countdown ticks every second
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[47/82] [phone] › tests/e2e/game.spec.ts:109:1 › guests appear once the hotel is open
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[48/82] [phone] › tests/e2e/game.spec.ts:127:1 › the build menu lists every room and explains what is locked
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[49/82] [phone] › tests/e2e/game.spec.ts:138:1 › building a room adds it to the hotel
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[50/82] [phone] › tests/e2e/game.spec.ts:152:1 › tapping a room opens its sheet, and decorating moves the meter
+[51/82] [phone] › tests/e2e/game.spec.ts:177:1 › the objective card appears and advances when claimed
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[52/82] [phone] › tests/e2e/game.spec.ts:192:1 › a facility can be built and staffed
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[53/82] [phone] › tests/e2e/game.spec.ts:205:1 › characters are drawn, not left as placeholder shapes
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[54/82] [phone] › tests/e2e/game.spec.ts:224:1 › the debug badge can be turned on in a deployed build
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[55/82] [phone] › tests/e2e/game.spec.ts:230:1 › switching to Arabic sets the document direction
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[56/82] [phone] › tests/e2e/game.spec.ts:239:1 › the game is operable with reduced motion
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[57/82] [phone] › tests/e2e/game.spec.ts:254:1 › every control can be reached and named
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[58/82] [phone] › tests/e2e/game.spec.ts:265:1 › controls are large enough to hit on a phone
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[59/82] [phone] › tests/e2e/game.spec.ts:277:1 › a render error shows a recovery screen, not a blank page
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[60/82] [phone] › tests/e2e/game.spec.ts:295:1 › the game starts even when storage is unavailable
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[61/82] [phone] › tests/e2e/game.spec.ts:313:1 › the shop offers a discounted shelf that can be bought from
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[62/82] [phone] › tests/e2e/game.spec.ts:325:1 › the shop says when its stock changes
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[63/82] [phone] › tests/e2e/game.spec.ts:333:1 › the city shows rivals and says plainly what they are
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[64/82] [phone] › tests/e2e/game.spec.ts:344:1 › visiting a rival pays once and then stops
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[65/82] [phone] › tests/e2e/game.spec.ts:355:1 › the upgrades panel shows what a tier would change
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[66/82] [phone] › tests/e2e/game.spec.ts:370:1 › the daily gift is offered without being hunted for
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[67/82] [phone] › tests/e2e/game.spec.ts:380:1 › a refusal explains itself instead of doing nothing
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[68/82] [phone] › tests/e2e/game.spec.ts:391:1 › every bottom-bar destination opens
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[69/82] [phone] › tests/e2e/game.spec.ts:412:1 › the hotel survives a full reload
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[70/82] [phone] › tests/e2e/game.spec.ts:440:1 › the language switch flips the HUD without flipping the canvas
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[71/82] [phone] › tests/e2e/game.spec.ts:451:1 › a save can be exported
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[72/82] [phone] › tests/e2e/game.spec.ts:463:1 › sound can be turned off
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[73/82] [phone] › tests/e2e/game.spec.ts:474:1 › the hotel cannot be dragged off screen
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[74/82] [phone] › tests/e2e/manage.spec.ts:58:1 › the plot can be expanded, and the panel says what it costs
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[75/82] [phone] › tests/e2e/manage.spec.ts:78:1 › an expansion that cannot be afforded explains itself and stays open
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[76/82] [phone] › tests/e2e/manage.spec.ts:105:1 › a room can be moved to a valid square
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[77/82] [phone] › tests/e2e/manage.spec.ts:135:1 › the placement preview refuses a square that does not fit
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[78/82] [phone] › tests/e2e/manage.spec.ts:155:1 › a room can be stored and put back, keeping what was in it
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[79/82] [phone] › tests/e2e/manage.spec.ts:178:1 › an occupied or dirty room offers no Store button at all
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[80/82] [phone] › tests/e2e/manage.spec.ts:197:1 › decor can be removed, appears in the inventory, and goes back for free
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[81/82] [phone] › tests/e2e/manage.spec.ts:225:1 › an unplaced piece can be sold, and asks first
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+[82/82] [phone] › tests/e2e/manage.spec.ts:251:1 › everything done here survives a full reload
+[WebServer] Assets in public directory cannot be imported from JavaScript.
+[WebServer] If you intend to import that asset, put the file in the src directory, and use /src/assets/manifest.json instead of /public/assets/manifest.json.
+[WebServer] If you intend to use the URL of that asset, use /assets/manifest.json?url.
+
+  10 skipped
+  72 passed (2.6m)

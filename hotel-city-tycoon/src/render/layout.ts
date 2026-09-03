@@ -30,6 +30,23 @@ export function roomWorldRect(rect: Rect, plotHeight: number): WorldBounds {
   return { x: topLeft.x, y: topLeft.y, width: rect.w * BLOCK_W, height: rect.h * BLOCK_H };
 }
 
+/**
+ * Decor anchor units (DEC-010, docs/HC-P1-S1-PLACEMENT-DECISION.md): 16 per
+ * block, so one unit is 8px horizontally and 6px vertically at 1x. A piece's
+ * `localX`/`localY` are in these units, measured from the room's own
+ * top-left — the same origin RoomView draws its own art from (roomView.ts),
+ * so the conversion below is the only step needed to place a piece inside a
+ * room's local Pixi space.
+ */
+export const ANCHOR_UNITS_PER_BLOCK = 16;
+export const ANCHOR_PX_X = BLOCK_W / ANCHOR_UNITS_PER_BLOCK;
+export const ANCHOR_PX_Y = BLOCK_H / ANCHOR_UNITS_PER_BLOCK;
+
+/** A decor anchor, in room-local pixels from the room's top-left. */
+export function anchorToLocalPx(localX: number, localY: number): { x: number; y: number } {
+  return { x: localX * ANCHOR_PX_X, y: localY * ANCHOR_PX_Y };
+}
+
 /** World bounds of the whole buildable plot, plus ground and sky margin. */
 export function plotWorldBounds(gridW: number, gridH: number): WorldBounds {
   const marginX = BLOCK_W;
