@@ -6,7 +6,7 @@
   "description": "Hotel City Tycoon \u2014 session-by-session retention",
   "scripts": {
     "dev": "vite",
-    "build": "npm run validate:data && tsc -b && vite build && npm run check:budget && npm run check:cheats",
+    "build": "npm run validate:data && tsc -b && vite build && node tools/stamp-sw.mjs && npm run check:budget && npm run check:cheats",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
     "lint": "eslint .",
