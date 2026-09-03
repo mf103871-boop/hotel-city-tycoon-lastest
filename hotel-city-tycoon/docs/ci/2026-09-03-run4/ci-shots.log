@@ -1,0 +1,29 @@
+[server] 
+> hotel-city-tycoon@0.1.0 dev
+> vite
+
+[server] 
+  [32m[1mVITE[22m v6.4.3[39m  [2mready in [0m[1m217[22m[2m[0m ms[22m
+
+[server]   [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5173[22m/[39m
+[server] [33mAssets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use [36m/src/assets/manifest.json[33m instead of [36m/public/assets/manifest.json[33m.
+If you intend to use the URL of that asset, use [36m/assets/manifest.json?url[33m.[39m
+[baseline] 01-main.png: OK
+[server] [33mAssets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use [36m/src/assets/manifest.json[33m instead of [36m/public/assets/manifest.json[33m.
+If you intend to use the URL of that asset, use [36m/assets/manifest.json?url[33m.[39m
+[baseline] 02-build.png: OK
+[server] [33mAssets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use [36m/src/assets/manifest.json[33m instead of [36m/public/assets/manifest.json[33m.
+If you intend to use the URL of that asset, use [36m/assets/manifest.json?url[33m.[39m
+[baseline] 03-decor.png: OK
+[server] [33mAssets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use [36m/src/assets/manifest.json[33m instead of [36m/public/assets/manifest.json[33m.
+If you intend to use the URL of that asset, use [36m/assets/manifest.json?url[33m.[39m
+[baseline] 04-manage.png: OK
+[server] [33mAssets in public directory cannot be imported from JavaScript.
+If you intend to import that asset, put the file in the src directory, and use [36m/src/assets/manifest.json[33m instead of [36m/public/assets/manifest.json[33m.
+If you intend to use the URL of that asset, use [36m/assets/manifest.json?url[33m.[39m
+[baseline] 05-phone.png: OK
+[baseline] completed 5/5 shots
