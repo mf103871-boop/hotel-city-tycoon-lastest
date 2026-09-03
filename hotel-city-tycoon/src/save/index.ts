@@ -14,7 +14,9 @@ import type { GameState } from '../core/state/types.ts';
 import type { SimData } from '../core/data-source.ts';
 import { checkInvariants } from '../core/state/invariants.ts';
 import { SCHEMA_VERSION } from '../core/state/types.ts';
-import { anchorBoundsFor, anchorKey, firstFreeAnchor, slotTypeFor } from '../core/systems/decorPlacement.ts';
+import {
+  anchorBoundsFor, anchorKey, firstFreeAnchor, slotTypeFor, anchorReachFor,
+} from '../core/systems/decorPlacement.ts';
 
 export const SAVE_KEY = 'hct:save';
 export const QUARANTINE_KEY = 'hct:save:quarantine';
@@ -428,7 +430,9 @@ export const MIGRATIONS: Record<number, Migration> = {
         if (!raw || typeof raw !== 'object') return raw;
         const piece = raw as Record<string, unknown>;
         const slotType = slotTypeFor(data, piece['defId'] as string);
-        const anchor = firstFreeAnchor(bounds, slotType, taken);
+        // HC-P1-S4: with data, the piece's picture is kept inside the room
+        // too, not just its anchor point.
+        const anchor = firstFreeAnchor(bounds, slotType, taken, anchorReachFor(data, piece['defId'] as string));
         taken.add(anchorKey(anchor.x, anchor.y));
         return { localX: anchor.x, localY: anchor.y, flipX: false, zBias: 0, ...piece };
       });

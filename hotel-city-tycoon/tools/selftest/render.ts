@@ -15,7 +15,20 @@ import {
 import type { CameraState, Viewport, WorldBounds } from '../../src/render/camera.ts';
 import { cull, intersects, expand } from '../../src/render/culling.ts';
 import { Pool, KeyedPool } from '../../src/render/pool.ts';
-import { blockToWorld, worldToBlock, roomWorldRect, plotWorldBounds, BLOCK_W, BLOCK_H } from '../../src/render/layout.ts';
+import {
+  blockToWorld, worldToBlock, roomWorldRect, plotWorldBounds, anchorToLocalPx,
+  BLOCK_W, BLOCK_H, ANCHOR_UNITS_PER_BLOCK,
+} from '../../src/render/layout.ts';
+import {
+  decorArtSpec, decorDrawSize, compareDecorDraw, knownDecorCategories, DECOR_ART_SCALE,
+} from '../../src/render/decorArt.ts';
+import type { DecorOrderable } from '../../src/render/decorArt.ts';
+import { clampDecorBox, decorBox } from '../../src/render/decorArt.ts';
+import {
+  firstFreeAnchor, anchorBoundsFor, anchorKey, anchorReachFor, reachForCategory, reachedCategories,
+} from '../../src/core/systems/decorPlacement.ts';
+import { loadSimData } from '../balance-sim/load-data.ts';
+import fs from 'node:fs';
 
 let passed = 0;
 const failures: string[] = [];
@@ -256,6 +269,230 @@ check('plot bounds leave sky above and street below', () => {
   assert(b.y < 0, 'no sky margin above the hotel');
   assert(b.height > 8 * BLOCK_H, 'no street margin below the hotel');
   assert(b.x < 0, 'no margin beside the hotel');
+});
+
+// ------------------------------------------------------- decor art (HC-P1-S4)
+//
+// The contract that turns a DEC-010 anchor into a drawn sprite. It is checked
+// against two sources that cannot be edited from here: the shipped catalogue
+// in data/decor.json, and the anchors Codex declared in docs/ART-1_METADATA.md.
+
+const simData = loadSimData();
+const decorData = simData.decor;
+const assetManifest = JSON.parse(fs.readFileSync('public/assets/manifest.json', 'utf8')) as {
+  entries: Array<{ key: string; width: number; height: number }>;
+};
+const declaredSize = (assetKey: string): { w: number; h: number } => {
+  const entry = assetManifest.entries.find((e) => e.key === assetKey);
+  assert(entry, `no manifest entry for ${assetKey}`);
+  return { w: entry.width, h: entry.height };
+};
+
+/** Transcribed from docs/ART-1_METADATA.md — the ten pieces ART-1 delivered. */
+const ART1_ANCHORS: Array<[string, number, number, 'back' | 'front']> = [
+  ['wallpaper_plain', 0.5, 0.5, 'back'],
+  ['flooring_concrete', 0.5, 0.5, 'back'],
+  ['wallArt_poster', 0.5, 0.5, 'back'],
+  ['lighting_lamp', 0.5, 0, 'back'],
+  ['bed_single', 0.5, 1, 'front'],
+  ['seating_armchair', 0.5, 1, 'front'],
+  ['table_deskWood', 0.5, 1, 'front'],
+  ['plant_fern', 0.5, 1, 'front'],
+  ['rug_mat', 0.5, 0.5, 'front'],
+  ['luxury_aquarium', 0.5, 1, 'front'],
+];
+
+const pieceOf = (defId: string): DecorOrderable & { defId: string } => {
+  const def = decorData.find((d) => d.id === defId);
+  assert(def, `${defId} is not in data/decor.json`);
+  return { id: defId, defId, category: def.category, slotType: def.slotType, localY: 8, zBias: 0 };
+};
+
+check('every catalogue category has its own art row, none falls back', () => {
+  const known = new Set(knownDecorCategories());
+  for (const item of decorData) {
+    assert(known.has(item.category), `decor category "${item.category}" (${item.id}) has no art row`);
+  }
+});
+
+check('the delivered ART-1 pieces get the anchors their metadata declares', () => {
+  for (const [defId, anchorX, anchorY, band] of ART1_ANCHORS) {
+    const piece = pieceOf(defId);
+    const spec = decorArtSpec(piece.category, piece.slotType);
+    eq(spec.anchorX, anchorX, `${defId} anchorX`);
+    eq(spec.anchorY, anchorY, `${defId} anchorY`);
+    eq(spec.band, band, `${defId} band`);
+  }
+});
+
+check('an unknown category still lands on the surface its slot promises', () => {
+  eq(decorArtSpec('brandNew', 'wall').band, 'back', 'an unknown wall piece left the wall');
+  eq(decorArtSpec('brandNew', 'ceiling').anchorY, 0, 'an unknown ceiling piece does not hang');
+  eq(decorArtSpec('brandNew', 'floor').anchorY, 1, 'an unknown floor piece does not stand');
+  eq(decorArtSpec('brandNew', 'nonsense').band, 'front', 'an unknown slot type has no band');
+});
+
+check('decor is drawn at character scale, not one to one', () => {
+  const size = decorDrawSize(104, 64);
+  near(size.w, 104 * DECOR_ART_SCALE, 'bed width');
+  near(size.h, 64 * DECOR_ART_SCALE, 'bed height');
+  assert(DECOR_ART_SCALE < 1, 'the scale factor stopped shrinking anything');
+});
+
+check('every declared decor sprite fits inside a one-block room', () => {
+  // The whole point of the scale factor: at 1:1 an armchair is three quarters
+  // of a room tall (docs/art-1-shots/compose-1to1.png).
+  const declared: Array<[number, number]> = [[96, 72], [72, 72], [72, 48], [104, 64]];
+  for (const [w, h] of declared) {
+    const size = decorDrawSize(w, h);
+    assert(size.w <= BLOCK_W, `a ${w}x${h} piece is wider than a block (${size.w})`);
+    assert(size.h <= BLOCK_H, `a ${w}x${h} piece is taller than a block (${size.h})`);
+  }
+});
+
+check('a piece standing on the lowest anchor stays inside its room', () => {
+  // The floor band anchor a 1x1 room hands out (decorPlacement inset of 1).
+  const floorY = ANCHOR_UNITS_PER_BLOCK - 2;
+  const at = anchorToLocalPx(ANCHOR_UNITS_PER_BLOCK / 2, floorY);
+  const bed = decorDrawSize(104, 64);
+  assert(at.y <= BLOCK_H, 'the floor anchor is already below the room');
+  assert(at.y - bed.h >= 0, 'a bed on the floor anchor pokes through the ceiling');
+  const lamp = decorDrawSize(72, 48);
+  assert(anchorToLocalPx(8, 1).y + lamp.h <= BLOCK_H, 'a hanging lamp reaches past the floor');
+});
+
+check('surfaces draw behind everything that stands in the room', () => {
+  const wallpaper = { ...pieceOf('wallpaper_plain'), localY: 14 };
+  const chair = { ...pieceOf('seating_armchair'), localY: 2 };
+  assert(compareDecorDraw(wallpaper, chair) < 0, 'a chair slid behind the wallpaper');
+  assert(compareDecorDraw(chair, wallpaper) > 0, 'the comparator disagrees with itself');
+});
+
+check('wallpaper is behind its poster, and a rug is under the chair on it', () => {
+  const wallpaper = pieceOf('wallpaper_plain');
+  const poster = pieceOf('wallArt_poster');
+  assert(compareDecorDraw(wallpaper, poster) < 0, 'the poster hid behind the wallpaper');
+  const rug = pieceOf('rug_mat');
+  const chair = pieceOf('seating_armchair');
+  assert(compareDecorDraw(rug, chair) < 0, 'the rug covered the chair standing on it');
+});
+
+check('lower pieces draw nearer the viewer', () => {
+  const back = { ...pieceOf('plant_fern'), id: 'a', localY: 4 };
+  const front = { ...pieceOf('plant_fern'), id: 'b', localY: 12 };
+  assert(compareDecorDraw(back, front) < 0, 'the far plant drew in front of the near one');
+});
+
+check('zBias still breaks a tie the art rules cannot', () => {
+  const a = { ...pieceOf('plant_fern'), id: 'a', zBias: 2 };
+  const b = { ...pieceOf('plant_fern'), id: 'b', zBias: -1 };
+  assert(compareDecorDraw(a, b) > 0, 'zBias was ignored');
+});
+
+check('the draw order is total, so a redraw never reshuffles', () => {
+  const pieces: DecorOrderable[] = [
+    { ...pieceOf('plant_fern'), id: 'p2' },
+    { ...pieceOf('plant_fern'), id: 'p1' },
+    { ...pieceOf('wallpaper_plain'), id: 'w1' },
+    { ...pieceOf('bed_single'), id: 'b1' },
+    { ...pieceOf('rug_mat'), id: 'r1' },
+  ];
+  const first = [...pieces].sort(compareDecorDraw).map((p) => p.id).join(',');
+  const again = [...pieces].reverse().sort(compareDecorDraw).map((p) => p.id).join(',');
+  eq(again, first, 'the same pieces sorted two different ways');
+  for (const a of pieces) {
+    for (const b of pieces) {
+      if (a.id === b.id) continue;
+      assert(compareDecorDraw(a, b) !== 0, `${a.id} and ${b.id} tie, so their order is luck`);
+    }
+  }
+});
+
+check('a piece is drawn inside its own room, whatever anchor it was given', () => {
+  const room = { w: BLOCK_W, h: BLOCK_H };
+  // The worst anchor the S3 build could hand out: one unit from the corner.
+  const at = anchorToLocalPx(1, 1);
+  const spec = decorArtSpec('wallpaper', 'wall');
+  const size = decorDrawSize(96, 72);
+  const raw = decorBox(at, size, spec);
+  assert(raw.left < 0, 'this test stopped testing anything: the raw box is already inside');
+  const box = clampDecorBox(raw, room.w, room.h);
+  assert(box.left >= 0 && box.top >= 0, 'a clamped piece still starts outside its room');
+  assert(box.left + box.w <= room.w, 'a clamped piece still runs off the right of its room');
+  assert(box.top + box.h <= room.h, 'a clamped piece still runs off the bottom of its room');
+  eq(box.w, raw.w, 'clamping resized the art');
+  eq(box.h, raw.h, 'clamping resized the art');
+});
+
+check('a piece already inside its room is left exactly where it is', () => {
+  const raw = { left: 20, top: 30, w: 40, h: 20 };
+  const box = clampDecorBox(raw, BLOCK_W, BLOCK_H);
+  eq(box.left, raw.left, 'left moved');
+  eq(box.top, raw.top, 'top moved');
+});
+
+check('a piece bigger than its room is centred, not shoved to a corner', () => {
+  const box = clampDecorBox({ left: 0, top: 0, w: 200, h: 40 }, BLOCK_W, BLOCK_H);
+  near(box.left, (BLOCK_W - 200) / 2, 'an oversized piece was not centred');
+});
+
+check('the core reach table and this art contract describe the same pictures', () => {
+  // decorPlacement.ts holds the reach in anchor units because the core may not
+  // import the renderer. This is the check that keeps the two in step: the
+  // reach must be exactly the drawn extent, in units, rounded up.
+  const ANCHOR_PX_X = BLOCK_W / ANCHOR_UNITS_PER_BLOCK;
+  const ANCHOR_PX_Y = BLOCK_H / ANCHOR_UNITS_PER_BLOCK;
+  for (const category of reachedCategories()) {
+    const item = decorData.find((d) => d.category === category);
+    assert(item, `no catalogue item in category ${category}`);
+    const spec = decorArtSpec(item.category, item.slotType);
+    const declared = declaredSize(item.assetKey);
+    const size = decorDrawSize(declared.w, declared.h);
+    const reach = reachForCategory(category);
+    assert(reach, `${category} lost its reach row`);
+    eq(reach.left, Math.ceil(size.w * spec.anchorX / ANCHOR_PX_X), `${category} left reach`);
+    eq(reach.right, Math.ceil(size.w * (1 - spec.anchorX) / ANCHOR_PX_X), `${category} right reach`);
+    eq(reach.up, Math.ceil(size.h * spec.anchorY / ANCHOR_PX_Y), `${category} up reach`);
+    eq(reach.down, Math.ceil(size.h * (1 - spec.anchorY) / ANCHOR_PX_Y), `${category} down reach`);
+  }
+});
+
+check('every catalogue piece placed today lands fully inside the smallest room', () => {
+  // The end-to-end statement of the P1 gate "no position outside the room",
+  // run over all 77 items in a 1x1 economy: place it the way PLACE_DECOR
+  // would, draw it the way RoomView would, and see where it lands.
+  const bounds = anchorBoundsFor(simData, 'economy');
+  let checked = 0;
+  for (const item of decorData) {
+    const anchor = firstFreeAnchor(bounds, item.slotType, new Set<string>(), anchorReachFor(simData, item.id));
+    const spec = decorArtSpec(item.category, item.slotType);
+    const declared = declaredSize(item.assetKey);
+    const box = decorBox(anchorToLocalPx(anchor.x, anchor.y), decorDrawSize(declared.w, declared.h), spec);
+    assert(box.left >= 0, `${item.id} hangs ${(-box.left).toFixed(1)}px past the left wall`);
+    assert(box.top >= 0, `${item.id} pokes ${(-box.top).toFixed(1)}px through the ceiling`);
+    assert(box.left + box.w <= BLOCK_W, `${item.id} runs past the right wall`);
+    assert(box.top + box.h <= BLOCK_H, `${item.id} runs past the floor`);
+    // A new placement must never need the renderer's clamp.
+    const clamped = clampDecorBox(box, BLOCK_W, BLOCK_H);
+    eq(clamped.left, box.left, `${item.id} needed clamping straight after placement`);
+    eq(clamped.top, box.top, `${item.id} needed clamping straight after placement`);
+    checked++;
+  }
+  eq(checked, decorData.length, 'not every catalogue item was checked');
+  console.log(`      ${checked} catalogue pieces placed and drawn inside a 1x1 room`);
+});
+
+check('anchors still avoid each other when the reach narrows the room', () => {
+  const bounds = anchorBoundsFor(simData, 'economy');
+  const reach = anchorReachFor(simData, 'plant_fern');
+  const taken = new Set<string>();
+  const cap = 24; // data/economy.json limits.maxDecorPerRoom
+  for (let i = 0; i < cap; i++) {
+    const anchor = firstFreeAnchor(bounds, 'floor', taken, reach);
+    const key = anchorKey(anchor.x, anchor.y);
+    assert(!taken.has(key), `anchor ${key} handed out twice at piece ${i + 1}`);
+    taken.add(key);
+  }
 });
 
 console.log(line);
