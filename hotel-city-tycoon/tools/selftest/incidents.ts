@@ -120,6 +120,22 @@ check('tapping cannot clear a ghost — only the phone can', () => {
     'the call was not reported');
 });
 
+// AUDIT 2026-09-03 (D7, reference §4G-1): selling a haunted room paid a third
+// of its price and removed the ghost for nothing; storing it and placing it
+// back returned it with `hasGhost: false`. Both skipped the ghostbuster's fee.
+check('selling or storing a haunted room is refused — the ghost cannot be laundered away', () => {
+  const s = withRooms();
+  haunt(s);
+  const room = s.hotel.rooms.find((r) => r.hasGhost)!;
+  const coins = s.player.coins;
+  const sell = execute(data, s, { type: 'SELL_ROOM', roomId: room.id });
+  assert(!sell.ok && sell.reason === 'roomHasHazard', `selling a haunted room was ${sell.ok ? 'allowed' : sell.reason}`);
+  const store = execute(data, s, { type: 'STORE_ROOM', roomId: room.id });
+  assert(!store.ok && store.reason === 'roomHasHazard', `storing a haunted room was ${store.ok ? 'allowed' : store.reason}`);
+  eq(s.player.coins, coins, 'a refused sale still paid out');
+  assert(s.hotel.rooms.some((r) => r.id === room.id && r.hasGhost), 'the ghost left without the ghostbuster');
+});
+
 check('the ghostbuster with nothing to bust is refused', () => {
   const s = withRooms();
   const res = execute(data, s, { type: 'CALL_SERVICE', service: 'ghostbuster' });

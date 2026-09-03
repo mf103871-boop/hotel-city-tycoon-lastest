@@ -19,11 +19,11 @@ import { KeyedPool } from './pool.ts';
 import { cull } from './culling.ts';
 import { plotWorldBounds, roomWorldRect, worldToBlock, BLOCK_W, BLOCK_H } from './layout.ts';
 import {
-  fitCamera, clampCamera, pan, zoomAt, visibleRect, screenToWorld,
+  fitCamera, clampCamera, pan, zoomAt, visibleRect, screenToWorld, worldToScreen,
 } from './camera.ts';
 import { GestureTracker } from './gestures.ts';
 import { FrameSampler, report } from './perf.ts';
-import type { CameraState, Viewport, WorldBounds } from './camera.ts';
+import type { CameraState, Viewport, WorldBounds, Insets } from './camera.ts';
 
 export interface SceneRoom extends RoomViewData {
   id: string;
@@ -57,12 +57,16 @@ export class HotelScene {
   private view: Viewport;
   private world: WorldBounds;
   private camera: CameraState;
+  /** How much of the viewport the HUD covers, so the hotel can clear it. */
+  private insets: Insets = { top: 0, bottom: 0 };
   private snapshot: SceneSnapshot = { rooms: [], characters: [], gridW: 4, gridH: 3 };
 
   /** Last frame's culling result, for the on-screen verification badge. */
   private visibleCount = 0;
 
   private readonly gestures = new GestureTracker();
+  /** Detaches every DOM listener this scene adds to the canvas. */
+  private readonly domListeners = new AbortController();
   /** A rolling window of frame times, for the performance report. */
   readonly frames = new FrameSampler();
   /** True once the first snapshot has been drawn, so the grid appears at boot. */
@@ -121,7 +125,7 @@ export class HotelScene {
     // resize-only check left the grid unpainted on a fresh game.
     if (resized || !this.gridDrawn) {
       this.world = plotWorldBounds(snapshot.gridW, snapshot.gridH);
-      this.camera = clampCamera(this.camera, this.view, this.world);
+      this.camera = clampCamera(this.camera, this.view, this.world, this.insets);
       this.drawGrid();
       this.gridDrawn = true;
     }
@@ -153,6 +157,21 @@ export class HotelScene {
     for (const [, view] of this.characters.entries()) {
       if (view.renderable) view.tickAnimation(deltaMs);
     }
+  }
+
+  /**
+   * Where each room is on screen right now, in CSS pixels.
+   *
+   * For diagnostics and browser tests: a scenario that wants to tap a room
+   * asks instead of guessing a coordinate that only held for one viewport.
+   */
+  roomScreenRects(): Array<{ id: string; x: number; y: number; w: number; h: number }> {
+    return this.snapshot.rooms.map((room) => {
+      const world = roomWorldRect(room.rect, this.snapshot.gridH);
+      const a = worldToScreen({ x: world.x, y: world.y }, this.camera, this.view);
+      const b = worldToScreen({ x: world.x + world.width, y: world.y + world.height }, this.camera, this.view);
+      return { id: room.id, x: a.x, y: a.y, w: b.x - a.x, h: b.y - a.y };
+    });
   }
 
   /** Snapshot of what the renderer is doing right now. */
@@ -207,11 +226,21 @@ export class HotelScene {
   resize(view: Viewport): void {
     this.view = view;
     this.handle.app.renderer.resize(view.width, view.height);
-    this.camera = clampCamera(this.camera, view, this.world);
+    this.camera = clampCamera(this.camera, view, this.world, this.insets);
+  }
+
+  /**
+   * Tell the camera how tall the header and footer are. Measured by the
+   * interface, since the scene knows nothing about the DOM around its canvas.
+   */
+  setInsets(insets: Insets): void {
+    if (insets.top === this.insets.top && insets.bottom === this.insets.bottom) return;
+    this.insets = { top: Math.max(0, insets.top), bottom: Math.max(0, insets.bottom) };
+    this.camera = clampCamera(this.camera, this.view, this.world, this.insets);
   }
 
   focusHotel(): void {
-    this.camera = fitCamera(this.view, this.world);
+    this.camera = fitCamera(this.view, this.world, this.insets);
   }
 
   private attachInput(): void {
@@ -228,9 +257,9 @@ export class HotelScene {
     stage.on('pointermove', (e: { pointerId: number; global: { x: number; y: number } }) => {
       const action = this.gestures.move(e.pointerId, point(e));
       if (action.kind === 'pan') {
-        this.camera = pan(this.camera, action.dx, action.dy, this.view, this.world);
+        this.camera = pan(this.camera, action.dx, action.dy, this.view, this.world, this.insets);
       } else if (action.kind === 'zoom') {
-        this.camera = zoomAt(this.camera, action.factor, action.anchor, this.view, this.world);
+        this.camera = zoomAt(this.camera, action.factor, action.anchor, this.view, this.world, this.insets);
       }
     });
 
@@ -242,11 +271,42 @@ export class HotelScene {
     stage.on('pointerupoutside', end);
     stage.on('pointercancel', () => this.gestures.cancel());
 
-    this.handle.app.canvas.addEventListener('wheel', (e: WheelEvent) => {
+    /*
+     * The cancel has to come from the DOM as well.
+     *
+     * Pixi's EventSystem listens for pointerdown/move/up on the canvas and
+     * window but never for `pointercancel`, so the stage handler above is
+     * never called on a real phone. When the OS took a touch away — a
+     * notification, a call, an edge swipe — the tracker kept that finger
+     * registered, every later single-finger touch counted as the second
+     * finger of a pinch, and the hotel could not be tapped or panned again
+     * until the page was reloaded.
+     */
+    const canvas = this.handle.app.canvas;
+    const { signal } = this.domListeners;
+    const cancel = () => this.gestures.cancel();
+    canvas.addEventListener('pointercancel', cancel, { signal });
+    canvas.addEventListener('lostpointercapture', cancel, { signal });
+
+    /*
+     * A tap on the canvas must not become a click on whatever the tap put
+     * there.
+     *
+     * Browsers follow a touch tap with a synthetic click at the same point.
+     * By then the room sheet the tap opened is under the finger, so the click
+     * landed on its backdrop and closed it in the same instant: on a phone
+     * every room read as untappable, while a mouse never showed it, because
+     * a mouse click targets the element the press began on. Cancelling the
+     * touch's default suppresses the click and nothing else; the canvas takes
+     * all its input through pointer events.
+     */
+    canvas.addEventListener('touchend', (e: TouchEvent) => e.preventDefault(), { passive: false, signal });
+
+    canvas.addEventListener('wheel', (e: WheelEvent) => {
       e.preventDefault();
       const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
-      this.camera = zoomAt(this.camera, factor, { x: e.offsetX, y: e.offsetY }, this.view, this.world);
-    }, { passive: false });
+      this.camera = zoomAt(this.camera, factor, { x: e.offsetX, y: e.offsetY }, this.view, this.world, this.insets);
+    }, { passive: false, signal });
   }
 
   private handleTap(screen: { x: number; y: number }): void {
@@ -272,6 +332,7 @@ export class HotelScene {
   }
 
   destroy(): void {
+    this.domListeners.abort();
     this.rooms.clear();
     this.characters.clear();
     this.grid.destroy();

@@ -15,6 +15,7 @@ import { GameEngine, fakeClock } from '../../src/bridge/engine.ts';
 import { SaveManager, MemoryStorage, validateState, SAVE_KEY } from '../../src/save/index.ts';
 import { SCHEMA_VERSION } from '../../src/core/state/types.ts';
 import { GestureTracker, TAP_SLOP_PX } from '../../src/render/gestures.ts';
+import { initSelectors, shiftOptions } from '../../src/bridge/selectors.ts';
 
 const data = loadSimData();
 let passed = 0;
@@ -179,6 +180,150 @@ await check('a cancelled pointer leaves no state behind', () => {
   eq(g.isPinching, false, 'cancel left the tracker pinching');
   g.down(3, { x: 50, y: 50 });
   eq(g.up(3, { x: 50, y: 50 }).kind, 'tap', 'the tracker did not recover after a cancel');
+});
+
+// ── AUDIT 2026-09-03 (D2): a save written by a newer client was refused
+//    without being quarantined, and the fresh hotel that boot started in its
+//    place autosaved over it within thirty seconds. A rollback deployment
+//    silently erased the player's game.
+await check('a save from a newer client is quarantined, and the key is left alone', async () => {
+  const storage = new MemoryStorage();
+  const raw = JSON.stringify({ format: 1, version: SCHEMA_VERSION + 1, savedAtMs: 5, state: { future: true } });
+  await storage.set(SAVE_KEY, raw);
+  const outcome = await new SaveManager(storage, data).load();
+  assert(!outcome.ok && outcome.reason === 'fromFuture', `expected fromFuture, got ${JSON.stringify(outcome).slice(0, 60)}`);
+  eq(await storage.get('hct:save:quarantine'), raw, 'the newer save was not quarantined');
+  eq(await storage.get(SAVE_KEY), raw, 'load() touched the save key');
+});
+
+await check('a fallback hotel booted over an unusable save has no persist port', () => {
+  // Structural: the boot path lives in a React hook. The fallback engine must
+  // be built from ports that carry no `persist`, or its first autosave lands
+  // on the save it could not read.
+  const boot = fs.readFileSync(path.join('src', 'ui', 'useGame.ts'), 'utf8');
+  assert(/const portsForFallback = saveProblem \? \{ clock: ports\.clock, scheduler: ports\.scheduler \} : ports/.test(boot),
+    'the fallback ports are not stripped of persist when the save could not be used');
+  assert(/GameEngine\.newGame\(data, portsForFallback/.test(boot),
+    'the fallback engine is not built from the stripped ports');
+});
+
+// ── AUDIT 2026-09-03 (D19): saving happened only on the 30 s autosave and a
+//    best-effort flush on hide, so a room built two seconds before a reload
+//    was gone afterwards ("6 rooms" before, "4 rooms" after in the CI lane).
+await check('an accepted command is saved at once, a refused one is not', async () => {
+  let writes = 0;
+  const engine = GameEngine.newGame(data, { clock: fakeClock(0), persist: async () => { writes++; return true; } }, 9);
+  const accepted = engine.dispatch({ type: 'START_SHIFT', shiftId: 'shift_2h' });
+  assert(accepted.ok, 'the test command was refused');
+  await new Promise((r) => setTimeout(r, 0));
+  eq(writes, 1, 'an accepted command did not save');
+  const refused = engine.dispatch({ type: 'START_SHIFT', shiftId: 'shift_2h' });
+  assert(!refused.ok, 'the second shift should have been refused (alreadyOpen)');
+  await new Promise((r) => setTimeout(r, 0));
+  eq(writes, 1, 'a refused command saved anyway');
+});
+
+await check('the page saves on pagehide, not only when hidden', () => {
+  const boot = fs.readFileSync(path.join('src', 'ui', 'useGame.ts'), 'utf8');
+  assert(/addEventListener\('pagehide'/.test(boot), 'no pagehide listener — iOS never fires beforeunload');
+});
+
+// ── AUDIT 2026-09-03 (D4): five `flex-1` buttons with content-sized minimum
+//    widths pushed the fifth (Upgrades) past the bottom bar and off a 390 px
+//    screen — and it opened a panel of rows that DEC #14 disables for good.
+await check('the Upgrades button is hidden while no track can unlock at the level cap', () => {
+  const cap = data.levels.reduce((max, l) => Math.max(max, l.level), 0);
+  const reachable = data.upgrades.some((u) => u.unlockLevel <= cap);
+  const hud = fs.readFileSync(path.join('src', 'ui', 'Hud.tsx'), 'utf8');
+  assert(/upgradesReachable\(state\) && \(/.test(hud), 'the HUD renders the Upgrades button unconditionally');
+  assert(/min-w-0 flex-1 truncate/.test(hud), 'the bottom-bar buttons can still not shrink below their labels');
+  // With the shipped data every track unlocks past the cap, so the button is
+  // hidden; the moment the data changes, it comes back on its own.
+  eq(reachable, false, `upgrades.json now reaches the cap (${cap}) — the guard above still holds, this line only documents DEC #14`);
+});
+
+// ── AUDIT 2026-09-03, the small interface defects (D10, D12, D15, D16, D18, D21, D22).
+await check('interface art is addressed under the Vite base, never at an absolute /assets/ path', () => {
+  const offenders = fs.readdirSync(path.join('src', 'ui'))
+    .filter((f) => f.endsWith('.tsx'))
+    .filter((f) => /["'`]\/assets\//.test(fs.readFileSync(path.join('src', 'ui', f), 'utf8')));
+  assert(offenders.length === 0, `absolute /assets/ paths (404 under a path prefix): ${offenders.join(', ')}`);
+});
+
+await check('a locked shift names the level that unlocks it', () => {
+  const panel = fs.readFileSync(path.join('src', 'ui', 'ShiftPanel.tsx'), 'utf8');
+  assert(!/level: '\?'/.test(panel), 'the shift picker still says "Unlocks at level ?"');
+  initSelectors(data);
+  const s = newState();
+  const locked = shiftOptions(s).find((o) => !o.unlocked);
+  assert(locked && locked.unlockLevel > s.player.level, 'shiftOptions carries no usable unlockLevel');
+});
+
+await check('a guest check that found nothing does not swallow the tap on the room', () => {
+  const canvas = fs.readFileSync(path.join('src', 'ui', 'HotelCanvas.tsx'), 'utf8');
+  assert(/nothingFound/.test(canvas), 'HotelCanvas treats every ok TAP_GUEST as handled');
+});
+
+await check('the daily gift is offered whenever it becomes available, not only at boot', () => {
+  const app = fs.readFileSync(path.join('src', 'ui', 'App.tsx'), 'utf8');
+  assert(/\[giftAvailable\]/.test(app), 'the gift effect is still keyed on the boot seed');
+});
+
+await check('the HUD bars respect the safe area and can be measured by the canvas', () => {
+  const hud = fs.readFileSync(path.join('src', 'ui', 'Hud.tsx'), 'utf8');
+  assert(/safe-area-inset-top/.test(hud) && /safe-area-inset-bottom/.test(hud), 'no safe-area padding on the HUD bars');
+  assert(/data-hud="top"/.test(hud) && /data-hud="bottom"/.test(hud), 'the canvas cannot find the HUD bars to measure them');
+  const canvas = fs.readFileSync(path.join('src', 'ui', 'HotelCanvas.tsx'), 'utf8');
+  assert(/setInsets\(/.test(canvas), 'the canvas never hands the HUD height to the camera');
+});
+
+await check('the diagnostics badge follows the document direction so it never covers the gear in Arabic', () => {
+  const badge = fs.readFileSync(path.join('src', 'ui', 'DebugBadge.tsx'), 'utf8');
+  const button = badge.slice(badge.indexOf('<button'), badge.indexOf('>', badge.indexOf('<button')));
+  assert(!/dir="ltr"/.test(button), 'dir="ltr" on the badge button makes start-3 resolve to the left in RTL too');
+});
+
+await check('a sheet is a dialog: labelled, focused on open, closed by Escape', () => {
+  const sheet = fs.readFileSync(path.join('src', 'ui', 'Sheet.tsx'), 'utf8');
+  assert(/role="dialog"/.test(sheet) && /aria-modal="true"/.test(sheet) && /aria-labelledby/.test(sheet), 'the sheet has no dialog semantics');
+  assert(/\.focus\(\)/.test(sheet) && /'Escape'/.test(sheet), 'the sheet neither takes focus nor closes on Escape');
+});
+
+// ── AUDIT 2026-09-03 (D1): Pixi 8 never forwards DOM `pointercancel`, so the
+//    scene's stage listener for it was dead. One OS-cancelled touch left a
+//    finger registered for the rest of the session: every later tap read as
+//    the second finger of a pinch and the hotel could not be tapped or panned
+//    until a reload. The cancel now also comes straight from the canvas.
+await check('a touch the OS takes away would otherwise poison every later tap', () => {
+  const g = new GestureTracker();
+  g.down(1, { x: 100, y: 100 });            // cancelled by the OS: no up ever arrives
+  g.down(2, { x: 200, y: 200 });
+  const stuck = g.up(2, { x: 200, y: 200 });
+  assert(stuck.kind !== 'tap', 'the failure mode this guard documents no longer reproduces; revisit the guard');
+  g.cancel();                               // what the DOM pointercancel listener now does
+  g.down(3, { x: 200, y: 200 });
+  eq(g.up(3, { x: 200, y: 200 }).kind, 'tap', 'cancel() did not restore tapping');
+});
+
+await check('the scene listens for pointercancel on the canvas itself, not only on the Pixi stage', () => {
+  const scene = fs.readFileSync(path.join('src', 'render', 'scene.ts'), 'utf8');
+  assert(/canvas\.addEventListener\(\s*'pointercancel'/.test(scene),
+    'no DOM pointercancel listener on the canvas — Pixi will never deliver the stage one');
+  assert(/canvas\.addEventListener\(\s*'lostpointercapture'/.test(scene),
+    'no lostpointercapture listener on the canvas');
+});
+
+// ── AUDIT 2026-09-03 (D20, found while proving it): a touch tap opened the
+//    room sheet on pointerup, and the browser's synthetic click that follows
+//    a tap then landed on the sheet's backdrop and closed it in the same
+//    instant. On a phone every room read as untappable; a mouse never showed
+//    it. The canvas cancels the touch's default so no click follows a tap.
+await check('a touch tap on the canvas does not click whatever the tap opened', () => {
+  const scene = fs.readFileSync(path.join('src', 'render', 'scene.ts'), 'utf8');
+  const touchend = scene.match(/canvas\.addEventListener\(\s*'touchend'[^;]*;/);
+  assert(touchend, 'no touchend listener on the canvas: the synthetic click after a tap will hit the sheet the tap opened');
+  assert(/preventDefault\(\)/.test(touchend![0]), 'the touchend listener does not cancel the default, so the click still follows');
+  assert(/passive:\s*false/.test(touchend![0]), 'a passive touchend listener cannot cancel the click');
 });
 
 await check('pinch reports a zoom factor and a centre between the fingers', () => {

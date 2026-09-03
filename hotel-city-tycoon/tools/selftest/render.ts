@@ -90,6 +90,31 @@ check('zoom limits still hold when anchored', () => {
   assert(cam.zoom >= MIN_ZOOM - 1e-9, `zoom ran past the floor (${cam.zoom})`);
 });
 
+// AUDIT 2026-09-03 (D20): the clamp knew nothing about the HUD, so at any
+// zoom above the default fit the ground row sat under the ~270px footer and
+// could not be panned into view.
+check('the camera lets the ground row clear the bottom bar', () => {
+  const insets = { top: 96, bottom: 270 };
+  const low = clampCamera({ x: 2000, y: 99999, zoom: 1 }, VIEW, WORLD, insets);
+  near(worldToScreen({ x: 0, y: WORLD.height }, low, VIEW).y, VIEW.height - insets.bottom,
+    'the world bottom cannot rise above the footer');
+  const high = clampCamera({ x: 2000, y: -99999, zoom: 1 }, VIEW, WORLD, insets);
+  near(worldToScreen({ x: 0, y: 0 }, high, VIEW).y, insets.top,
+    'the world top cannot come down to the header');
+  // Without insets nothing changes for the existing callers.
+  const plain = clampCamera({ x: 2000, y: 99999, zoom: 1 }, VIEW, WORLD);
+  near(worldToScreen({ x: 0, y: WORLD.height }, plain, VIEW).y, VIEW.height, 'insets changed the default clamp');
+});
+
+check('a small hotel is centred in the band between header and footer', () => {
+  const small: WorldBounds = { x: 0, y: 0, width: 200, height: 100 };
+  const insets = { top: 100, bottom: 300 };
+  const cam = fitCamera(VIEW, small, insets);
+  near(worldToScreen({ x: 100, y: 50 }, cam, VIEW).y, (insets.top + (VIEW.height - insets.bottom)) / 2,
+    'the hotel is not centred in the visible band');
+  assert(cam.zoom * small.height <= VIEW.height - insets.top - insets.bottom, 'the fit ignores the band height');
+});
+
 check('fitCamera shows the whole hotel', () => {
   const small: WorldBounds = { x: 0, y: 0, width: 1200, height: 900 };
   const cam = fitCamera(VIEW, small);

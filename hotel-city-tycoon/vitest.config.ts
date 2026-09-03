@@ -5,9 +5,18 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['tests/**/*.test.ts'],
-    coverage: { include: ['src/core/**'], // The architecture document set 80 percent on the core. It was written
-      // as 70 and never reconciled.
-      thresholds: { lines: 80, functions: 80 } },
+    /*
+     * Measurement only, no gate.
+     *
+     * Thresholds of 80 percent sat here from the architecture document and
+     * were never enforced: nothing passed `--coverage`, and the include of
+     * `src/core/**` also fed src/core/README.md to the parser, which failed
+     * the run. Measured on 2026-09-03 with the include below: lines 51%,
+     * functions 59%, branches 37%. A gate belongs with the tests that would
+     * meet it (BL-019 in the master reference), not on a number the suite
+     * has never reached.
+     */
+    coverage: { include: ['src/core/**/*.ts'] },
   },
   resolve: {
     alias: {

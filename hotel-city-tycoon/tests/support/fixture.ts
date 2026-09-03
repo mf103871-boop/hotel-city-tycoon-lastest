@@ -20,7 +20,10 @@ export function simData(): SimData {
     staffGrades: read('staff.json').grades,
     guestTypes: read('guests.json').types,
     shifts: read('shifts.json').shifts,
-    graceSec: 900,
+    // From the file, like everything else: this was a literal 900 while the
+    // shipping value has been 0 since DEC #5, so the suite ran a grace period
+    // no player ever gets.
+    graceSec: read('shifts.json').graceSec,
     closedHotel: read('shifts.json').closedHotel,
     starTiers: read('stars.json').tiers,
     stars: { score: read('stars.json').score },

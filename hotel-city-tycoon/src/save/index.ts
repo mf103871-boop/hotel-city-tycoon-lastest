@@ -701,7 +701,11 @@ export class SaveManager {
     }
 
     if (env.version > SCHEMA_VERSION) {
-      // A newer client wrote this. Refuse rather than mangle it.
+      // A newer client wrote this. Refuse rather than mangle it — and keep a
+      // copy: this used to return without quarantining, and the fresh hotel
+      // that boot started in its place autosaved over it within thirty
+      // seconds. A rollback deployment silently erased the player's game.
+      await this.quarantine(raw);
       return { ok: false, reason: 'fromFuture', detail: `save is version ${env.version}, this build reads ${SCHEMA_VERSION}` };
     }
 

@@ -287,12 +287,29 @@ await check('the incident art is drawn, not just shipped (5A)', () => {
     assert(roomView.includes(key), `roomView does not draw ${key}`);
   }
   const phone = fs.readFileSync('src/ui/PhoneSheet.tsx', 'utf8');
-  assert(phone.includes('/assets/effects/ghost.png'), 'the phone sheet does not show the ghost');
-  assert(phone.includes('/assets/effects/${view.climate.eventId}.png'.replace('${view.climate.eventId}', '')) || phone.includes('view.climate.eventId'),
+  // Paths are relative to BASE_URL since the audit (D10), so no leading slash.
+  assert(phone.includes('assets/effects/ghost.png'), 'the phone sheet does not show the ghost');
+  assert(phone.includes('assets/effects/${view.climate.eventId}.png'.replace('${view.climate.eventId}', '')) || phone.includes('view.climate.eventId'),
     'the phone sheet does not show the active weather icon');
   const banner = fs.readFileSync('src/ui/ClimateBanner.tsx', 'utf8');
-  assert(banner.includes('climate.eventId') && banner.includes('/assets/effects/'),
+  assert(banner.includes('climate.eventId') && banner.includes('assets/effects/'),
     'the climate banner does not show the incident art');
+});
+
+await check('a lookup made before its bundle lands does not poison the key for the session', () => {
+  // AUDIT 2026-09-03 (D8). The scene draws once the rooms land while the other
+  // bundles are still loading; recording those early misses permanently left
+  // a fresh hotel's two staff as capsules on every boot. Structural, since
+  // the loader cannot run headlessly; scratch experiment neg-cache.ts is the
+  // behavioural proof.
+  const loader = fs.readFileSync('src/render/assets.ts', 'utf8');
+  assert(/loadedBundles\.has\(bundle\)/.test(loader),
+    'texture() records a miss before the key\'s bundle has loaded');
+  assert(/missing\.delete\(entry\.key\)/.test(loader),
+    'loadBundle never clears an earlier miss once the file arrives');
+  const characters = fs.readFileSync('src/render/characterView.ts', 'utf8');
+  assert(/walkFramesGeneration/.test(characters),
+    'a walk sheet that was not there yet is cached as absent for ever');
 });
 
 console.log(line);

@@ -20,11 +20,18 @@ export function PhoneButton({ onOpen }: { onOpen: () => void }) {
   const attention = view.haunted + (view.climate ? 1 : 0);
 
   return (
+    /*
+     * Beside the Settings gear, under the header — not floating over the
+     * bottom bar. At `bottom-24 end-3 z-30` it sat on the right end of the
+     * "Open hotel" button and the shift countdown, and, being rendered after
+     * the panels with the same z-index, on top of every sheet's rows too.
+     * z-20 keeps it beneath the sheets.
+     */
     <button
       type="button"
       onClick={onOpen}
       aria-label="phone"
-      className="absolute bottom-24 end-3 z-30 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-midnight-900/90 text-xl backdrop-blur"
+      className="absolute end-16 top-24 z-20 flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 bg-midnight-900/85 text-lg backdrop-blur"
     >
       <span aria-hidden>📞</span>
       {attention > 0 && (
@@ -53,7 +60,8 @@ export function PhoneSheet({ locale, onClose }: { locale: Locale; onClose: () =>
   return (
     <Sheet title={t('ui.phone')} {...(quiet ? { subtitle: t('ui.allQuiet') } : {})} onClose={onClose}>
       <div className="flex items-center justify-between gap-3 rounded-xl bg-white/[0.04] px-4 py-3">
-        <img src="/assets/effects/ghost.png" alt="" className={`h-8 w-8 shrink-0 ${view.haunted === 0 ? 'opacity-40' : ''}`} />
+        {/* Under the Vite base, like the loader: an absolute /assets/ path 404s on a deployment served under a path prefix. */}
+        <img src={`${import.meta.env.BASE_URL}assets/effects/ghost.png`} alt="" className={`h-8 w-8 shrink-0 ${view.haunted === 0 ? 'opacity-40' : ''}`} />
         <div className="me-auto">
           <div className="font-semibold text-cream-100">{t('ui.ghostbuster')}</div>
           <div className="mt-0.5 text-[12px] text-slate-400">
@@ -72,7 +80,7 @@ export function PhoneSheet({ locale, onClose }: { locale: Locale; onClose: () =>
 
       <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-white/[0.04] px-4 py-3">
         {view.climate
-          ? <img src={`/assets/effects/${view.climate.eventId}.png`} alt="" className="h-8 w-8 shrink-0" />
+          ? <img src={`${import.meta.env.BASE_URL}assets/effects/${view.climate.eventId}.png`} alt="" className="h-8 w-8 shrink-0" />
           : <span className="h-8 w-8 shrink-0" />}
         <div className="me-auto">
           <div className="font-semibold text-cream-100">{t('ui.repairCrew')}</div>

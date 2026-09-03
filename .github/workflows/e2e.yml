@@ -18,7 +18,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          # The version the project declares (.replit) and the lockfile was
+          # generated on. CI ran 24 while the project said 22.
+          node-version: 22
       - name: sanitize lockfile
         run: sed -i 's|http://package-firewall.replit.local/npm|https://registry.npmjs.org|g' package-lock.json
       - name: install deps

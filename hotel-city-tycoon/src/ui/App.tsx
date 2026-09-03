@@ -113,10 +113,13 @@ export function App() {
   const [giftOpen, setGiftOpen] = useState(false);
   const [phoneOpen, setPhoneOpen] = useState(false);
   const state = useGameStore((s) => s.state);
+  // Keyed on availability itself, not on the boot: a session that crosses
+  // the daily reset, or a PWA resumed the next morning, is offered the new
+  // gift the moment it exists rather than after the next reload.
+  const giftAvailable = ready && state !== null && dailyGift(state, state.epochMs).available;
   useEffect(() => {
-    if (!ready || !state) return;
-    if (dailyGift(state, state.epochMs).available) setGiftOpen(true);
-  }, [ready, state?.seed]);
+    if (giftAvailable) setGiftOpen(true);
+  }, [giftAvailable]);
   useEffect(() => {
     onSaveTrouble(() => setSaveTrouble(true));
     return () => onSaveTrouble(null);
@@ -146,6 +149,8 @@ export function App() {
             onEmptyTap={onEmptyTap}
           />
           <DebugBadge stats={stats} />
+          {/* Rendered before the panels so every sheet stacks above it. */}
+          <PhoneButton onOpen={() => setPhoneOpen(true)} />
           <Hud
             locale={locale}
             onOpenBuild={() => setPanel('build')}
@@ -180,7 +185,6 @@ export function App() {
             />
           )}
           {giftOpen && <DailyGift locale={locale} onClose={() => setGiftOpen(false)} />}
-          <PhoneButton onOpen={() => setPhoneOpen(true)} />
           {phoneOpen && <PhoneSheet locale={locale} onClose={() => setPhoneOpen(false)} />}
           <SeasonBanner locale={locale} />
           <ClimateBanner locale={locale} />
@@ -203,7 +207,7 @@ export function App() {
             type="button"
             aria-label="Settings"
             onClick={() => setPanel('settings')}
-            className="absolute end-3 top-24 z-20 rounded-lg border border-white/10 bg-midnight-900/85
+            className="absolute end-3 top-24 z-20 min-h-11 rounded-lg border border-white/10 bg-midnight-900/85
                        px-4 py-2.5 text-sm text-slate-300 backdrop-blur"
           >
             ⚙
@@ -220,8 +224,11 @@ export function App() {
               </button>
             </div>
           )}
+          {/* Below the Settings gear, not over it: at top-24 this banner sat on
+              the gear with the same z-index and swallowed every tap on it —
+              in exactly the case where Settings is the only way out. */}
           {saveProblem && (
-            <div className="absolute inset-x-3 top-24 z-20 rounded-lg border border-amber-500/30 bg-amber-950/80 px-4 py-3 text-sm text-amber-200">
+            <div className="absolute inset-x-3 top-36 z-20 rounded-lg border border-amber-500/30 bg-amber-950/80 px-4 py-3 text-sm text-amber-200">
               {translate(locale, 'ui.saveCorrupt')}
             </div>
           )}

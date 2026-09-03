@@ -114,6 +114,9 @@ await check('engine autosaves on its configured interval, not more often', async
   let saves = 0;
   const e = GameEngine.newGame(data, { clock, persist: () => { saves++; } }, 11);
   e.dispatch({ type: 'START_SHIFT', shiftId: 'shift_6h' });
+  // The accepted command saves once on its own (audit D19); what this check
+  // measures is the autosave cadence on top of that.
+  saves = 0;
   const interval = data.economy.simulation.autosaveIntervalSec * 1000;
 
   clock.advance(interval / 2); e.catchUp(clock.now());

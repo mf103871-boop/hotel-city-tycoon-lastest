@@ -55,10 +55,14 @@ export function DebugBadge({ stats }: { stats: RenderStats }) {
       aria-label="Diagnostics"
       aria-expanded={open}
       onClick={() => setOpen(!open)}
-      dir="ltr"
       className="absolute start-3 top-24 z-30 rounded-lg border border-white/10 bg-black/70
                  px-3 py-2 text-start font-mono text-[11px] leading-relaxed text-slate-300 backdrop-blur"
     >
+      {/* The readout is left-to-right; the badge's *position* follows the
+          document direction. `dir` used to sit on the button itself, which
+          made `start-3` resolve to the left in Arabic too — right on top of
+          the Settings gear that had moved there. */}
+      <span dir="ltr" className="block text-start">
       {open ? (
         <>
           <div>
@@ -84,6 +88,7 @@ export function DebugBadge({ stats }: { stats: RenderStats }) {
       ) : (
         <span className={fpsColour}>{stats.fps.toFixed(0)} fps</span>
       )}
+      </span>
     </button>
   );
 }

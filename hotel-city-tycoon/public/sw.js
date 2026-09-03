@@ -11,13 +11,19 @@
  * stale index.html after a deploy strands players on an old build that may not
  * understand their save.
  */
-// Bumped by the build. A worker from an older build cannot keep serving its
-// caches once a newer one installs.
-const VERSION = 'hct-v2';
+// Stamped by the build: tools/stamp-sw.mjs replaces these two placeholders
+// in dist/sw.js — VERSION with the bundle's hash, ART_VERSION with a digest
+// of every shipped art and audio file — so a worker from an older build, or
+// one that cached art since replaced under the same name, cannot keep
+// serving its caches once a newer one installs. The two are separate so a
+// code-only deploy does not make every installed phone re-download the art.
+// This file is never registered in development.
+const VERSION = 'hct-dev';
+const ART_VERSION = 'art-dev';
 const SHELL = `${VERSION}-shell`;
-const ASSETS = `${VERSION}-assets`;
+const ASSETS = `${ART_VERSION}-assets`;
 
-console.info(`[sw] ${VERSION} installing`);
+console.info(`[sw] ${VERSION} / ${ART_VERSION} installing`);
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -32,7 +38,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
       .then((keys) => Promise.all(
-        keys.filter((k) => !k.startsWith(VERSION)).map((k) => caches.delete(k)),
+        keys.filter((k) => k !== SHELL && k !== ASSETS).map((k) => caches.delete(k)),
       ))
       .then(() => self.clients.claim()),
   );

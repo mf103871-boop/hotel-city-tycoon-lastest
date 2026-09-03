@@ -51,8 +51,17 @@ export function setReducedMotionForTests(value: boolean | null): void {
  * never inside the render loop.
  */
 const walkFrames = new Map<string, Texture[] | null>();
+/** The asset generation the null entries above were recorded under. */
+let walkFramesGeneration = -1;
 
 function framesFor(assetKey: string): Texture[] | null {
+  // A null entry means "no sheet yet", and the sheet can still arrive: drop
+  // the nulls whenever a bundle lands and keep the frames already sliced.
+  const generation = assetGeneration();
+  if (generation !== walkFramesGeneration) {
+    walkFramesGeneration = generation;
+    for (const [key, frames] of walkFrames) if (frames === null) walkFrames.delete(key);
+  }
   const cached = walkFrames.get(assetKey);
   if (cached !== undefined) return cached;
 

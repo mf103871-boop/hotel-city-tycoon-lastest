@@ -24,7 +24,7 @@ export function ClimateBanner({ locale }: { locale: Locale }) {
   return (
     <div className="pointer-events-none absolute inset-x-3 top-36 z-10 rounded-xl border border-water-hi/30 bg-ink-900/85 px-4 py-2 backdrop-blur">
       <div className="flex items-center gap-2">
-        <img src={`/assets/effects/${climate.eventId}.png`} alt="" className="h-6 w-6 shrink-0" />
+        <img src={`${import.meta.env.BASE_URL}assets/effects/${climate.eventId}.png`} alt="" className="h-6 w-6 shrink-0" />
         <span className="text-sm font-semibold text-cream-100">{t(climate.nameKey)}</span>
         <span className="ms-auto font-mono text-[11px] text-slate-400">
           {minutes} {t('ui.minutesShort')}

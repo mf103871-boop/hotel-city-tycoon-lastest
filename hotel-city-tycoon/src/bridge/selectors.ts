@@ -145,6 +145,8 @@ export interface ShiftOption {
   cost: number;
   affordable: boolean;
   unlocked: boolean;
+  /** So a locked shift can say which level unlocks it, not "level ?". */
+  unlockLevel: number;
   nameKey: string;
 }
 
@@ -157,6 +159,7 @@ export function shiftOptions(state: GameState): ShiftOption[] {
       cost,
       affordable: state.player.coins >= cost,
       unlocked: s.unlockLevel <= state.player.level,
+      unlockLevel: s.unlockLevel,
       nameKey: `shift.${s.durationSec / 3600}h`,
     };
   });
@@ -449,7 +452,8 @@ export function roomDetail(state: GameState, roomId: string): RoomDetail | null 
     staffAssigned: room.staffId !== null,
     staffGradeId: state.staff.find((s) => s.id === room.staffId)?.gradeId ?? null,
     sellRefund: refund,
-    canSell: !required && room.occupants.length === 0,
+    // The same question the command asks, so the button never lies.
+    canSell: !required && room.occupants.length === 0 && !room.hasFire && !room.hasPest && !room.hasGhost,
     /*
      * Why the room cannot be put away, or null when it can.
      *
@@ -653,6 +657,22 @@ export function upgradeOptions(state: GameState): UpgradeOption[] {
       };
     })
     .sort((a, b) => a.unlockLevel - b.unlockLevel);
+}
+
+/**
+ * Whether any upgrade track can ever be bought.
+ *
+ * DEC #14 parks every track at level 53 in a game capped at 52, so the HUD
+ * button opened a panel in which every row was disabled — and, being the
+ * fifth button in a row that cannot shrink, it was the one pushed off a
+ * 390 px screen. A button that leads nowhere is hidden until the data says
+ * otherwise; the level cap is read from the data, never assumed.
+ */
+export function upgradesReachable(state: GameState): boolean {
+  void state;
+  const data = D();
+  const cap = data.levels.reduce((max, l) => Math.max(max, l.level), 0);
+  return data.upgrades.some((u) => u.unlockLevel <= cap);
 }
 
 /** Everything poured into permanent upgrades so far. */

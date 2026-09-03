@@ -120,7 +120,21 @@ export class GameEngine {
    */
   dispatch(cmd: Command): CommandResult {
     const result = execute(this.data, this.state, cmd);
-    if (result.ok) this.emit(result.events);
+    if (result.ok) {
+      this.emit(result.events);
+      /*
+       * Every accepted command is written down at once.
+       *
+       * Saving used to happen only on the thirty-second autosave and on a
+       * best-effort flush when the tab was hidden. A room built two seconds
+       * before a reload was gone afterwards: the DEC-009 lane reported
+       * "6 rooms" before and "4 rooms" after. Commands are the moments the
+       * player actually paid for something, so they are the moments to save.
+       * The coordinator queues the writes, and a hotel without a persist
+       * port (tests, the balance sims, a fallback session) is unaffected.
+       */
+      void this.persist();
+    }
     return result;
   }
 

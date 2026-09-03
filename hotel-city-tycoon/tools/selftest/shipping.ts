@@ -269,6 +269,23 @@ check('the worker never caches application code', () => {
   }
 });
 
+check('the worker cache version is stamped by the build, not written by hand', () => {
+  // AUDIT 2026-09-03 (D9): `const VERSION = 'hct-v2'` was hand-written and
+  // nothing bumped it, while art is served cache-first. A PNG replaced under
+  // the same name — what ART-1 delivers — would have stayed the old picture
+  // on every installed PWA. The build now stamps the bundle hash and an art
+  // digest into dist/sw.js.
+  const placeholders = sw.match(/const VERSION = 'hct-dev';/g)?.length ?? 0;
+  assert(placeholders === 1, `public/sw.js must carry the 'hct-dev' placeholder exactly once (found ${placeholders})`);
+  const artPlaceholders = sw.match(/const ART_VERSION = 'art-dev';/g)?.length ?? 0;
+  assert(artPlaceholders === 1, `public/sw.js must carry the 'art-dev' placeholder exactly once (found ${artPlaceholders})`);
+  assert(fs.existsSync('tools/stamp-sw.mjs'), 'tools/stamp-sw.mjs is missing');
+  const build = JSON.parse(fs.readFileSync('package.json', 'utf8')).scripts.build as string;
+  const stamp = build.indexOf('node tools/stamp-sw.mjs');
+  assert(stamp > build.indexOf('vite build'), 'the build does not stamp the worker after vite build');
+  assert(stamp < build.indexOf('check:budget'), 'the worker is stamped after the checks that read dist');
+});
+
 check('a stale deployment can be cleared without developer tools', () => {
   const main = fs.readFileSync('src/main.tsx', 'utf8');
   assert(/fresh/.test(main) && /unregister/.test(main),
