@@ -296,6 +296,69 @@ await check('the incident art is drawn, not just shipped (5A)', () => {
     'the climate banner does not show the incident art');
 });
 
+await check('the decor art is drawn, not just shipped (HC-P1-S4)', () => {
+  // The same rule the incident art is held to. Until S4 the decor sprites were
+  // loaded into the bundle and never asked for: RoomView drew a labelled box
+  // for every piece, so seventy-seven files shipped to every player and none
+  // of them was ever put on screen.
+  const roomView = fs.readFileSync('src/render/roomView.ts', 'utf8');
+  assert(/texture\(piece\.assetKey\)/.test(roomView),
+    'RoomView never asks for a decor piece’s texture');
+  assert(/decorAnchorFor\(/.test(roomView),
+    'RoomView pins every piece the same way instead of by category');
+  assert(/orderDecor\(/.test(roomView),
+    'RoomView does not use the footY draw order');
+
+  // Characters and decor must shrink by the same factor, or a guest cannot sit
+  // in a chair. Neither view is allowed its own literal.
+  const layout = fs.readFileSync('src/render/layout.ts', 'utf8');
+  assert(/export const ART_SCALE\b/.test(layout), 'ART_SCALE is not defined in layout');
+  for (const file of ['src/render/roomView.ts', 'src/render/characterView.ts']) {
+    const source = fs.readFileSync(file, 'utf8');
+    assert(/ART_SCALE/.test(source), `${file} does not use the shared art scale`);
+    assert(!/\*\s*0\.55\b/.test(source), `${file} still hard-codes a scale of its own`);
+  }
+
+  // The decor bundle has to be loaded for any of the above to resolve.
+  const canvas = fs.readFileSync('src/ui/HotelCanvas.tsx', 'utf8');
+  assert(/loadBundle\('decor'/.test(canvas), 'the decor bundle is never loaded');
+  assert(/assetKey: p\.assetKey/.test(canvas), 'the decor asset key never reaches RoomView');
+});
+
+await check('placement and the manifest agree on how big a decor piece is', () => {
+  // decorPlacement.ts (core) keeps its own copy of the slot-size table and the
+  // block size, because core must not import the render layer or the manifest.
+  // Copies drift; this is what stops them. If they disagree, placement believes
+  // a piece is a size it is not drawn at, and DEC-010's "the piece is inside
+  // the room" stops being true without any test noticing.
+  const source = fs.readFileSync('src/core/systems/decorPlacement.ts', 'utf8');
+  const table = source.match(/const SLOT_SIZE[^=]*=\s*\{([^}]*)\}/)?.[1] ?? '';
+  const declared = new Map<string, string>();
+  for (const [, slot, w, h] of table.matchAll(/(\w+):\s*\[(\d+),\s*(\d+)\]/g)) {
+    declared.set(slot!, `${w}x${h}`);
+  }
+  assert(declared.size === 4, `expected four slot sizes, found ${declared.size}`);
+
+  const bySlot = new Map<string, string>();
+  for (const item of data.decor) {
+    const entry = entries.find((e) => e.key === item.assetKey);
+    if (entry) bySlot.set(item.slotType, `${entry.width}x${entry.height}`);
+  }
+  for (const [slot, size] of bySlot) {
+    eq(declared.get(slot), size, `placement thinks a "${slot}" piece is ${declared.get(slot)}`);
+  }
+
+  // The same for the block size and the art scale.
+  const layout = fs.readFileSync('src/render/layout.ts', 'utf8');
+  eq(source.match(/const BLOCK_W = (\d+)/)?.[1], layout.match(/BLOCK_W = (\d+)/)?.[1],
+    'decorPlacement and layout disagree on block width');
+  eq(source.match(/const BLOCK_H = (\d+)/)?.[1], layout.match(/BLOCK_H = (\d+)/)?.[1],
+    'decorPlacement and layout disagree on block height');
+  assert(/ART_SCALE = DECOR_ART_SCALE/.test(layout),
+    'layout keeps its own copy of the art scale instead of the placement one');
+  console.log(`      slot sizes agree: ${[...declared].map(([k, v]) => `${k} ${v}`).join(', ')}`);
+});
+
 await check('a lookup made before its bundle lands does not poison the key for the session', () => {
   // AUDIT 2026-09-03 (D8). The scene draws once the rooms land while the other
   // bundles are still loading; recording those early misses permanently left

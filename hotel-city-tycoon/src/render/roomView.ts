@@ -1,15 +1,18 @@
 /**
- * Placeholder room graphics.
+ * One room on screen: its art, the decor placed in it, its meter and badges.
  *
- * Flat coloured shells with a decor meter and hazard badges. They are here so
- * that layout, camera, culling and interaction can be built and felt before
- * any art exists — the real room sprites replace this in P3b, and nothing
- * outside this file should need to change when they do.
+ * Every layer here reaches for a texture first and falls back to something
+ * drawn. That contract is why art can land one file at a time — a flat shell
+ * stood in for the room interiors until they were drawn, and a labelled box
+ * stood in for decor until ART-1 arrived — and it is why a file that fails to
+ * load costs a picture rather than the room.
  */
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
-import { texture, assetGeneration } from './assets.ts';
+import { texture, entryFor, assetGeneration } from './assets.ts';
 import type { Rect } from '../core/state/grid.ts';
-import { roomWorldRect, BLOCK_W, BLOCK_H, anchorToLocalPx } from './layout.ts';
+import {
+  roomWorldRect, BLOCK_W, BLOCK_H, ART_SCALE, anchorToLocalPx, orderDecor, decorAnchorFor,
+} from './layout.ts';
 
 /** Category colours, chosen to read at a glance while zoomed out. */
 const SHELL = {
@@ -24,13 +27,14 @@ const METER_LOW = 0xf07858;
 const METER_HIGH = 0x7fc4a0;
 
 /**
- * PLACEHOLDER decor colours — a technical stand-in for ART-1
- * (docs/ASSET_REQUEST-ART-1.md, still `REQUESTED`), not a palette decision.
- * §5A forbids Fable from generating final art or letting a placeholder pass
- * as one; nothing here is meant to be read as a finished look. It exists so
- * DEC-010's position/flip/save pipeline can be proven end to end before any
- * art exists. Swapping to `texture(defId's assetKey)` is the follow-up once
- * Codex delivers ART-1.
+ * PLACEHOLDER decor colours, kept as the miss fallback and nothing more.
+ *
+ * Until ART-1 landed this box *was* the decor: §5A allows an explicitly named
+ * placeholder to prove a pipeline, and DEC-010's position/flip/save path was
+ * proven on it in HC-P1-S3. The art is here now and `drawDecor` reaches for
+ * the texture first. This survives because the loader's contract is that a
+ * missing texture never crashes and never blanks — the same reason the rooms
+ * keep their drawn shell.
  */
 const DECOR_PLACEHOLDER = {
   wall: 0x6c8ebf,
@@ -50,6 +54,8 @@ export interface RoomViewDecorItem {
   defId: string;
   category: string;
   slotType: string;
+  /** Art for this piece; empty falls back to the placeholder box. */
+  assetKey: string;
   localX: number;
   localY: number;
   flipX: boolean;
@@ -179,37 +185,59 @@ export class RoomView extends Container {
   }
 
   /**
-   * PLACEHOLDER decor (see DECOR_PLACEHOLDER above) at each piece's DEC-010
-   * anchor. Rebuilt in full on every dirty update — the catalogue caps a room
-   * at 24 pieces (data/economy.json limits.maxDecorPerRoom), cheap enough
-   * that this does not need RoomView's own texture-reuse tricks.
+   * ART-1 decor at each piece's DEC-010 anchor.
+   *
+   * Rebuilt in full on every dirty update — the catalogue caps a room at 24
+   * pieces (data/economy.json limits.maxDecorPerRoom), cheap enough that this
+   * does not need RoomView's own texture-reuse tricks.
    */
   private drawDecor(pieces: RoomViewDecorItem[]): void {
     this.decorLayer.removeChildren();
-    // zBias breaks ties among pieces that would otherwise overlap; Pixi
-    // draws children back-to-front in addChild order, so lowest goes first.
-    const ordered = [...pieces].sort((a, b) => a.zBias - b.zBias);
-    for (const piece of ordered) {
+    for (const piece of orderDecor(pieces)) {
       const at = anchorToLocalPx(piece.localX, piece.localY);
       const box = new Container();
       box.position.set(at.x, at.y);
+      // The container flips about the anchor, so a mirrored piece keeps its
+      // contact point rather than sliding half its width sideways.
       box.scale.x = piece.flipX ? -1 : 1;
 
-      const fill = DECOR_PLACEHOLDER[piece.slotType as keyof typeof DECOR_PLACEHOLDER] ?? DECOR_PLACEHOLDER_DEFAULT;
-      const g = new Graphics();
-      g.roundRect(
-        -DECOR_PLACEHOLDER_HALF_W, -DECOR_PLACEHOLDER_HALF_H,
-        DECOR_PLACEHOLDER_HALF_W * 2, DECOR_PLACEHOLDER_HALF_H * 2, 3,
-      ).fill({ color: fill, alpha: 0.85 }).stroke({ width: 1, color: DECOR_PLACEHOLDER_BORDER });
-      box.addChild(g);
+      const art = piece.assetKey ? texture(piece.assetKey) : null;
+      if (art) {
+        /*
+         * Sized from the manifest, not from the texture.
+         *
+         * `art.width` is the file's pixel width, which doubles on a @2x tier —
+         * the same picture would be drawn twice as large on a phone that
+         * happened to get the higher tier. The manifest's width is the piece's
+         * size in world pixels at any tier, which is the number that belongs
+         * in a world-space layout.
+         */
+        const entry = entryFor(piece.assetKey);
+        const w = (entry?.width ?? art.width) * ART_SCALE;
+        const h = (entry?.height ?? art.height) * ART_SCALE;
+        const [ax, ay] = decorAnchorFor(piece.category);
+        const sprite = new Sprite(art);
+        sprite.anchor.set(ax, ay);
+        sprite.width = w;
+        sprite.height = h;
+        box.addChild(sprite);
+      } else {
+        const fill = DECOR_PLACEHOLDER[piece.slotType as keyof typeof DECOR_PLACEHOLDER] ?? DECOR_PLACEHOLDER_DEFAULT;
+        const g = new Graphics();
+        g.roundRect(
+          -DECOR_PLACEHOLDER_HALF_W, -DECOR_PLACEHOLDER_HALF_H,
+          DECOR_PLACEHOLDER_HALF_W * 2, DECOR_PLACEHOLDER_HALF_H * 2, 3,
+        ).fill({ color: fill, alpha: 0.85 }).stroke({ width: 1, color: DECOR_PLACEHOLDER_BORDER });
+        box.addChild(g);
 
-      const label = new Text({
-        text: piece.category.slice(0, 4).toUpperCase(),
-        style: { fontSize: 7, fill: 0x1a130e, fontFamily: 'system-ui, sans-serif' },
-      });
-      label.resolution = 2;
-      label.anchor.set(0.5);
-      box.addChild(label);
+        const label = new Text({
+          text: piece.category.slice(0, 4).toUpperCase(),
+          style: { fontSize: 7, fill: 0x1a130e, fontFamily: 'system-ui, sans-serif' },
+        });
+        label.resolution = 2;
+        label.anchor.set(0.5);
+        box.addChild(label);
+      }
 
       this.decorLayer.addChild(box);
     }

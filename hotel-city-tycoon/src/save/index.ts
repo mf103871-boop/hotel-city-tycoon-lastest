@@ -14,7 +14,9 @@ import type { GameState } from '../core/state/types.ts';
 import type { SimData } from '../core/data-source.ts';
 import { checkInvariants } from '../core/state/invariants.ts';
 import { SCHEMA_VERSION } from '../core/state/types.ts';
-import { anchorBoundsFor, anchorKey, firstFreeAnchor, slotTypeFor } from '../core/systems/decorPlacement.ts';
+import {
+  anchorBoundsFor, anchorKey, categoryFor, firstFreeAnchor, slotTypeFor,
+} from '../core/systems/decorPlacement.ts';
 
 export const SAVE_KEY = 'hct:save';
 export const QUARANTINE_KEY = 'hct:save:quarantine';
@@ -427,8 +429,8 @@ export const MIGRATIONS: Record<number, Migration> = {
       return list.map((raw) => {
         if (!raw || typeof raw !== 'object') return raw;
         const piece = raw as Record<string, unknown>;
-        const slotType = slotTypeFor(data, piece['defId'] as string);
-        const anchor = firstFreeAnchor(bounds, slotType, taken);
+        const defId = piece['defId'] as string;
+        const anchor = firstFreeAnchor(bounds, categoryFor(data, defId), slotTypeFor(data, defId), taken);
         taken.add(anchorKey(anchor.x, anchor.y));
         return { localX: anchor.x, localY: anchor.y, flipX: false, zBias: 0, ...piece };
       });

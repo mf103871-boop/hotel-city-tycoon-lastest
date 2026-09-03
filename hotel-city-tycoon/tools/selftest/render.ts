@@ -15,7 +15,11 @@ import {
 import type { CameraState, Viewport, WorldBounds } from '../../src/render/camera.ts';
 import { cull, intersects, expand } from '../../src/render/culling.ts';
 import { Pool, KeyedPool } from '../../src/render/pool.ts';
-import { blockToWorld, worldToBlock, roomWorldRect, plotWorldBounds, BLOCK_W, BLOCK_H } from '../../src/render/layout.ts';
+import {
+  blockToWorld, worldToBlock, roomWorldRect, plotWorldBounds, anchorToLocalPx,
+  orderDecor, decorAnchorFor, isDecorBack, BLOCK_W, BLOCK_H, ART_SCALE,
+} from '../../src/render/layout.ts';
+import { readFileSync } from 'node:fs';
 
 let passed = 0;
 const failures: string[] = [];
@@ -257,6 +261,81 @@ check('plot bounds leave sky above and street below', () => {
   assert(b.height > 8 * BLOCK_H, 'no street margin below the hotel');
   assert(b.x < 0, 'no margin beside the hotel');
 });
+
+// ---------------------------------------------------------------- decor (HC-P1-S4)
+const DECOR_CATEGORIES = (JSON.parse(readFileSync('data/decor.json', 'utf8')) as {
+  items: Array<{ category: string; slotType: string }>;
+}).items;
+
+check('every decor category the data ships has a deliberate anchor', () => {
+  // A category with no anchor silently falls back to bottom-centre, which
+  // hangs a wallpaper off the floor line. The catalogue is the source of
+  // truth for which categories exist, so it is what gets checked.
+  const seen = new Set(DECOR_CATEGORIES.map((d) => d.category));
+  const bottom = new Set(['bed', 'seating', 'table', 'plant', 'luxury']);
+  const centre = new Set(['flooring', 'rug', 'wallpaper', 'wallArt']);
+  for (const category of seen) {
+    const [ax, ay] = decorAnchorFor(category);
+    eq(ax, 0.5, `${category} is not centred horizontally`);
+    if (bottom.has(category)) eq(ay, 1, `${category} should stand on its contact edge`);
+    else if (centre.has(category)) eq(ay, 0.5, `${category} should be centred on what it covers`);
+    else eq(ay, 0, `${category} should hang from its fixing point`);
+  }
+  eq(seen.size, 10, 'the catalogue no longer has ten categories — recheck the anchor table');
+});
+
+check('surfaces are drawn behind anything standing on the floor', () => {
+  for (const category of ['wallpaper', 'flooring', 'wallArt', 'lighting']) {
+    assert(isDecorBack(category), `${category} should be on the back layer`);
+  }
+  for (const category of ['bed', 'seating', 'table', 'plant', 'rug', 'luxury']) {
+    assert(!isDecorBack(category), `${category} should sort with the characters`);
+  }
+});
+
+check('decor sorts by contact point, with surfaces underneath', () => {
+  const piece = (id: string, category: string, localY: number, zBias = 0) =>
+    ({ id, category, localY, zBias });
+  const order = orderDecor([
+    piece('chair', 'seating', 14),
+    piece('paper', 'wallpaper', 6),
+    piece('bed', 'bed', 10),
+    piece('rug', 'rug', 12),
+  ]).map((p) => p.id);
+  // Wallpaper first however low it sits; then bed (10), rug (12), chair (14).
+  eq(order.join(','), 'paper,bed,rug,chair', 'wrong draw order');
+});
+
+check('zBias only breaks ties, it does not override depth', () => {
+  const piece = (id: string, localY: number, zBias: number) =>
+    ({ id, category: 'seating', localY, zBias });
+  eq(orderDecor([piece('low', 12, 9), piece('high', 4, 0)]).map((p) => p.id).join(','),
+    'high,low', 'zBias overrode the contact point');
+  eq(orderDecor([piece('b', 8, 1), piece('a', 8, 0)]).map((p) => p.id).join(','),
+    'a,b', 'zBias did not break a tie at equal depth');
+});
+
+check('ordering keeps every piece exactly once', () => {
+  const pieces = DECOR_CATEGORIES.slice(0, 20).map((d, i) => ({
+    id: `p${i}`, category: d.category, localY: (i * 7) % 16, zBias: i % 3,
+  }));
+  const out = orderDecor(pieces);
+  eq(out.length, pieces.length, 'ordering changed the number of pieces');
+  eq(new Set(out.map((p) => p.id)).size, pieces.length, 'ordering duplicated or dropped a piece');
+});
+
+check('a scaled piece still fits the room it is anchored in', () => {
+  // The whole point of ART_SCALE. An armchair is authored at 72x72; drawn 1:1
+  // it is three quarters of a 96px room. This is the assertion that fails if
+  // someone "simplifies" the scale away.
+  assert(ART_SCALE > 0 && ART_SCALE < 1, 'art scale must shrink, not grow');
+  const armchair = 72 * ART_SCALE;
+  assert(armchair < BLOCK_H * 0.5, `a scaled armchair is ${armchair}px in a ${BLOCK_H}px room`);
+  // Anchored at the bottom of the floor band it must not push through the ceiling.
+  const foot = anchorToLocalPx(8, 15).y;
+  assert(foot - armchair > 0, 'a floor-standing piece overflows the top of its room');
+});
+
 
 console.log(line);
 if (failures.length === 0) console.log(`  ${passed} checks passed`);

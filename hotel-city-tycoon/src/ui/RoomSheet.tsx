@@ -77,6 +77,11 @@ export function RoomSheet({
           locale={locale}
             key={item.defId}
             title={t(item.nameKey)}
+            // The scene sprite, not the ART-1 thumbnail: only ten of the
+            // seventy-seven pieces have a thumbnail drawn, while every piece
+            // has a scene sprite on disk. Switching this path to
+            // `decor/thumbs/` is a one-line change once the rest exist.
+            icon={`${import.meta.env.BASE_URL}assets/decor/${item.defId}.png`}
             meta={`+${item.decorPoints} · ${Math.round(item.meterShare * 100)}% ${t('ui.ofMeter')}`}
             {...(item.owned > 0
               // Already owned: the core consumes the copy and charges nothing,

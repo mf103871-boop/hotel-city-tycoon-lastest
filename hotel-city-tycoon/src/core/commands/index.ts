@@ -187,7 +187,7 @@ export function execute(data: SimData, state: GameState, cmd: Command): CommandR
       // on top of; slotType picks which surface band it prefers.
       const bounds = anchorBoundsFor(data, room.defId);
       const takenAnchors = new Set(room.decor.map((p) => anchorKey(p.localX, p.localY)));
-      const anchor = firstFreeAnchor(bounds, def.slotType, takenAnchors);
+      const anchor = firstFreeAnchor(bounds, def.category, def.slotType, takenAnchors);
       room.decor.push({
         id: `d${state.counters.decor++}`, defId: cmd.defId, slot: cmd.slot,
         localX: anchor.x, localY: anchor.y, flipX: false, zBias: 0,

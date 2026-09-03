@@ -7,10 +7,33 @@
  */
 import type { Rect } from '../core/state/grid.ts';
 import type { WorldBounds } from './camera.ts';
+import { DECOR_ART_SCALE, decorAnchorFor } from '../core/systems/decorPlacement.ts';
 
 /** One grid block, in world pixels. Rooms are wider than they are tall. */
 export const BLOCK_W = 128;
 export const BLOCK_H = 96;
+
+/**
+ * How much smaller art is drawn than it is authored.
+ *
+ * The art is authored at a common figure scale, not at block scale: a
+ * character is 48x72 and an armchair 72x72, both of which go inside a room
+ * only 96px tall whose floor band is about 26px. Drawn 1:1 the armchair fills
+ * three quarters of the room and the guest stands taller than the doorway.
+ *
+ * Characters and decor must share this number. A guest sitting in a chair, a
+ * bed the sleeper fits inside, a fern that reads as waist-high — all of it
+ * breaks the moment the two drift apart, and it drifts *silently*, because
+ * each one looks perfectly reasonable on its own.
+ *
+ * It is defined in `decorPlacement.ts` and re-exported here rather than copied,
+ * because placement needs the same number to know which anchors leave a piece
+ * inside its room, and two copies of it is exactly the drift described above.
+ */
+export const ART_SCALE = DECOR_ART_SCALE;
+
+/** Where a piece is pinned inside its own sprite. Defined with the placement rules. */
+export { decorAnchorFor };
 
 /** Y grows upward in the hotel but downward on screen, so rows are flipped. */
 export function blockToWorld(x: number, y: number, plotHeight: number): { x: number; y: number } {
@@ -45,6 +68,47 @@ export const ANCHOR_PX_Y = BLOCK_H / ANCHOR_UNITS_PER_BLOCK;
 /** A decor anchor, in room-local pixels from the room's top-left. */
 export function anchorToLocalPx(localX: number, localY: number): { x: number; y: number } {
   return { x: localX * ANCHOR_PX_X, y: localY * ANCHOR_PX_Y };
+}
+
+/**
+ * Categories on ART-0's `room.decorBack` layer — behind everything that stands
+ * on the floor. The rest share the character layer and sort by contact point,
+ * so a guest can stand in front of a desk and behind the bed they are heading
+ * for without either being a separate sprite.
+ */
+const DECOR_BACK = new Set(['wallpaper', 'flooring', 'wallArt', 'lighting']);
+
+export function isDecorBack(category: string): boolean {
+  return DECOR_BACK.has(category);
+}
+
+/** The little of a decor piece that its draw order depends on. */
+export interface DecorLayoutItem {
+  category: string;
+  localY: number;
+  zBias: number;
+}
+
+/**
+ * Draw order for one room's decor.
+ *
+ * Lives here rather than in RoomView because Pixi cannot run headlessly (see
+ * tools/selftest/render.ts) and this is the part with rules worth testing —
+ * the same split the camera, culling and pooling already use.
+ *
+ * Wall, ceiling and floor surfaces go down first, ordered only by `zBias`.
+ * Everything that stands on the floor follows, sorted by its contact point —
+ * ART-0 §17's `footY` rule — so a piece lower on screen is nearer the viewer
+ * and covers what is behind it. `zBias` breaks ties at equal depth, which is
+ * what DEC-010 stored it for.
+ */
+export function orderDecor<T extends DecorLayoutItem>(pieces: readonly T[]): T[] {
+  const back: T[] = [];
+  const front: T[] = [];
+  for (const piece of pieces) (isDecorBack(piece.category) ? back : front).push(piece);
+  back.sort((a, b) => a.zBias - b.zBias);
+  front.sort((a, b) => a.localY - b.localY || a.zBias - b.zBias);
+  return [...back, ...front];
 }
 
 /** World bounds of the whole buildable plot, plus ground and sky margin. */

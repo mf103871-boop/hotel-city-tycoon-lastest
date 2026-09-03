@@ -81,9 +81,17 @@ export function Sheet({
 
 /** A row that is either actionable or explains why it is not. */
 export function OptionRow({
-  title, meta, detail, price, currency, label, blockerLabel, onPick, locale = 'en',
+  title, meta, detail, price, currency, label, blockerLabel, onPick, icon, locale = 'en',
 }: {
   title: string;
+  /**
+   * Art for the thing this row offers, as a URL under the Vite base.
+   *
+   * A picture of the piece, not an icon standing for its category: the decor
+   * catalogue is 77 rows of names, and a name alone does not tell a player
+   * what a "wallArt print" looks like beside a "wallArt poster".
+   */
+  icon?: string;
   /** One line explaining what this is for. */
   meta?: string;
   /** Dimensions, rates — the numbers, kept smaller than the explanation. */
@@ -108,6 +116,14 @@ export function OptionRow({
           ? 'cursor-not-allowed border-white/5 bg-white/[0.02] opacity-55'
           : 'border-white/10 bg-white/[0.04] hover:border-brass-500/70 hover:bg-white/[0.07]'}`}
     >
+      {icon && (
+        <img
+          src={icon}
+          alt=""
+          loading="lazy"
+          className="h-10 w-10 shrink-0 object-contain"
+        />
+      )}
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm text-slate-100">{title}</span>
         {meta && <span className="block text-[11px] leading-snug text-slate-400">{meta}</span>}

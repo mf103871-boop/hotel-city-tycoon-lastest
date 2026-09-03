@@ -74,6 +74,8 @@ export interface RoomSummaryDecor {
   defId: string;
   category: string;
   slotType: string;
+  /** Art for this piece. The renderer falls back if the file is absent. */
+  assetKey: string;
   /** Anchor units (16 per block) from the room's own top-left. */
   localX: number;
   localY: number;
@@ -120,10 +122,11 @@ export function roomDefOf(defId: string): RoomDef | undefined {
 }
 
 /** Same reasoning as roomIndex, for the decor catalogue's 77 entries. */
-let decorIndex: Map<string, { category: string; slotType: string }> | null = null;
+let decorIndex: Map<string, { category: string; slotType: string; assetKey: string }> | null = null;
 
-function decorInfoOf(defId: string): { category: string; slotType: string } | undefined {
-  decorIndex ??= new Map(D().decor.map((d) => [d.id, { category: d.category, slotType: d.slotType }]));
+function decorInfoOf(defId: string): { category: string; slotType: string; assetKey: string } | undefined {
+  decorIndex ??= new Map(D().decor.map((d) =>
+    [d.id, { category: d.category, slotType: d.slotType, assetKey: d.assetKey }]));
   return decorIndex.get(defId);
 }
 
@@ -135,6 +138,10 @@ function summariseDecor(room: RoomInstance): RoomSummaryDecor[] {
       defId: piece.defId,
       category: info?.category ?? 'unknown',
       slotType: info?.slotType ?? 'floor',
+      // A piece whose definition has vanished from the catalogue still draws:
+      // the key resolves to nothing and RoomView shows its placeholder box,
+      // which is the same contract the rooms and characters follow.
+      assetKey: info?.assetKey ?? '',
       localX: piece.localX,
       localY: piece.localY,
       flipX: piece.flipX,

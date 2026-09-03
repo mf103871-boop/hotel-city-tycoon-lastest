@@ -11,7 +11,7 @@
  */
 import { Container, Graphics, Rectangle, Sprite, Texture } from 'pixi.js';
 import { texture, assetGeneration } from './assets.ts';
-import { BLOCK_W, BLOCK_H, blockToWorld } from './layout.ts';
+import { BLOCK_W, BLOCK_H, ART_SCALE, blockToWorld } from './layout.ts';
 
 const CHAR_W = 48;
 const CHAR_H = 72;
@@ -140,8 +140,8 @@ export class CharacterView extends Container {
       : texture(data.assetKey);
     if (art) {
       this.sprite.texture = art;
-      this.sprite.width = CHAR_W * 0.55;
-      this.sprite.height = CHAR_H * 0.55;
+      this.sprite.width = CHAR_W * ART_SCALE;
+      this.sprite.height = CHAR_H * ART_SCALE;
       this.sprite.scale.x = Math.abs(this.sprite.scale.x) * (data.facing === 'left' ? -1 : 1);
       this.sprite.visible = true;
       this.fallback.clear();
