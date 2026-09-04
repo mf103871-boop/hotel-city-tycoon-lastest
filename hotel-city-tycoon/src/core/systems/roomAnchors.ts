@@ -722,9 +722,29 @@ export function plannedSlot(roomDefId: string, blocksW: number, blocksH: number,
                             index: number, kind: SpotKind): Slot | null {
   const layout = layoutFor(roomDefId, blocksW, blocksH);
   const slot = layout[index];
-  if (!slot) return null;
-  if (slot.kind !== kind && !NEIGHBOURING_KINDS[kind].includes(slot.kind)) return null;
+  if (!slot || !accepts(slot, kind)) return null;
   return slot;
+}
+
+/** May a piece of this kind stand in this place? */
+function accepts(slot: Slot, kind: SpotKind): boolean {
+  return slot.kind === kind || NEIGHBOURING_KINDS[kind].includes(slot.kind);
+}
+
+/**
+ * The designed place at this anchor that a piece of `kind` may take, if there
+ * is one.
+ *
+ * REPLACE_DECOR's whole promise rests on this: a swap must land where the old
+ * piece stood. Asking `anchorFor` instead walks the room's plan from the top
+ * and hands back the FIRST free place of the right kind, which is only the
+ * old one by coincidence — so replacing the third chair in a restaurant moved
+ * it to the first table's place.
+ */
+export function slotForKindAt(roomDefId: string, blocksW: number, blocksH: number,
+                              x: number, y: number, kind: SpotKind): Slot | null {
+  const layout = layoutFor(roomDefId, blocksW, blocksH);
+  return layout.find((slot) => slot.x === x && slot.y === y && accepts(slot, kind)) ?? null;
 }
 
 /**

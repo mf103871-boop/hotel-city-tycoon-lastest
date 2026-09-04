@@ -589,6 +589,60 @@ check('replacing a piece swaps it in place and hands the old one back', () => {
   assert(room.decorPoints > pointsBefore, 'the meter did not follow the swap');
 });
 
+check('a swap lands where the old piece stood, not on the room\'s first free place', () => {
+  // The failure this catches: `anchorFor` walks the plan from the top, so the
+  // third chair swapped in a restaurant moved to the first table's place.
+  const state = fresh();
+  state.player.coins += 5_000_000;
+  state.player.level = 40;
+  execute(data, state, { type: 'BUILD_ROOM', defId: 'restaurant' });
+  const room = state.hotel.rooms.find((r) => r.defId === 'restaurant')!;
+  for (let i = 0; i < 3; i++) {
+    const r = execute(data, state, {
+      type: 'PLACE_DECOR', roomId: room.id, defId: 'seating_cafeChair', slot: i,
+    });
+    assert(r.ok, `placing chair ${i} failed: ${r.ok === false ? r.reason : ''}`);
+  }
+  const third = room.decor[2]!;
+  const was = { x: third.localX, y: third.localY };
+  const swapped = execute(data, state, {
+    type: 'REPLACE_DECOR', roomId: room.id, decorId: third.id, defId: 'seating_loveseat',
+  });
+  assert(swapped.ok, `swapping failed: ${swapped.ok === false ? swapped.reason : ''}`);
+  assert(third.localX === was.x && third.localY === was.y,
+    `the swap moved the piece from (${was.x},${was.y}) to (${third.localX},${third.localY})`);
+  // And it did not land on top of one of the other two.
+  for (const other of room.decor.filter((p) => p.id !== third.id)) {
+    assert(!(other.localX === third.localX && other.localY === third.localY),
+      'the swap stood the new piece on another one');
+  }
+});
+
+check('a rug in a bedroom does not delete the bedroom\'s bed', () => {
+  /*
+   * The rug and the bed share a coordinate in eight of the nine bedrooms —
+   * deliberately, because a rug lies under the bed standing on it. Hiding a
+   * built-in by coordinate alone meant a sixty-coin level-2 rug deleted the
+   * room's bed, and the save migration re-anchored every legacy rug onto
+   * exactly that coordinate, so it would have happened on one load.
+   */
+  initSelectors(data);
+  const state = fresh();
+  state.player.coins += 5_000_000;
+  state.player.level = 40;
+  const room = state.hotel.rooms.find((r) => r.defId === 'economy')!;
+  const def = data.rooms.find((r) => r.id === 'economy')!;
+  const before = fixturesFor('economy', def.blocks.w, def.blocks.h, new Set());
+  const placedOk = execute(data, state, {
+    type: 'PLACE_DECOR', roomId: room.id, defId: 'rug_mat', slot: 0,
+  });
+  assert(placedOk.ok, `placing the rug failed: ${placedOk.ok === false ? placedOk.reason : ''}`);
+  const detail = roomDetail(state, room.id)!;
+  assert(detail.builtIn.length === before.length,
+    `laying a rug removed ${before.length - detail.builtIn.length} of the room's built-in pieces`);
+  assert(detail.builtIn.some((f) => f.defId === 'bed_cot'), 'the room lost its bed');
+});
+
 check('replacing refuses what the room refuses, and changes nothing when it does', () => {
   const state = fresh();
   state.player.coins += 5_000_000;

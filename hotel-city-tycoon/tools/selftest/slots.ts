@@ -288,6 +288,30 @@ check('a bought piece hides the built-in whose place it takes', () => {
   }
 });
 
+check('a piece in the OTHER place at the same coordinate hides nothing', () => {
+  /*
+   * The bug this exists for: a room may design two places at one coordinate
+   * on purpose — a rug lies under the bed standing on it — and hiding a
+   * fixture by coordinate alone meant a sixty-coin rug deleted the bedroom's
+   * bed. Twelve of the 23 rooms have such a pair, and eight of them are beds.
+   */
+  let pairs = 0;
+  for (const room of simData.rooms) {
+    const layout = layoutFor(room.id, room.blocks.w, room.blocks.h);
+    for (const slot of layout) {
+      if (!slot.fixture) continue;
+      const twin = layout.find((s) => s !== slot && s.x === slot.x && s.y === slot.y);
+      if (!twin) continue;
+      pairs++;
+      const kept = fixturesFor(room.id, room.blocks.w, room.blocks.h,
+        new Set([occupancyKey(twin.kind, twin.x, twin.y)]));
+      assert(kept.some((f) => f.defId === slot.fixture),
+        `${room.id} loses its built-in ${slot.fixture} to a ${twin.kind} piece beside it`);
+    }
+  }
+  console.log(`      ${pairs} shared coordinates, every built-in survives its twin`);
+});
+
 console.log(line);
 console.log(failures.length === 0
   ? `  ${passed} checks passed`

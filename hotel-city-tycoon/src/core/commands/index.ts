@@ -20,7 +20,9 @@ import { queueCapacity, receptionEfficiency } from '../systems/guests.ts';
 import { owned, grant, consume, sellValue } from '../systems/inventory.ts';
 import { slotAllowed, decorFitsRoom } from '../systems/quality.ts';
 import { anchorBoundsFor, anchorKey, firstFreeAnchor, anchorReachFor } from '../systems/decorPlacement.ts';
-import { anchorFor, plannedSlot, spotKindFor } from '../systems/roomAnchors.ts';
+import {
+  anchorFor, plannedSlot, slotForKindAt, spotKindFor,
+} from '../systems/roomAnchors.ts';
 import { Rng } from '../rng/index.ts';
 import { nextTier } from '../systems/upgrades.ts';
 import { shopOffers, shopPeriod, isOfferTaken, giftState, weekIndexOf, activeSeason } from '../systems/liveops.ts';
@@ -284,14 +286,25 @@ export function execute(data: SimData, state: GameState, cmd: Command): CommandR
       // destroyed — a swap costs the difference in what you own, not in coins.
       grant(state, placed.defId);
 
-      // Re-anchored for the new piece, because a bed and a lamp do not want
-      // the same place. The piece being replaced is left out of what counts as
-      // taken, so the obvious case — a better version of the same kind — puts
-      // the new one exactly where the old one stood.
+      /*
+       * The place the old piece stood in, whenever the new one can use it.
+       *
+       * That is the entire promise of a swap, and it does not fall out of
+       * asking the room where the piece should go: `anchorFor` walks the plan
+       * from the top and hands back the FIRST free place of the right kind,
+       * which is the old one only by coincidence. Replacing the third chair in
+       * a restaurant moved it to the first table's place.
+       *
+       * A swap that changes what kind of thing is standing there — a lamp for
+       * a rug — cannot keep the place, and falls back to the room's own order.
+       */
       const others = room.decor.filter((p) => p.id !== placed.id);
       const takenAnchors = new Set(others.map((p) => anchorKey(p.localX, p.localY)));
-      const anchor = anchorFor(data, room.defId, cmd.defId, takenAnchors,
-        data.economy.limits.maxDecorPerRoom, others)
+      const inPlace = slotForKindAt(room.defId, rdef.blocks.w, rdef.blocks.h,
+        placed.localX, placed.localY, spotKindFor(def.category, def.slotType));
+      const anchor = inPlace
+        ?? anchorFor(data, room.defId, cmd.defId, takenAnchors,
+          data.economy.limits.maxDecorPerRoom, others)
         ?? firstFreeAnchor(anchorBoundsFor(data, room.defId), def.slotType, takenAnchors,
           anchorReachFor(data, cmd.defId));
       placed.defId = cmd.defId;
