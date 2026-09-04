@@ -274,6 +274,63 @@ for (const r of rooms) {
   }
 }
 
+// ---------------------------------------------------------------- 10b. room catalogues
+// Every room sells exactly eight pieces of its own, sold nowhere else, and
+// the position of a piece in the list is the numbered place it stands in
+// (src/core/systems/roomAnchors.ts designs one slot per position). This is
+// the whole of "each room has its own decor", so it is checked here rather
+// than trusted: a piece in two lists would stand in two rooms' places, and a
+// list of seven would leave a room with a place nothing can fill.
+const catalogues = D['decor.json'].catalogues ?? {};
+const decorById = new Map(decorItems.map(d => [d.id, d]));
+const soldIn = new Map();
+for (const r of rooms) {
+  const list = catalogues[r.id];
+  if (!Array.isArray(list)) { err('decor.json', `room "${r.id}" has no catalogue`); continue; }
+  if (list.length !== 8) err('decor.json', `room "${r.id}" sells ${list.length} pieces, not 8`);
+  if (new Set(list).size !== list.length) err('decor.json', `room "${r.id}" lists a piece twice`);
+  if (r.decorSlots !== list.length) err('rooms.json', `room "${r.id}" has ${r.decorSlots} decor slots for ${list.length} catalogue pieces`);
+  for (const id of list) {
+    const d = decorById.get(id);
+    if (!d) { err('decor.json', `room "${r.id}" sells unknown piece "${id}"`); continue; }
+    if (soldIn.has(id)) err('decor.json', `"${id}" is sold in both ${soldIn.get(id)} and ${r.id}`);
+    soldIn.set(id, r.id);
+    // The scope has to agree with the catalogue, or PLACE_DECOR and the
+    // decorate sheet would disagree about the same piece.
+    if (!fitsRoom(d, r)) err('decor.json', `room "${r.id}" sells "${id}", which its own rules refuse`);
+    const scope = d.roomScope ?? [];
+    if (!(scope.length === 1 && scope[0] === r.id)) {
+      err('decor.json', `"${id}" is sold in ${r.id} but scoped to [${scope.join(', ')}] — a catalogue piece is scoped to its room alone`);
+    }
+    // Buying the set is the way to fill the meter, so nothing in it may
+    // unlock after the room does.
+    if (!isParked(d) && d.unlockLevel > r.unlockLevel && !isParked(r)) {
+      err('decor.json', `"${id}" unlocks at L${d.unlockLevel}, after its room ${r.id} (L${r.unlockLevel})`);
+    }
+  }
+}
+for (const roomId of Object.keys(catalogues)) {
+  if (!roomIds.has(roomId)) err('decor.json', `catalogue for "${roomId}", which is not a room`);
+}
+// A piece in no catalogue is a built-in: drawn by the room it furnishes, never
+// sold. It still needs a scope, or the room's own rules would refuse to draw it.
+for (const d of decorItems) {
+  if (soldIn.has(d.id)) continue;
+  if ((d.roomScope ?? []).length === 0 || d.roomScope.includes('any')) {
+    warn('decor.json', `built-in "${d.id}" is scoped to any room; nothing sells it`);
+  }
+}
+// The meter is exactly full when the room's coin pieces are all in.
+for (const r of rooms) {
+  const list = catalogues[r.id];
+  if (!Array.isArray(list) || r.decorTarget === 0) continue;
+  const coinPoints = list.map(id => decorById.get(id)).filter(d => d && d.cost.currency === 'coins')
+    .reduce((n, d) => n + d.decorPoints, 0);
+  if (coinPoints !== r.decorTarget) {
+    err('rooms.json', `room "${r.id}" targets ${r.decorTarget} decor points but its coin pieces total ${coinPoints}`);
+  }
+}
+
 // ---------------------------------------------------------------- 11. events
 for (const e of D['events.json'].events) {
   const t = e.trigger ?? {};

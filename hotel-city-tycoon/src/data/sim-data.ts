@@ -13,6 +13,7 @@ export function appSimData(): SimData {
     economy: GameData.economy as unknown as SimData['economy'],
     rooms: GameData.rooms.rooms as unknown as SimData['rooms'],
     decor: GameData.decor.items as unknown as SimData['decor'],
+    decorCatalogues: GameData.decor.catalogues as unknown as SimData['decorCatalogues'],
     staffRoles: GameData.staff.roles as unknown as SimData['staffRoles'],
     staffGrades: GameData.staff.grades as unknown as SimData['staffGrades'],
     guestTypes: GameData.guests.types as unknown as SimData['guestTypes'],

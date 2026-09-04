@@ -16,7 +16,7 @@ import { resolveOffline } from '../../src/core/sim/offline.ts';
 import { execute } from '../../src/core/commands/index.ts';
 import type { GameState, GuestInstance } from '../../src/core/state/types.ts';
 import type { CommercialRoomDef } from '../../src/core/data-source.ts';
-import { isCommercialRoom } from '../../src/core/data-source.ts';
+import { isCommercialRoom, catalogueFor } from '../../src/core/data-source.ts';
 
 const data = loadSimData();
 let passed = 0;
@@ -184,11 +184,9 @@ check('an infested amenity earns nothing', () => {
 check('decor raises what an amenity earns, exactly as it does for rooms', () => {
   const bare = hotelWithCafe(11);
   const nice = hotelWithCafe(11);
-  for (let slot = 0; slot < 8; slot++) {
-    execute(data, nice, {
-      type: 'PLACE_DECOR', roomId: cafeOf(nice).id, defId: 'lighting_chandelier', slot,
-    });
-  }
+  catalogueFor(data, 'cafe').forEach((defId, slot) => {
+    execute(data, nice, { type: 'PLACE_DECOR', roomId: cafeOf(nice).id, defId, slot });
+  });
   for (const s of [bare, nice]) {
     execute(data, s, { type: 'START_SHIFT', shiftId: 'shift_6h' });
     guestReadyToLeave(s);

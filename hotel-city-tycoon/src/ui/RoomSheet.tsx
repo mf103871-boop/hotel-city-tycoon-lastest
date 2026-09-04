@@ -10,8 +10,7 @@
  */
 import { useState } from 'react';
 import { useGameStore } from '../bridge/index.ts';
-import { roomDetail, decorCatalog, freeSlots, staffOptionFor } from '../bridge/selectors.ts';
-import { slotsFor } from '../bridge/selectors.ts';
+import { roomDetail, decorCatalog, slotsFor, staffOptionFor } from '../bridge/selectors.ts';
 import { REJECTION_KEY } from '../bridge/rejections.ts';
 import { translate } from '../i18n/index.ts';
 import { coins } from '../i18n/format.ts';
@@ -54,14 +53,14 @@ export function RoomSheet({
   const dispatch = useGameStore((s) => s.dispatch);
   const [mode, setMode] = useState<'overview' | 'decorate'>('overview');
   /*
-   * What the next pick from the catalogue is for.
+   * What the next pick from the room's list is for.
    *
-   * `null` is the plain case — buy something and the room decides where it
-   * goes. A `decorId` means the player tapped Replace on a piece they own, and
-   * the pick swaps it in place. A `planSlot` means they tapped Upgrade on one
-   * of the room's own built-in pieces, and the pick takes that exact place.
+   * `null` is the plain case — buy a piece and it stands in its own place. A
+   * `decorId` means the player tapped Replace on a piece they own, and the
+   * pick swaps it out: the old piece goes back to their store, the new one
+   * stands in the place the room keeps for it.
    */
-  const [swap, setSwap] = useState<{ decorId?: string; planSlot?: number } | null>(null);
+  const [swap, setSwap] = useState<{ decorId: string } | null>(null);
   if (!state) return null;
 
   const detail = roomDetail(state, roomId);
@@ -72,12 +71,19 @@ export function RoomSheet({
   const staff = staffOptionFor(state, roomId);
 
   if (mode === 'decorate') {
-    const slots = freeSlots(state, roomId);
+    /*
+     * The room's own eight pieces, always all eight, in the order of their
+     * places. A piece already standing in the room stays in the list marked
+     * installed rather than vanishing, so the player can see the whole set
+     * and how much of it is left to buy — the meter fills exactly when every
+     * piece is in.
+     */
     const catalogue = decorCatalog(state, roomId);
+    const installed = catalogue.filter((item) => item.placed).length;
     return (
       <Sheet
         title={swap ? t('ui.replaceWith') : t('ui.decorate')}
-        subtitle={`${t(detail.nameKey)} · ${slots.length} ${t('ui.slotsFree')}`}
+        subtitle={`${t(detail.nameKey)} · ${installed} ${t('ui.ofEight')} ${t('ui.installed').toLowerCase()}`}
         onClose={() => { setSwap(null); setProblem(null); setMode('overview'); }}
       >
         <Meter fill={detail.fill} points={detail.decorPoints} target={detail.decorTarget} locale={locale} />
@@ -91,19 +97,21 @@ export function RoomSheet({
         )}
         {catalogue.map((item) => (
           <OptionRow
-          locale={locale}
+            locale={locale}
             key={item.defId}
-            title={t(item.nameKey)}
+            title={`${item.slot + 1}. ${t(item.nameKey)}`}
             meta={`+${item.decorPoints} · ${Math.round(item.meterShare * 100)}% ${t('ui.ofMeter')}`}
-            {...(item.owned > 0
-              // Already owned: the core consumes the copy and charges nothing,
-              // so showing a price here would be a bill that never arrives.
-              ? { label: `${t('ui.owned')} ×${item.owned} · ${t('ui.free')}` }
-              : { price: item.cost.amount, currency: item.cost.currency })}
+            {...(item.placed
+              ? { label: t('ui.installed') }
+              : item.owned > 0
+                // Already owned: the core consumes the copy and charges nothing,
+                // so showing a price here would be a bill that never arrives.
+                ? { label: `${t('ui.owned')} ×${item.owned} · ${t('ui.free')}` }
+                : { price: item.cost.amount, currency: item.cost.currency })}
             blockerLabel={blockerLabel(item.blocker, item.unlockLevel, t)}
             onPick={() => {
-              // Swapping a piece the player already owns keeps its place and
-              // its slot, so it never needs one of its own.
+              // Swapping a piece the player already owns: the old one goes
+              // back to the store and the new one takes its own place.
               if (swap?.decorId) {
                 const r = dispatch({
                   type: 'REPLACE_DECOR', roomId, decorId: swap.decorId, defId: item.defId,
@@ -112,16 +120,11 @@ export function RoomSheet({
                 if (r.ok) { setSwap(null); setMode('overview'); }
                 return;
               }
-              // A slot this kind of piece is actually allowed in, not just the
-              // first empty index.
+              // The one place this piece has in this room — its slot number.
               const slot = slotsFor(state, roomId, item.slotType, item.defId)[0];
-              if (slot === undefined) { setProblem('reject.noSpace'); return; }
-              const r = dispatch({
-                type: 'PLACE_DECOR', roomId, defId: item.defId, slot,
-                ...(swap?.planSlot !== undefined ? { planSlot: swap.planSlot } : {}),
-              });
+              if (slot === undefined) { setProblem(item.placed ? 'reject.alreadyPlaced' : 'reject.noSpace'); return; }
+              const r = dispatch({ type: 'PLACE_DECOR', roomId, defId: item.defId, slot });
               setProblem(r.ok ? null : REJECTION_KEY[r.reason]);
-              if (r.ok && swap) { setSwap(null); setMode('overview'); }
             }}
           />
         ))}
@@ -181,12 +184,13 @@ export function RoomSheet({
               <span className="rounded bg-white/5 px-1.5 py-0.5 text-[11px] text-sand-400">
                 {t('ui.builtIn')}
               </span>
+              {/* The room's own piece for this place replaces the built-in
+                  when it is bought, so the way to upgrade it is the same as
+                  the way to buy anything else: the room's list. */}
               <button
                 type="button"
                 data-testid={`upgrade-decor-${fx.planSlot}`}
-                onClick={() => {
-                  setSwap({ planSlot: fx.planSlot }); setProblem(null); setMode('decorate');
-                }}
+                onClick={() => { setSwap(null); setProblem(null); setMode('decorate'); }}
                 className="ms-auto min-h-11 rounded-lg px-3 py-2 text-xs text-brass-300 hover:bg-white/5"
               >
                 {t('ui.upgrade')}

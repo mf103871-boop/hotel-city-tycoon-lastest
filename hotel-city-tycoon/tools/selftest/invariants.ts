@@ -10,6 +10,7 @@
 import { loadSimData } from '../balance-sim/load-data.ts';
 import { createInitialState } from '../../src/core/state/init.ts';
 import { execute } from '../../src/core/commands/index.ts';
+import { catalogueFor, decorDef } from '../../src/core/data-source.ts';
 import type { Command } from '../../src/core/commands/index.ts';
 import { advance } from '../../src/core/sim/tick.ts';
 import { resolveOffline } from '../../src/core/sim/offline.ts';
@@ -122,7 +123,7 @@ check('a rearranged hotel is sound', () => {
   execute(data, state, { type: 'BUILD_ROOM', defId: 'standard' });
   const room = state.hotel.rooms[state.hotel.rooms.length - 1]!;
   room.cleanliness = 1;
-  execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
+  execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: catalogueFor(data, 'standard')[0]!, slot: 0 });
   execute(data, state, { type: 'STORE_ROOM', roomId: room.id });
   sound(state, 'with a room in storage');
   execute(data, state, { type: 'PLACE_STORED_ROOM', roomId: room.id });
@@ -159,8 +160,17 @@ check('a version 1 save migrates all the way to the current one', () => {
   // flipX/zBias (17→18) existed. Without one here the chain's newest step
   // is only ever exercised against zero pieces.
   const hotel = modern['hotel'] as { rooms: Array<Record<string, unknown>> };
-  hotel.rooms[0]!['decor'] = [{ id: 'chain-test-decor', defId: 'wallpaper_plain', slot: 0 }];
-  hotel.rooms[0]!['decorPoints'] = data.decor.find((d) => d.id === 'wallpaper_plain')!.decorPoints;
+  // One of the room's own pieces, in a slot the old rules would have given
+  // it; 19→20 must move it onto its place. And one the room no longer sells,
+  // which 19→20 must hand back to the store rather than lose.
+  const sold = catalogueFor(data, hotel.rooms[0]!['defId'] as string)[0]!;
+  const otherRoom = data.rooms.find((r) => r.id !== hotel.rooms[0]!['defId'])!;
+  const unsold = catalogueFor(data, otherRoom.id)[0]!;
+  hotel.rooms[0]!['decor'] = [
+    { id: 'chain-test-decor', defId: sold, slot: 3 },
+    { id: 'chain-test-stray', defId: unsold, slot: 5 },
+  ];
+  hotel.rooms[0]!['decorPoints'] = decorDef(data, sold).decorPoints + decorDef(data, unsold).decorPoints;
 
   const migrated = migrate(modern, 1, SCHEMA_VERSION, data);
   const problems = validateState(migrated);
@@ -171,6 +181,11 @@ check('a version 1 save migrates all the way to the current one', () => {
     .rooms[0]!.decor[0]!);
   assert(Number.isInteger(migratedPiece['localX']) && Number.isInteger(migratedPiece['localY']),
     'the version-1 decor piece has no anchor after the full chain');
+  assert(migratedPiece['slot'] === 0, 'the version-1 piece was not moved onto its own place');
+  const migratedRoom = (migrated['hotel'] as { rooms: Array<{ decor: unknown[] }> }).rooms[0]!;
+  assert(migratedRoom.decor.length === 1, 'a piece the room does not sell stayed in it');
+  assert((migrated['ownedDecor'] as Record<string, number>)[unsold] === 1,
+    'the piece the room no longer sells was lost instead of handed back');
 });
 
 check('a save round-trips and stays sound', async () => {

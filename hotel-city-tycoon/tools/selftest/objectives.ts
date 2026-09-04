@@ -13,6 +13,7 @@ import fs from 'node:fs';
 import { loadSimData } from '../balance-sim/load-data.ts';
 import { createInitialState } from '../../src/core/state/init.ts';
 import { execute } from '../../src/core/commands/index.ts';
+import { catalogueFor } from '../../src/core/data-source.ts';
 import { objectiveProgress as conditionProgress } from '../../src/core/systems/objectives.ts';
 import { totalShiftCost, isOpen } from '../../src/core/systems/economy.ts';
 import { advance } from '../../src/core/sim/tick.ts';
@@ -158,14 +159,9 @@ await check('every objective is reachable by actually playing', () => {
   }
   // Fill every meter completely.
   for (const room of s.hotel.rooms) {
-    const def = data.rooms.find((r) => r.id === room.defId)!;
-    const best = [...data.decor]
-      .filter((d) => d.cost.currency === 'coins')
-      .sort((a, b) => b.decorPoints - a.decorPoints);
-    for (let slot = 0; slot < def.decorSlots; slot++) {
-      const item = best[slot % best.length];
-      if (item) execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: item.id, slot });
-    }
+    catalogueFor(data, room.defId).forEach((defId, slot) => {
+      execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId, slot });
+    });
   }
   /*
    * Time, spent the way a real player spends it.

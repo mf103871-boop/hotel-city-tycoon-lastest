@@ -27,7 +27,7 @@ import { ticksForMs } from '../../src/core/sim/tick.ts';
 import { execute } from '../../src/core/commands/index.ts';
 import { arrivalsPerMinute, checkoutPayout } from '../../src/core/systems/guests.ts';
 import type { GuestInstance } from '../../src/core/state/types.ts';
-import { roomById, isGuestRoom } from '../../src/core/data-source.ts';
+import { roomById, isGuestRoom, catalogueFor, decorDef } from '../../src/core/data-source.ts';
 
 
 
@@ -163,8 +163,8 @@ check('decor points are the sum of what is placed', () => {
   s.player.coins = 1_000_000;
   const room = s.hotel.rooms.find((r) => r.defId === 'economy')!;
   eq(computeDecorPoints(data, room), 0, 'an empty room has decor points');
-  execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
-  const item = data.decor.find((d) => d.id === 'wallpaper_plain')!;
+  const item = decorDef(data, catalogueFor(data, 'economy')[0]!);
+  execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: item.id, slot: 0 });
   eq(computeDecorPoints(data, room), item.decorPoints, 'the sum does not match the item placed');
   eq(room.decorPoints, item.decorPoints, 'the cached total drifted from the real one');
 });
@@ -356,17 +356,15 @@ check('decorating a room pays for itself within a session', () => {
   s.player.coins = 100_000;
   const room = s.hotel.rooms.find((r) => r.defId === 'economy')!;
   const def = data.rooms.find((r) => r.id === 'economy')!;
-  const affordable = [...data.decor]
-    .filter((d) => d.unlockLevel <= 1 && d.cost.currency === 'coins')
-    .sort((a, b) => b.decorPoints / b.cost.amount - a.decorPoints / a.cost.amount);
-
+  // The room's own set, which is the only way to fill its meter now.
   let spent = 0;
-  for (let slot = 0; slot < def.decorSlots; slot++) {
-    const item = affordable[slot % affordable.length]!;
+  catalogueFor(data, 'economy').forEach((id, slot) => {
+    const item = decorDef(data, id);
+    if (item.cost.currency !== 'coins' || slot >= def.decorSlots) return;
     if (execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: item.id, slot }).ok) {
       spent += item.cost.amount;
     }
-  }
+  });
   const bare = fresh();
   const gain = checkoutPayout(data, s, sleeper(s, room.id), room).coins
     - checkoutPayout(data, bare, sleeper(bare, room.id), bare.hotel.rooms.find((r) => r.defId === 'economy')!).coins;

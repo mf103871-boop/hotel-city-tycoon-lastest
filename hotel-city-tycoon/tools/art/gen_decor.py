@@ -17,6 +17,13 @@ The pieces themselves live in two modules, split by what they are:
     decor_fitness.py    the gym and the poolside
     decor_dining.py     the cafe, the restaurant and the bar
     decor_leisure.py    the arcade, the cinema and the disco
+    decor_bedrooms.py   the pieces only the five coin bedrooms sell
+    decor_suites.py     the four gem suites
+    decor_backhouse.py  housekeeping and the laundry
+    decor_frontdesk.py  the staff room, maintenance and the business centre
+    decor_tables.py     cafe, restaurant and bar (second wave)
+    decor_showtime.py   arcade and cinema (second wave)
+    decor_wellness.py   disco, pool and gym (second wave)
 
 Each exports `PIECES: dict[str, callable]`, where the callable takes the canvas
 and draws on it.
@@ -56,12 +63,24 @@ import decor_service        # noqa: E402
 import decor_fitness        # noqa: E402
 import decor_dining         # noqa: E402
 import decor_leisure        # noqa: E402
+import decor_bedrooms       # noqa: E402
+import decor_suites         # noqa: E402
+import decor_backhouse      # noqa: E402
+import decor_frontdesk      # noqa: E402
+import decor_tables         # noqa: E402
+import decor_showtime       # noqa: E402
+import decor_wellness       # noqa: E402
 
 PIECES = {
     **decor_surfaces.PIECES, **decor_props.PIECES,
     # HC-P1-S5: the pieces that belong to one room rather than to the hotel.
     **decor_service.PIECES, **decor_fitness.PIECES,
     **decor_dining.PIECES, **decor_leisure.PIECES,
+    # Per-room catalogues: every room sells eight pieces of its own, and these
+    # are the ones drawn for that redesign, one module per group of rooms.
+    **decor_bedrooms.PIECES, **decor_suites.PIECES,
+    **decor_backhouse.PIECES, **decor_frontdesk.PIECES,
+    **decor_tables.PIECES, **decor_showtime.PIECES, **decor_wellness.PIECES,
 }
 
 #: Must match SLOT_SIZE in tools/gen-asset-manifest.mjs.

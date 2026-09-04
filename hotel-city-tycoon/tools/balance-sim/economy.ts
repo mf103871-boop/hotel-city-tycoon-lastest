@@ -25,6 +25,7 @@ import { resolveOffline } from '../../src/core/sim/offline.ts';
 import { isOpen, totalShiftCost } from '../../src/core/systems/economy.ts';
 import { computeStars } from '../../src/core/systems/stars.ts';
 import type { GameState, SimEvent } from '../../src/core/state/types.ts';
+import { catalogueFor, catalogueIndex } from '../../src/core/data-source.ts';
 
 const data = loadSimData();
 const TPS = data.economy.simulation.ticksPerSecond;
@@ -140,12 +141,15 @@ function reinvest(state: GameState, l: Ledger, aggressive: boolean): void {
 
     if (aggressive) {
       const target = state.hotel.rooms.find((r) => r.decor.length < 4);
-      const piece = [...data.decor]
-        .filter((d) => d.unlockLevel <= state.player.level && d.cost.currency === 'coins')
+      // The room's own pieces, best value first — a room sells eight and holds each once.
+      const piece = target ? catalogueFor(data, target.defId)
+        .map((id) => data.decor.find((d) => d.id === id)!)
+        .filter((d) => d.unlockLevel <= state.player.level && d.cost.currency === 'coins'
+          && !target.decor.some((pl) => pl.defId === d.id))
         .sort((a, b) => b.decorPoints / b.cost.amount - a.decorPoints / a.cost.amount)
-        .find((d) => d.cost.amount <= state.player.coins * 0.3);
+        .find((d) => d.cost.amount <= state.player.coins * 0.3) : undefined;
       if (target && piece) {
-        const slot = target.decor.length;
+        const slot = catalogueIndex(data, target.defId, piece.id);
         if (execute(data, state, { type: 'PLACE_DECOR', roomId: target.id, defId: piece.id, slot }).ok) {
           l.sink.decor += before - state.player.coins;
           continue;

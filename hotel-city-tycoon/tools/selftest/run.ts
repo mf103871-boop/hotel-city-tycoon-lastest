@@ -12,6 +12,7 @@ import { createInitialState } from '../../src/core/state/init.ts';
 import { advance } from '../../src/core/sim/tick.ts';
 import { resolveOffline } from '../../src/core/sim/offline.ts';
 import { execute } from '../../src/core/commands/index.ts';
+import { catalogueFor } from '../../src/core/data-source.ts';
 import { Rng, createCursors, STREAMS } from '../../src/core/rng/index.ts';
 import { computeStars } from '../../src/core/systems/stars.ts';
 import { decorFill, decorMultiplier } from '../../src/core/systems/decor.ts';
@@ -241,19 +242,22 @@ check('decor raises the income multiplier', () => {
   const def = data.rooms.find((r) => r.id === 'economy');
   assert(def, 'no economy definition');
   const before = decorMultiplier(data, def, room);
-  execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
+  execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: catalogueFor(data, 'economy')[0]!, slot: 0 });
   const after = decorMultiplier(data, def, room);
   assert(after > before, `decor did not raise income (${before} -> ${after})`);
   assert(decorFill(def, room) > 0, 'decor meter did not move');
 });
 
-check('an occupied slot cannot be reused', () => {
+check('a piece is installed once, and only in its own place', () => {
   const s = newState();
   s.player.coins = 1_000_000;
   const room = s.hotel.rooms.find((r) => r.defId === 'economy')!;
-  execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
-  const res = execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: 'flooring_concrete', slot: 0 });
-  assert(!res.ok && res.reason === 'slotTaken', 'two items occupied one slot');
+  const [first, second] = catalogueFor(data, 'economy');
+  execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: first!, slot: 0 });
+  const again = execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: first!, slot: 0 });
+  assert(!again.ok && again.reason === 'alreadyPlaced', 'the same piece was installed twice');
+  const elsewhere = execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: second!, slot: 0 });
+  assert(!elsewhere.ok && elsewhere.reason === 'slotIncompatible', 'a piece took another piece\'s place');
 });
 
 check('stars never exceed the tier table', () => {

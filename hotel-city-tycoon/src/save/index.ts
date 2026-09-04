@@ -12,12 +12,13 @@
  */
 import type { GameState } from '../core/state/types.ts';
 import type { SimData } from '../core/data-source.ts';
+import { roomById, catalogueFor } from '../core/data-source.ts';
 import { checkInvariants } from '../core/state/invariants.ts';
 import { SCHEMA_VERSION } from '../core/state/types.ts';
 import {
   anchorBoundsFor, anchorKey, firstFreeAnchor, slotTypeFor, anchorReachFor,
 } from '../core/systems/decorPlacement.ts';
-import { anchorFor } from '../core/systems/roomAnchors.ts';
+import { anchorFor, catalogueSlot } from '../core/systems/roomAnchors.ts';
 
 export const SAVE_KEY = 'hct:save';
 export const QUARANTINE_KEY = 'hct:save:quarantine';
@@ -519,6 +520,78 @@ export const MIGRATIONS: Record<number, Migration> = {
 
     return {
       ...state,
+      ...(hotel ? { hotel: { ...hotel, rooms } } : {}),
+      ...(storedRooms !== undefined ? { storedRooms } : {}),
+    };
+  },
+
+  /**
+   * 19 → 20: every room sells eight pieces of its own, each with one place.
+   *
+   * Decor became per-room: a room's catalogue (`decor.json` `catalogues`) is
+   * eight pieces sold nowhere else, the position of a piece in that list is
+   * the numbered place it stands in, and a room holds each of its pieces at
+   * most once. A returning player's rooms were furnished under the old rules
+   * — any piece in any room, any slot number, the same wallpaper eight times
+   * — so this re-sorts them under the new ones.
+   *
+   * A piece the room still sells keeps its room and moves onto its own slot
+   * and anchor. Everything else — a piece the room no longer sells, a second
+   * copy of one it does — goes back to the player's store, exactly as
+   * REMOVE_DECOR would return it: nothing bought is lost, it is just no longer
+   * standing in a room that has no place for it. `decorPoints` is recomputed
+   * from what stays. A piece whose definition no longer exists is dropped; it
+   * could not be placed, sold or drawn, and `invariants.ts` would have refused
+   * the whole save for it.
+   *
+   * Without `data` (a bare `migrate()` call) the catalogues are unknown, and
+   * the rooms are left exactly as they were — the loader always passes data.
+   */
+  19: (state, data) => {
+    if (!data) return state;
+    const ownedIn = state['ownedDecor'];
+    const owned: Record<string, number> = ownedIn && typeof ownedIn === 'object'
+      ? { ...(ownedIn as Record<string, number>) } : {};
+    const known = new Map(data.decor.map((d) => [d.id, d.decorPoints]));
+
+    const resort = (room: Record<string, unknown>): Record<string, unknown> => {
+      const list = room['decor'];
+      if (!Array.isArray(list)) return room;
+      const roomDefId = room['defId'] as string | undefined;
+      const rdef = roomDefId ? roomById(data, roomDefId) : undefined;
+      const catalogue = roomDefId ? catalogueFor(data, roomDefId) : [];
+      const kept: unknown[] = [];
+      const seen = new Set<string>();
+      let points = 0;
+      for (const raw of list) {
+        if (!raw || typeof raw !== 'object') { kept.push(raw); continue; }
+        const piece = raw as Record<string, unknown>;
+        const defId = piece['defId'];
+        if (typeof defId !== 'string' || !known.has(defId)) continue;
+        const index = catalogue.indexOf(defId);
+        const place = rdef && index >= 0
+          ? catalogueSlot(roomDefId!, rdef.blocks.w, rdef.blocks.h, index) : null;
+        if (index < 0 || !place || seen.has(defId)) {
+          owned[defId] = (owned[defId] ?? 0) + 1;
+          continue;
+        }
+        seen.add(defId);
+        points += known.get(defId)!;
+        kept.push({ ...piece, slot: index, localX: place.x, localY: place.y });
+      }
+      return { ...room, decor: kept, decorPoints: points };
+    };
+
+    const hotel = state['hotel'] as { rooms?: Array<Record<string, unknown>> } | undefined;
+    const rooms = (hotel?.rooms ?? []).map((r) => (r && typeof r === 'object' ? resort(r) : r));
+    const storedRooms = Array.isArray(state['storedRooms'])
+      ? (state['storedRooms'] as Array<Record<string, unknown>>)
+        .map((r) => (r && typeof r === 'object' ? resort(r) : r))
+      : state['storedRooms'];
+
+    return {
+      ...state,
+      ownedDecor: owned,
       ...(hotel ? { hotel: { ...hotel, rooms } } : {}),
       ...(storedRooms !== undefined ? { storedRooms } : {}),
     };

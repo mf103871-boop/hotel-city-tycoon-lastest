@@ -745,18 +745,23 @@ export function anchorFor(
 }
 
 /**
- * One numbered place in a room's plan, when the caller has a particular one in
- * mind — the player tapping "upgrade" on the built-in the room came with.
+ * The place a room keeps for the piece it sells at this position.
  *
- * Returns null for an index nobody designed, or for a place that does not take
- * this kind of piece: a lamp cannot be hung where a bed goes.
+ * A room's catalogue (`decor.json` `catalogues`, `catalogueIndex`) lists
+ * eight pieces in slot order, and the first eight entries of its plan above
+ * are those eight places, in the same order — so the position of a piece in
+ * the room's list is the whole of where it goes. That is what makes every
+ * piece land in the same designed spot every time, far from the others: no
+ * scan, no "first free place of the right kind", no dependence on what was
+ * bought before it.
+ *
+ * Null for an index the plan does not have, which is only ever a room added
+ * to `rooms.json` without a plan of its own.
  */
-export function plannedSlot(roomDefId: string, blocksW: number, blocksH: number,
-                            index: number, kind: SpotKind): Slot | null {
-  const layout = layoutFor(roomDefId, blocksW, blocksH);
-  const slot = layout[index];
-  if (!slot || !accepts(slot, kind)) return null;
-  return slot;
+export function catalogueSlot(roomDefId: string, blocksW: number, blocksH: number,
+                              index: number): Slot | null {
+  if (!Number.isInteger(index) || index < 0) return null;
+  return layoutFor(roomDefId, blocksW, blocksH)[index] ?? null;
 }
 
 /** May a piece of this kind stand in this place? */
