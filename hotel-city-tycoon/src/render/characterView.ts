@@ -12,6 +12,10 @@
 import { Container, Graphics, Rectangle, Sprite, Texture } from 'pixi.js';
 import { texture, assetGeneration } from './assets.ts';
 import { BLOCK_W, BLOCK_H, blockToWorld } from './layout.ts';
+import { INK, NIGHT_TINT, nightfall } from './backdrop.ts';
+
+/** The desire bubble's card. Warm white, from ART-0 §7. */
+const BUBBLE = 0xdde2df;
 
 const CHAR_W = 48;
 const CHAR_H = 72;
@@ -90,12 +94,25 @@ function framesFor(assetKey: string): Texture[] | null {
   return frames;
 }
 
+/**
+ * What a guest is asking for, as a colour.
+ *
+ * Two of these used to be a hue apart and nothing else: food `#E08030` and
+ * fitness `#F07858` are both mid-weight oranges, 1.03:1 in contrast, and the
+ * thing carrying them is a four-pixel dot. Anyone reading them apart was
+ * reading a warm orange against a slightly warmer one, and to a red-green
+ * colourblind player they were the same dot.
+ *
+ * They are ART-0 §7 palette colours now, chosen to be separated in hue *and*
+ * in lightness, so the five read apart both in colour and in a greyscale
+ * screenshot: gold, coral, lavender, mint, water.
+ */
 const DESIRE_COLOUR: Record<string, number> = {
-  food: 0xe08030,
-  fitness: 0xf07858,
-  nightlife: 0x9a7ab8,
-  entertainment: 0x7fc4a0,
-  wellness: 0x6ec0c0,
+  food: 0xf5c24d,           // gold
+  fitness: 0xed5c47,        // coral
+  nightlife: 0xa7a1d3,      // lavender
+  entertainment: 0xb4e7c3,  // mint
+  wellness: 0x57c2e8,       // water
 };
 
 export interface CharacterViewData {
@@ -110,6 +127,14 @@ export interface CharacterViewData {
   kind: 'guest' | 'staff';
   /** What the character is doing. Drives whether the walk cycle runs. */
   activity: 'walking' | 'waiting' | 'resting' | 'working' | 'leaving';
+  /**
+   * The hotel is shut, so everyone is standing in a room drawn after dark.
+   *
+   * Character art is day-lit, and without this a receptionist in full noon
+   * light stood in a night lobby — the one thing on screen the wash had not
+   * touched, and so the one thing that looked pasted on.
+   */
+  night?: boolean;
 }
 
 export class CharacterView extends Container {
@@ -133,7 +158,8 @@ export class CharacterView extends Container {
   update(data: CharacterViewData, plotHeight: number): void {
     this.lastAssetKey = data.assetKey;
     const key = `${assetGeneration()},${data.assetKey},${data.x.toFixed(2)},${data.y},` +
-      `${data.facing},${data.desire ?? ''},${data.draggable},${data.opacity.toFixed(2)}`;
+      `${data.facing},${data.desire ?? ''},${data.draggable},${data.opacity.toFixed(2)},` +
+      `${data.night ? 'n' : 'd'}`;
     if (key === this.lastKey) return;
     this.lastKey = key;
 
@@ -154,6 +180,7 @@ export class CharacterView extends Container {
       this.sprite.width = CHAR_W * CHARACTER_ART_SCALE;
       this.sprite.height = CHAR_H * CHARACTER_ART_SCALE;
       this.sprite.scale.x = Math.abs(this.sprite.scale.x) * (data.facing === 'left' ? -1 : 1);
+      this.sprite.tint = data.night ? NIGHT_TINT : 0xffffff;
       this.sprite.visible = true;
       this.fallback.clear();
     } else {
@@ -161,23 +188,33 @@ export class CharacterView extends Container {
       this.fallback.clear();
       const w = 12;
       const h = 34;
+      const body = data.kind === 'staff' ? 0x57c2e8 : 0xa7a1d3;
+      const face = 0xf7d3b5;
       this.fallback.roundRect(-w / 2, -h, w, h * 0.62, 2)
-        .fill(data.kind === 'staff' ? 0x6ec0c0 : 0xb8a898);
-      this.fallback.circle(0, -h + 2, 5).fill(0xf0c8a0);
+        .fill(data.night ? nightfall(body) : body);
+      this.fallback.circle(0, -h + 2, 5).fill(data.night ? nightfall(face) : face);
     }
 
     // A ring marks a guest the player can still pull back to reception.
     this.grabRing.clear();
     if (data.draggable) {
-      this.grabRing.circle(0, -6, 15).stroke({ width: 2, color: 0xe08030, alpha: 0.7 });
+      this.grabRing.circle(0, -6, 15).stroke({ width: 2, color: 0xf5c24d, alpha: 0.8 });
     }
 
+    // The bubble is a warm white card with an ink rim, like every other thing
+    // drawn in this world. It used to be filled with the interface's dark
+    // brown, which was the only brown inside the hotel and made the desire
+    // dot's own colour hard to read against it.
     this.bubble.clear();
     if (data.desire) {
-      const colour = DESIRE_COLOUR[data.desire] ?? 0xd9a441;
-      this.bubble.roundRect(-9, -56, 18, 15, 4).fill(0x241a16).stroke({ width: 1, color: colour });
-      this.bubble.circle(0, -48, 4).fill(colour);
-      this.bubble.moveTo(-3, -41).lineTo(3, -41).lineTo(0, -37).fill(0x241a16);
+      const colour = DESIRE_COLOUR[data.desire] ?? 0xf5c24d;
+      const card = data.night ? nightfall(BUBBLE) : BUBBLE;
+      const rim = data.night ? nightfall(INK) : INK;
+      this.bubble.roundRect(-9, -56, 18, 15, 4).fill(card).stroke({ width: 1, color: rim });
+      this.bubble.circle(0, -48, 4)
+        .fill(data.night ? nightfall(colour) : colour)
+        .stroke({ width: 1, color: rim });
+      this.bubble.moveTo(-3, -42).lineTo(3, -42).lineTo(0, -37).fill(card);
     }
   }
 

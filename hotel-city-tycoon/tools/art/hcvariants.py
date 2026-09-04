@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from PIL import Image
 
-from hcstyle import Canvas, P, alpha, save_png, tint, shade
+from hcstyle import Canvas, P, alpha, mix, save_png, tint, shade
 
 
 # --------------------------------------------------------------- determinism
@@ -75,6 +75,18 @@ def _lut(scale, lift):
     return table
 
 
+#: The night wash, as the one place its numbers are written down.
+#:
+#: `src/render/backdrop.ts` applies exactly these to the sky, the city, the
+#: street and the hotel's frame, and `src/render/roomView.ts` and
+#: `characterView.ts` derive their sprite tint from them, so the world outside
+#: a room and the picture baked into it are the same night.
+#: `tools/selftest/render.ts` reads the tuple out of this file and fails if the
+#: renderer's copy has drifted.
+NIGHT_SCALE = (0.44, 0.50, 0.56)
+NIGHT_LIFT = (20, 26, 58)
+
+
 def nightfall(img: Image.Image) -> Image.Image:
     """
     The same room after dark: a cool, even wash.
@@ -89,8 +101,18 @@ def nightfall(img: Image.Image) -> Image.Image:
     sources are in the room image any more. Lamps and chandeliers are decor
     sprites the renderer composites on top, and lighting them is the
     renderer's job, not a colour transform's.
+
+    The second version was uniform but it clipped. `blue * 0.84 + 54` reaches
+    255 at an input of 240, so the top sixteen blue levels all landed on pure
+    blue: glass, window panes, tiles and the pale-blue walls of the laundry,
+    the gym and housekeeping lost every highlight they had and came out one
+    flat electric periwinkle. A night that saturates is the opposite of a
+    night. These numbers cannot reach 255 from any input — the brightest blue
+    a night image can hold is 201 — so highlights stay separated, and the wash
+    now takes saturation *out* of a cream wall (23% down to 19%) instead of
+    putting more in.
     """
-    out = img.convert("RGB").point(_lut((0.52, 0.58, 0.84), (16, 24, 54))).convert("RGBA")
+    out = img.convert("RGB").point(_lut(NIGHT_SCALE, NIGHT_LIFT)).convert("RGBA")
     out.putalpha(img.convert("RGBA").getchannel("A"))
     return out
 
@@ -153,7 +175,16 @@ def pest_layer(c: Canvas, key: str, floor_y: float) -> None:
         x = r.between(6, c.w - 6)
         y = floor_y + r.between(-2.0, max(0.0, (c.h - floor_y) * 0.6))
         s = r.between(0.85, 1.25)
-        body = P["woodDk"]
+        # Dark enough to be an insect on any floor in the catalogue.
+        #
+        # This was P['woodDk'] #B87334, drawn on floors including P['wood']
+        # #D9954E — the same brown one shade apart, 1.5:1, and 1.0:1 on the
+        # dark-wood floors. An infestation is a thing the player is being asked
+        # to notice and pay to clear, and on half the hotel it could not be
+        # seen at all. Pulled 65% toward the ink, it holds at least 2.8:1
+        # against every floor colour the game ships, and it is still a brown
+        # beetle rather than a black dot.
+        body = mix(P["woodDk"], P["ink"], 0.65)
         c.ellipse(x, y, 2.6 * s, 1.7 * s, fill=body, ink=P["ink"], lw=0.7)
         c.circle(x - 2.2 * s, y - 0.3 * s, 1.1 * s, fill=body, ink=P["ink"], lw=0.7)
         for side in (-1, 1):

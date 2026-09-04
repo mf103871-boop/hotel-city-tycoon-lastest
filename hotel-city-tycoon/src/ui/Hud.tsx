@@ -20,7 +20,7 @@ import type { Locale } from '../i18n/index.ts';
 function Readout({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col">
-      <span className="text-[11px] uppercase tracking-[0.12em] text-slate-400">{label}</span>
+      <span className="text-[11px] uppercase tracking-[0.12em] text-sand-400">{label}</span>
       <span className="font-mono text-lg leading-tight text-brass-400 tabular-nums">{value}</span>
     </div>
   );
@@ -71,7 +71,7 @@ export function Hud({
           <Readout label={t('ui.gems')} value={String(state.player.gems)} />
           <Readout label={t('ui.level')} value={String(state.player.level)} />
           <div className="ms-auto flex flex-col items-end">
-            <span className="text-[11px] uppercase tracking-[0.12em] text-slate-400">{t('ui.stars')}</span>
+            <span className="text-[11px] uppercase tracking-[0.12em] text-sand-400">{t('ui.stars')}</span>
             <span className="text-lg leading-tight text-brass-400">{'★'.repeat(state.hotel.stars)}</span>
           </div>
         </div>
@@ -92,7 +92,7 @@ export function Hud({
         <div className="pointer-events-auto rounded-xl border border-white/5 bg-midnight-900/85 px-4 py-3 backdrop-blur">
           {open ? (
             <div className="flex items-baseline justify-between">
-              <span className="text-xs uppercase tracking-[0.12em] text-slate-400">{t('ui.shiftEndsIn')}</span>
+              <span className="text-xs uppercase tracking-[0.12em] text-sand-400">{t('ui.shiftEndsIn')}</span>
               <span className="font-mono text-xl text-brass-400 tabular-nums">
                 {String(hh).padStart(2, '0')}:{String(mm).padStart(2, '0')}:{String(ss).padStart(2, '0')}
               </span>
@@ -119,21 +119,21 @@ export function Hud({
             <button
               type="button"
               onClick={onOpenBuild}
-              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-slate-200 hover:border-brass-500/60"
+              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-sand-200 hover:border-brass-500/60"
             >
               + {t('ui.build')}
             </button>
             <button
               type="button"
               onClick={onOpenShop}
-              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-slate-200 hover:border-brass-500/60"
+              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-sand-200 hover:border-brass-500/60"
             >
               {t('ui.shop')}
             </button>
             <button
               type="button"
               onClick={onOpenCity}
-              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-slate-200 hover:border-brass-500/60"
+              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-sand-200 hover:border-brass-500/60"
             >
               {t('ui.city')}
             </button>
@@ -141,7 +141,7 @@ export function Hud({
               type="button"
               data-testid="open-manage"
               onClick={onOpenManage}
-              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-slate-200 hover:border-brass-500/60"
+              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-sand-200 hover:border-brass-500/60"
             >
               {t('ui.manage')}
             </button>
@@ -151,14 +151,14 @@ export function Hud({
               <button
                 type="button"
                 onClick={onOpenUpgrades}
-                className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-slate-200 hover:border-brass-500/60"
+                className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-sand-200 hover:border-brass-500/60"
               >
                 {t('ui.upgrades')}
               </button>
             )}
           </div>
 
-          <p className="mt-2 text-center text-[11px] text-slate-500">
+          <p className="mt-2 text-center text-[11px] text-sand-500">
             {state.hotel.rooms.length} {t('ui.rooms')} · {state.stats.guestsServed} {t('ui.guestsServed').toLowerCase()}
             {urgent.length > 0 && (
               <span className="ms-2 text-amber-400">· {urgent.length} {t('ui.needsAttention')}</span>

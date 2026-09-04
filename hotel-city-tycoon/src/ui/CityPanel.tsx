@@ -17,8 +17,21 @@ import type { Locale } from '../i18n/index.ts';
 import { Sheet } from './Sheet.tsx';
 import { playSound } from '../audio/index.ts';
 
+/**
+ * A five-star rating.
+ *
+ * The unearned pips are hollow ★ → ☆ as well as dimmer. They used to be the
+ * same filled glyph in a quieter colour, which is a rating told by hue alone —
+ * the one thing ART-0 §7 rules out — and at 2.3:1 the quieter colour was close
+ * to not being there at all.
+ */
 function Stars({ n }: { n: number }) {
-  return <span className="text-brass-400">{'★'.repeat(n)}<span className="text-slate-600">{'★'.repeat(5 - n)}</span></span>;
+  return (
+    <span className="text-brass-400">
+      {'★'.repeat(n)}
+      <span className="text-sand-600">{'☆'.repeat(5 - n)}</span>
+    </span>
+  );
 }
 
 export function CityPanel({ locale, onClose }: { locale: Locale; onClose: () => void }) {
@@ -61,13 +74,13 @@ export function CityPanel({ locale, onClose }: { locale: Locale; onClose: () => 
           }`}
         >
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm text-slate-100">
+            <span className="block truncate text-sm text-sand-100">
               {hotel.name}
               {hotel.isPlayer && (
                 <span className="ms-2 text-[11px] text-coral-400">{t('ui.yourHotel')}</span>
               )}
             </span>
-            <span className="block text-[11px] text-slate-400">
+            <span className="block text-[11px] text-sand-400">
               <Stars n={hotel.stars} /> · {t('ui.level')} {hotel.level} · {hotel.rooms} {t('ui.rooms')}
             </span>
           </span>
@@ -83,7 +96,7 @@ export function CityPanel({ locale, onClose }: { locale: Locale; onClose: () => 
               }}
               className={`min-h-11 shrink-0 rounded-lg px-3 py-2 text-xs ${
                 hotel.visited || city.visitsLeft <= 0
-                  ? 'cursor-not-allowed text-slate-600'
+                  ? 'cursor-not-allowed border border-white/10 text-sand-400'
                   : 'bg-brass-500 font-semibold text-ink-950'
               }`}
             >
@@ -93,7 +106,7 @@ export function CityPanel({ locale, onClose }: { locale: Locale; onClose: () => 
         </div>
       ))}
 
-      <p className="mt-3 text-center text-[11px] leading-snug text-slate-500">
+      <p className="mt-3 text-center text-[11px] leading-snug text-sand-500">
         {t('ui.generatedCity')}
       </p>
     </Sheet>

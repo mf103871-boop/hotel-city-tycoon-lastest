@@ -9,6 +9,20 @@
  *
  * The chrome is a warm charcoal so it reads as the night outside a lit hotel,
  * and so the bright interiors are the only saturated thing on screen.
+ *
+ * That paragraph was true of the tokens and false of the interface. Every
+ * piece of secondary copy in the game — 92 of them — was still written in
+ * Tailwind's `slate`, a blue-grey, on this warm brown chrome: the exact cold
+ * palette the comment says was removed. `sand` below is the ramp that
+ * sentence always described, and every step of it clears WCAG AA on the
+ * panels it is used on, which `slate-500` (3.6:1) and `slate-600` (2.3:1)
+ * never did.
+ *
+ * Two tokens are here because components already asked for them and nothing
+ * answered: `water-hi` and `brass-300` were referenced at six call sites and
+ * declared at none, so Tailwind emitted no rule and those elements silently
+ * inherited whatever colour their parent had. An undeclared colour is not a
+ * missing style — it is a wrong one.
  */
 @theme {
   --color-ink-950: #1a1210;
@@ -19,9 +33,34 @@
   --color-coral-400: #f89070;
   --color-mint-400: #b8d8d0;
   --color-cream-100: #f8f0d8;
-  --color-amber-500: #e08030;
+
+  /*
+   * The text ramp: warm neutrals, the chrome's own temperature.
+   *
+   * Contrast against the panel these are used on (#221915, which is
+   * ink-900/85 over ink-950): 100 14.2:1, 200 12.3:1, 300 9.8:1, 400 7.1:1,
+   * 500 5.2:1. `sand-600` is 3.5:1 and so is not for text — it exists for the
+   * unlit pips of a star rating and nothing else.
+   */
+  --color-sand-100: #f5e7d5;
+  --color-sand-200: #e8d7c3;
+  --color-sand-300: #d4c0ab;
+  --color-sand-400: #b8a38f;
+  --color-sand-500: #9e8a78;
+  --color-sand-600: #806e5e;
+
+  /*
+   * Gems, matching the gem the shop actually draws.
+   *
+   * `public/assets/ui/gems.png` is P['water'] #57c2e8 with a #a1ddf2
+   * highlight; this is between the two so it holds 10.3:1 on a panel. It is
+   * the only thing telling a gem price from a coin price, so it has to be the
+   * gem's own colour and not merely a blue.
+   */
+  --color-water-hi: #7fd4f0;
 
   /* Kept as aliases so nothing breaks while components migrate. */
+  --color-brass-300: #f2a06a;
   --color-brass-400: #e08030;
   --color-brass-500: #f07858;
   --color-midnight-800: #33241e;

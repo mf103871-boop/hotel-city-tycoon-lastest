@@ -26,7 +26,7 @@ export function DailyGift({ locale, onClose }: { locale: Locale; onClose: () => 
     <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/70 px-6 backdrop-blur-sm">
       <section className="w-full max-w-sm rounded-2xl border border-brass-500/25 bg-ink-900 p-5">
         <h2 className="text-lg font-semibold text-cream-100">{t('ui.dailyGift')}</h2>
-        <p className="mt-0.5 text-[11px] text-slate-400">{t('ui.moneyBag')}</p>
+        <p className="mt-0.5 text-[11px] text-sand-400">{t('ui.moneyBag')}</p>
 
         <div className="mt-4 rounded-xl bg-white/[0.04] px-4 py-3 text-center">
           <div className="font-mono text-2xl tabular-nums text-brass-400">

@@ -43,6 +43,71 @@ export const INK = 0x031130;
 export const GOLD = 0xf5c24d;
 export const GOLD_DARK = 0xd19b2a;
 
+/**
+ * The night wash, `out = in * scale + lift` per channel.
+ *
+ * These are the numbers `tools/art/hcvariants.py` bakes into every `*_night`
+ * room image (its `NIGHT_SCALE` / `NIGHT_LIFT`), and `tools/selftest/render.ts`
+ * reads them back out of that file and fails if this copy has drifted.
+ *
+ * They are here because a room going dark while the sky above it stayed at
+ * noon was the single most obviously wrong thing on screen: the hotel switches
+ * to its night pictures the moment it stops trading, and every new player's
+ * first frame was a periwinkle hotel under a bright blue summer sky. Painting
+ * the world with the same transform that is baked into the art is what makes
+ * one night instead of two.
+ */
+const NIGHT_SCALE: readonly [number, number, number] = [0.44, 0.50, 0.56];
+const NIGHT_LIFT: readonly [number, number, number] = [20, 26, 58];
+
+/** The night wash parameters, for the parity self-test. */
+export const NIGHT_WASH = { scale: NIGHT_SCALE, lift: NIGHT_LIFT } as const;
+
+/** One colour after dark. The same arithmetic the art pipeline applies. */
+export function nightfall(colour: number): number {
+  const band = (shift: number, i: 0 | 1 | 2): number => {
+    const v = (colour >> shift) & 0xff;
+    return Math.max(0, Math.min(255, Math.round(v * NIGHT_SCALE[i] + NIGHT_LIFT[i])));
+  };
+  return (band(16, 0) << 16) | (band(8, 1) << 8) | band(0, 2);
+}
+
+/**
+ * What a sprite drawn in daylight must be multiplied by to sit in a night room.
+ *
+ * Decor and characters are day-lit art composited over whichever room picture
+ * is showing, so without this a fully lit sofa and a fully lit receptionist
+ * stood in a dark room. A tint is a multiply and the wash is a multiply plus a
+ * lift, so this is the wash applied to white: the closest a tint can get, and
+ * near-exact for the bright flat colours this art is made of.
+ */
+export const NIGHT_TINT = nightfall(0xffffff);
+
+/** Every backdrop colour after dark, derived once rather than written twice. */
+export const NIGHT = {
+  sky: nightfall(SKY),
+  skyHigh: nightfall(SKY_HIGH),
+  cityFar: nightfall(CITY_FAR),
+  cityNear: nightfall(CITY_NEAR),
+  cityWindow: nightfall(CITY_WINDOW),
+  treeFar: nightfall(TREE_FAR),
+  treeNear: nightfall(TREE_NEAR),
+  road: nightfall(ROAD),
+  roadLine: nightfall(ROAD_LINE),
+  kerb: nightfall(KERB),
+  ink: nightfall(INK),
+} as const;
+
+/**
+ * A window with a light on behind it.
+ *
+ * The one thing in the night picture that is not the wash: a city where every
+ * window went dark with the sky reads as a power cut, and it is the scatter of
+ * lit windows that tells a player at a glance that it is night rather than
+ * that the screen has dimmed.
+ */
+export const NIGHT_WINDOW_LIT = 0xf5c24d;
+
 /** A room footprint, in blocks — all the shell needs to know. */
 export interface ShellRect {
   x: number;
@@ -86,9 +151,11 @@ export class Backdrop {
    * three gold stars, which are how a hotel says what it is worth before the
    * player reads a single number.
    */
-  update(world: WorldBounds, gridH: number, rooms: ShellRect[], stars: number): void {
+  update(world: WorldBounds, gridH: number, rooms: ShellRect[], stars: number,
+         night = false): void {
     const outline = boundingBox(rooms);
     const key = `${world.x},${world.y},${world.width},${world.height},${gridH},${stars},` +
+      `${night ? 'n' : 'd'},` +
       (outline ? `${outline.x},${outline.y},${outline.w},${outline.h}` : 'empty');
     if (key === this.lastKey) return;
     this.lastKey = key;
@@ -100,30 +167,34 @@ export class Backdrop {
     const right = world.x + world.width * 2;
     const top = world.y - world.height;
 
-    this.drawSky(left, right, top, groundY);
-    this.drawCity(left, right, groundY);
-    this.drawStreet(left, right, groundY, world.height);
-    this.drawShell(outline, gridH, stars);
+    this.drawSky(left, right, top, groundY, night);
+    this.drawCity(left, right, groundY, night);
+    this.drawStreet(left, right, groundY, world.height, night);
+    this.drawShell(outline, gridH, stars, night);
   }
 
-  private drawSky(left: number, right: number, top: number, groundY: number): void {
+  private drawSky(left: number, right: number, top: number, groundY: number,
+                  night: boolean): void {
     const g = this.sky;
     g.clear();
     const w = right - left;
-    g.rect(left, top, w, groundY - top).fill(SKY);
+    g.rect(left, top, w, groundY - top).fill(night ? NIGHT.sky : SKY);
     // Three bands rather than a gradient: the art is flat, and a real gradient
     // would be the only smooth thing on screen.
     const band = (groundY - top) * 0.18;
-    g.rect(left, groundY - band * 2, w, band * 2).fill({ color: SKY_HIGH, alpha: 0.55 });
-    g.rect(left, groundY - band, w, band).fill({ color: SKY_HIGH, alpha: 0.55 });
+    const high = night ? NIGHT.skyHigh : SKY_HIGH;
+    g.rect(left, groundY - band * 2, w, band * 2).fill({ color: high, alpha: 0.55 });
+    g.rect(left, groundY - band, w, band).fill({ color: high, alpha: 0.55 });
   }
 
-  private drawCity(left: number, right: number, groundY: number): void {
+  private drawCity(left: number, right: number, groundY: number, night: boolean): void {
     const g = this.city;
     g.clear();
+    const far = night ? NIGHT.cityFar : CITY_FAR;
+    const near = night ? NIGHT.cityNear : CITY_NEAR;
     // Two ranks of buildings, the far one paler and shorter, so the skyline
     // has depth without any of it competing with the hotel (ART-0 §10).
-    for (const [rank, colour, scale] of [[0, CITY_FAR, 0.72], [1, CITY_NEAR, 1.0]] as const) {
+    for (const [rank, colour, scale] of [[0, far, 0.72], [1, near, 1.0]] as const) {
       const step = BLOCK_W * (rank === 0 ? 1.1 : 1.45);
       for (let i = Math.floor(left / step); i < Math.ceil(right / step); i++) {
         const r = jitter(i, rank);
@@ -141,16 +212,26 @@ export class Backdrop {
         const rowsN = Math.max(1, Math.floor(h / 30));
         for (let cx = 0; cx < cols; cx++) {
           for (let cy = 0; cy < rowsN; cy++) {
-            if (jitter(i * 31 + cx * 7 + cy * 13, rank) < 0.42) continue;
+            const roll = jitter(i * 31 + cx * 7 + cy * 13, rank);
+            if (roll < 0.42) continue;
+            // After dark a third of them have someone still up. Without this
+            // the city dims with the sky and reads as a power cut rather than
+            // as a night, and the hotel loses the thing it is lit against.
+            const lit = night && roll > 0.72;
             g.roundRect(x + 8 + cx * 26, y + 12 + cy * 30, 9, 11, 2)
-              .fill({ color: CITY_WINDOW, alpha: rank === 0 ? 0.5 : 0.75 });
+              .fill({
+                color: lit ? NIGHT_WINDOW_LIT : night ? NIGHT.cityWindow : CITY_WINDOW,
+                alpha: lit ? 0.9 : rank === 0 ? 0.5 : 0.75,
+              });
           }
         }
       }
     }
 
     // Trees along the front of the city, in two greens for the same reason.
-    for (const [rank, colour, size] of [[0, TREE_FAR, 0.8], [1, TREE_NEAR, 1.0]] as const) {
+    const treeFar = night ? NIGHT.treeFar : TREE_FAR;
+    const treeNear = night ? NIGHT.treeNear : TREE_NEAR;
+    for (const [rank, colour, size] of [[0, treeFar, 0.8], [1, treeNear, 1.0]] as const) {
       const step = BLOCK_W * 0.62;
       for (let i = Math.floor(left / step); i < Math.ceil(right / step); i++) {
         if (jitter(i, 40 + rank) < 0.34) continue;
@@ -165,18 +246,20 @@ export class Backdrop {
     }
   }
 
-  private drawStreet(left: number, right: number, groundY: number, depth: number): void {
+  private drawStreet(left: number, right: number, groundY: number, depth: number,
+                     night: boolean): void {
     const g = this.street;
     g.clear();
     const w = right - left;
     const kerbH = BLOCK_H * 0.22;
-    g.rect(left, groundY, w, depth * 2).fill(ROAD);
-    g.rect(left, groundY, w, kerbH).fill(KERB);
-    g.rect(left, groundY + kerbH, w, 2).fill({ color: INK, alpha: 0.25 });
+    g.rect(left, groundY, w, depth * 2).fill(night ? NIGHT.road : ROAD);
+    g.rect(left, groundY, w, kerbH).fill(night ? NIGHT.kerb : KERB);
+    g.rect(left, groundY + kerbH, w, 2).fill({ color: night ? NIGHT.ink : INK, alpha: 0.25 });
     // Centre line, dashed, well below the pavement the guests walk on.
     const dashY = groundY + kerbH + BLOCK_H * 0.42;
+    const line = night ? NIGHT.roadLine : ROAD_LINE;
     for (let x = Math.floor(left / 64) * 64; x < right; x += 64) {
-      g.roundRect(x, dashY, 34, 5, 2.5).fill(ROAD_LINE);
+      g.roundRect(x, dashY, 34, 5, 2.5).fill(line);
     }
   }
 
@@ -188,7 +271,8 @@ export class Backdrop {
    * the whole plot, so an empty plot shows a street and a sky rather than an
    * empty box, and the frame grows as the hotel does.
    */
-  private drawShell(outline: ShellRect | null, gridH: number, stars: number): void {
+  private drawShell(outline: ShellRect | null, gridH: number, stars: number,
+                    night: boolean): void {
     const g = this.shell;
     g.clear();
     if (!outline) return;
@@ -204,10 +288,15 @@ export class Backdrop {
     // hotel — which is what every hotel looks like while it is being built.
     // Stroked, the gaps show sky and the frame still reads as the building's
     // outer edge: the heaviest line in the picture, as ART-0 §4 asks.
+    // The frame follows the rooms into night for the same reason the sky does:
+    // every outline baked into a `*_night` room image has had the wash applied
+    // to it, so a day-dark frame around them would be the one hard black edge
+    // in a picture that no longer has any.
+    const ink = night ? NIGHT.ink : INK;
     g.roundRect(x - pad, y - pad, w + pad * 2, h + pad * 2, 6)
-      .stroke({ width: 5, color: INK, alignment: 0.5 });
+      .stroke({ width: 5, color: ink, alignment: 0.5 });
     // A parapet along the top, so the building has a top rather than stopping.
-    g.roundRect(x - pad - 4, y - pad - 8, w + pad * 2 + 8, 10, 4).fill(INK);
+    g.roundRect(x - pad - 4, y - pad - 8, w + pad * 2 + 8, 10, 4).fill(ink);
 
     if (stars > 0) {
       const gap = 26;
@@ -219,7 +308,14 @@ export class Backdrop {
   }
 }
 
-/** A five-pointed star, filled gold with a darker rim. */
+/**
+ * A five-pointed star, filled gold with a darker rim.
+ *
+ * The one thing above the street the night wash is not applied to. Washed, the
+ * gold went to a dead olive and the rating read as three grey smudges; a
+ * hotel's star sign is lit, which is also why the city behind it keeps a
+ * scatter of lit windows in the same gold.
+ */
 function drawStar(g: Graphics, cx: number, cy: number, r: number): void {
   const pts: number[] = [];
   for (let i = 0; i < 10; i++) {

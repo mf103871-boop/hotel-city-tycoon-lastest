@@ -16,8 +16,8 @@ import type { Locale } from '../i18n/index.ts';
 function Figure({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="flex-1 rounded-xl bg-white/[0.04] px-4 py-3 text-center">
-      <div className="text-[11px] uppercase tracking-[0.12em] text-slate-400">{label}</div>
-      <div className={`mt-1 font-mono text-xl tabular-nums ${accent ? 'text-brass-400' : 'text-slate-100'}`}>
+      <div className="text-[11px] uppercase tracking-[0.12em] text-sand-400">{label}</div>
+      <div className={`mt-1 font-mono text-xl tabular-nums ${accent ? 'text-brass-400' : 'text-sand-100'}`}>
         {value}
       </div>
     </div>
@@ -40,7 +40,7 @@ export function WelcomeBack({
     <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/70 px-6 backdrop-blur-sm">
       <section className="w-full max-w-sm rounded-2xl border border-brass-500/25 bg-midnight-900 p-5 shadow-2xl">
         <h2 className="text-lg font-semibold text-white">{t('ui.welcomeBack')}</h2>
-        <p className="mt-0.5 text-xs text-slate-400">{t('ui.whileYouWereAway')} · {away}</p>
+        <p className="mt-0.5 text-xs text-sand-400">{t('ui.whileYouWereAway')} · {away}</p>
 
         <div className="mt-4 flex gap-2">
           <Figure label={t('ui.coins')} value={`+${coins(locale, summary.coins)}`} accent />

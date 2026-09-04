@@ -25,7 +25,7 @@ function Meter({ fill, points, target, locale }: { fill: number; points: number;
   return (
     <div className="mb-4">
       <div className="mb-1 flex items-baseline justify-between">
-        <span className="text-[11px] uppercase tracking-[0.12em] text-slate-400">{translate(locale, 'ui.decorMeter')}</span>
+        <span className="text-[11px] uppercase tracking-[0.12em] text-sand-400">{translate(locale, 'ui.decorMeter')}</span>
         <span className={`font-mono text-sm tabular-nums ${full ? 'text-emerald-400' : 'text-brass-400'}`}>
           {points}/{target}
         </span>
@@ -140,7 +140,7 @@ export function RoomSheet({
       )}
 
       {detail.hasGhost && (
-        <p className="rounded-xl bg-white/[0.04] px-4 py-3 text-[13px] text-slate-300">
+        <p className="rounded-xl bg-white/[0.04] px-4 py-3 text-[13px] text-sand-300">
           {t('ui.ghostHint')}
         </p>
       )}
@@ -161,12 +161,12 @@ export function RoomSheet({
 
       <dl className="mb-4 grid grid-cols-2 gap-2 text-xs">
         <div className="rounded-lg bg-white/[0.03] px-3 py-2">
-          <dt className="text-slate-400">{t('ui.cleanliness')}</dt>
-          <dd className="font-mono text-sm text-slate-100">{Math.round(detail.cleanliness * 100)}%</dd>
+          <dt className="text-sand-400">{t('ui.cleanliness')}</dt>
+          <dd className="font-mono text-sm text-sand-100">{Math.round(detail.cleanliness * 100)}%</dd>
         </div>
         <div className="rounded-lg bg-white/[0.03] px-3 py-2">
-          <dt className="text-slate-400">{t('ui.slots')}</dt>
-          <dd className="font-mono text-sm text-slate-100">{detail.usedSlots}/{detail.decorSlots}</dd>
+          <dt className="text-sand-400">{t('ui.slots')}</dt>
+          <dd className="font-mono text-sm text-sand-100">{detail.usedSlots}/{detail.decorSlots}</dd>
         </div>
       </dl>
 
@@ -177,8 +177,8 @@ export function RoomSheet({
               key={fx.planSlot}
               className="flex items-center gap-2 rounded-lg bg-white/[0.02] px-3 py-2"
             >
-              <span className="text-xs text-slate-300">{t(fx.nameKey)}</span>
-              <span className="rounded bg-white/5 px-1.5 py-0.5 text-[11px] text-slate-400">
+              <span className="text-xs text-sand-300">{t(fx.nameKey)}</span>
+              <span className="rounded bg-white/5 px-1.5 py-0.5 text-[11px] text-sand-400">
                 {t('ui.builtIn')}
               </span>
               <button
@@ -204,8 +204,8 @@ export function RoomSheet({
               data-testid={`placed-${piece.defId}`}
               className="flex items-center gap-2 rounded-lg bg-white/[0.03] px-3 py-2"
             >
-              <span className="text-xs text-slate-200">{t(piece.nameKey)}</span>
-              <span className="font-mono text-[11px] text-slate-400">+{piece.decorPoints}</span>
+              <span className="text-xs text-sand-200">{t(piece.nameKey)}</span>
+              <span className="font-mono text-[11px] text-sand-400">+{piece.decorPoints}</span>
               <button
                 type="button"
                 data-testid={`remove-decor-${piece.defId}`}
@@ -215,7 +215,7 @@ export function RoomSheet({
                   const r = dispatch({ type: 'REMOVE_DECOR', roomId, decorId: piece.id });
                   setProblem(r.ok ? null : REJECTION_KEY[r.reason]);
                 }}
-                className="ms-auto min-h-11 rounded-lg px-3 py-2 text-xs text-slate-300 hover:bg-white/5"
+                className="ms-auto min-h-11 rounded-lg px-3 py-2 text-xs text-sand-300 hover:bg-white/5"
               >
                 {t('ui.remove')}
               </button>
@@ -249,7 +249,7 @@ export function RoomSheet({
           type="button"
           data-testid="room-move"
           onClick={() => { onMove(roomId, detail.defId); onClose(); }}
-          className="min-h-11 flex-1 rounded-xl bg-white/5 px-4 py-2.5 text-sm text-slate-200"
+          className="min-h-11 flex-1 rounded-xl bg-white/5 px-4 py-2.5 text-sm text-sand-200"
         >
           {t('ui.move')}
         </button>
@@ -266,7 +266,7 @@ export function RoomSheet({
             if (r.ok) { onClose(); return; }
             setProblem(REJECTION_KEY[r.reason]);
           }}
-          className="min-h-11 flex-1 rounded-xl bg-white/5 px-4 py-2.5 text-sm text-slate-200 disabled:opacity-40"
+          className="min-h-11 flex-1 rounded-xl bg-white/5 px-4 py-2.5 text-sm text-sand-200 disabled:opacity-40"
         >
           {t('ui.store')}
         </button>
@@ -294,7 +294,7 @@ export function RoomSheet({
         <button
           type="button"
           onClick={() => { dispatch({ type: 'SELL_ROOM', roomId }); onClose(); }}
-          className="mt-2 w-full rounded-xl border border-white/10 px-4 py-2.5 text-sm text-slate-400 hover:border-red-500/50 hover:text-red-300"
+          className="mt-2 w-full rounded-xl border border-white/10 px-4 py-2.5 text-sm text-sand-400 hover:border-red-500/50 hover:text-red-300"
         >
           {t('ui.sell')} · {coins(locale, detail.sellRefund)}
         </button>

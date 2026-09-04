@@ -53,7 +53,7 @@ export function BuildPanel({ locale, onClose }: { locale: Locale; onClose: () =>
             type="button"
             onClick={() => setTab(key)}
             className={`min-h-11 flex-1 rounded-lg px-3 py-2.5 text-xs transition
-              ${tab === key ? 'bg-brass-500 font-semibold text-midnight-950' : 'bg-white/5 text-slate-300'}`}
+              ${tab === key ? 'bg-brass-500 font-semibold text-midnight-950' : 'bg-white/5 text-sand-300'}`}
           >
             {t(labelKey)}
           </button>

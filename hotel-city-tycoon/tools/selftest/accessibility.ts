@@ -247,6 +247,84 @@ check('text can grow without the layout collapsing', () => {
     `fixed pixel heights that break with larger text: ${problems.join(', ')}`);
 });
 
+// ---------------------------------------------------------------- palette
+/**
+ * Tailwind v4's own colour families.
+ *
+ * Any other family name in a utility class has to be declared in `@theme`, or
+ * Tailwind emits no rule at all for it — which is not a missing style but a
+ * wrong one, because the element then inherits whatever colour its parent had.
+ */
+const TAILWIND_FAMILIES = new Set([
+  'red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan',
+  'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose',
+  'slate', 'gray', 'zinc', 'neutral', 'stone',
+]);
+const TAILWIND_SHADES = new Set([
+  '50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950',
+]);
+
+const COLOUR_UTILITY = /\b(?:bg|text|border|ring|from|to|via|fill|stroke|shadow|outline|accent|caret|divide|placeholder|decoration)-([a-z]+)-([a-z0-9]+)(?=\b|\/)/g;
+
+check('every colour class a component asks for actually exists', () => {
+  // The check that would have caught `text-water-hi` and `text-brass-300`:
+  // six call sites across four components named colours that `@theme` never
+  // declared, so Tailwind emitted nothing and the gem price, the climate
+  // banner's border, the weekly-gift callout and the Upgrade/Replace actions
+  // all silently rendered in their parent's colour instead of their own.
+  const declared = new Set(Object.keys(T));
+  const problems: string[] = [];
+  for (const [file, src] of uiFiles()) {
+    for (const m of src.matchAll(COLOUR_UTILITY)) {
+      const [, family, shade] = m as unknown as [string, string, string];
+      if (declared.has(`${family}-${shade}`)) continue;
+      if (TAILWIND_FAMILIES.has(family) && TAILWIND_SHADES.has(shade)) continue;
+      problems.push(`${path.basename(file)}: ${m[0]}`);
+    }
+  }
+  assert(problems.length === 0,
+    `colour classes that produce no CSS: ${[...new Set(problems)].join(', ')}`);
+});
+
+check('every text colour in the theme is readable on the panels it is used on', () => {
+  // `slate-500` (3.6:1) and `slate-600` (2.3:1) were the ramp for every piece
+  // of secondary copy in the game. Both are below WCAG AA, and slate-600 was
+  // carrying the text that explains why a purchase is refused.
+  //
+  // sand-600 is deliberately exempt: it is 3.5:1 and exists only for the
+  // unlit ☆ of a star rating, which is a shape as well as a colour.
+  const DECORATIVE = new Set(['sand-600']);
+  const panels = [
+    ['ink-950', T['ink-950']!],
+    ['ink-900', T['ink-900']!],
+    ['ink-800', T['ink-800']!],
+  ] as const;
+  const problems: string[] = [];
+  for (const [name, hex] of Object.entries(T)) {
+    if (!name.startsWith('sand-') || DECORATIVE.has(name)) continue;
+    for (const [panel, panelHex] of panels) {
+      const ratio = contrast(hex, panelHex);
+      if (ratio < 4.5) problems.push(`${name} on ${panel} is ${ratio.toFixed(2)}:1`);
+    }
+  }
+  assert(problems.length === 0, `text colours below WCAG AA: ${problems.join(', ')}`);
+});
+
+check('nothing in the interface is painted in the cold ramp the palette replaced', () => {
+  // src/index.css says the interface was warmed so it would stop fighting the
+  // art's temperature. It said so while 92 elements were still written in
+  // Tailwind's blue-grey `slate` on warm brown chrome. A comment is not a
+  // guarantee; this is.
+  const problems: string[] = [];
+  for (const [file, src] of uiFiles()) {
+    for (const m of src.matchAll(/\b(?:bg|text|border|ring|fill|stroke|divide|placeholder)-(slate|gray|zinc|blue|indigo|sky|cyan)-\d+/g)) {
+      problems.push(`${path.basename(file)}: ${m[0]}`);
+    }
+  }
+  assert(problems.length === 0,
+    `cold-ramp colours on warm chrome: ${[...new Set(problems)].join(', ')}`);
+});
+
 console.log(line);
 if (failures.length === 0) console.log(`  ${passed} checks passed`);
 else { console.log(`  ${passed} passed, ${failures.length} FAILED`); failures.forEach((f) => console.log(`    ✗ ${f}`)); }

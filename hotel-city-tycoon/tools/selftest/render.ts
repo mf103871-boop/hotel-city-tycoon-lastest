@@ -32,6 +32,8 @@ import {
 } from '../../src/core/systems/roomAnchors.ts';
 import {
   boundingBox, SKY, CITY_FAR, CITY_NEAR, TREE_FAR, TREE_NEAR, ROAD, INK, GOLD,
+  SKY_HIGH, CITY_WINDOW, ROAD_LINE, KERB, GOLD_DARK,
+  NIGHT, NIGHT_TINT, NIGHT_WASH, nightfall,
 } from '../../src/render/backdrop.ts';
 import { loadSimData } from '../balance-sim/load-data.ts';
 import fs from 'node:fs';
@@ -705,13 +707,75 @@ check('the backdrop palette is the one the art is drawn from', () => {
     return parseInt(m[1]!, 16);
   };
   eq(SKY, hex('sky'), 'sky');
+  eq(SKY_HIGH, hex('skyHi'), 'high sky');
   eq(CITY_FAR, hex('cityFar'), 'far city');
   eq(CITY_NEAR, hex('cityNear'), 'near city');
   eq(TREE_FAR, hex('treeFar'), 'far trees');
   eq(TREE_NEAR, hex('treeNear'), 'near trees');
   eq(ROAD, hex('road'), 'road');
+  eq(ROAD_LINE, hex('roadLine'), 'road markings');
+  eq(KERB, hex('kerb'), 'kerb');
   eq(INK, hex('ink'), 'outline');
   eq(GOLD, hex('gold'), 'stars');
+  eq(GOLD_DARK, hex('goldDk'), 'star rim');
+  // cityWindow is the one backdrop colour with no hcstyle entry — it is a
+  // renderer-only tint — so it is asserted here rather than cross-checked.
+  eq(CITY_WINDOW, 0xd8e8f7, 'city windows');
+});
+
+check('the renderer washes the world with the same night the art is baked in', () => {
+  // The rooms switch to their `*_night` pictures the moment the hotel stops
+  // trading, and the sky, the street, the furniture and the people are painted
+  // by the renderer. If these two nights are not the same arithmetic, a
+  // periwinkle hotel stands under a noon sky — which is exactly what shipped.
+  const variants = fs.readFileSync('tools/art/hcvariants.py', 'utf8');
+  const tuple = (name: string): number[] => {
+    const m = new RegExp(`^${name}\\s*=\\s*\\(([^)]*)\\)`, 'm').exec(variants);
+    assert(m, `hcvariants.py has no ${name}`);
+    return m[1]!.split(',').map((v) => Number(v.trim()));
+  };
+  const scale = tuple('NIGHT_SCALE');
+  const lift = tuple('NIGHT_LIFT');
+  eq(scale.length, 3, 'NIGHT_SCALE is three channels');
+  eq(lift.length, 3, 'NIGHT_LIFT is three channels');
+  for (let i = 0; i < 3; i++) {
+    eq(NIGHT_WASH.scale[i], scale[i], `night scale channel ${i}`);
+    eq(NIGHT_WASH.lift[i], lift[i], `night lift channel ${i}`);
+  }
+
+  // And the wash must not clip. `blue * 0.84 + 54` reached 255 from an input
+  // of 240, so the top sixteen blue levels all landed on pure blue and every
+  // pale surface in the hotel — glass, tiles, the pale-blue walls — came out
+  // one flat electric periwinkle with its highlights gone.
+  for (let i = 0; i < 3; i++) {
+    const top = 255 * NIGHT_WASH.scale[i]! + NIGHT_WASH.lift[i]!;
+    assert(top <= 255,
+      `the night wash clips channel ${i} — white maps to ${top.toFixed(1)}, above 255`);
+  }
+
+  // Derived, never written twice.
+  eq(NIGHT.sky, nightfall(SKY), 'night sky');
+  eq(NIGHT.road, nightfall(ROAD), 'night road');
+  eq(NIGHT.ink, nightfall(INK), 'night outline');
+  eq(NIGHT_TINT, nightfall(0xffffff), 'the tint day-lit sprites take after dark');
+
+  // A night has to be darker than the day it replaces, on every colour the
+  // backdrop paints. The wash this replaced failed exactly here: it lifted
+  // blue so hard that a pale wall came out brighter than in daylight.
+  const luminance = (c: number): number => {
+    const ch = (shift: number): number => {
+      const v = ((c >> shift) & 0xff) / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    };
+    return 0.2126 * ch(16) + 0.7152 * ch(8) + 0.0722 * ch(0);
+  };
+  for (const [name, day] of [
+    ['sky', SKY], ['skyHigh', SKY_HIGH], ['cityFar', CITY_FAR], ['cityNear', CITY_NEAR],
+    ['treeFar', TREE_FAR], ['treeNear', TREE_NEAR], ['road', ROAD], ['kerb', KERB],
+    ['roadLine', ROAD_LINE], ['cityWindow', CITY_WINDOW],
+  ] as const) {
+    assert(luminance(nightfall(day)) < luminance(day), `${name} is not darker after dark`);
+  }
 });
 
 

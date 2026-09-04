@@ -27,7 +27,7 @@ export function ObjectiveCard({ locale }: { locale: Locale }) {
     <div className="pointer-events-auto mb-2 rounded-xl border border-white/10 bg-midnight-900/85 px-4 py-2.5 backdrop-blur">
       <div className="flex items-baseline gap-2">
         <span className="text-[11px] uppercase tracking-[0.12em] text-brass-500">{t('ui.objective')}</span>
-        <span className="min-w-0 flex-1 truncate text-sm text-slate-100">{t(objective.titleKey)}</span>
+        <span className="min-w-0 flex-1 truncate text-sm text-sand-100">{t(objective.titleKey)}</span>
         {objective.done ? (
           <button
             type="button"
@@ -42,13 +42,13 @@ export function ObjectiveCard({ locale }: { locale: Locale }) {
             {objective.rewardCoins > 0 && ` · ${coins(locale, objective.rewardCoins)}`}
           </button>
         ) : (
-          <span className="shrink-0 font-mono text-xs tabular-nums text-slate-400">{pct}%</span>
+          <span className="shrink-0 font-mono text-xs tabular-nums text-sand-400">{pct}%</span>
         )}
       </div>
 
       {!objective.done && (
         <>
-          <p className="mt-0.5 text-[11px] leading-snug text-slate-400">{t(objective.hintKey)}</p>
+          <p className="mt-0.5 text-[11px] leading-snug text-sand-400">{t(objective.hintKey)}</p>
           <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/10">
             <div className="h-full bg-brass-500/70 transition-[width] duration-500" style={{ width: `${pct}%` }} />
           </div>

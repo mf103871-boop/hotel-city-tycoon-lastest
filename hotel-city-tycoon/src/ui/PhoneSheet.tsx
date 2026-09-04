@@ -64,7 +64,7 @@ export function PhoneSheet({ locale, onClose }: { locale: Locale; onClose: () =>
         <img src={`${import.meta.env.BASE_URL}assets/effects/ghost.png`} alt="" className={`h-8 w-8 shrink-0 ${view.haunted === 0 ? 'opacity-40' : ''}`} />
         <div className="me-auto">
           <div className="font-semibold text-cream-100">{t('ui.ghostbuster')}</div>
-          <div className="mt-0.5 text-[12px] text-slate-400">
+          <div className="mt-0.5 text-[12px] text-sand-400">
             {view.haunted > 0 ? `${view.haunted} × ${t('event.ghost.name')}` : t('ui.allQuiet')}
           </div>
         </div>
@@ -84,7 +84,7 @@ export function PhoneSheet({ locale, onClose }: { locale: Locale; onClose: () =>
           : <span className="h-8 w-8 shrink-0" />}
         <div className="me-auto">
           <div className="font-semibold text-cream-100">{t('ui.repairCrew')}</div>
-          <div className="mt-0.5 text-[12px] text-slate-400">
+          <div className="mt-0.5 text-[12px] text-sand-400">
             {view.climate
               ? `${t(view.climate.nameKey)} · ${minutesLeft} ${t('ui.minutesShort')}`
               : t('ui.allQuiet')}

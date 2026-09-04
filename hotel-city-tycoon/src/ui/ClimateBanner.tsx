@@ -26,11 +26,11 @@ export function ClimateBanner({ locale }: { locale: Locale }) {
       <div className="flex items-center gap-2">
         <img src={`${import.meta.env.BASE_URL}assets/effects/${climate.eventId}.png`} alt="" className="h-6 w-6 shrink-0" />
         <span className="text-sm font-semibold text-cream-100">{t(climate.nameKey)}</span>
-        <span className="ms-auto font-mono text-[11px] text-slate-400">
+        <span className="ms-auto font-mono text-[11px] text-sand-400">
           {minutes} {t('ui.minutesShort')}
         </span>
       </div>
-      <p className="mt-0.5 text-[11px] leading-snug text-slate-400">{t(descKey)}</p>
+      <p className="mt-0.5 text-[11px] leading-snug text-sand-400">{t(descKey)}</p>
     </div>
   );
 }

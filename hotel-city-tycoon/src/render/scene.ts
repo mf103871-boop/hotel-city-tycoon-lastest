@@ -22,7 +22,7 @@ import {
   fitCamera, clampCamera, pan, zoomAt, visibleRect, screenToWorld, worldToScreen,
 } from './camera.ts';
 import { GestureTracker } from './gestures.ts';
-import { Backdrop } from './backdrop.ts';
+import { Backdrop, INK, nightfall } from './backdrop.ts';
 import { FrameSampler, report } from './perf.ts';
 import type { CameraState, Viewport, WorldBounds, Insets } from './camera.ts';
 
@@ -41,6 +41,15 @@ export interface SceneSnapshot {
   gridH: number;
   /** Rating shown above the building, as gold stars. Decoration only. */
   stars: number;
+  /**
+   * The hotel is shut, so the whole picture is after dark.
+   *
+   * The rooms already switched to their `*_night` art on this flag; the sky,
+   * the city, the street, the hotel's frame, the decor and the people did not,
+   * and a periwinkle hotel under a noon sky was every new player's first
+   * frame. One flag drives all of it so the two halves cannot disagree.
+   */
+  night: boolean;
 }
 
 export interface SceneCallbacks {
@@ -64,7 +73,9 @@ export class HotelScene {
   private camera: CameraState;
   /** How much of the viewport the HUD covers, so the hotel can clear it. */
   private insets: Insets = { top: 0, bottom: 0 };
-  private snapshot: SceneSnapshot = { rooms: [], characters: [], gridW: 4, gridH: 3, stars: 0 };
+  private snapshot: SceneSnapshot = {
+    rooms: [], characters: [], gridW: 4, gridH: 3, stars: 0, night: false,
+  };
 
   /** Last frame's culling result, for the on-screen verification badge. */
   private visibleCount = 0;
@@ -126,10 +137,11 @@ export class HotelScene {
   /** Hand the scene the current state. Called whenever the simulation changes. */
   setSnapshot(snapshot: SceneSnapshot): void {
     const resized = snapshot.gridW !== this.snapshot.gridW || snapshot.gridH !== this.snapshot.gridH;
+    const duskChanged = snapshot.night !== this.snapshot.night;
     this.snapshot = snapshot;
     // The starting plot happens to be the same size as the placeholder, so a
     // resize-only check left the grid unpainted on a fresh game.
-    if (resized || !this.gridDrawn) {
+    if (resized || duskChanged || !this.gridDrawn) {
       this.world = plotWorldBounds(snapshot.gridW, snapshot.gridH);
       this.camera = clampCamera(this.camera, this.view, this.world, this.insets);
       this.drawGrid();
@@ -138,7 +150,7 @@ export class HotelScene {
     // The backdrop redraws only when the plot, the hotel's outline or the
     // rating actually changed; it keys on those itself.
     this.backdrop.update(this.world, snapshot.gridH, snapshot.rooms.map((r) => r.rect),
-      snapshot.stars);
+      snapshot.stars, snapshot.night);
     this.reconcile();
   }
 
@@ -205,30 +217,42 @@ export class HotelScene {
   }
 
   private reconcile(): void {
+    const { night } = this.snapshot;
     this.rooms.sync(this.snapshot.rooms.map((r) => r.id));
     for (const room of this.snapshot.rooms) {
       const view = this.rooms.get(room.id);
-      if (view) view.update(room, this.snapshot.gridH);
+      if (view) view.update({ ...room, night }, this.snapshot.gridH);
     }
     this.characters.sync(this.snapshot.characters.map((c) => c.id));
     for (const person of this.snapshot.characters) {
       const view = this.characters.get(person.id);
-      if (view) view.update(person, this.snapshot.gridH);
+      if (view) view.update({ ...person, night }, this.snapshot.gridH);
     }
   }
 
+  /**
+   * The plot: its outline, and the blocks a room can go on.
+   *
+   * Drawn in the outline colour of the art at a low alpha rather than in the
+   * two warm browns it used to use. Those browns came from a UI palette the
+   * art no longer shares, and against the pastel sky they were the only brown
+   * in the picture — a scratchy dark grid over the one area that is meant to
+   * be empty. Ink at a fraction of its weight reads as a guide instead.
+   */
   private drawGrid(): void {
-    const { gridW, gridH } = this.snapshot;
+    const { gridW, gridH, night } = this.snapshot;
+    const ink = night ? nightfall(INK) : INK;
     this.grid.clear();
     // Plot outline: the boundary the player buys their way out of.
-    this.grid.rect(0, 0, gridW * BLOCK_W, gridH * BLOCK_H).stroke({ width: 2, color: 0x4a3830 });
+    this.grid.rect(0, 0, gridW * BLOCK_W, gridH * BLOCK_H)
+      .stroke({ width: 2, color: ink, alpha: 0.28 });
     for (let x = 1; x < gridW; x++) {
       this.grid.moveTo(x * BLOCK_W, 0).lineTo(x * BLOCK_W, gridH * BLOCK_H);
     }
     for (let y = 1; y < gridH; y++) {
       this.grid.moveTo(0, y * BLOCK_H).lineTo(gridW * BLOCK_W, y * BLOCK_H);
     }
-    this.grid.stroke({ width: 1, color: 0x2e2420, alpha: 0.7 });
+    this.grid.stroke({ width: 1, color: ink, alpha: 0.12 });
   }
 
   // ---------------------------------------------------------------- input
