@@ -79,38 +79,56 @@ def lobby(c: Canvas, fy: float) -> None:
 
 def housekeeping(c: Canvas, fy: float) -> None:
     """
-    The linen store. One block only, so it is a wall of shelves and nothing
-    else — the shelves *are* the room.
+    The linen store. One block only, so the fitted shelving *is* the room —
+    but it now stops at 56% of the width instead of filling it.
+
+    Two reasons. The shelving used to run wall to wall and down to within
+    25 pixels of the floor, which left the room no wall a picture could hang on
+    and no ceiling a lamp could hang from: a one-block room with four decor
+    slots had nowhere to put three of them. And a full wall of folded linen is
+    the same object as `storage_linenShelf`, so buying that piece stood a second
+    shelf unit in front of the first. Shortened, the built joinery still says
+    "linen store" and the right-hand wall belongs to the player.
+
+    The mop and bucket went for the same reason — `storage_supplyCart` is a
+    cleaning trolley with a mop on it. What replaces them is a rail of gloves
+    and spray bottles, which is fixed equipment nobody can buy.
     """
-    w = c.w
-    sx, sw = 8.0, w - 16.0
-    sh = (fy - 14) * 0.66          # the floor stays clear for staff and decor
-    c.rrect(sx, 12, sw, sh, r=2.0, fill=P["woodPale"], ink=P["ink"], lw=LW_PROP)
+    sx, sw = 8.0, 58.0
+    sy, sh = 14.0, 34.0            # the wall right of it, and the ceiling, stay free
+    c.rrect(sx, sy, sw, sh, r=2.0, fill=P["woodPale"], ink=P["ink"], lw=LW_PROP)
     rows = 2
     for row in range(rows):
-        y = 12 + (row + 1) * sh / rows
+        y = sy + (row + 1) * sh / rows
         c.line([(sx + 1.5, y), (sx + sw - 1.5, y)], P["woodDk"], LW_PROP)
         # Folded towels, alternating so a stack reads as cloth and not as lines.
-        for i in range(3):
-            tx = sx + 4 + i * (sw - 8) / 3
-            tw = (sw - 8) / 3 - 4
+        for i in range(2):
+            tx = sx + 4 + i * (sw - 8) / 2
+            tw = (sw - 8) / 2 - 4
             for k in range(2):
-                c.rrect(tx, y - 8.4 + k * 4.0, tw, 3.6, r=1.4,
+                c.rrect(tx, y - 8.0 + k * 3.8, tw, 3.4, r=1.4,
                         fill=P["linen"] if (i + k + row) % 2 == 0 else P["glass"],
                         ink=P["ink"], lw=LW_FACE)
-    # A mop and bucket in the corner: the tool of the trade, and the one thing
-    # in this room that is a shape rather than a stack. Drawn thick enough to
-    # survive 1x — the first version was a 1.6px line and vanished.
-    c.line([(w - 13, fy - 36), (w - 13, fy - 8)], P["woodDk"], 2.4)
-    c.rrect(w - 18.5, fy - 12.0, 11.0, 5.0, r=2.0, fill=P["linenSh"], ink=P["ink"], lw=LW_FACE)
-    c.rrect(w - 19.0, fy - 7.5, 12.0, 7.5, r=2.0, fill=P["glassDk"], ink=P["ink"], lw=LW_PROP)
-    c.arc(w - 13.0, fy - 7.5, 6.0, 3.0, 180, 360, P["ink"], LW_FACE)
 
 
 # -------------------------------------------------------------------- laundry
 
 def laundry(c: Canvas, fy: float) -> None:
-    """Washers in a row. A round door on a white box is unmistakable."""
+    """
+    Three plumbed-in bays and a washing line.
+
+    The room used to paint the washing machines themselves, which was the one
+    place in the hotel where the building drew a thing the player can also buy:
+    installing `appliance_washer` put a fourth identical machine beside three
+    that were already there. What is bolted to the building is the *plumbing* —
+    the tiled recess, the plinth a machine stands on, the stop tap and the waste
+    stub — so that is what is painted here, and the machines are decor standing
+    in the bays (src/core/systems/roomAnchors.ts gives each bay a slot).
+
+    An empty bay still reads as a laundry: the alcoves are the same size and in
+    the same places the machines were, and the washing line overhead says what
+    the room is for even before the first machine is installed.
+    """
     w = c.w
     n = max(2, int(w // 78))
     span = w - 20
@@ -118,14 +136,28 @@ def laundry(c: Canvas, fy: float) -> None:
     for i in range(n):
         mx = 12 + i * (span / n)
         mh = 40.0
-        c.rrect(mx, fy - mh, mw, mh, r=3.0, fill=P["white"], ink=P["ink"], lw=LW_PROP)
-        c.rrect(mx + 2, fy - mh + 2.5, mw - 4, 6.0, r=1.4, fill=P["metal"], ink=P["ink"], lw=LW_FACE)
-        for k in range(3):
-            c.circle(mx + 5 + k * 4.2, fy - mh + 5.5, 1.0, fill=P["coral"])
-        c.circle(mx + mw / 2, fy - mh * 0.44, mw * 0.28, fill=P["glass"], ink=P["ink"], lw=LW_PROP)
-        c.circle(mx + mw / 2, fy - mh * 0.44, mw * 0.19, fill=P["glassDk"])
-        c.rrect(mx + mw / 2 - 3.0, fy - mh * 0.44 - 1.0, 6.0, 4.0, r=1.6,
-                fill=alpha(P["linen"], 0.9))
+        # The recess: a shaded tiled panel with its own rebate, so the bay reads
+        # as a hole in the wall rather than as a pale box standing in front of it.
+        c.rrect(mx, fy - mh, mw, mh, r=2.0, fill=shade(P["tile"], 0.10),
+                ink=P["ink"], lw=LW_PROP)
+        c.rrect(mx + 2, fy - mh + 2, mw - 4, mh - 4, r=1.6,
+                fill=shade(P["tile"], 0.22), ink=P["ink2"], lw=LW_FACE)
+        # Tile courses inside the recess. Two pixels apart is the floor of what
+        # survives at 1x, so the grout runs every seven.
+        for k in range(1, 5):
+            ty = fy - mh + 2 + k * (mh - 4) / 5
+            c.line([(mx + 3, ty), (mx + mw - 3, ty)], shade(P["tile"], 0.34), LW_FACE)
+        # The plinth a machine is set on, and the shadow it casts into the bay.
+        c.rrect(mx + 1.5, fy - 6.0, mw - 3, 6.0, r=1.4, fill=P["concrete"],
+                ink=P["ink"], lw=LW_FACE)
+        c.rect(mx + 2.5, fy - 6.0, mw - 5, 1.6, fill=alpha(P["shadow"], 0.18))
+        # Stop tap and waste stub on the back wall of the bay.
+        c.rrect(mx + mw * 0.24, fy - mh + 5.0, 3.0, 7.0, r=1.2,
+                fill=P["metalDk"], ink=P["ink"], lw=LW_FACE)
+        c.circle(mx + mw * 0.24 + 1.5, fy - mh + 4.6, 2.2, fill=P["coral"],
+                 ink=P["ink"], lw=LW_FACE)
+        c.circle(mx + mw * 0.70, fy - mh + 7.0, 3.0, fill=shade(P["tile"], 0.42),
+                 ink=P["ink"], lw=LW_FACE)
     # A washing line above, because the room is otherwise all boxes.
     c.line([(6, 13), (w - 6, 13)], P["ink2"], LW_DETAIL)
     for i in range(max(2, int(w // 42))):

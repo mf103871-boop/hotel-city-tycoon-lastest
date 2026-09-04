@@ -20,7 +20,7 @@ import {
   BLOCK_W, BLOCK_H, ANCHOR_UNITS_PER_BLOCK,
 } from '../../src/render/layout.ts';
 import {
-  decorArtSpec, decorDrawSize, compareDecorDraw, knownDecorCategories, DECOR_ART_SCALE,
+  decorArtSpec, decorDrawSize, fitDecorSize, compareDecorDraw, knownDecorCategories, DECOR_ART_SCALE,
 } from '../../src/render/decorArt.ts';
 import type { DecorOrderable } from '../../src/render/decorArt.ts';
 import { clampDecorBox, decorBox } from '../../src/render/decorArt.ts';
@@ -28,7 +28,7 @@ import {
   firstFreeAnchor, anchorBoundsFor, anchorKey, anchorReachFor, reachForCategory, reachedCategories,
 } from '../../src/core/systems/decorPlacement.ts';
 import {
-  anchorFor, layoutFor, plannedRooms, spotKindFor, spotsOfKind,
+  anchorFor, layoutFor, plannedRooms, spotKindFor, spotsOfKind, slotsOfKind, slotAt, slotBoxPx, floorLineFor,
 } from '../../src/core/systems/roomAnchors.ts';
 import {
   boundingBox, SKY, CITY_FAR, CITY_NEAR, TREE_FAR, TREE_NEAR, ROAD, INK, GOLD,
@@ -545,7 +545,6 @@ check('every point the plan offers keeps its piece inside the room', () => {
       const kind = spotKindFor(item.category, item.slotType);
       const spec = decorArtSpec(item.category, item.slotType);
       const declared = declaredSize(item.assetKey);
-      const size = decorDrawSize(declared.w, declared.h);
       // Walk the whole plan, not just its first point: the taken set makes
       // `anchorFor` hand back the next one each time, so every point in the
       // room's layout is checked against this piece's own art.
@@ -555,7 +554,10 @@ check('every point the plan offers keeps its piece inside the room', () => {
         const anchor = anchorFor(simData, room.id, item.id, taken);
         if (!anchor) break;
         taken.add(anchorKey(anchor.x, anchor.y));
-        const box = decorBox(anchorToLocalPx(anchor.x, anchor.y), size, spec);
+        // Fitted into the slot's own box, exactly as RoomView draws it.
+        const fitted = fitDecorSize(declared.w, declared.h,
+          slotBoxPx(room.id, room.blocks.w, room.blocks.h, anchor.x, anchor.y));
+        const box = decorBox(anchorToLocalPx(anchor.x, anchor.y), fitted, spec);
         assert(box.left >= -0.001 && box.top >= -0.001
           && box.left + box.w <= roomW + 0.001 && box.top + box.h <= roomH + 0.001,
           `${item.id} at (${anchor.x},${anchor.y}) in ${room.id} is drawn outside the room`);
@@ -602,27 +604,33 @@ check('a piece is offered a clear patch of floor while the room has one', () => 
   // have different anchors and stand in the same place. Two pieces into an
   // empty room, they must not.
   //
-  // One piece per block, and no more: a room's designed points keep clear of
-  // what is painted into it — the maintenance bench, the lobby desk — so a
-  // two-block room really does run out of clear floor at the second piece, and
-  // demanding a third would only be demanding that the plan ignore its own
-  // fixtures.
+  // Since HC-P1-S5 the measure of a piece's width is the SLOT's box, not the
+  // category reach — a slot is what decides how big the sprite is drawn — so
+  // that is what is compared here. A room's designed slots keep clear of what
+  // is painted into it (the maintenance bench, the lobby desk, the pool), so a
+  // two-block room really can run out of clear floor, and the check asks only
+  // for as many clear places as the room has blocks.
   for (const room of simData.rooms.filter((r) => r.blocks.w >= 2)) {
     const taken = new Set<string>();
     const placed: Array<{ defId: string; localX: number; localY: number }> = [];
+    const spans: Array<[string, number, number, number]> = [];
     const wanted = ['bed_single', 'seating_armchair', 'table_deskWood']
       .slice(0, Math.min(3, room.blocks.w));
     for (const defId of wanted) {
       const anchor = anchorFor(simData, room.id, defId, taken, 24, placed);
       assert(anchor, `${room.id} offered nothing for ${defId}`);
-      const reach = anchorReachFor(simData, defId)!;
-      for (const other of placed) {
-        const theirs = anchorReachFor(simData, other.defId)!;
-        const overlap = anchor.x - reach.left < other.localX + theirs.right
-          && anchor.x + reach.right > other.localX - theirs.left;
-        assert(!overlap,
-          `${room.id} put ${defId} at x=${anchor.x} across ${other.defId} at x=${other.localX}`);
+      const slot = slotAt(room.id, room.blocks.w, room.blocks.h, anchor.x, anchor.y);
+      const half = slot ? slot.w / 2 : anchorReachFor(simData, defId)!.left;
+      const lo = anchor.x - half;
+      const hi = anchor.x + half;
+      for (const [otherId, a, b, y] of spans) {
+        // Same standing line only: the presidential suite has two, and a desk
+        // on the mezzanine is not standing across the bed on the floor below.
+        if (y !== anchor.y) continue;
+        assert(!(lo < b - 0.001 && hi > a + 0.001),
+          `${room.id} put ${defId} at x=${anchor.x} across ${otherId}`);
       }
+      spans.push([defId, lo, hi, anchor.y]);
       taken.add(anchorKey(anchor.x, anchor.y));
       placed.push({ defId, localX: anchor.x, localY: anchor.y });
     }
@@ -634,8 +642,8 @@ check('a bed goes where the room keeps its bed, not wherever the scan reached', 
   // on that room's own bed point.
   for (const room of simData.rooms.filter((r) => r.category === 'guest')) {
     const layout = layoutFor(room.id, room.blocks.w, room.blocks.h);
-    const planned = layout.bed?.points[0];
-    assert(planned, `${room.id} has no bed point`);
+    const planned = slotsOfKind(layout, 'bed', 24)[0];
+    assert(planned, `${room.id} has no bed slot`);
     const anchor = anchorFor(simData, room.id, 'bed_single', new Set<string>());
     assert(anchor, `${room.id} refused a bed`);
     eq(anchor.x, planned.x, `${room.id} bed x`);
@@ -649,7 +657,10 @@ check('a lamp hangs from the ceiling point and a rug lies on the floor line', ()
     const rug = anchorFor(simData, room.id, 'rug_mat', new Set<string>());
     assert(lamp && rug, `${room.id} has no ceiling or floor point`);
     assert(lamp.y <= 4, `${room.id} hangs its lamp at y=${lamp.y}, nowhere near the ceiling`);
-    const floor = room.blocks.h * ANCHOR_UNITS_PER_BLOCK - 2;
+    // The room's OWN painted floor line, not a formula: the disco's dance
+    // floor is deeper than every other room's and the pool's deck deeper
+    // still, and a rug laid at unit 14 in the pool is a rug in the water.
+    const floor = floorLineFor(room.id, room.blocks.h);
     assert(rug.y >= floor - 1, `${room.id} lays its rug at y=${rug.y}, not on the floor (${floor})`);
   }
 });

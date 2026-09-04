@@ -1,44 +1,57 @@
 /**
- * Where a piece of furniture actually goes when the player buys it.
+ * Where a piece of furniture goes, and how big it is drawn — the room plans.
  *
  * DEC-010 gave a placed piece an anchor; `decorPlacement.ts` picks one by
  * scanning the room row by row for the first free cell. That is correct and it
  * is deterministic, and it looks like what it is: furniture queueing up along
- * a grid. A bed lands wherever the scan reached, a lamp lands beside it, and a
- * room the player has spent 40,000 coins on looks like a warehouse.
+ * a grid. HC-P1-S5 replaced the scan's opinion with a *designed slot table*.
  *
- * This file is the missing half: a designed set of *placement points* per room
- * type. Buying a bed puts it against the wall where a bed goes; buying a lamp
- * hangs it from the middle of the ceiling; buying a rug lays it on the floor
- * in front of the bed. The player never positions anything by hand, so the
- * points are the only thing standing between a purchase and a tidy room.
+ * ### What a slot is
  *
- * ### How a point is chosen
+ * One row per place a room keeps something, in the order the room wants them
+ * filled. A slot carries four numbers rather than two:
  *
- * A piece asks for the kind of spot its category needs — a bed asks for `bed`,
- * a washing machine for `ground`, a chandelier for `ceiling` — and takes the
- * first point of that kind nobody else in the room is standing on. When the
- * designed points run out, the room keeps going along the same lines
- * (`extend`), and only if *that* is exhausted does the caller fall back to the
- * old scan. Nothing is ever refused: DEC-010's rule that a placed piece is
- * never deleted still holds.
+ *   - `x`, `y` — the anchor, in DEC-010 units (16 per block, 8px across and
+ *     6px down), measured from the room's own top-left. This is the point the
+ *     sprite hangs from, exactly as before.
+ *   - `w`, `h` — the BOX the sprite is fitted inside, in the same units. The
+ *     picture is scaled down to fit, keeping its aspect ratio, and never
+ *     scaled up past its natural size.
+ *
+ * The box is why the plan can promise the player specific sizes as well as
+ * specific places. Before it, every floor piece in the game — a stool, a
+ * grand piano, a marble floor — was drawn at exactly 39.6x39.6px, because
+ * the only size in the system came from the sprite's slot type. A room's
+ * narrow strip of free floor got the same 40px box as a ballroom, and the
+ * overflow simply hung over whatever was painted next to it.
+ *
+ * ### Where the numbers come from
+ *
+ * Each room's own picture. `tools/selftest/room-fixtures.json` records what
+ * every room paints and where, and `tools/selftest/slots.ts` proves that no
+ * slot in this file stands a sprite on top of the building or hangs one
+ * outside the room. Those two files are the reason these numbers can be
+ * trusted: they were measured against the art rather than guessed, and the
+ * measurement is re-checked on every run.
+ *
+ * That check found what the player was complaining about. Under the old
+ * point list the laundry stood furniture inside two of its own washing
+ * machines, the gym put a treadmill in the middle of the mirror, the cinema
+ * put five pieces under the screen, and the pool put two of them in the
+ * water.
  *
  * ### Why the numbers are here rather than in `data/`
  *
- * A placement point is a fact about the *picture* — it exists because the
- * laundry's washing machines are painted along the back wall and the lobby's
- * desk occupies the right third, so furniture has to go somewhere else. Room
- * art and these numbers change together; the economy does not care. That is
- * the same reasoning that keeps `decorArt.ts` out of `data/`.
- *
- * Units are DEC-010 anchor units: 16 per block in both axes, measured from the
- * room's own top-left, so `y: 14` is the floor line of any one-block-high room
- * and `x: 8` is the middle of its first block.
+ * A placement slot is a fact about the *picture* — it exists because the
+ * lobby's desk occupies the right third and the pool is mostly water, so
+ * furniture has to go somewhere else. Room art and these numbers change
+ * together; the economy does not care. That is the same reasoning that keeps
+ * `decorArt.ts` out of `data/`.
  */
 import type { SimData } from '../data-source.ts';
 import { roomById } from '../data-source.ts';
 import {
-  ANCHOR_UNITS_PER_BLOCK, anchorBoundsFor, anchorRange, anchorReachFor, anchorKey,
+  ANCHOR_UNITS_PER_BLOCK, anchorBoundsFor, anchorKey,
 } from './decorPlacement.ts';
 
 /**
@@ -54,6 +67,15 @@ export type SpotKind = 'wall' | 'ceiling' | 'ground' | 'bed' | 'surface';
 export interface Spot {
   x: number;
   y: number;
+}
+
+/** A designed place in a room: an anchor, and the box the art is fitted into. */
+export interface Slot extends Spot {
+  kind: SpotKind;
+  /** Box width in anchor units (8px each). */
+  w: number;
+  /** Box height in anchor units (6px each). */
+  h: number;
 }
 
 /** Which kind of spot each decor category asks for. */
@@ -86,288 +108,393 @@ export function spotKindFor(category: string, slotType: string): SpotKind {
 }
 
 /**
- * A room's designed points, plus the rule for carrying on when they run out.
- *
- * `points` is the ordered list a room actually wants filled — first purchase
- * to the best spot. `extend` describes the line those points sit on so the
- * room can keep offering sensible positions past the end of the list: a
- * ground line marches along the floor, a wall line along the picture rail.
+ * When a room runs out of slots of the kind a piece wants, it is offered the
+ * next best surface rather than dropped straight to the scan. A rug and a
+ * chair both live on the floor; a poster and a wallpaper panel both live on
+ * the wall. Nothing here ever moves a piece between the floor and the wall.
  */
-interface KindLayout {
-  points: Spot[];
-  extend?: { y: number; from: number; step: number };
-}
+const NEIGHBOURING_KINDS: Readonly<Record<SpotKind, SpotKind[]>> = {
+  ground: ['bed', 'surface'],
+  bed: ['ground', 'surface'],
+  surface: ['ground', 'bed'],
+  wall: [],
+  ceiling: [],
+};
 
-type Layout = Partial<Record<SpotKind, KindLayout>>;
+type Layout = Readonly<Record<string, readonly Slot[]>>;
 
-/** Ground line for a room whose floor is `h` blocks down. */
-const FLOOR_Y = (blocksH: number): number => blocksH * ANCHOR_UNITS_PER_BLOCK - 2;
+const s = (kind: SpotKind, x: number, y: number, w: number, h: number): Slot =>
+  ({ kind, x, y, w, h });
 
 /**
- * The default layout of a room nobody has drawn a plan for.
+ * The painted floor line of a room, in anchor units.
  *
- * Derived from the footprint rather than typed out: a bed centred on the first
- * block, floor pieces spread along the floor line either side of it, pictures
- * at eye height, one lamp on the ceiling, a rug in the middle of the floor.
- * Every room in the catalogue has an entry below, so this only ever runs for a
+ * `hcstyle.room_shell` puts it at `h - max(9, h * 0.14)`, which is 82.56px —
+ * 13.76 units — in every one-block-high room. Three rooms override it: the
+ * disco's dance floor is deeper, and the pool's deck deeper still, so a
+ * sunbed standing at unit 14 stood two units inside the water. The
+ * presidential suite is the only two-storey room and has a second standing
+ * line, the mezzanine deck at unit 16, which its plan uses directly.
+ */
+const FLOOR_LINE: Readonly<Record<string, number>> = { spa: 12, pool: 10 };
+
+export function floorLineFor(roomDefId: string, blocksH: number): number {
+  return FLOOR_LINE[roomDefId] ?? blocksH * ANCHOR_UNITS_PER_BLOCK - 2;
+}
+
+/**
+ * The plans, one ordered list per room.
+ *
+ * Generated against `tools/selftest/room-fixtures.json` and then checked by
+ * `tools/selftest/slots.ts` on every run, so a number typed here that would
+ * put a sofa through the reception desk fails the build rather than shipping.
+ */
+const LAYOUTS: Layout = {
+  lobby: [
+    s('ground', 7, 14, 4, 7),
+    s('ground', 11, 14, 4, 7),
+    s('ground', 15, 14, 4, 7),
+    s('ground', 29, 14, 4, 7),
+    s('surface', 11, 14, 6, 7),
+    s('surface', 29, 14, 6, 7),
+    s('wall', 8, 8, 5, 6),
+    s('wall', 15, 8, 5, 6),
+    s('wall', 29, 8, 5, 6),
+    s('ceiling', 9, 2, 4, 5),
+    s('ceiling', 17, 2, 4, 5),
+  ],
+  housekeeping: [
+    s('ground', 3, 14, 5, 7),
+    s('ground', 8, 14, 5, 7),
+    s('ground', 13, 14, 5, 7),
+    s('surface', 8, 14, 6, 7),
+    s('wall', 4, 11, 7, 6),
+    s('wall', 12, 11, 7, 6),
+    s('ceiling', 12, 2, 5, 5),
+  ],
+  laundry: [
+    s('ground', 5, 14, 6, 7),
+    s('ground', 16, 14, 6, 7),
+    s('ground', 27, 14, 6, 7),
+    s('surface', 16, 14, 6, 7),
+    s('wall', 9, 8, 3, 6),
+    s('wall', 29, 8, 3, 6),
+    s('ceiling', 16, 2, 5, 5),
+  ],
+  staffRoom: [
+    s('ground', 14, 14, 5, 7),
+    s('ground', 19, 14, 5, 7),
+    s('ground', 24, 14, 5, 7),
+    s('ground', 29, 14, 5, 7),
+    s('surface', 16, 14, 6, 7),
+    s('surface', 27, 14, 6, 7),
+    s('wall', 16, 11, 7, 6),
+    s('wall', 27, 11, 7, 6),
+    s('ceiling', 12, 2, 3, 5),
+    s('ceiling', 25, 2, 3, 5),
+  ],
+  maintenance: [
+    s('ground', 15, 14, 5, 7),
+    s('ground', 20, 14, 5, 7),
+    s('ground', 25, 14, 5, 7),
+    s('surface', 20, 14, 6, 7),
+    s('wall', 17, 8, 7, 6),
+    s('wall', 27, 8, 7, 6),
+    s('ceiling', 21, 2, 5, 5),
+  ],
+  business: [
+    s('ground', 3, 14, 5, 7),
+    s('ground', 8, 14, 5, 7),
+    s('ground', 14, 14, 5, 7),
+    s('ground', 28, 14, 5, 7),
+    s('ground', 44, 14, 5, 7),
+    s('surface', 8, 14, 6, 7),
+    s('surface', 44, 14, 6, 7),
+    s('wall', 11, 8, 7, 6),
+    s('wall', 28, 8, 7, 6),
+    s('wall', 44, 8, 7, 6),
+    s('ceiling', 11, 2, 5, 5),
+    s('ceiling', 36, 2, 5, 5),
+  ],
+  economy: [
+    s('bed', 6, 14, 8, 6),
+    s('surface', 6, 14, 6, 7),
+    s('wall', 3, 11, 5, 6),
+    s('wall', 8, 11, 5, 6),
+    s('ceiling', 11, 2, 5, 5),
+  ],
+  standard: [
+    s('bed', 5, 14, 8, 6),
+    s('surface', 5, 14, 6, 7),
+    s('wall', 9, 8, 2, 6),
+    s('wall', 15, 8, 2, 6),
+    s('ceiling', 9, 1, 4, 5),
+    s('ceiling', 14, 1, 4, 5),
+  ],
+  double: [
+    s('bed', 6, 14, 8, 6),
+    s('bed', 18, 14, 8, 6),
+    s('ground', 12, 14, 4, 7),
+    s('surface', 6, 14, 6, 7),
+    s('surface', 18, 14, 6, 7),
+    s('wall', 11, 8, 2, 6),
+    s('wall', 22, 8, 2, 6),
+    s('wall', 30, 8, 2, 6),
+    s('ceiling', 22, 2, 3, 5),
+    s('ceiling', 30, 2, 3, 5),
+  ],
+  family: [
+    s('bed', 7, 14, 8, 6),
+    s('bed', 20, 14, 8, 6),
+    s('bed', 20, 10, 8, 4),
+    s('surface', 7, 14, 6, 7),
+    s('surface', 20, 14, 6, 7),
+    s('wall', 1, 8, 2, 6),
+    s('wall', 13, 8, 2, 6),
+    s('ceiling', 1, 2, 2, 5),
+    s('ceiling', 13, 2, 2, 5),
+  ],
+  deluxe: [
+    s('bed', 12, 14, 8, 6),
+    s('ground', 4, 14, 4, 7),
+    s('ground', 20, 14, 4, 7),
+    s('ground', 30, 14, 4, 7),
+    s('surface', 4, 14, 6, 7),
+    s('surface', 12, 14, 6, 7),
+    s('surface', 20, 14, 6, 7),
+    s('wall', 2, 8, 2, 6),
+    s('wall', 10, 8, 2, 6),
+    s('wall', 20, 8, 2, 6),
+    s('wall', 30, 8, 2, 6),
+    s('ceiling', 2, 2, 2, 5),
+    s('ceiling', 10, 2, 2, 5),
+    s('ceiling', 30, 2, 2, 5),
+  ],
+  executive: [
+    s('bed', 28, 14, 8, 6),
+    s('ground', 17, 14, 5, 7),
+    s('ground', 35, 14, 5, 7),
+    s('ground', 40, 14, 5, 7),
+    s('surface', 19, 14, 6, 7),
+    s('surface', 28, 14, 6, 7),
+    s('surface', 38, 14, 6, 7),
+    s('wall', 15, 8, 2, 6),
+    s('wall', 24, 8, 2, 6),
+    s('wall', 34, 8, 2, 6),
+    s('ceiling', 15, 2, 2, 5),
+    s('ceiling', 24, 2, 2, 5),
+    s('ceiling', 34, 2, 2, 5),
+  ],
+  honeymoon: [
+    s('bed', 15, 14, 8, 6),
+    s('ground', 3, 14, 5, 7),
+    s('ground', 8, 14, 5, 7),
+    s('ground', 26, 14, 5, 7),
+    s('surface', 5, 14, 6, 7),
+    s('surface', 15, 14, 6, 7),
+    s('surface', 24, 14, 6, 7),
+    s('wall', 1, 8, 2, 6),
+    s('wall', 3, 8, 2, 6),
+    s('wall', 11, 8, 2, 6),
+    s('wall', 21, 8, 2, 6),
+    s('wall', 26, 8, 2, 6),
+    s('ceiling', 2, 2, 2, 5),
+    s('ceiling', 11, 2, 2, 5),
+    s('ceiling', 21, 2, 2, 5),
+    s('ceiling', 27, 2, 2, 5),
+  ],
+  luxurySuite: [
+    s('bed', 13, 14, 8, 6),
+    s('bed', 39, 14, 8, 6),
+    s('ground', 2, 14, 4, 7),
+    s('ground', 7, 14, 4, 7),
+    s('ground', 19, 14, 4, 7),
+    s('ground', 24, 14, 4, 7),
+    s('ground', 28, 14, 4, 7),
+    s('ground', 33, 14, 4, 7),
+    s('ground', 45, 14, 4, 7),
+    s('ground', 50, 14, 4, 7),
+    s('surface', 7, 14, 6, 7),
+    s('surface', 20, 14, 6, 7),
+    s('surface', 33, 14, 6, 7),
+    s('surface', 46, 14, 6, 7),
+    s('wall', 2, 8, 3, 6),
+    s('wall', 12, 8, 3, 6),
+    s('wall', 16, 8, 3, 6),
+    s('wall', 19, 8, 3, 6),
+    s('wall', 45, 8, 3, 6),
+    s('wall', 50, 8, 3, 6),
+    s('ceiling', 2, 2, 2, 5),
+    s('ceiling', 18, 2, 2, 5),
+    s('ceiling', 45, 2, 2, 5),
+    s('ceiling', 63, 2, 2, 5),
+  ],
+  presidential: [
+    s('bed', 18, 30, 8, 6),
+    s('bed', 27, 30, 8, 6),
+    s('ground', 46, 30, 4, 7),
+    s('ground', 6, 16, 5, 6),
+    s('ground', 12, 16, 5, 6),
+    s('ground', 18, 16, 5, 6),
+    s('ground', 24, 16, 5, 6),
+    s('surface', 17, 30, 6, 7),
+    s('surface', 28, 30, 6, 7),
+    s('surface', 15, 16, 6, 6),
+    s('wall', 1, 8, 2, 6),
+    s('wall', 4, 8, 2, 6),
+    s('wall', 13, 8, 2, 6),
+    s('wall', 16, 8, 2, 6),
+    s('wall', 27, 8, 2, 6),
+    s('wall', 33, 8, 2, 6),
+    s('wall', 46, 8, 2, 6),
+    s('ceiling', 3, 2, 4, 5),
+    s('ceiling', 15, 2, 4, 5),
+    s('ceiling', 27, 2, 4, 5),
+    s('ceiling', 33, 2, 4, 5),
+    s('ceiling', 46, 2, 4, 5),
+  ],
+  cafe: [
+    s('ground', 18, 14, 4, 7),
+    s('ground', 22, 14, 4, 7),
+    s('ground', 26, 14, 4, 7),
+    s('ground', 30, 14, 4, 7),
+    s('surface', 20, 14, 6, 7),
+    s('surface', 28, 14, 6, 7),
+    s('wall', 1, 5, 2, 6),
+    s('wall', 17, 5, 2, 6),
+    s('wall', 31, 5, 2, 6),
+    s('ceiling', 1, 2, 2, 5),
+    s('ceiling', 17, 2, 2, 5),
+  ],
+  gym: [
+    s('ground', 3, 14, 6, 7),
+    s('ground', 10, 14, 6, 7),
+    s('ground', 16, 14, 6, 7),
+    s('ground', 22, 14, 6, 7),
+    s('ground', 29, 14, 6, 7),
+    s('surface', 8, 14, 6, 7),
+    s('surface', 24, 14, 6, 7),
+    s('wall', 17, 10, 2, 6),
+    s('wall', 28, 10, 2, 6),
+    s('wall', 31, 10, 2, 6),
+    s('ceiling', 17, 2, 3, 5),
+  ],
+  restaurant: [
+    s('ground', 19, 14, 4, 7),
+    s('ground', 23, 14, 4, 7),
+    s('ground', 28, 14, 4, 7),
+    s('ground', 32, 14, 4, 7),
+    s('ground', 37, 14, 4, 7),
+    s('ground', 41, 14, 4, 7),
+    s('ground', 46, 14, 4, 7),
+    s('surface', 22, 14, 6, 7),
+    s('surface', 32, 14, 6, 7),
+    s('surface', 43, 14, 6, 7),
+    s('wall', 18, 8, 2, 6),
+    s('wall', 23, 8, 2, 6),
+    s('wall', 27, 8, 2, 6),
+    s('wall', 47, 8, 2, 6),
+    s('ceiling', 5, 2, 5, 5),
+    s('ceiling', 15, 2, 5, 5),
+    s('ceiling', 24, 2, 5, 5),
+  ],
+  bar: [
+    s('ground', 24, 14, 5, 7),
+    s('ground', 29, 14, 5, 7),
+    s('surface', 27, 14, 6, 7),
+    s('wall', 23, 8, 3, 6),
+    s('wall', 27, 8, 3, 6),
+    s('wall', 30, 8, 3, 6),
+    s('ceiling', 1, 2, 2, 5),
+    s('ceiling', 21, 2, 2, 5),
+  ],
+  arcade: [
+    s('ground', 3, 14, 6, 7),
+    s('ground', 10, 14, 6, 7),
+    s('ground', 16, 14, 6, 7),
+    s('ground', 22, 14, 6, 7),
+    s('ground', 29, 14, 6, 7),
+    s('surface', 8, 14, 6, 7),
+    s('surface', 24, 14, 6, 7),
+    s('wall', 3, 8, 4, 6),
+    s('wall', 13, 8, 4, 6),
+    s('wall', 17, 8, 4, 6),
+    s('ceiling', 3, 2, 5, 5),
+    s('ceiling', 15, 2, 5, 5),
+  ],
+  cinema: [
+    s('ground', 2, 14, 4, 7),
+    s('ground', 13, 14, 5, 7),
+    s('ground', 20, 14, 5, 7),
+    s('ground', 28, 14, 5, 7),
+    s('ground', 35, 14, 5, 7),
+    s('ground', 46, 14, 4, 7),
+    s('surface', 17, 14, 6, 7),
+    s('surface', 31, 14, 6, 7),
+    s('wall', 1, 10, 2, 6),
+    s('wall', 4, 10, 2, 6),
+    s('wall', 46, 10, 2, 6),
+    s('ceiling', 44, 2, 2, 5),
+    s('ceiling', 47, 2, 2, 5),
+  ],
+  spa: [
+    s('ground', 12, 12, 4, 7),
+    s('ground', 16, 12, 4, 7),
+    s('ground', 20, 12, 4, 7),
+    s('ground', 25, 12, 4, 7),
+    s('ground', 29, 12, 4, 7),
+    s('ground', 34, 12, 4, 7),
+    s('ground', 38, 12, 4, 7),
+    s('surface', 14, 12, 6, 7),
+    s('surface', 25, 12, 6, 7),
+    s('surface', 35, 12, 6, 7),
+    s('wall', 13, 11, 7, 6),
+    s('wall', 21, 11, 7, 6),
+    s('wall', 29, 11, 7, 6),
+    s('wall', 37, 11, 7, 6),
+    s('ceiling', 16, 2, 5, 5),
+    s('ceiling', 29, 2, 5, 5),
+    s('ceiling', 37, 2, 5, 5),
+  ],
+  pool: [
+    s('ground', 2, 10, 4, 7),
+    s('ground', 6, 10, 4, 7),
+    s('ground', 58, 10, 4, 7),
+    s('ground', 62, 10, 4, 7),
+    s('surface', 4, 10, 6, 7),
+    s('surface', 60, 10, 6, 7),
+    s('wall', 18, 5, 7, 6),
+    s('wall', 26, 5, 7, 6),
+    s('wall', 38, 5, 7, 6),
+    s('wall', 46, 5, 7, 6),
+    s('ceiling', 3, 2, 5, 5),
+    s('ceiling', 22, 2, 5, 5),
+    s('ceiling', 42, 2, 5, 5),
+  ],
+};
+
+/**
+ * A room nobody has drawn a plan for, derived from its footprint.
+ *
+ * Every room in the catalogue has an entry above, so this only ever runs for a
  * room added after this file — which is exactly when a sensible default beats
  * a crash.
  */
-function defaultLayout(blocksW: number, blocksH: number): Layout {
+function defaultLayout(roomDefId: string, blocksW: number, blocksH: number): readonly Slot[] {
   const w = blocksW * ANCHOR_UNITS_PER_BLOCK;
-  const floor = FLOOR_Y(blocksH);
-  const beds: Spot[] = [];
-  const ground: Spot[] = [];
+  const floor = floorLineFor(roomDefId, blocksH);
+  const out: Slot[] = [];
   for (let b = 0; b < blocksW; b++) {
-    beds.push({ x: b * ANCHOR_UNITS_PER_BLOCK + 8, y: floor });
-    ground.push({ x: b * ANCHOR_UNITS_PER_BLOCK + 4, y: floor });
-    ground.push({ x: b * ANCHOR_UNITS_PER_BLOCK + 12, y: floor });
+    const mid = b * ANCHOR_UNITS_PER_BLOCK + 8;
+    out.push(s('bed', mid, floor, 8, 6));
+    out.push(s('ground', mid - 4, floor, 5, 7));
+    out.push(s('ground', mid + 4, floor, 5, 7));
+    out.push(s('surface', mid, floor, 6, 7));
+    out.push(s('wall', mid, 8, 5, 6));
+    out.push(s('ceiling', mid, 2, 5, 5));
   }
-  return {
-    bed: { points: beds, extend: { y: floor, from: 8, step: 16 } },
-    ground: { points: ground, extend: { y: floor, from: 4, step: 6 } },
-    surface: { points: [{ x: Math.round(w / 2), y: floor }], extend: { y: floor, from: 6, step: 8 } },
-    wall: {
-      points: [{ x: 5, y: 6 }, { x: w - 5, y: 6 }],
-      extend: { y: 6, from: 5, step: 8 },
-    },
-    ceiling: {
-      points: [{ x: Math.round(w / 2), y: 2 }],
-      extend: { y: 2, from: 8, step: 12 },
-    },
-  };
+  return out.length > 0 ? out : [s('ground', Math.round(w / 2), floor, 5, 7)];
 }
-
-/**
- * The plans.
- *
- * Each room's points dodge what is painted into its own picture — the lobby's
- * desk and key wall, the laundry's row of washers, the pool's water — and put
- * the first purchase where a person would put it. The order matters: point one
- * is where the first bed, the first lamp and the first rug go, and most rooms
- * never see their tenth purchase.
- */
-const LAYOUTS: Readonly<Record<string, Layout>> = {
-  // --- back of house ------------------------------------------------------
-  // The desk and key wall own the right half, so furniture lives on the left.
-  lobby: {
-    ground: { points: [{ x: 6, y: 14 }, { x: 13, y: 14 }, { x: 19, y: 14 }, { x: 26, y: 14 }],
-              extend: { y: 14, from: 6, step: 7 } },
-    surface: { points: [{ x: 12, y: 14 }, { x: 22, y: 14 }] },
-    wall: { points: [{ x: 6, y: 5 }, { x: 15, y: 5 }, { x: 26, y: 8 }],
-            extend: { y: 5, from: 6, step: 9 } },
-    ceiling: { points: [{ x: 12, y: 2 }, { x: 22, y: 2 }], extend: { y: 2, from: 6, step: 10 } },
-    bed: { points: [{ x: 8, y: 14 }] },
-  },
-  // Shelving fills the upper two thirds; the floor in front of it is free.
-  housekeeping: {
-    ground: { points: [{ x: 5, y: 14 }, { x: 11, y: 14 }], extend: { y: 14, from: 5, step: 6 } },
-    surface: { points: [{ x: 8, y: 14 }] },
-    wall: { points: [{ x: 8, y: 11 }], extend: { y: 11, from: 5, step: 7 } },
-    ceiling: { points: [{ x: 8, y: 2 }] },
-    bed: { points: [{ x: 8, y: 14 }] },
-  },
-  // Washers stand along the back wall; a cart or a board goes between them.
-  laundry: {
-    ground: { points: [{ x: 8, y: 14 }, { x: 16, y: 14 }, { x: 24, y: 14 }],
-              extend: { y: 14, from: 8, step: 8 } },
-    surface: { points: [{ x: 16, y: 14 }] },
-    wall: { points: [{ x: 8, y: 10 }, { x: 24, y: 10 }], extend: { y: 10, from: 8, step: 8 } },
-    ceiling: { points: [{ x: 16, y: 2 }] },
-    bed: { points: [{ x: 16, y: 14 }] },
-  },
-  // The kitchenette holds the left; lockers and seating take the right.
-  staffRoom: {
-    ground: { points: [{ x: 20, y: 14 }, { x: 26, y: 14 }, { x: 13, y: 14 }],
-              extend: { y: 14, from: 13, step: 7 } },
-    surface: { points: [{ x: 20, y: 14 }] },
-    wall: { points: [{ x: 24, y: 6 }, { x: 8, y: 6 }], extend: { y: 6, from: 8, step: 8 } },
-    ceiling: { points: [{ x: 20, y: 2 }] },
-    bed: { points: [{ x: 20, y: 14 }] },
-  },
-  // The bench and pegboard own the left; the tool rack and boxes go right.
-  maintenance: {
-    ground: { points: [{ x: 22, y: 14 }, { x: 28, y: 14 }, { x: 14, y: 14 }],
-              extend: { y: 14, from: 14, step: 7 } },
-    surface: { points: [{ x: 22, y: 14 }] },
-    wall: { points: [{ x: 24, y: 8 }], extend: { y: 8, from: 16, step: 8 } },
-    ceiling: { points: [{ x: 22, y: 3 }] },
-    bed: { points: [{ x: 22, y: 14 }] },
-  },
-  // Three blocks: whiteboard centre, workstation right, so the left is open.
-  business: {
-    ground: { points: [{ x: 6, y: 14 }, { x: 13, y: 14 }, { x: 20, y: 14 }, { x: 42, y: 14 }],
-              extend: { y: 14, from: 6, step: 7 } },
-    surface: { points: [{ x: 13, y: 14 }, { x: 34, y: 14 }] },
-    wall: { points: [{ x: 6, y: 6 }, { x: 42, y: 6 }, { x: 13, y: 10 }],
-            extend: { y: 6, from: 6, step: 9 } },
-    ceiling: { points: [{ x: 13, y: 2 }, { x: 34, y: 2 }], extend: { y: 2, from: 8, step: 12 } },
-    bed: { points: [{ x: 13, y: 14 }] },
-  },
-
-  // --- guest rooms -------------------------------------------------------
-  // One block: the bed against the back wall, one thing either side of it.
-  economy: {
-    bed: { points: [{ x: 7, y: 14 }] },
-    ground: { points: [{ x: 13, y: 14 }, { x: 4, y: 14 }], extend: { y: 14, from: 4, step: 5 } },
-    surface: { points: [{ x: 9, y: 14 }] },
-    wall: { points: [{ x: 6, y: 6 }, { x: 12, y: 6 }], extend: { y: 6, from: 6, step: 6 } },
-    ceiling: { points: [{ x: 8, y: 2 }] },
-  },
-  standard: {
-    bed: { points: [{ x: 7, y: 14 }] },
-    ground: { points: [{ x: 13, y: 14 }, { x: 4, y: 14 }], extend: { y: 14, from: 4, step: 5 } },
-    surface: { points: [{ x: 9, y: 14 }] },
-    wall: { points: [{ x: 6, y: 6 }, { x: 12, y: 6 }], extend: { y: 6, from: 6, step: 6 } },
-    ceiling: { points: [{ x: 8, y: 2 }] },
-  },
-  // Two blocks, two beds: one per block, with the middle left as a walkway.
-  double: {
-    bed: { points: [{ x: 7, y: 14 }, { x: 25, y: 14 }] },
-    ground: { points: [{ x: 16, y: 14 }, { x: 13, y: 14 }, { x: 19, y: 14 }],
-              extend: { y: 14, from: 5, step: 6 } },
-    surface: { points: [{ x: 16, y: 14 }] },
-    wall: { points: [{ x: 6, y: 6 }, { x: 26, y: 6 }, { x: 16, y: 6 }],
-            extend: { y: 6, from: 6, step: 7 } },
-    ceiling: { points: [{ x: 16, y: 2 }], extend: { y: 2, from: 8, step: 12 } },
-  },
-  family: {
-    bed: { points: [{ x: 7, y: 14 }, { x: 25, y: 14 }] },
-    ground: { points: [{ x: 16, y: 14 }, { x: 12, y: 14 }, { x: 20, y: 14 }],
-              extend: { y: 14, from: 5, step: 6 } },
-    surface: { points: [{ x: 16, y: 14 }] },
-    wall: { points: [{ x: 6, y: 6 }, { x: 26, y: 6 }, { x: 16, y: 5 }],
-            extend: { y: 6, from: 6, step: 7 } },
-    ceiling: { points: [{ x: 16, y: 2 }], extend: { y: 2, from: 8, step: 12 } },
-  },
-  deluxe: {
-    bed: { points: [{ x: 8, y: 14 }] },
-    ground: { points: [{ x: 20, y: 14 }, { x: 26, y: 14 }, { x: 15, y: 14 }],
-              extend: { y: 14, from: 5, step: 6 } },
-    surface: { points: [{ x: 18, y: 14 }] },
-    wall: { points: [{ x: 8, y: 6 }, { x: 24, y: 6 }], extend: { y: 6, from: 6, step: 7 } },
-    ceiling: { points: [{ x: 16, y: 2 }], extend: { y: 2, from: 8, step: 12 } },
-  },
-  // Three blocks: sleeping left, sitting middle, working right.
-  executive: {
-    bed: { points: [{ x: 8, y: 14 }] },
-    ground: { points: [{ x: 22, y: 14 }, { x: 30, y: 14 }, { x: 40, y: 14 }, { x: 16, y: 14 }],
-              extend: { y: 14, from: 6, step: 6 } },
-    surface: { points: [{ x: 26, y: 14 }, { x: 8, y: 14 }] },
-    wall: { points: [{ x: 8, y: 6 }, { x: 26, y: 6 }, { x: 42, y: 6 }],
-            extend: { y: 6, from: 6, step: 8 } },
-    ceiling: { points: [{ x: 26, y: 2 }, { x: 10, y: 2 }], extend: { y: 2, from: 8, step: 12 } },
-  },
-  honeymoon: {
-    bed: { points: [{ x: 24, y: 14 }] },
-    ground: { points: [{ x: 8, y: 14 }, { x: 40, y: 14 }, { x: 14, y: 14 }, { x: 34, y: 14 }],
-              extend: { y: 14, from: 6, step: 6 } },
-    surface: { points: [{ x: 24, y: 14 }] },
-    wall: { points: [{ x: 24, y: 5 }, { x: 8, y: 6 }, { x: 40, y: 6 }],
-            extend: { y: 6, from: 6, step: 8 } },
-    ceiling: { points: [{ x: 24, y: 2 }], extend: { y: 2, from: 10, step: 14 } },
-  },
-  // Four blocks. A suite reads as rooms-within-a-room: bed, lounge, study.
-  luxurySuite: {
-    bed: { points: [{ x: 8, y: 14 }, { x: 56, y: 14 }] },
-    ground: { points: [{ x: 24, y: 14 }, { x: 32, y: 14 }, { x: 40, y: 14 }, { x: 48, y: 14 },
-                       { x: 16, y: 14 }],
-              extend: { y: 14, from: 6, step: 6 } },
-    surface: { points: [{ x: 32, y: 14 }, { x: 8, y: 14 }] },
-    wall: { points: [{ x: 8, y: 6 }, { x: 32, y: 5 }, { x: 56, y: 6 }, { x: 20, y: 7 }],
-            extend: { y: 6, from: 6, step: 8 } },
-    ceiling: { points: [{ x: 32, y: 2 }, { x: 12, y: 2 }, { x: 52, y: 2 }],
-               extend: { y: 2, from: 8, step: 12 } },
-  },
-  // Two storeys. The upper floor is a mezzanine, so it gets its own ground
-  // line at y=14 while the main floor sits at y=30.
-  presidential: {
-    bed: { points: [{ x: 8, y: 30 }, { x: 40, y: 14 }] },
-    ground: { points: [{ x: 22, y: 30 }, { x: 30, y: 30 }, { x: 38, y: 30 },
-                       { x: 10, y: 14 }, { x: 18, y: 14 }, { x: 28, y: 14 }],
-              extend: { y: 30, from: 6, step: 6 } },
-    surface: { points: [{ x: 26, y: 30 }, { x: 20, y: 14 }] },
-    wall: { points: [{ x: 8, y: 22 }, { x: 34, y: 22 }, { x: 14, y: 6 }, { x: 34, y: 6 }],
-            extend: { y: 22, from: 6, step: 8 } },
-    ceiling: { points: [{ x: 24, y: 2 }, { x: 24, y: 18 }], extend: { y: 2, from: 10, step: 14 } },
-  },
-
-  // --- commercial --------------------------------------------------------
-  // The counter owns the left; tables and plants fill the room in front.
-  cafe: {
-    ground: { points: [{ x: 20, y: 14 }, { x: 27, y: 14 }, { x: 14, y: 14 }],
-              extend: { y: 14, from: 14, step: 6 } },
-    surface: { points: [{ x: 20, y: 14 }] },
-    wall: { points: [{ x: 22, y: 6 }, { x: 8, y: 5 }], extend: { y: 6, from: 8, step: 8 } },
-    ceiling: { points: [{ x: 20, y: 2 }, { x: 10, y: 2 }], extend: { y: 2, from: 8, step: 10 } },
-    bed: { points: [{ x: 20, y: 14 }] },
-  },
-  // Mirror wall behind; equipment stands out on the floor.
-  gym: {
-    ground: { points: [{ x: 8, y: 14 }, { x: 16, y: 14 }, { x: 24, y: 14 }],
-              extend: { y: 14, from: 8, step: 8 } },
-    surface: { points: [{ x: 16, y: 14 }] },
-    wall: { points: [{ x: 16, y: 6 }], extend: { y: 6, from: 8, step: 8 } },
-    ceiling: { points: [{ x: 16, y: 2 }] },
-    bed: { points: [{ x: 16, y: 14 }] },
-  },
-  restaurant: {
-    ground: { points: [{ x: 12, y: 14 }, { x: 22, y: 14 }, { x: 32, y: 14 }, { x: 40, y: 14 }],
-              extend: { y: 14, from: 6, step: 7 } },
-    surface: { points: [{ x: 24, y: 14 }] },
-    wall: { points: [{ x: 10, y: 6 }, { x: 24, y: 5 }, { x: 40, y: 6 }],
-            extend: { y: 6, from: 8, step: 8 } },
-    ceiling: { points: [{ x: 14, y: 2 }, { x: 34, y: 2 }], extend: { y: 2, from: 8, step: 12 } },
-    bed: { points: [{ x: 24, y: 14 }] },
-  },
-  bar: {
-    ground: { points: [{ x: 22, y: 14 }, { x: 28, y: 14 }, { x: 16, y: 14 }],
-              extend: { y: 14, from: 10, step: 6 } },
-    surface: { points: [{ x: 22, y: 14 }] },
-    wall: { points: [{ x: 24, y: 6 }], extend: { y: 6, from: 10, step: 8 } },
-    ceiling: { points: [{ x: 10, y: 2 }, { x: 22, y: 2 }], extend: { y: 2, from: 8, step: 10 } },
-    bed: { points: [{ x: 22, y: 14 }] },
-  },
-  arcade: {
-    ground: { points: [{ x: 8, y: 14 }, { x: 16, y: 14 }, { x: 24, y: 14 }],
-              extend: { y: 14, from: 8, step: 8 } },
-    surface: { points: [{ x: 16, y: 14 }] },
-    wall: { points: [{ x: 16, y: 6 }], extend: { y: 6, from: 8, step: 8 } },
-    ceiling: { points: [{ x: 16, y: 2 }] },
-    bed: { points: [{ x: 16, y: 14 }] },
-  },
-  // The screen owns the back wall, so nothing hangs on it: seating only.
-  cinema: {
-    ground: { points: [{ x: 10, y: 14 }, { x: 18, y: 14 }, { x: 26, y: 14 }, { x: 34, y: 14 },
-                       { x: 42, y: 14 }],
-              extend: { y: 14, from: 6, step: 7 } },
-    surface: { points: [{ x: 24, y: 14 }] },
-    wall: { points: [{ x: 6, y: 8 }, { x: 42, y: 8 }], extend: { y: 8, from: 6, step: 10 } },
-    ceiling: { points: [{ x: 24, y: 2 }] },
-    bed: { points: [{ x: 24, y: 14 }] },
-  },
-  // The disco: the dance floor is the middle, so furniture hugs the sides.
-  spa: {
-    ground: { points: [{ x: 8, y: 14 }, { x: 40, y: 14 }, { x: 16, y: 14 }, { x: 32, y: 14 }],
-              extend: { y: 14, from: 6, step: 7 } },
-    surface: { points: [{ x: 24, y: 14 }] },
-    wall: { points: [{ x: 8, y: 6 }, { x: 40, y: 6 }], extend: { y: 6, from: 8, step: 10 } },
-    ceiling: { points: [{ x: 24, y: 2 }, { x: 10, y: 2 }, { x: 38, y: 2 }],
-               extend: { y: 2, from: 8, step: 12 } },
-    bed: { points: [{ x: 24, y: 14 }] },
-  },
-  // Four blocks of water in the middle: everything goes to the two ends.
-  pool: {
-    ground: { points: [{ x: 6, y: 14 }, { x: 58, y: 14 }, { x: 12, y: 14 }, { x: 52, y: 14 }],
-              extend: { y: 14, from: 6, step: 8 } },
-    surface: { points: [{ x: 8, y: 14 }, { x: 56, y: 14 }] },
-    wall: { points: [{ x: 8, y: 6 }, { x: 56, y: 6 }, { x: 32, y: 5 }],
-            extend: { y: 6, from: 8, step: 12 } },
-    ceiling: { points: [{ x: 32, y: 2 }, { x: 12, y: 2 }, { x: 52, y: 2 }],
-               extend: { y: 2, from: 8, step: 12 } },
-    bed: { points: [{ x: 8, y: 14 }] },
-  },
-};
 
 /** Every room this file has a plan for — for the self-test's coverage check. */
 export function plannedRooms(): string[] {
@@ -375,31 +502,35 @@ export function plannedRooms(): string[] {
 }
 
 /** The plan for one room, falling back to a footprint-derived default. */
-export function layoutFor(roomDefId: string, blocksW: number, blocksH: number): Layout {
-  return LAYOUTS[roomDefId] ?? defaultLayout(blocksW, blocksH);
+export function layoutFor(roomDefId: string, blocksW: number, blocksH: number): readonly Slot[] {
+  return LAYOUTS[roomDefId] ?? defaultLayout(roomDefId, blocksW, blocksH);
 }
 
 /**
- * The points of one kind, designed ones first, then the line they sit on.
+ * The slots of one kind, in the order the room wants them filled.
  *
- * `limit` bounds the generated tail — a room can be asked for at most as many
- * points as `data/economy.json` lets it hold pieces, so this never runs away.
+ * `limit` bounds the list — a room can be asked for at most as many slots as
+ * `data/economy.json` lets it hold pieces.
  */
-export function spotsOfKind(layout: Layout, kind: SpotKind, roomW: number, limit: number): Spot[] {
-  const plan = layout[kind];
-  if (!plan) return [];
-  const out = [...plan.points];
-  // A rug or a second bed with no line of its own follows the floor line the
-  // room's other standing pieces use. Every kind could carry its own numbers,
-  // but three copies of the same y is three chances to mistype it.
-  const extend = plan.extend
-    ?? ((kind === 'surface' || kind === 'bed') ? layout.ground?.extend : undefined);
-  if (extend) {
-    for (let x = extend.from; x < roomW && out.length < limit; x += extend.step) {
-      if (!out.some((s) => s.x === x && s.y === extend.y)) out.push({ x, y: extend.y });
-    }
-  }
-  return out.slice(0, limit);
+export function slotsOfKind(layout: readonly Slot[], kind: SpotKind, limit: number): Slot[] {
+  return layout.filter((slot) => slot.kind === kind).slice(0, limit);
+}
+
+/** Back-compatible view of `slotsOfKind` for callers that only want positions. */
+export function spotsOfKind(layout: readonly Slot[], kind: SpotKind, _roomW: number,
+                            limit: number): Spot[] {
+  return slotsOfKind(layout, kind, limit).map((slot) => ({ x: slot.x, y: slot.y }));
+}
+
+/**
+ * The slot a piece standing at this anchor occupies, if the room designed one
+ * there. This is how the renderer finds a piece's box: the anchor is the
+ * identity, so nothing new has to be written into the save.
+ */
+export function slotAt(roomDefId: string, blocksW: number, blocksH: number,
+                       x: number, y: number): Slot | null {
+  const layout = layoutFor(roomDefId, blocksW, blocksH);
+  return layout.find((slot) => slot.x === x && slot.y === y) ?? null;
 }
 
 /** A piece already in the room, as this file needs to see it. */
@@ -413,41 +544,22 @@ export interface PlacedPiece {
 const STANDS_ON_FLOOR: ReadonlySet<SpotKind> = new Set<SpotKind>(['ground', 'bed']);
 
 /**
- * The horizontal span a floor-standing piece occupies, in anchor units.
- *
- * Only the horizontal one, and only for pieces on the floor: everything
- * standing in a room shares one floor line, so what decides whether two of
- * them collide is whether their widths overlap. A poster hung above a bed is
- * not a collision, and treating it as one would empty every wall.
- */
-function floorSpan(data: SimData, defId: string, x: number): [number, number] | null {
-  const def = data.decor.find((d) => d.id === defId);
-  if (!def) return null;
-  if (!STANDS_ON_FLOOR.has(spotKindFor(def.category, def.slotType))) return null;
-  const reach = anchorReachFor(data, defId);
-  return reach ? [x - reach.left, x + reach.right] : [x - 3, x + 3];
-}
-
-/**
  * Where this piece goes in this room, or null if the plan has nothing left.
  *
  * Null is not a failure: it is this file saying it has no opinion, and the
- * caller falling back to `firstFreeAnchor`'s scan — which always answers. Each
- * candidate is pulled inside the room's legal range for that piece's own reach
- * before it is offered, so a number typed into a layout above can be wrong
- * about a room's size without ever putting furniture through a wall.
+ * caller falling back to `firstFreeAnchor`'s scan — which always answers.
+ * Each candidate is pulled inside the room's legal range for that piece's own
+ * reach before it is offered, so a number typed into a layout above can be
+ * wrong about a room's size without ever putting furniture through a wall.
  *
- * `placed` is what the room already holds. Two passes: the first offers only
- * points where this piece's picture does not overlap another piece standing on
- * the same floor, and the second drops that condition. That order is the whole
- * difference between a bed with a side table beside it and a side table
- * standing in the middle of the bed — an exact-anchor check alone cannot see
- * the collision, because a 57-pixel bed and a 40-pixel table one anchor apart
- * have different anchors and the same floor.
+ * `placed` is what the room already holds; a slot another piece is standing
+ * in is skipped. Floor coverings are the one exception, and it is the point of
+ * the rule rather than a hole in it: a rug is *supposed* to share its place
+ * with the chair standing on it (decorArt.ts draws it first), so a surface
+ * slot only avoids other surfaces.
  *
- * The second pass matters as much as the first: an economy room is one block
- * wide and holds four pieces, so at some point they *must* overlap, and a
- * piece is never refused (DEC-010).
+ * Deterministic by construction: an ordered array, scanned in order, with no
+ * randomness and no dependence on object key order.
  */
 export function anchorFor(
   data: SimData | null,
@@ -464,23 +576,8 @@ export function anchorFor(
 
   const kind = spotKindFor(def.category, def.slotType);
   const bounds = anchorBoundsFor(data, roomDefId);
-  const reach = anchorReachFor(data, defId);
-  const range = anchorRange(bounds, reach);
   const layout = layoutFor(roomDefId, room.blocks.w, room.blocks.h);
-  const spots = spotsOfKind(layout, kind, bounds.w, maxPieces);
 
-  const occupied = STANDS_ON_FLOOR.has(kind)
-    ? placed.map((p) => floorSpan(data, p.defId, p.localX)).filter((s): s is [number, number] => !!s)
-    : [];
-
-  /*
-   * A rug is allowed to share its anchor with the chair standing on it.
-   *
-   * Floor coverings draw first inside the front band (decorArt.ts gives them
-   * depth 0), so a rug under a table is the arrangement, not a clash — and
-   * treating the table's anchor as occupied pushed every rug off to a corner
-   * of the room by itself, which is the one place a rug never goes.
-   */
   const blocked: ReadonlySet<string> = kind === 'surface'
     ? new Set(placed
       .filter((p) => {
@@ -489,21 +586,51 @@ export function anchorFor(
       })
       .map((p) => anchorKey(p.localX, p.localY)))
     : taken;
-  const clear = (x: number): boolean => {
-    if (occupied.length === 0) return true;
-    const lo = x - (reach?.left ?? 3);
-    const hi = x + (reach?.right ?? 3);
-    return !occupied.some(([a, b]) => lo < b && hi > a);
-  };
 
-  for (const wantClear of [true, false]) {
-    for (const spot of spots) {
-      const x = Math.min(Math.max(spot.x, range.minX), range.maxX);
-      const y = Math.min(Math.max(spot.y, range.minY), range.maxY);
-      if (blocked.has(anchorKey(x, y))) continue;
-      if (wantClear && !clear(x)) continue;
-      return { x, y };
+  /*
+   * A slot is offered as it was designed, pulled back only inside the room's
+   * own footprint.
+   *
+   * It used to be clamped by the piece's category reach instead
+   * (`anchorRange`), which was right while the reach was the only description
+   * of how big a piece is drawn, and became wrong the moment the slot carried
+   * its own box: a bed asking for the business centre's first floor slot was
+   * pushed one unit right of it, so the armchair that took the same slot next
+   * ended up standing across the bed. The slot's box is the size now, and
+   * `tools/selftest/slots.ts` proves every box is inside its room, so there is
+   * nothing left for the reach to correct.
+   */
+  const clamp = (slot: Slot): Spot => ({
+    x: Math.min(Math.max(slot.x, 0), bounds.w - 1),
+    y: Math.min(Math.max(slot.y, 0), bounds.h - 1),
+  });
+
+  for (const candidateKind of [kind, ...NEIGHBOURING_KINDS[kind]]) {
+    for (const slot of slotsOfKind(layout, candidateKind, maxPieces)) {
+      const spot = clamp(slot);
+      if (blocked.has(anchorKey(spot.x, spot.y))) continue;
+      return spot;
     }
   }
   return null;
+}
+
+/**
+ * The box a piece standing at this anchor is drawn in, in room-local pixels,
+ * or null when no slot was designed there.
+ *
+ * Pixels rather than anchor units because the only caller is the renderer, and
+ * `anchorToLocalPx`'s two constants live on the render side. The core keeps
+ * the units; the conversion is the same 8 and 6 the whole file is built on.
+ */
+export function slotBoxPx(roomDefId: string, blocksW: number, blocksH: number,
+                          x: number, y: number): { w: number; h: number } | null {
+  const slot = slotAt(roomDefId, blocksW, blocksH, x, y);
+  if (!slot) return null;
+  return { w: slot.w * 8, h: slot.h * 6 };
+}
+
+/** Every kind that stands on the floor — exported for the self-tests. */
+export function standsOnFloor(kind: SpotKind): boolean {
+  return STANDS_ON_FLOOR.has(kind);
 }

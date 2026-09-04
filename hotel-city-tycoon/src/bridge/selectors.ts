@@ -15,6 +15,7 @@ import { decorFill } from '../core/systems/decor.ts';
 import { tierFor } from '../core/systems/stars.ts';
 import { owned as ownedCount, sellValue } from '../core/systems/inventory.ts';
 import { slotAllowed } from '../core/systems/quality.ts';
+import { slotBoxPx } from '../core/systems/roomAnchors.ts';
 import { plotBounds, findFreeSpot, placementProblemAt } from '../core/state/grid.ts';
 import { tierOwned, nextTier, totalInvested } from '../core/systems/upgrades.ts';
 import {
@@ -81,6 +82,13 @@ export interface RoomSummaryDecor {
   localY: number;
   flipX: boolean;
   zBias: number;
+  /**
+   * The box the room's plan gives this spot, in room-local pixels, or 0 when
+   * the piece is standing somewhere the plan never designed (a legacy anchor,
+   * or the scan's fallback). The renderer fits the sprite inside it.
+   */
+  boxW: number;
+  boxH: number;
 }
 
 export interface RoomSummary {
@@ -136,9 +144,15 @@ function decorInfoOf(defId: string): { category: string; slotType: string; asset
   return decorIndex.get(defId);
 }
 
-function summariseDecor(room: RoomInstance): RoomSummaryDecor[] {
+function summariseDecor(room: RoomInstance, def: RoomDef | undefined): RoomSummaryDecor[] {
   return room.decor.map((piece) => {
     const info = decorInfoOf(piece.defId);
+    // The room's designed box for this spot. Looked up by anchor rather than
+    // stored on the piece: the anchor already identifies the slot, so nothing
+    // new has to be written into anyone's save.
+    const box = def
+      ? slotBoxPx(room.defId, def.blocks.w, def.blocks.h, piece.localX, piece.localY)
+      : null;
     return {
       id: piece.id,
       defId: piece.defId,
@@ -151,6 +165,8 @@ function summariseDecor(room: RoomInstance): RoomSummaryDecor[] {
       localY: piece.localY,
       flipX: piece.flipX,
       zBias: piece.zBias,
+      boxW: box?.w ?? 0,
+      boxH: box?.h ?? 0,
     };
   });
 }
@@ -197,7 +213,7 @@ export function summariseRoom(room: RoomInstance, open = true): RoomSummary {
     // The infestation is a separate transparent layer, so it composites over
     // whichever variant is showing rather than needing one of its own.
     pestKey: room.hasPest ? `room.${room.defId}.pest` : '',
-    decor: summariseDecor(room),
+    decor: summariseDecor(room, def),
   };
 }
 

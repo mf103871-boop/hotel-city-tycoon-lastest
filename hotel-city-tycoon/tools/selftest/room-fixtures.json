@@ -1,0 +1,796 @@
+{
+  "note": "What each room's own picture already paints, measured off tools/art/rooms_*.py in 1x logical pixels from the room's top-left. It exists so tools/selftest/slots.ts can prove that a designed decor slot does not stand a sprite on top of the building. \"standing\": true marks a fixture that occupies FLOOR — a desk, a counter, the pool itself — which is what a floor slot must keep clear of; everything else is on the wall, and furniture standing in front of it is the arrangement rather than a clash. Update it in the same commit as any change to a room routine.",
+  "units": "1x logical pixels; a block is 128x96",
+  "rooms": {
+    "lobby": [
+      {
+        "name": "entrance doors",
+        "x0": 4,
+        "y0": 20.5,
+        "x1": 40,
+        "y1": 82.6,
+        "standing": true
+      },
+      {
+        "name": "welcome mat",
+        "x0": 8,
+        "y0": 81,
+        "x1": 36,
+        "y1": 84.5
+      },
+      {
+        "name": "key wall",
+        "x0": 153.6,
+        "y0": 16,
+        "x1": 207.6,
+        "y1": 46
+      },
+      {
+        "name": "reception desk",
+        "x0": 142,
+        "y0": 58.4,
+        "x1": 206.6,
+        "y1": 82.6,
+        "standing": true
+      },
+      {
+        "name": "sconce left",
+        "x0": 107.3,
+        "y0": 14,
+        "x1": 118,
+        "y1": 27.5
+      },
+      {
+        "name": "sconce right",
+        "x0": 225,
+        "y0": 14,
+        "x1": 236,
+        "y1": 27.5
+      }
+    ],
+    "housekeeping": [
+      {
+        "name": "linen shelving",
+        "x0": 8,
+        "y0": 14,
+        "x1": 66,
+        "y1": 48
+      }
+    ],
+    "laundry": [
+      {
+        "name": "machine bay 1",
+        "x0": 12,
+        "y0": 42.56,
+        "x1": 58,
+        "y1": 82.56
+      },
+      {
+        "name": "machine bay 2",
+        "x0": 90.67,
+        "y0": 42.56,
+        "x1": 136.67,
+        "y1": 82.56
+      },
+      {
+        "name": "machine bay 3",
+        "x0": 169.33,
+        "y0": 42.56,
+        "x1": 215.33,
+        "y1": 82.56
+      },
+      {
+        "name": "washing line",
+        "x0": 0,
+        "y0": 13,
+        "x1": 256,
+        "y1": 25
+      }
+    ],
+    "staffRoom": [
+      {
+        "name": "window",
+        "x0": 212,
+        "y0": 15,
+        "x1": 244,
+        "y1": 45
+      },
+      {
+        "name": "wall cupboards",
+        "x0": 9,
+        "y0": 14,
+        "x1": 66.6,
+        "y1": 34
+      },
+      {
+        "name": "kitchenette",
+        "x0": 7.7,
+        "y0": 52.5,
+        "x1": 90,
+        "y1": 82.6,
+        "standing": true
+      },
+      {
+        "name": "noticeboard",
+        "x0": 133,
+        "y0": 14,
+        "x1": 185,
+        "y1": 44
+      }
+    ],
+    "maintenance": [
+      {
+        "name": "ceiling pipes",
+        "x0": 0,
+        "y0": 5,
+        "x1": 256,
+        "y1": 13
+      },
+      {
+        "name": "pegboard",
+        "x0": 10,
+        "y0": 22,
+        "x1": 86,
+        "y1": 52
+      },
+      {
+        "name": "workbench",
+        "x0": 7,
+        "y0": 60.6,
+        "x1": 92.4,
+        "y1": 82.6,
+        "standing": true
+      },
+      {
+        "name": "toolbox",
+        "x0": 222,
+        "y0": 68,
+        "x1": 246,
+        "y1": 82.6,
+        "standing": true
+      }
+    ],
+    "business": [
+      {
+        "name": "window",
+        "x0": 10,
+        "y0": 16,
+        "x1": 50,
+        "y1": 48
+      },
+      {
+        "name": "wall clock",
+        "x0": 108,
+        "y0": 15,
+        "x1": 122,
+        "y1": 29
+      },
+      {
+        "name": "whiteboard",
+        "x0": 130.6,
+        "y0": 14,
+        "x1": 194.6,
+        "y1": 38
+      },
+      {
+        "name": "filing cabinets",
+        "x0": 132.5,
+        "y0": 52.5,
+        "x1": 191.6,
+        "y1": 82.6,
+        "standing": true
+      },
+      {
+        "name": "workstation",
+        "x0": 252,
+        "y0": 48.6,
+        "x1": 322,
+        "y1": 82.6,
+        "standing": true
+      }
+    ],
+    "economy": [
+      {
+        "name": "window",
+        "x0": 21,
+        "y0": 22,
+        "x1": 53,
+        "y1": 48
+      },
+      {
+        "name": "door",
+        "x0": 88,
+        "y0": 42.5,
+        "x1": 114,
+        "y1": 82.6,
+        "standing": true
+      }
+    ],
+    "standard": [
+      {
+        "name": "window",
+        "x0": 13.6,
+        "y0": 18,
+        "x1": 54.4,
+        "y1": 51
+      },
+      {
+        "name": "door",
+        "x0": 82,
+        "y0": 38.6,
+        "x1": 112,
+        "y1": 82.6,
+        "standing": true
+      },
+      {
+        "name": "number plaque",
+        "x0": 70,
+        "y0": 50.6,
+        "x1": 79,
+        "y1": 61.5
+      }
+    ],
+    "double": [
+      {
+        "name": "picture rail",
+        "x0": 0,
+        "y0": 15,
+        "x1": 256,
+        "y1": 16.8
+      },
+      {
+        "name": "window left",
+        "x0": 25.6,
+        "y0": 24,
+        "x1": 76.3,
+        "y1": 59
+      },
+      {
+        "name": "window right",
+        "x0": 103.6,
+        "y0": 24,
+        "x1": 154.3,
+        "y1": 59
+      },
+      {
+        "name": "door",
+        "x0": 196,
+        "y0": 27.5,
+        "x1": 228,
+        "y1": 82.6,
+        "standing": true
+      }
+    ],
+    "family": [
+      {
+        "name": "picture rail",
+        "x0": 0,
+        "y0": 15,
+        "x1": 256,
+        "y1": 16.8
+      },
+      {
+        "name": "window",
+        "x0": 18,
+        "y0": 24,
+        "x1": 92.4,
+        "y1": 61
+      },
+      {
+        "name": "dado rail",
+        "x0": 0,
+        "y0": 60.6,
+        "x1": 256,
+        "y1": 63
+      },
+      {
+        "name": "sleeping alcove",
+        "x0": 122.6,
+        "y0": 31.2,
+        "x1": 193.3,
+        "y1": 82.6
+      },
+      {
+        "name": "door",
+        "x0": 210,
+        "y0": 27.5,
+        "x1": 242,
+        "y1": 82.6,
+        "standing": true
+      }
+    ],
+    "deluxe": [
+      {
+        "name": "cornice",
+        "x0": 0,
+        "y0": 3.5,
+        "x1": 256,
+        "y1": 12.5
+      },
+      {
+        "name": "window left",
+        "x0": 24,
+        "y0": 16,
+        "x1": 68,
+        "y1": 59
+      },
+      {
+        "name": "window right",
+        "x0": 92,
+        "y0": 16,
+        "x1": 136,
+        "y1": 59
+      },
+      {
+        "name": "ceiling rose",
+        "x0": 156,
+        "y0": 11,
+        "x1": 172,
+        "y1": 27
+      },
+      {
+        "name": "door",
+        "x0": 190,
+        "y0": 27.5,
+        "x1": 222,
+        "y1": 82.6,
+        "standing": true
+      }
+    ],
+    "executive": [
+      {
+        "name": "cornice",
+        "x0": 0,
+        "y0": 3.5,
+        "x1": 384,
+        "y1": 12.5
+      },
+      {
+        "name": "chimney breast",
+        "x0": 6,
+        "y0": 13,
+        "x1": 110,
+        "y1": 82.6,
+        "standing": true
+      },
+      {
+        "name": "window one",
+        "x0": 132,
+        "y0": 14,
+        "x1": 180,
+        "y1": 58
+      },
+      {
+        "name": "window two",
+        "x0": 208,
+        "y0": 14,
+        "x1": 256,
+        "y1": 58
+      },
+      {
+        "name": "window three",
+        "x0": 284,
+        "y0": 14,
+        "x1": 332,
+        "y1": 58
+      },
+      {
+        "name": "door",
+        "x0": 342,
+        "y0": 27.5,
+        "x1": 374,
+        "y1": 82.6,
+        "standing": true
+      }
+    ],
+    "honeymoon": [
+      {
+        "name": "cornice",
+        "x0": 0,
+        "y0": 3.5,
+        "x1": 384,
+        "y1": 12.5
+      },
+      {
+        "name": "ceiling rose",
+        "x0": 183,
+        "y0": 10,
+        "x1": 201,
+        "y1": 28
+      },
+      {
+        "name": "window left",
+        "x0": 32,
+        "y0": 16,
+        "x1": 78,
+        "y1": 59
+      },
+      {
+        "name": "window right",
+        "x0": 104,
+        "y0": 16,
+        "x1": 150,
+        "y1": 59
+      },
+      {
+        "name": "balcony doors",
+        "x0": 234,
+        "y0": 14,
+        "x1": 322,
+        "y1": 82.6,
+        "standing": true
+      },
+      {
+        "name": "balustrade",
+        "x0": 230,
+        "y0": 57.6,
+        "x1": 326,
+        "y1": 82.6,
+        "note": "a railing at the edge of the deck: furniture stands behind it"
+      },
+      {
+        "name": "door",
+        "x0": 338,
+        "y0": 27.5,
+        "x1": 370,
+        "y1": 82.6,
+        "standing": true
+      }
+    ],
+    "luxurySuite": [
+      {
+        "name": "cornice",
+        "x0": 0,
+        "y0": 3.5,
+        "x1": 512,
+        "y1": 12.5
+      },
+      {
+        "name": "ceiling rose left",
+        "x0": 101,
+        "y0": 10.5,
+        "x1": 118,
+        "y1": 27.5
+      },
+      {
+        "name": "ceiling rose right",
+        "x0": 381,
+        "y0": 10.5,
+        "x1": 398,
+        "y1": 27.5
+      },
+      {
+        "name": "window",
+        "x0": 30,
+        "y0": 16,
+        "x1": 80,
+        "y1": 59
+      },
+      {
+        "name": "bay window",
+        "x0": 170,
+        "y0": 14,
+        "x1": 342,
+        "y1": 58
+      },
+      {
+        "name": "double doors",
+        "x0": 418,
+        "y0": 17,
+        "x1": 490,
+        "y1": 82.6,
+        "standing": true
+      }
+    ],
+    "presidential": [
+      {
+        "name": "cornice",
+        "x0": 0,
+        "y0": 3.5,
+        "x1": 384,
+        "y1": 12.5
+      },
+      {
+        "name": "ceiling rose",
+        "x0": 309,
+        "y0": 8,
+        "x1": 327,
+        "y1": 26
+      },
+      {
+        "name": "upper window left",
+        "x0": 44,
+        "y0": 22,
+        "x1": 96,
+        "y1": 73
+      },
+      {
+        "name": "upper window right",
+        "x0": 140,
+        "y0": 22,
+        "x1": 192,
+        "y1": 73
+      },
+      {
+        "name": "tall window",
+        "x0": 286,
+        "y0": 28,
+        "x1": 350,
+        "y1": 108
+      },
+      {
+        "name": "mezzanine balustrade",
+        "x0": 3,
+        "y0": 76,
+        "x1": 250,
+        "y1": 105,
+        "note": "a railing at the edge of the deck: furniture stands behind it"
+      },
+      {
+        "name": "stair",
+        "x0": 250,
+        "y0": 105,
+        "x1": 346,
+        "y1": 178.5,
+        "standing": true
+      },
+      {
+        "name": "entrance doors",
+        "x0": 28,
+        "y0": 111,
+        "x1": 106,
+        "y1": 178.5,
+        "standing": true
+      }
+    ],
+    "cafe": [
+      {
+        "name": "counter",
+        "x0": 8.7,
+        "y0": 49.5,
+        "x1": 127.4,
+        "y1": 82.6,
+        "standing": true
+      },
+      {
+        "name": "cup shelf",
+        "x0": 16,
+        "y0": 26.6,
+        "x1": 120,
+        "y1": 37.4
+      },
+      {
+        "name": "menu board",
+        "x0": 152,
+        "y0": 12,
+        "x1": 240,
+        "y1": 52
+      }
+    ],
+    "gym": [
+      {
+        "name": "mirror wall",
+        "x0": 12,
+        "y0": 15,
+        "x1": 124,
+        "y1": 60
+      },
+      {
+        "name": "wall bars",
+        "x0": 150,
+        "y0": 14,
+        "x1": 216,
+        "y1": 62
+      },
+      {
+        "name": "towel rail",
+        "x0": 218,
+        "y0": 24,
+        "x1": 242,
+        "y1": 41
+      }
+    ],
+    "restaurant": [
+      {
+        "name": "wall rail",
+        "x0": 0,
+        "y0": 38.6,
+        "x1": 384,
+        "y1": 41.6
+      },
+      {
+        "name": "banquette",
+        "x0": 2,
+        "y0": 42.5,
+        "x1": 130,
+        "y1": 82.6,
+        "standing": true
+      },
+      {
+        "name": "kitchen pass",
+        "x0": 234,
+        "y0": 10.6,
+        "x1": 362,
+        "y1": 64
+      }
+    ],
+    "bar": [
+      {
+        "name": "back bar",
+        "x0": 18,
+        "y0": 14,
+        "x1": 150,
+        "y1": 54
+      },
+      {
+        "name": "counter",
+        "x0": 10.6,
+        "y0": 53.6,
+        "x1": 168.6,
+        "y1": 82.6,
+        "standing": true
+      },
+      {
+        "name": "glass rack",
+        "x0": 182,
+        "y0": 10,
+        "x1": 244,
+        "y1": 28.6
+      }
+    ],
+    "arcade": [
+      {
+        "name": "ceiling neon",
+        "x0": 0,
+        "y0": 6,
+        "x1": 256,
+        "y1": 12
+      },
+      {
+        "name": "neon star",
+        "x0": 48,
+        "y0": 14,
+        "x1": 84,
+        "y1": 50
+      },
+      {
+        "name": "neon underline",
+        "x0": 34,
+        "y0": 53,
+        "x1": 98,
+        "y1": 59
+      },
+      {
+        "name": "prize wall",
+        "x0": 152,
+        "y0": 16,
+        "x1": 244,
+        "y1": 72.6
+      }
+    ],
+    "cinema": [
+      {
+        "name": "pelmet",
+        "x0": 34,
+        "y0": 6,
+        "x1": 350,
+        "y1": 17
+      },
+      {
+        "name": "screen",
+        "x0": 73,
+        "y0": 11,
+        "x1": 311,
+        "y1": 69
+      },
+      {
+        "name": "curtain left",
+        "x0": 40,
+        "y0": 10,
+        "x1": 76,
+        "y1": 78.6,
+        "standing": true
+      },
+      {
+        "name": "curtain right",
+        "x0": 308,
+        "y0": 10,
+        "x1": 344,
+        "y1": 78.6,
+        "standing": true
+      },
+      {
+        "name": "projection booth",
+        "x0": 10,
+        "y0": 18,
+        "x1": 30,
+        "y1": 33
+      }
+    ],
+    "spa": [
+      {
+        "name": "mirror ball",
+        "x0": 179,
+        "y0": 2,
+        "x1": 205,
+        "y1": 45
+      },
+      {
+        "name": "speaker stack left",
+        "x0": 14,
+        "y0": 14,
+        "x1": 74,
+        "y1": 74,
+        "standing": true
+      },
+      {
+        "name": "speaker stack right",
+        "x0": 324,
+        "y0": 14,
+        "x1": 384,
+        "y1": 74,
+        "standing": true
+      },
+      {
+        "name": "neon bar left",
+        "x0": 88,
+        "y0": 13,
+        "x1": 128,
+        "y1": 19
+      },
+      {
+        "name": "neon bar right",
+        "x0": 256,
+        "y0": 13,
+        "x1": 296,
+        "y1": 19
+      }
+    ],
+    "pool": [
+      {
+        "name": "tiled dado",
+        "x0": 0,
+        "y0": 50,
+        "x1": 512,
+        "y1": 62
+      },
+      {
+        "name": "window left",
+        "x0": 50,
+        "y0": 13,
+        "x1": 110,
+        "y1": 53
+      },
+      {
+        "name": "window right",
+        "x0": 402,
+        "y0": 13,
+        "x1": 462,
+        "y1": 53
+      },
+      {
+        "name": "lifebuoy",
+        "x0": 240,
+        "y0": 16,
+        "x1": 272,
+        "y1": 48
+      },
+      {
+        "name": "pool basin",
+        "x0": 70,
+        "y0": 62,
+        "x1": 442,
+        "y1": 94,
+        "standing": true
+      },
+      {
+        "name": "pool ladder",
+        "x0": 385.6,
+        "y0": 50,
+        "x1": 399,
+        "y1": 88,
+        "standing": true
+      }
+    ]
+  }
+}

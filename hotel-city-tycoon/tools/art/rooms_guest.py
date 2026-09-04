@@ -459,10 +459,18 @@ def economy(c: Canvas, fy: float) -> None:
 
 
 def standard(c: Canvas, fy: float) -> None:
-    """One step up: a bigger window on a cill, a panelled door, a number plate."""
+    """
+    One step up: a window on a cill, a panelled door, a number plate.
+
+    The window is 36 wide rather than 44. At 44 it ran to x 62 and the door
+    starts at 82, which left twenty pixels of bare wall in the whole room —
+    less than the narrowest picture the catalogue sells, so a `standard` room
+    had nowhere a wall piece could hang and every one of them fell back to the
+    scan (src/core/systems/roomAnchors.ts now designs a wall slot there).
+    """
     wall = P["wallCream"]
-    _glazing(c, 16, 18, 44, 30, panes=2)
-    _cill(c, wall, 16, 48, 44)
+    _glazing(c, 16, 18, 36, 30, panes=2)
+    _cill(c, wall, 16, 48, 36)
     _door(c, wall, 82, fy, 30, 44, panels=3)
     # The room number, on the wall beside the door at eye height — a plaque,
     # not digits: at 1x a numeral is four dark pixels and reads as dirt.
@@ -494,8 +502,11 @@ def family(c: Canvas, fy: float) -> None:
     """
     wall = P["wallPeach"]
     _picture_rail(c, wall, 15)
-    _glazing(c, 18, 24, 84, 34, panes=3)
-    _cill(c, wall, 18, 58, 84)
+    # 72 wide, not 84: the alcove reveal starts at x 122, and at 84 the cill
+    # reached x 104, leaving eighteen pixels of wall between them — too narrow
+    # for any picture in the catalogue, so the room had no wall slot at all.
+    _glazing(c, 18, 24, 72, 34, panes=3)
+    _cill(c, wall, 18, 58, 72)
     _dado(c, wall, fy, 22.0)
     _alcove(c, wall, 126, fy, 64, 48)
     _door(c, wall, 210, fy, 32, 46, panels=2, transom=8.0)
