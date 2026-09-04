@@ -6,7 +6,8 @@
     "wall",
     "floor",
     "ceiling",
-    "bed"
+    "bed",
+    "equipment"
   ],
   "categories": [
     "wallpaper",
@@ -18,7 +19,9 @@
     "wallArt",
     "plant",
     "rug",
-    "luxury"
+    "luxury",
+    "appliance",
+    "storage"
   ],
   "items": [
     {
@@ -1252,6 +1255,262 @@
       "unlockLevel": 50,
       "sellable": true,
       "giftable": false
+    },
+    {
+      "id": "appliance_ironingBoard",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_ironingBoard.name",
+      "assetKey": "decor.appliance.ironingBoard",
+      "decorPoints": 40,
+      "cost": {
+        "currency": "coins",
+        "amount": 900
+      },
+      "unlockLevel": 4,
+      "sellable": true,
+      "giftable": true,
+      "tier": 1
+    },
+    {
+      "id": "appliance_washer",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_washer.name",
+      "assetKey": "decor.appliance.washer",
+      "decorPoints": 60,
+      "cost": {
+        "currency": "coins",
+        "amount": 1800
+      },
+      "unlockLevel": 8,
+      "sellable": true,
+      "giftable": true,
+      "tier": 2
+    },
+    {
+      "id": "appliance_treadmill",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_treadmill.name",
+      "assetKey": "decor.appliance.treadmill",
+      "decorPoints": 90,
+      "cost": {
+        "currency": "coins",
+        "amount": 3200
+      },
+      "unlockLevel": 11,
+      "sellable": true,
+      "giftable": true,
+      "tier": 2
+    },
+    {
+      "id": "appliance_dryer",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_dryer.name",
+      "assetKey": "decor.appliance.dryer",
+      "decorPoints": 75,
+      "cost": {
+        "currency": "coins",
+        "amount": 2600
+      },
+      "unlockLevel": 13,
+      "sellable": true,
+      "giftable": true,
+      "tier": 2
+    },
+    {
+      "id": "appliance_weightRack",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_weightRack.name",
+      "assetKey": "decor.appliance.weightRack",
+      "decorPoints": 110,
+      "cost": {
+        "currency": "coins",
+        "amount": 4200
+      },
+      "unlockLevel": 16,
+      "sellable": true,
+      "giftable": true,
+      "tier": 3
+    },
+    {
+      "id": "appliance_espressoBar",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_espressoBar.name",
+      "assetKey": "decor.appliance.espressoBar",
+      "decorPoints": 140,
+      "cost": {
+        "currency": "coins",
+        "amount": 6500
+      },
+      "unlockLevel": 20,
+      "sellable": true,
+      "giftable": true,
+      "tier": 3
+    },
+    {
+      "id": "appliance_prepStation",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_prepStation.name",
+      "assetKey": "decor.appliance.prepStation",
+      "decorPoints": 170,
+      "cost": {
+        "currency": "coins",
+        "amount": 9000
+      },
+      "unlockLevel": 24,
+      "sellable": true,
+      "giftable": false,
+      "tier": 4
+    },
+    {
+      "id": "appliance_arcadeCabinet",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_arcadeCabinet.name",
+      "assetKey": "decor.appliance.arcadeCabinet",
+      "decorPoints": 210,
+      "cost": {
+        "currency": "coins",
+        "amount": 14000
+      },
+      "unlockLevel": 28,
+      "sellable": true,
+      "giftable": false,
+      "tier": 4
+    },
+    {
+      "id": "storage_linenShelf",
+      "category": "storage",
+      "slotType": "equipment",
+      "nameKey": "decor.storage_linenShelf.name",
+      "assetKey": "decor.storage.linenShelf",
+      "decorPoints": 35,
+      "cost": {
+        "currency": "coins",
+        "amount": 400
+      },
+      "unlockLevel": 2,
+      "sellable": true,
+      "giftable": true,
+      "tier": 1
+    },
+    {
+      "id": "storage_supplyCart",
+      "category": "storage",
+      "slotType": "equipment",
+      "nameKey": "decor.storage_supplyCart.name",
+      "assetKey": "decor.storage.supplyCart",
+      "decorPoints": 45,
+      "cost": {
+        "currency": "coins",
+        "amount": 700
+      },
+      "unlockLevel": 5,
+      "sellable": true,
+      "giftable": true,
+      "tier": 1
+    },
+    {
+      "id": "storage_luggageRack",
+      "category": "storage",
+      "slotType": "equipment",
+      "nameKey": "decor.storage_luggageRack.name",
+      "assetKey": "decor.storage.luggageRack",
+      "decorPoints": 55,
+      "cost": {
+        "currency": "coins",
+        "amount": 1200
+      },
+      "unlockLevel": 9,
+      "sellable": true,
+      "giftable": true,
+      "tier": 2
+    },
+    {
+      "id": "storage_lockers",
+      "category": "storage",
+      "slotType": "equipment",
+      "nameKey": "decor.storage_lockers.name",
+      "assetKey": "decor.storage.lockers",
+      "decorPoints": 65,
+      "cost": {
+        "currency": "coins",
+        "amount": 1500
+      },
+      "unlockLevel": 10,
+      "sellable": true,
+      "giftable": true,
+      "tier": 2
+    },
+    {
+      "id": "storage_toolRack",
+      "category": "storage",
+      "slotType": "equipment",
+      "nameKey": "decor.storage_toolRack.name",
+      "assetKey": "decor.storage.toolRack",
+      "decorPoints": 80,
+      "cost": {
+        "currency": "coins",
+        "amount": 2400
+      },
+      "unlockLevel": 14,
+      "sellable": true,
+      "giftable": true,
+      "tier": 2
+    },
+    {
+      "id": "storage_miniFridge",
+      "category": "storage",
+      "slotType": "equipment",
+      "nameKey": "decor.storage_miniFridge.name",
+      "assetKey": "decor.storage.miniFridge",
+      "decorPoints": 100,
+      "cost": {
+        "currency": "coins",
+        "amount": 3800
+      },
+      "unlockLevel": 18,
+      "sellable": true,
+      "giftable": true,
+      "tier": 3
+    },
+    {
+      "id": "storage_safeCabinet",
+      "category": "storage",
+      "slotType": "equipment",
+      "nameKey": "decor.storage_safeCabinet.name",
+      "assetKey": "decor.storage.safeCabinet",
+      "decorPoints": 190,
+      "cost": {
+        "currency": "coins",
+        "amount": 11000
+      },
+      "unlockLevel": 26,
+      "sellable": true,
+      "giftable": false,
+      "tier": 4
+    },
+    {
+      "id": "storage_displayCase",
+      "category": "storage",
+      "slotType": "equipment",
+      "nameKey": "decor.storage_displayCase.name",
+      "assetKey": "decor.storage.displayCase",
+      "decorPoints": 260,
+      "cost": {
+        "currency": "gems",
+        "amount": 45
+      },
+      "unlockLevel": 34,
+      "sellable": true,
+      "giftable": false,
+      "tier": 5
     }
   ],
   "note": " Two tiers were added to every category reaching levels 38 and 50: the catalogue stopped around level 25 while the progression curve now runs to 60, leaving a player past their first month with one item left to want in the whole game."

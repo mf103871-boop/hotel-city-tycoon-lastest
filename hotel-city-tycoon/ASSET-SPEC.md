@@ -1,17 +1,17 @@
 # مواصفة الأصول الفنية
 
-**263 ملفاً إجمالاً، منها 72 مطلوبة للإطلاق.**
-
-ضع كل ملف في `assets/<المسار>`. اللعبة تعمل الآن بأشكال بديلة، وكل ملف تضيفه
-يحلّ محل شكله البديل **تلقائياً** — لا حاجة لتعديل أي كود ولا إعادة بناء.
-
-بعد كل دفعة شغّل:
+**كل الفن في هذه اللعبة يُرسم داخل المستودع.** لا مورّد خارجي ولا مولّد صور:
+`tools/art/` يرسم المجموعة كاملة من نظام أسلوب واحد، ثم يكتبها في
+`public/assets/` بدقتين.
 
 ```bash
-npm run validate:data
+npm run gen:art        # يعيد رسم كل شيء ثم يولّد الـmanifest
+npm run art:preview    # أوراق معاينة للنظر في الناتج
 ```
 
-سترى العدّاد يرتفع: `0/72 required present` ← `72/72`.
+المرجع البصري هو `docs/ART-0_VISUAL_DIRECTION_AR.md`، وترجمته التنفيذية هي
+`tools/art/hcstyle.py`. هذه الوثيقة تصف **العقد**: المقاسات، والتسمية،
+ونقاط الارتكاز، والحالات — أي ما يجب أن يصحّ في أي أصل مهما رُسم.
 
 ---
 
@@ -21,152 +21,143 @@ npm run validate:data
 |---|---|
 | البلوك الواحد | **128 × 96** بكسل |
 | الصيغة | PNG بشفافية |
-| الدقة العادية | `assets/<path>` |
-| الدقة المضاعفة | `assets/@2x/<path>` بضعف الأبعاد |
-| منظور الغرف | أمامي مسطّح، الجدار الرابع مرفوع — **لا isometric** |
+| الدقة العادية | `public/assets/<path>` |
+| الدقة المضاعفة | `public/assets/@2x/<path>` بضعف الأبعاد |
+| منظور الغرف | أمامي مسطّح — **لا isometric ولا نقطة تلاشي** |
+| لون الحدود | كحلي عميق `#031130`، لا أسود |
 | خلفية الشخصيات والديكور | شفافة تماماً |
 
-**@2x اختيارية الآن.** الهواتف تستفيد منها، لكن اللعبة تعمل بالعادية وحدها.
+الدقتان تُكتبان في كل تشغيل من **الأرقام نفسها**، لأن كل إحداثي في المولّدات
+بكسل منطقي 1× و`Canvas` هو الذي يضربه في مستوى الدقة. لهذا تبقى سماكة الخط
+نسبةً إلى الرسم ثابتة على شاشة الهاتف عالية الكثافة.
+
+`tools/gen-asset-manifest.mjs` لا يعلن مستوى `@2x` إلا إذا كان **كل** ملف فيه
+موجوداً على القرص؛ تسليم جزئي يبقى غير معلن ويعود اللودر إلى 1×.
 
 ---
 
-## 1. الغرف — 23 ملفاً مطلوباً
+## 1. الغرف — 23 غرفة × 5 حالات
 
-الأهم على الإطلاق. كل غرفة بأبعاد بصمتها بالضبط:
+كل غرفة بأبعاد بصمتها بالضبط، مقروءة من `data/rooms.json` وليس من قائمة هنا،
+فلا يمكن أن تُرسم غرفة بمقاس خاطئ.
 
-| الغرفة | البلوكات | @1x | @2x | الملف |
-|---|---|---|---|---|
-| arcade | 2×1 | 256×96 | 512×192 | `rooms/arcade_base.png` |
-| bar | 2×1 | 256×96 | 512×192 | `rooms/bar_base.png` |
-| business | 3×1 | 384×96 | 768×192 | `rooms/business_base.png` |
-| cafe | 2×1 | 256×96 | 512×192 | `rooms/cafe_base.png` |
-| cinema | 3×1 | 384×96 | 768×192 | `rooms/cinema_base.png` |
-| deluxe | 2×1 | 256×96 | 512×192 | `rooms/deluxe_base.png` |
-| double | 2×1 | 256×96 | 512×192 | `rooms/double_base.png` |
-| economy | 1×1 | 128×96 | 256×192 | `rooms/economy_base.png` |
-| executive | 3×1 | 384×96 | 768×192 | `rooms/executive_base.png` |
-| family | 2×1 | 256×96 | 512×192 | `rooms/family_base.png` |
-| gym | 2×1 | 256×96 | 512×192 | `rooms/gym_base.png` |
-| honeymoon | 3×1 | 384×96 | 768×192 | `rooms/honeymoon_base.png` |
-| housekeeping | 1×1 | 128×96 | 256×192 | `rooms/housekeeping_base.png` |
-| laundry | 2×1 | 256×96 | 512×192 | `rooms/laundry_base.png` |
-| lobby | 2×1 | 256×96 | 512×192 | `rooms/lobby_base.png` |
-| luxurySuite | 4×1 | 512×96 | 1024×192 | `rooms/luxurySuite_base.png` |
-| maintenance | 2×1 | 256×96 | 512×192 | `rooms/maintenance_base.png` |
-| pool | 4×1 | 512×96 | 1024×192 | `rooms/pool_base.png` |
-| presidential | 3×2 | 384×192 | 768×384 | `rooms/presidential_base.png` |
-| restaurant | 3×1 | 384×96 | 768×192 | `rooms/restaurant_base.png` |
-| spa | 3×1 | 384×96 | 768×192 | `rooms/spa_base.png` |
-| staffRoom | 2×1 | 256×96 | 512×192 | `rooms/staffRoom_base.png` |
-| standard | 1×1 | 128×96 | 256×192 | `rooms/standard_base.png` |
-
-### ما يجب أن تحتويه صورة الغرفة
-
-**داخل الغرفة فارغاً من الأثاث المتحرك.** الأسرّة والكراسي والطاولات والإضاءة
-تُركَّب فوقها كطبقات ديكور منفصلة — إن رسمتَها داخل الصورة ستتضاعف بصرياً.
-
-ارسم: الجدران، الأرضية، السقف، النافذة، الباب، والتفاصيل المعمارية الثابتة.
-
-**استثناء:** المقهى والمطعم والبار والمسبح والسينما والجيم والسبا والآركيد —
-تجهيزاتها الأساسية (طاولة البار، الشاشة، حوض السباحة، الأجهزة) جزء من الغرفة
-لا ديكور، فارسمها.
-
-### الأنواع الأربعة الأخرى لكل غرفة — غير مطلوبة الآن
-
-- `_night` نفس الغرفة، المصابيح مضاءة، إضاءة أبرد
-- `_dirty` نفس الغرفة مع أوساخ وسرير غير مرتّب
-- `_pest` **طبقة شفافة فقط** فيها صراصير، تُركَّب فوق الأساسية
-- `_thumb` أيقونة مربعة 96×96 لقائمة البناء
-
----
-
-## 2. الشخصيات — 20 ملفاً مطلوباً
-
-كلها **48×72** بكسل، إطار واحد، خلفية شفافة، الشخصية تنظر يميناً.
-
-| الشخصية | الملف |
+| البلوكات | الغرف |
 |---|---|
-| business | `characters/guest_business_idle.png` |
-| celebrity | `characters/guest_celebrity_idle.png` |
-| family | `characters/guest_family_idle.png` |
-| inspector | `characters/guest_inspector_idle.png` |
-| standard | `characters/guest_standard_idle.png` |
-| tourist | `characters/guest_tourist_idle.png` |
-| vip | `characters/guest_vip_idle.png` |
-| attendant | `characters/staff_attendant_idle.png` |
-| barista | `characters/staff_barista_idle.png` |
-| bartender | `characters/staff_bartender_idle.png` |
-| chef | `characters/staff_chef_idle.png` |
-| cleaner | `characters/staff_cleaner_idle.png` |
-| concierge | `characters/staff_concierge_idle.png` |
-| engineer | `characters/staff_engineer_idle.png` |
-| launderer | `characters/staff_launderer_idle.png` |
-| lifeguard | `characters/staff_lifeguard_idle.png` |
-| receptionist | `characters/staff_receptionist_idle.png` |
-| therapist | `characters/staff_therapist_idle.png` |
-| trainer | `characters/staff_trainer_idle.png` |
-| usher | `characters/staff_usher_idle.png` |
+| 1×1 | economy · standard · housekeeping |
+| 2×1 | lobby · laundry · staffRoom · maintenance · double · family · deluxe · cafe · gym · bar · arcade |
+| 3×1 | business · executive · honeymoon · restaurant · cinema · spa |
+| 4×1 | luxurySuite · pool |
+| 3×2 | presidential |
 
-لاحقاً ستحتاج `_walk` لكل واحدة: **شريط 6 إطارات أفقياً، 288×72 إجمالاً**.
+### ما تحتويه صورة الغرفة
+
+**المبنى فقط:** الجدران، الأرضية، وزرة الحائط، النوافذ، الأبواب، الأقواس،
+الكرانيش، قاعدة الثريا، شرفة، ميزانين بدرابزين.
+
+**ولا شيء يتحرك.** الأسرّة والكراسي والطاولات والإضاءة والسجاد والنباتات
+واللوحات كلها **أصول ديكور** تُركَّب فوق الغرفة وقت التشغيل عند النقاط التي
+يوزّعها `src/core/systems/roomAnchors.ts`. غرفة ترسم سريراً داخلها ستُظهر
+سريرين لحظة شراء اللاعب سريراً.
+
+**الاستثناء:** التجهيزات المثبّتة في المبنى — كاونتر المقهى، شاشة السينما،
+حوض المسبح، مرآة الجيم، رفّ البار، أرضية الديسكو — جزء من الغرفة.
+
+### الحالات الأربع المشتقة
+
+تُشتق كلها من الصورة الأساسية في `tools/art/hcvariants.py`:
+
+- `_night` — تبريد وتعتيم مع إبقاء المصادر الدافئة مضيئة.
+- `_dirty` — غسلة أوكر باهتة، فوقها **نفايات مرسومة**: خدوش على الوزرة، ورق
+  مكوّم، كتلة غبار، بقعة على الجدار. الفلتر وحده يقول «صورة قديمة» لا
+  «لم يُنظّف أحد هذه الغرفة».
+- `_pest` — **طبقة شفافة فقط** فيها صراصير، تُركَّب فوق `base` أو فوق `dirty`.
+- `_thumb` — 96×96: الغرفة كاملة مركّبة على بطاقة موحّدة، لا قصّ لربعها.
 
 ---
 
-## 3. الواجهة والمؤثرات — 29 ملفاً
+## 2. الشخصيات — 7 موظفين + نوعا نزلاء
 
-| المفتاح | الأبعاد | الملف |
+إطار **48×72**، القدمان في الأسفل، النظر يميناً، خلفية شفافة.
+
+| الملف | المحتوى |
+|---|---|
+| `characters/<kind>_<id>_idle.png` | 48×72، إطار واحد |
+| `characters/<kind>_<id>_walk.png` | **288×72** — شريط 6 إطارات أفقياً |
+| `characters/<kind>_<id>_thumb.png` | 64×64، رأس وكتفان داخل بطاقة دائرية |
+| `characters/staff_<id>_work.png` | 48×72 — الموظف يؤدي عمله |
+| `characters/guest_<id>_sleep.png` | 48×72 — النزيل نائم |
+
+كل إطارات الشخصية تُرسم من كائن `Person` واحد، فلا يمكن لدورة المشي أن تغيّر
+لون شعر أحد أو طوله بين إطار وآخر — وهو ما يمنعه ART-0 §11 صراحة.
+
+النسب: الرأس أقل قليلاً من نصف الطول، والجذع ثلث، والساقان الخُمس الباقي.
+الوجه نقطتان وقوس وخدّان، ولا شيء غير ذلك.
+
+---
+
+## 3. الديكور — 93 قطعة
+
+المقاس يأتي من `slotType`، ويجب أن يطابق `SLOT_SIZE` في
+`tools/gen-asset-manifest.mjs`:
+
+| slotType | المقاس | الفئات |
 |---|---|---|
-| decor.bed.cot | 104×64 | `decor/bed_cot.png` |
-| decor.bed.single | 104×64 | `decor/bed_single.png` |
-| decor.flooring.carpet | 72×72 | `decor/flooring_carpet.png` |
-| decor.flooring.concrete | 72×72 | `decor/flooring_concrete.png` |
-| decor.lighting.bulb | 72×48 | `decor/lighting_bulb.png` |
-| decor.lighting.lamp | 72×48 | `decor/lighting_lamp.png` |
-| decor.plant.fern | 72×72 | `decor/plant_fern.png` |
-| decor.plant.succulent | 72×72 | `decor/plant_succulent.png` |
-| decor.rug.mat | 72×72 | `decor/rug_mat.png` |
-| decor.rug.woolRug | 72×72 | `decor/rug_woolRug.png` |
-| decor.seating.armchair | 72×72 | `decor/seating_armchair.png` |
-| decor.seating.stool | 72×72 | `decor/seating_stool.png` |
-| decor.table.deskWood | 72×72 | `decor/table_deskWood.png` |
-| decor.table.sideTable | 72×72 | `decor/table_sideTable.png` |
-| decor.wallArt.poster | 96×72 | `decor/wallArt_poster.png` |
-| decor.wallArt.print | 96×72 | `decor/wallArt_print.png` |
-| decor.wallpaper.plain | 96×72 | `decor/wallpaper_plain.png` |
-| decor.wallpaper.striped | 96×72 | `decor/wallpaper_striped.png` |
-| event.fire.overlay | 64×64 | `effects/fire.png` |
-| event.inspection.icon | 64×64 | `effects/inspection.png` |
-| event.pest.overlay | 64×64 | `effects/pest.png` |
-| event.vipArrival.icon | 64×64 | `effects/vipArrival.png` |
-| ui.currency.coins | 48×48 | `ui/coins.png` |
-| ui.currency.gems | 48×48 | `ui/gems.png` |
-| ui.shift.12h | 64×64 | `ui/shift_12h.png` |
-| ui.shift.24h | 64×64 | `ui/shift_24h.png` |
-| ui.shift.2h | 64×64 | `ui/shift_2h.png` |
-| ui.shift.48h | 64×64 | `ui/shift_48h.png` |
-| ui.shift.6h | 64×64 | `ui/shift_6h.png` |
+| `wall` | 96×72 | wallpaper · wallArt |
+| `floor` | 72×72 | flooring · rug · seating · table · plant · luxury |
+| `ceiling` | 72×48 | lighting |
+| `bed` | 104×64 | bed |
+| `equipment` | 96×72 | appliance · storage |
+
+### أين يجلس الرسم داخل الإطار
+
+هذا ليس تفصيلاً: `src/render/decorArt.ts` يعلّق الأصل من نقطة ارتكاز فئته،
+فمكان الرسم داخل الإطار جزء من الرسم نفسه.
+
+| الفئات | الارتكاز | يجب أن يكون الرسم |
+|---|---|---|
+| bed · seating · table · plant · luxury · appliance · storage · flooring · rug | (0.5, 1) | **واقفاً على الحافة السفلى** |
+| lighting | (0.5, 0) | **معلّقاً من الحافة العليا** |
+| wallpaper · wallArt | (0.5, 0.5) | **في المنتصف** |
+
+قطعة أرضية مرسومة في وسط إطارها تطفو فوق الأرض داخل اللعبة، ومصباح مرسوم في
+الوسط يتدلّى من لا شيء. كلاهما غير مرئي في ورقة معاينة ومرئي فوراً في اللعبة.
+
+### المستوى (`tier`) هو المواصفة
+
+الفارق بين `bed_cot` و`bed_emperorbed` يجب أن يظهر في **الشكل والخامة** لا في
+اللون وحده: عدد الأذرع في الثريا، عمود السرير، إطار اللوحة. هذا هو ما يجعل
+اقتصاد اللعبة مقروءاً على الشاشة.
+
+### فئتان جديدتان: أثاث غرف الخدمات
+
+`appliance` و`storage` هما الأثاث الذي لم يكن لغرف الخدمة من قبل: الغسّالة
+والمجفّفة للمغسلة، جهاز الجري ورفّ الأثقال للنادي، رفّ البياضات وعربة التنظيف
+لغرفة التنظيف، لوحة العدّة للصيانة، خزائن الموظفين، ركن التحضير وماكينة
+الإسبريسو، وآلة الألعاب. قاعدة `slotTypeRooms` في `data/economy.json` تحصرها
+في الغرف الوظيفية والتجارية — مرآةً لقاعدة السرير التي تحصره في غرف النزلاء.
 
 ---
 
-## الترتيب الذي أنصح به
+## 4. الواجهة والمؤثرات — 13 أيقونة
 
-اللعبة تعمل في كل مرحلة، فلا تنتظر الاكتمال:
+| المفتاح | الأبعاد |
+|---|---|
+| `ui/coins.png` · `ui/gems.png` | 48×48 |
+| `ui/shift_2h` … `ui/shift_48h` | 64×64 |
+| `effects/pest · fire · inspection · ghost · heatWave · coldSnap` | 64×64 |
 
-1. **الغرف الخمس الأولى** — lobby, economy, standard, housekeeping, cafe.
-   هذه كل ما يراه اللاعب في أول عشر دقائق
-2. **باقي غرف النزلاء** — double حتى presidential
-3. **الغرف التجارية** — أكبر أثر بصري لكل ملف
-4. **الشخصيات** — الفندق يبدو حياً فجأة
-5. **الواجهة والمؤثرات**
-6. **الأنواع `_night` و `_dirty` و `_pest`** — تعمّق كثيراً وتكلف قليلاً
-7. **@2x** لكل ما سبق
+المؤثرات الستة تُرسم فوق الغرفة بمقاس **18×18**، فكل واحدة تحتاج صورة ظلية
+تصمد عند التصغير إلى ثلث حجمها: حد واضح، لون مهيمن واحد، وشكل يُسمّى من بعيد.
 
 ---
 
-## ملاحظة على التوليد بالذكاء الاصطناعي
+## 5. الميزانية
 
-الأبعاد أعلاه ليست نسباً قياسية للمولّدات. ولّد بنسبة قريبة ثم اقتصص وحجّم.
-الحرج هو **النسبة** لا الأبعاد: غرفة 1×1 نسبتها 4:3 أفقية، والجناح الرئاسي
-3×2 نسبته 2:1.
+| البند | الحد |
+|---|---|
+| الأصول الأولية (غرف + مؤثرات + واجهة) | 3072 KB |
+| إجمالي الأصول | 8192 KB |
 
-ووحدة الأسلوب أهم من جودة أي صورة منفردة. ولّد الغرف الخمس الأولى في جلسة
-واحدة بنفس الوصف الأساسي، ثم استعمل واحدة منها مرجعاً بصرياً لكل ما بعدها.
+`tools/check-budget.mjs` يفرضها بعد البناء. الملفات تُكتب مُكمّاة إلى لوحة
+ألوان عندما تسمح الصورة بذلك — الفن المسطّح بضع عشرات من الألوان تتظاهر
+بأنها truecolour — وهذا وحده هو الفارق بين شحن شجرة `@2x` كاملة وعدمه.

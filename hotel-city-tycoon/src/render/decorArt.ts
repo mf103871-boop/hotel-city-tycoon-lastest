@@ -65,16 +65,28 @@ export const DECOR_ART_SCALE = 0.55;
 const BY_CATEGORY: Readonly<Record<string, DecorArtSpec>> = {
   // --- room surfaces, behind everything that stands in the room ----------
   wallpaper: { anchorX: 0.5, anchorY: 0.5, band: 'back', depth: 0 },
-  flooring: { anchorX: 0.5, anchorY: 0.5, band: 'back', depth: 1 },
+  // A floor covering lies ON its anchor, like everything else that touches
+  // the ground. ART-1 held flooring and rugs by their centre, which put them
+  // half a sprite up the wall: the reach that keeps a centred piece inside a
+  // one-block room caps its anchor at 11 units, and the floor line of that
+  // room is 14. Held by the bottom edge, a rug lands on the floor by
+  // construction, and the art is drawn resting on the bottom of its canvas.
+  flooring: { anchorX: 0.5, anchorY: 1, band: 'back', depth: 1 },
   wallArt: { anchorX: 0.5, anchorY: 0.5, band: 'back', depth: 2 },
   lighting: { anchorX: 0.5, anchorY: 0, band: 'back', depth: 3 },
   // --- things standing in the room, sorted by how low they sit ----------
-  rug: { anchorX: 0.5, anchorY: 0.5, band: 'front', depth: 0 },
+  rug: { anchorX: 0.5, anchorY: 1, band: 'front', depth: 0 },
   bed: { anchorX: 0.5, anchorY: 1, band: 'front', depth: 1 },
   table: { anchorX: 0.5, anchorY: 1, band: 'front', depth: 1 },
   seating: { anchorX: 0.5, anchorY: 1, band: 'front', depth: 1 },
   plant: { anchorX: 0.5, anchorY: 1, band: 'front', depth: 1 },
   luxury: { anchorX: 0.5, anchorY: 1, band: 'front', depth: 1 },
+  // --- service-room equipment, standing on the floor like the rest ---------
+  // A washer and a linen shelf are held by the middle of their base for the
+  // same reason a chair is: what the player positions is where the thing
+  // touches the ground, and the picture hangs off that.
+  appliance: { anchorX: 0.5, anchorY: 1, band: 'front', depth: 1 },
+  storage: { anchorX: 0.5, anchorY: 1, band: 'front', depth: 1 },
 };
 
 /**
@@ -88,6 +100,7 @@ const BY_SLOT_TYPE: Readonly<Record<string, DecorArtSpec>> = {
   ceiling: { anchorX: 0.5, anchorY: 0, band: 'back', depth: 3 },
   floor: { anchorX: 0.5, anchorY: 1, band: 'front', depth: 1 },
   bed: { anchorX: 0.5, anchorY: 1, band: 'front', depth: 1 },
+  equipment: { anchorX: 0.5, anchorY: 1, band: 'front', depth: 1 },
 };
 
 const DEFAULT_SPEC: DecorArtSpec = { anchorX: 0.5, anchorY: 1, band: 'front', depth: 1 };

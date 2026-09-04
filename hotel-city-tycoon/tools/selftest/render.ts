@@ -27,6 +27,12 @@ import { clampDecorBox, decorBox } from '../../src/render/decorArt.ts';
 import {
   firstFreeAnchor, anchorBoundsFor, anchorKey, anchorReachFor, reachForCategory, reachedCategories,
 } from '../../src/core/systems/decorPlacement.ts';
+import {
+  anchorFor, layoutFor, plannedRooms, spotKindFor, spotsOfKind,
+} from '../../src/core/systems/roomAnchors.ts';
+import {
+  boundingBox, SKY, CITY_FAR, CITY_NEAR, TREE_FAR, TREE_NEAR, ROAD, INK, GOLD,
+} from '../../src/render/backdrop.ts';
 import { loadSimData } from '../balance-sim/load-data.ts';
 import fs from 'node:fs';
 
@@ -288,17 +294,26 @@ const declaredSize = (assetKey: string): { w: number; h: number } => {
   return { w: entry.width, h: entry.height };
 };
 
-/** Transcribed from docs/ART-1_METADATA.md — the ten pieces ART-1 delivered. */
+/**
+ * The anchor every shipped piece is drawn to.
+ *
+ * Was transcribed from docs/ART-1_METADATA.md, which described art that no
+ * longer ships: the whole set was redrawn in tools/art/. Two rows changed with
+ * it. A floor covering used to be held by its centre, which the reach maths
+ * then capped at 11 anchor units in a room whose floor line is 14 — a rug that
+ * could not reach the floor. Flooring and rugs are held by their bottom edge
+ * now, and their art rests on the bottom of its canvas to match.
+ */
 const ART1_ANCHORS: Array<[string, number, number, 'back' | 'front']> = [
   ['wallpaper_plain', 0.5, 0.5, 'back'],
-  ['flooring_concrete', 0.5, 0.5, 'back'],
+  ['flooring_concrete', 0.5, 1, 'back'],
   ['wallArt_poster', 0.5, 0.5, 'back'],
   ['lighting_lamp', 0.5, 0, 'back'],
   ['bed_single', 0.5, 1, 'front'],
   ['seating_armchair', 0.5, 1, 'front'],
   ['table_deskWood', 0.5, 1, 'front'],
   ['plant_fern', 0.5, 1, 'front'],
-  ['rug_mat', 0.5, 0.5, 'front'],
+  ['rug_mat', 0.5, 1, 'front'],
   ['luxury_aquarium', 0.5, 1, 'front'],
 ];
 
@@ -494,6 +509,143 @@ check('anchors still avoid each other when the reach narrows the room', () => {
     taken.add(key);
   }
 });
+
+// ------------------------------------------------- placement points (roomAnchors)
+//
+// The plan that decides where a purchase lands. Its promise is narrow and
+// worth checking exactly: a piece goes where that room keeps that kind of
+// thing, no two pieces share a point, and nothing the plan offers puts art
+// through a wall — because a point in a layout table is a number somebody
+// typed, and the room it was typed for may since have changed size.
+
+check('every room in the catalogue has a plan of its own', () => {
+  const planned = new Set(plannedRooms());
+  for (const room of simData.rooms) {
+    assert(planned.has(room.id), `room "${room.id}" falls back to the generated default layout`);
+  }
+});
+
+check('every decor category asks for a kind of spot by name', () => {
+  for (const item of simData.decor) {
+    const kind = spotKindFor(item.category, item.slotType);
+    // The fallback answers 'ground' for anything unknown, so the check is that
+    // a wall piece is not silently treated as furniture.
+    if (item.slotType === 'wall') eq(kind, 'wall', `${item.id} left the wall`);
+    if (item.slotType === 'ceiling') eq(kind, 'ceiling', `${item.id} stopped hanging`);
+    if (item.slotType === 'bed') eq(kind, 'bed', `${item.id} is no longer a bed`);
+  }
+});
+
+check('every point the plan offers keeps its piece inside the room', () => {
+  for (const room of simData.rooms) {
+    const roomW = room.blocks.w * BLOCK_W;
+    const roomH = room.blocks.h * BLOCK_H;
+    const layout = layoutFor(room.id, room.blocks.w, room.blocks.h);
+    for (const item of simData.decor) {
+      const kind = spotKindFor(item.category, item.slotType);
+      const spec = decorArtSpec(item.category, item.slotType);
+      const declared = declaredSize(item.assetKey);
+      const size = decorDrawSize(declared.w, declared.h);
+      // Walk the whole plan, not just its first point: the taken set makes
+      // `anchorFor` hand back the next one each time, so every point in the
+      // room's layout is checked against this piece's own art.
+      const taken = new Set<string>();
+      const points = spotsOfKind(layout, kind, room.blocks.w * ANCHOR_UNITS_PER_BLOCK, 24);
+      for (let i = 0; i < points.length; i++) {
+        const anchor = anchorFor(simData, room.id, item.id, taken);
+        if (!anchor) break;
+        taken.add(anchorKey(anchor.x, anchor.y));
+        const box = decorBox(anchorToLocalPx(anchor.x, anchor.y), size, spec);
+        assert(box.left >= -0.001 && box.top >= -0.001
+          && box.left + box.w <= roomW + 0.001 && box.top + box.h <= roomH + 0.001,
+          `${item.id} at (${anchor.x},${anchor.y}) in ${room.id} is drawn outside the room`);
+      }
+    }
+  }
+});
+
+check('filling a room to the limit never hands out the same point twice', () => {
+  const limit = simData.economy.limits.maxDecorPerRoom;
+  for (const room of simData.rooms) {
+    const taken = new Set<string>();
+    const bounds = anchorBoundsFor(simData, room.id);
+    for (let i = 0; i < limit; i++) {
+      const item = simData.decor[i % simData.decor.length]!;
+      const anchor = anchorFor(simData, room.id, item.id, taken, limit)
+        ?? firstFreeAnchor(bounds, item.slotType, taken, anchorReachFor(simData, item.id));
+      const key = anchorKey(anchor.x, anchor.y);
+      assert(!taken.has(key), `${room.id} handed out ${key} twice at piece ${i + 1}`);
+      taken.add(key);
+    }
+  }
+});
+
+check('a bed goes where the room keeps its bed, not wherever the scan reached', () => {
+  // The whole point of the file: the first bed bought for a guest room lands
+  // on that room's own bed point.
+  for (const room of simData.rooms.filter((r) => r.category === 'guest')) {
+    const layout = layoutFor(room.id, room.blocks.w, room.blocks.h);
+    const planned = layout.bed?.points[0];
+    assert(planned, `${room.id} has no bed point`);
+    const anchor = anchorFor(simData, room.id, 'bed_single', new Set<string>());
+    assert(anchor, `${room.id} refused a bed`);
+    eq(anchor.x, planned.x, `${room.id} bed x`);
+    eq(anchor.y, planned.y, `${room.id} bed y`);
+  }
+});
+
+check('a lamp hangs from the ceiling point and a rug lies on the floor line', () => {
+  for (const room of simData.rooms) {
+    const lamp = anchorFor(simData, room.id, 'lighting_lamp', new Set<string>());
+    const rug = anchorFor(simData, room.id, 'rug_mat', new Set<string>());
+    assert(lamp && rug, `${room.id} has no ceiling or floor point`);
+    assert(lamp.y <= 4, `${room.id} hangs its lamp at y=${lamp.y}, nowhere near the ceiling`);
+    const floor = room.blocks.h * ANCHOR_UNITS_PER_BLOCK - 2;
+    assert(rug.y >= floor - 1, `${room.id} lays its rug at y=${rug.y}, not on the floor (${floor})`);
+  }
+});
+
+
+// ------------------------------------------------------------- the backdrop
+//
+// Sky, city, street and the hotel's shell are drawn rather than shipped, so
+// the only thing that can silently go wrong is the frame: an outline computed
+// from the wrong rooms puts the building's wall through the middle of a room.
+
+check('the hotel shell hugs the rooms that exist', () => {
+  eq(boundingBox([]), null, 'an empty hotel still framed something');
+  const one = boundingBox([{ x: 2, y: 1, w: 2, h: 1 }]);
+  assert(one, 'one room framed nothing');
+  eq(one.x, 2, 'left'); eq(one.y, 1, 'bottom'); eq(one.w, 2, 'width'); eq(one.h, 1, 'height');
+  const many = boundingBox([
+    { x: 2, y: 1, w: 2, h: 1 }, { x: 0, y: 0, w: 1, h: 1 }, { x: 3, y: 3, w: 3, h: 2 },
+  ]);
+  assert(many, 'three rooms framed nothing');
+  eq(many.x, 0, 'left edge'); eq(many.y, 0, 'bottom edge');
+  eq(many.w, 6, 'spans to the far side'); eq(many.h, 5, 'spans to the top');
+});
+
+check('the backdrop palette is the one the art is drawn from', () => {
+  // backdrop.ts keeps its own copy of the colours because it is TypeScript and
+  // the art tooling is Python. This is the check that stops the copy drifting:
+  // a sky in the renderer that is not the sky in hcstyle.py would put a seam
+  // down the middle of every screenshot.
+  const style = fs.readFileSync('tools/art/hcstyle.py', 'utf8');
+  const hex = (name: string): number => {
+    const m = new RegExp(`"${name}":\\s*rgb\\("#([0-9A-Fa-f]{6})"\\)`).exec(style);
+    assert(m, `hcstyle.py has no colour named "${name}"`);
+    return parseInt(m[1]!, 16);
+  };
+  eq(SKY, hex('sky'), 'sky');
+  eq(CITY_FAR, hex('cityFar'), 'far city');
+  eq(CITY_NEAR, hex('cityNear'), 'near city');
+  eq(TREE_FAR, hex('treeFar'), 'far trees');
+  eq(TREE_NEAR, hex('treeNear'), 'near trees');
+  eq(ROAD, hex('road'), 'road');
+  eq(INK, hex('ink'), 'outline');
+  eq(GOLD, hex('gold'), 'stars');
+});
+
 
 console.log(line);
 if (failures.length === 0) console.log(`  ${passed} checks passed`);

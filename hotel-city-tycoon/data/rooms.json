@@ -48,7 +48,7 @@
       "required": false,
       "staffRole": "cleaner",
       "staffSlots": 1,
-      "decorSlots": 0,
+      "decorSlots": 4,
       "decorTarget": 0,
       "function": {
         "kind": "cleaning",
@@ -74,7 +74,7 @@
       "required": false,
       "staffRole": null,
       "staffSlots": 0,
-      "decorSlots": 0,
+      "decorSlots": 5,
       "decorTarget": 0,
       "function": {
         "kind": "cleaningBoost",
@@ -128,7 +128,7 @@
       "required": false,
       "staffRole": null,
       "staffSlots": 0,
-      "decorSlots": 0,
+      "decorSlots": 5,
       "decorTarget": 0,
       "function": {
         "kind": "hazardReduction",

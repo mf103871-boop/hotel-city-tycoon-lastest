@@ -17,6 +17,7 @@ import { SCHEMA_VERSION } from '../core/state/types.ts';
 import {
   anchorBoundsFor, anchorKey, firstFreeAnchor, slotTypeFor, anchorReachFor,
 } from '../core/systems/decorPlacement.ts';
+import { anchorFor } from '../core/systems/roomAnchors.ts';
 
 export const SAVE_KEY = 'hct:save';
 export const QUARANTINE_KEY = 'hct:save:quarantine';
@@ -431,8 +432,11 @@ export const MIGRATIONS: Record<number, Migration> = {
         const piece = raw as Record<string, unknown>;
         const slotType = slotTypeFor(data, piece['defId'] as string);
         // HC-P1-S4: with data, the piece's picture is kept inside the room
-        // too, not just its anchor point.
-        const anchor = firstFreeAnchor(bounds, slotType, taken, anchorReachFor(data, piece['defId'] as string));
+        // too, not just its anchor point. And with data the room's own plan
+        // applies (roomAnchors.ts), so an old save is migrated into a tidy
+        // room rather than into the row the scan would have produced.
+        const anchor = anchorFor(data, roomDefId, piece['defId'] as string, taken)
+          ?? firstFreeAnchor(bounds, slotType, taken, anchorReachFor(data, piece['defId'] as string));
         taken.add(anchorKey(anchor.x, anchor.y));
         return { localX: anchor.x, localY: anchor.y, flipX: false, zBias: 0, ...piece };
       });

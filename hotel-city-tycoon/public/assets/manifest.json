@@ -18,6 +18,78 @@
   ],
   "entries": [
     {
+      "key": "decor.appliance.arcadeCabinet",
+      "bundle": "decor",
+      "file": "decor/appliance_arcadeCabinet.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 4 · transparent background"
+    },
+    {
+      "key": "decor.appliance.dryer",
+      "bundle": "decor",
+      "file": "decor/appliance_dryer.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 2 · transparent background"
+    },
+    {
+      "key": "decor.appliance.espressoBar",
+      "bundle": "decor",
+      "file": "decor/appliance_espressoBar.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 3 · transparent background"
+    },
+    {
+      "key": "decor.appliance.ironingBoard",
+      "bundle": "decor",
+      "file": "decor/appliance_ironingBoard.png",
+      "width": 96,
+      "height": 72,
+      "required": true,
+      "note": "appliance · tier 1 · transparent background"
+    },
+    {
+      "key": "decor.appliance.prepStation",
+      "bundle": "decor",
+      "file": "decor/appliance_prepStation.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 4 · transparent background"
+    },
+    {
+      "key": "decor.appliance.treadmill",
+      "bundle": "decor",
+      "file": "decor/appliance_treadmill.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 2 · transparent background"
+    },
+    {
+      "key": "decor.appliance.washer",
+      "bundle": "decor",
+      "file": "decor/appliance_washer.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 2 · transparent background"
+    },
+    {
+      "key": "decor.appliance.weightRack",
+      "bundle": "decor",
+      "file": "decor/appliance_weightRack.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 3 · transparent background"
+    },
+    {
       "key": "decor.bed_emperorbed",
       "bundle": "decor",
       "file": "decor/bed_emperorbed.png",
@@ -502,6 +574,78 @@
       "height": 72,
       "required": false,
       "note": "seating · tier 5 · transparent background"
+    },
+    {
+      "key": "decor.storage.displayCase",
+      "bundle": "decor",
+      "file": "decor/storage_displayCase.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "storage · tier 5 · transparent background"
+    },
+    {
+      "key": "decor.storage.linenShelf",
+      "bundle": "decor",
+      "file": "decor/storage_linenShelf.png",
+      "width": 96,
+      "height": 72,
+      "required": true,
+      "note": "storage · tier 1 · transparent background"
+    },
+    {
+      "key": "decor.storage.lockers",
+      "bundle": "decor",
+      "file": "decor/storage_lockers.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "storage · tier 2 · transparent background"
+    },
+    {
+      "key": "decor.storage.luggageRack",
+      "bundle": "decor",
+      "file": "decor/storage_luggageRack.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "storage · tier 2 · transparent background"
+    },
+    {
+      "key": "decor.storage.miniFridge",
+      "bundle": "decor",
+      "file": "decor/storage_miniFridge.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "storage · tier 3 · transparent background"
+    },
+    {
+      "key": "decor.storage.safeCabinet",
+      "bundle": "decor",
+      "file": "decor/storage_safeCabinet.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "storage · tier 4 · transparent background"
+    },
+    {
+      "key": "decor.storage.supplyCart",
+      "bundle": "decor",
+      "file": "decor/storage_supplyCart.png",
+      "width": 96,
+      "height": 72,
+      "required": true,
+      "note": "storage · tier 1 · transparent background"
+    },
+    {
+      "key": "decor.storage.toolRack",
+      "bundle": "decor",
+      "file": "decor/storage_toolRack.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "storage · tier 2 · transparent background"
     },
     {
       "key": "decor.table_marbleconsole",

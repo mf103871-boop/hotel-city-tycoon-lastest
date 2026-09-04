@@ -11,6 +11,7 @@
  */
 import { Application, Container, RendererType } from 'pixi.js';
 import { LAYER } from './layout.ts';
+import { SKY } from './backdrop.ts';
 import type { LayerName } from './layout.ts';
 
 export interface RendererHandle {
@@ -39,7 +40,10 @@ export async function createRenderer(opts: RendererOptions): Promise<RendererHan
     canvas: opts.canvas,
     width: opts.width,
     height: opts.height,
-    background: opts.background ?? 0x1a1210,
+    // Sky, not the old warm charcoal. The backdrop paints its own sky over a
+    // wide margin, but the clear colour is what shows for the instant before
+    // the first snapshot lands and at the very edge of a hard fling.
+    background: opts.background ?? SKY,
     antialias: false,          // crisp pixel art; also cheaper
     resolution,
     autoDensity: true,

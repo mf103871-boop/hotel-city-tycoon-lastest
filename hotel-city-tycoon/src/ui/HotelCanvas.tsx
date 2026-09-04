@@ -23,6 +23,9 @@ function toSnapshot(state: GameState): SceneSnapshot {
   return {
     gridW: grid.w,
     gridH: grid.h,
+    // Decoration: the gold stars the backdrop paints over the building. The
+    // HUD is where the player reads the rating; this is the hotel wearing it.
+    stars: state.hotel.stars,
     characters: characterViews(state).map((c) => ({
       id: c.id,
       assetKey: c.assetKey,
@@ -41,6 +44,7 @@ function toSnapshot(state: GameState): SceneSnapshot {
       category: r.category,
       label: r.defId,
       assetKey: r.assetKey,
+      pestKey: r.pestKey,
       fill: r.fill,
       showMeter: r.showMeter,
       hasPest: r.hasPest,
