@@ -22,6 +22,7 @@ import {
   fitCamera, clampCamera, pan, zoomAt, visibleRect, screenToWorld, worldToScreen,
 } from './camera.ts';
 import { GestureTracker } from './gestures.ts';
+import { Backdrop } from './backdrop.ts';
 import { FrameSampler, report } from './perf.ts';
 import type { CameraState, Viewport, WorldBounds, Insets } from './camera.ts';
 
@@ -38,6 +39,8 @@ export interface SceneSnapshot {
   characters: SceneCharacter[];
   gridW: number;
   gridH: number;
+  /** Rating shown above the building, as gold stars. Decoration only. */
+  stars: number;
 }
 
 export interface SceneCallbacks {
@@ -52,6 +55,8 @@ export class HotelScene {
   private readonly rooms: KeyedPool<RoomView>;
   private readonly characters: KeyedPool<CharacterView>;
   private readonly grid = new Graphics();
+  /** Sky, city, street and the hotel's own shell. Decoration; never read. */
+  private readonly backdrop: Backdrop;
   private readonly callbacks: SceneCallbacks;
 
   private view: Viewport;
@@ -59,7 +64,7 @@ export class HotelScene {
   private camera: CameraState;
   /** How much of the viewport the HUD covers, so the hotel can clear it. */
   private insets: Insets = { top: 0, bottom: 0 };
-  private snapshot: SceneSnapshot = { rooms: [], characters: [], gridW: 4, gridH: 3 };
+  private snapshot: SceneSnapshot = { rooms: [], characters: [], gridW: 4, gridH: 3, stars: 0 };
 
   /** Last frame's culling result, for the on-screen verification badge. */
   private visibleCount = 0;
@@ -102,6 +107,7 @@ export class HotelScene {
     });
 
     handle.layers.street.addChild(this.grid);
+    this.backdrop = new Backdrop(handle.layers);
     this.attachInput();
   }
 
@@ -129,6 +135,10 @@ export class HotelScene {
       this.drawGrid();
       this.gridDrawn = true;
     }
+    // The backdrop redraws only when the plot, the hotel's outline or the
+    // rating actually changed; it keys on those itself.
+    this.backdrop.update(this.world, snapshot.gridH, snapshot.rooms.map((r) => r.rect),
+      snapshot.stars);
     this.reconcile();
   }
 

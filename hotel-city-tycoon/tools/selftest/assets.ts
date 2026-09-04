@@ -312,6 +312,34 @@ await check('a lookup made before its bundle lands does not poison the key for t
     'a walk sheet that was not there yet is cached as absent for ever');
 });
 
+await check('the night, dirty and pest variants are drawn, not merely shipped', () => {
+  // 92 of the 115 room files are variants. Until the selector learned to ask
+  // for them the renderer only ever requested `.base`, so every one of them
+  // was generated, shipped, and never seen — and a room the player had to
+  // clean looked exactly like one they did not.
+  const selectors = fs.readFileSync('src/bridge/selectors.ts', 'utf8');
+  assert(/roomArtVariant/.test(selectors), 'nothing chooses a room variant');
+  for (const variant of ['night', 'dirty']) {
+    assert(selectors.includes(`'${variant}'`), `the selector never returns "${variant}"`);
+  }
+  assert(/room\.\$\{room\.defId\}\.pest/.test(selectors), 'the pest layer is never asked for');
+  const roomView = fs.readFileSync('src/render/roomView.ts', 'utf8');
+  assert(/pestKey/.test(roomView) && /pestArt/.test(roomView),
+    'the room view never composites the pest layer');
+
+  // And every key those two can produce has to exist.
+  for (const room of data.rooms) {
+    for (const variant of ['base', 'night', 'dirty', 'pest']) {
+      const key = `room.${room.id}.${variant}`;
+      const entry = entries.find((e) => e.key === key);
+      assert(entry, `no manifest entry for "${key}"`);
+      assert(fs.existsSync(`public/assets/${entry.file}`), `${entry.file} is missing on disk`);
+    }
+  }
+  console.log(`      ${data.rooms.length} rooms x 4 states, all present`);
+});
+
+
 console.log(line);
 if (failures.length === 0) console.log(`  ${passed} checks passed`);
 else { console.log(`  ${passed} passed, ${failures.length} FAILED`); failures.forEach(f => console.log(`    ✗ ${f}`)); }

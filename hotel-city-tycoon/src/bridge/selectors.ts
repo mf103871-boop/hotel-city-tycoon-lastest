@@ -99,8 +99,13 @@ export interface RoomSummary {
   hasGhost: boolean;
   occupants: number;
   nameKey: string;
-  /** Base art for this room. The renderer falls back if the file is absent. */
+  /**
+   * The picture this room is showing right now — base, night or dirty. The
+   * renderer falls back to a drawn shell if the file is absent.
+   */
   assetKey: string;
+  /** Transparent roach layer, composited over the art. Empty when clean. */
+  pestKey: string;
   decor: RoomSummaryDecor[];
 }
 
@@ -150,8 +155,29 @@ function summariseDecor(room: RoomInstance): RoomSummaryDecor[] {
   });
 }
 
-export function summariseRoom(room: RoomInstance): RoomSummary {
+/**
+ * Which of a room's five pictures to show.
+ *
+ * The art pipeline draws `base`, `night`, `dirty`, `pest` and `thumb` for
+ * every room, and until now the renderer only ever asked for `base`: 92 of
+ * those files were generated, shipped, and never seen, and a room the player
+ * urgently needed to clean looked exactly like one they did not.
+ *
+ * Dirt wins over dark, because dirt is the one the player has to act on. The
+ * pest layer is not in this list — it is a transparent overlay the room view
+ * composites over whichever of these is showing, so a room can be dirty and
+ * infested at once.
+ */
+export function roomArtVariant(room: RoomInstance, def: RoomDef | undefined,
+                               open: boolean): 'base' | 'night' | 'dirty' {
+  const gate = D().economy.cleanliness.incomeGateThreshold;
+  if (def && def.category !== 'functional' && room.cleanliness < gate) return 'dirty';
+  return open ? 'base' : 'night';
+}
+
+export function summariseRoom(room: RoomInstance, open = true): RoomSummary {
   const def = roomDefOf(room.defId);
+  const variant = roomArtVariant(room, def, open);
   return {
     id: room.id,
     defId: room.defId,
@@ -167,13 +193,19 @@ export function summariseRoom(room: RoomInstance): RoomSummary {
     hasGhost: room.hasGhost,
     occupants: room.occupants.length,
     nameKey: def?.nameKey ?? `room.${room.defId}.name`,
-    assetKey: def?.assetKey ?? `room.${room.defId}.base`,
+    assetKey: `room.${room.defId}.${variant}`,
+    // The infestation is a separate transparent layer, so it composites over
+    // whichever variant is showing rather than needing one of its own.
+    pestKey: room.hasPest ? `room.${room.defId}.pest` : '',
     decor: summariseDecor(room),
   };
 }
 
 export function summariseRooms(state: GameState): RoomSummary[] {
-  return state.hotel.rooms.map(summariseRoom);
+  // Whether the hotel is trading decides whether its rooms are lit, so it is
+  // read once here rather than per room.
+  const open = isOpen(state);
+  return state.hotel.rooms.map((room) => summariseRoom(room, open));
 }
 
 export function gridSize(state: GameState): { w: number; h: number } {

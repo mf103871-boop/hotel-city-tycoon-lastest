@@ -1,49 +1,92 @@
 # tools/art
 
-Art tooling. The shipped art is now **supplied**, not generated — but the
-generators remain for two jobs that still matter.
+Every picture in this game is drawn here, in Python, and checked into
+`public/assets/`. There is no external art supplier and no image generator in
+the loop: the whole set — 23 room interiors and their four variants each, the
+cast, the decor catalogue, the interface icons and the hazard badges — is
+produced by these modules from one shared style system.
 
-    npm run gen:art:derive   # variants from whatever base art is on disk
-    npm run gen:art          # regenerate the procedural fallback set
+    npm run gen:art        # redraw everything, both resolutions, then the manifest
+    npm run art:preview    # contact sheets, so it can be looked at
 
-## What is shipped
+## Why draw in code
 
-`public/assets/` holds 72 base files — 23 room interiors, 20
-characters, 18 decor pieces, 7 UI icons, 4 hazard overlays — plus **132 files
-derived from them by tooling**, plus 3 incident icons (5A). Two bases are
-pipeline-drawn finals rather than hand-supplied: the Disco interior
-(`spa_base.png`, drawn by `gen_rooms.spa()` — one source of truth for the
-shipped art and the fallback) and the three 4C incident images
-(`render_effects(only=['ghost','heatWave','coldSnap'])`).
+Because the alternative loses coherence. Two hundred and fifty pictures made
+one at a time drift: the outline thins, the palette wanders, one room's floor
+sits four pixels lower than its neighbour's. Here a room *cannot* reach outside
+`hcstyle.py`, so twenty-three rooms composed separately still read as one
+hotel — and when the art direction changes, it changes in one file and the
+whole set follows.
 
-## Derivation is the point
+It also means the art is diffable, reviewable, and free to regenerate at any
+resolution. `docs/ART-0_VISUAL_DIRECTION_AR.md` is the brief; `hcstyle.py` is
+that brief made executable.
 
-`gen_rooms.py --derive` reads each `<room>_base.png` and produces its night,
-dirty, pest and thumb variants by colour transform. `gen_props.py --derive`
-does the same for character thumbs and work/sleep frames.
+## The layout
 
-That is 132 files nobody has to draw. When a base image is replaced, rerun the
-derive step and every variant follows.
+| file | what it holds |
+|---|---|
+| `hcstyle.py` | The style system: palette, `Canvas`, line weights, room shell, the chibi `Person` builder. Every other module draws through it and nothing else. |
+| `hcvariants.py` | Night, dirty, pest and thumb, derived from a base image. 92 room files nobody draws. |
+| `gen_rooms.py` | Driver: sizes each room from `data/rooms.json`, builds the shell, calls the room's own routine, writes the variants. |
+| `rooms_service.py` `rooms_guest.py` `rooms_commercial.py` | The 23 rooms, split by what they are for. |
+| `gen_decor.py` | Driver: sizes each piece from `data/decor.json` and the manifest's slot table. |
+| `decor_surfaces.py` `decor_props.py` | The catalogue: wall and floor treatments, then everything that stands in a room. |
+| `gen_chars.py` | Driver: idle, walk sheet, thumb and work/sleep for every staff role and guest type. |
+| `characters.py` | The casting table — who each of them is. |
+| `gen_ui.py` `ui_icons.py` | Currency, shift timers and the six incident badges. |
+| `gen_sounds.py` | The audio cues. Unrelated to the drawing, same idea. |
+| `preview.py` | Contact sheets and the composed room shot. |
+| `dump-anchors.ts` | Where the game puts furniture, asked of the game rather than guessed. |
 
-- `night` — cool wash, warm sources left bright
-- `dirty` — desaturated toward ochre and darkened, heavier toward the floor
-- `pest` — a transparent overlay only, composited over the base at runtime
+## The rules that matter
 
-## The procedural set
+Four, from ART-0, and they are load-bearing rather than decorative:
 
-`gen_rooms.py` and `gen_props.py` without `--derive` redraw the original
-placeholder art from `style.py`. It is kept because the renderer falls back to
-a drawn shell for any missing texture, and because a regenerable set is useful
-when a new room type is added before its art exists.
+1. **Flat front orthographic.** No side walls, no vanishing point, no
+   isometric. It is what makes the hotel read as a dollhouse.
+2. **Deep navy outlines, never black**, in a hierarchy: the room frame is the
+   heaviest line on screen, furniture is medium, a face is the finest.
+3. **One dominant pastel per room**, with its furniture higher in contrast than
+   its wall, and a quarter of the room left empty.
+4. **Nothing finer than two pixels.** A room block is 128×96 at 1×; a detail
+   below that is mud on a phone.
 
-A copy of the three generators sits in `procedural-backup/`.
+## Two resolutions from one drawing
 
-## Palette
+Every coordinate in these modules is a *logical 1× pixel*, as a float. `Canvas`
+multiplies by its own tier, so `@2x` is the same arithmetic at twice the scale
+rather than a resized `@1x` — which is what keeps an outline the same weight
+relative to the art on a high-density screen. Both tiers are written on every
+run, and `tools/gen-asset-manifest.mjs` only declares the `@2x` tier once every
+file in it exists.
 
-`src/index.css` is derived from the supplied art, not chosen beside it: mint
-`#b8d8d0` walls, cream `#f8f0d8` trim, coral `#f07858` doors, wood `#e08030`.
-The interface chrome is a warm charcoal `#1a1210` so it reads as night outside
-a lit hotel and the interiors stay the only saturated thing on screen.
+## What a room may not contain
 
-If the art direction changes, measure the new dominant colours and update
-those tokens — the whole interface follows from them.
+Beds, chairs, tables, lamps, rugs, plants and pictures are **decor sprites**,
+composited over the room at runtime at the anchors
+`src/core/systems/roomAnchors.ts` hands out. A room that draws one shows it
+twice the moment a player buys one. The exception `ASSET-SPEC.md` §1 grants is
+fixed equipment — a cafe's counter, a cinema's screen, a pool's water — because
+that is part of the building.
+
+## Looking at it
+
+Nothing here can screenshot the running game: DEC-009 keeps the canvas out of
+CI and these machines have no GPU. `preview.py` composes the same pictures the
+game composes instead, and `compose` is the one that matters — a room with its
+decor at the game's own anchors and its people at the game's own scale.
+
+    python3 tools/art/preview.py rooms rooms_guest
+    python3 tools/art/preview.py decor bed
+    python3 tools/art/preview.py cast
+    python3 tools/art/preview.py compose standard
+
+Sheets land in `docs/art-preview/`.
+
+## Determinism
+
+No `random`. Where variation is wanted — a room's grime, the skyline behind the
+hotel — it comes from `hcvariants.seeded(key)`, an xorshift keyed by the
+asset's own name, so a picture is the same whether it was generated alone or in
+a batch of two hundred.

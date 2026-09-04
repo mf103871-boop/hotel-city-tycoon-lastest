@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Hotel City Tycoon \u2014 session-by-session retention",
+  "description": "Hotel City Tycoon — session-by-session retention",
   "scripts": {
     "dev": "vite",
     "build": "npm run validate:data && tsc -b && vite build && node tools/stamp-sw.mjs && npm run check:budget && npm run check:cheats",
@@ -21,17 +21,17 @@
     "verify": "npm run validate:data && npm run typecheck && npm run lint && npm run test:logic && npm run test:selftest",
     "gen:i18n": "node tools/gen-i18n.mjs",
     "gen:assets": "node tools/gen-asset-manifest.mjs",
-    "gen:art": "python3 tools/art/gen_rooms.py && python3 tools/art/gen_props.py && python3 tools/art/gen_sounds.py",
+    "gen:art": "python3 tools/art/gen_rooms.py && python3 tools/art/gen_decor.py && python3 tools/art/gen_chars.py && python3 tools/art/gen_ui.py && python3 tools/art/gen_sounds.py && node tools/gen-asset-manifest.mjs",
     "test:e2e": "playwright test",
     "test:e2e:phone": "playwright test --project=phone",
     "check:cheats": "node tools/check-no-cheats.mjs",
     "check:budget": "node tools/check-budget.mjs",
-    "gen:art:derive": "python3 tools/art/gen_rooms.py --derive && python3 tools/art/gen_props.py --derive && python3 tools/art/gen_walk.py",
     "sim:session": "node --experimental-strip-types tools/balance-sim/first-session.ts",
     "sim:economy": "node --experimental-strip-types tools/balance-sim/economy.ts",
     "sim:horizon": "node --experimental-strip-types tools/balance-sim/horizon.ts",
     "sim:parity": "node --experimental-strip-types tools/balance-sim/offline-parity.ts",
-    "sim:sessions": "node --experimental-strip-types tools/balance-sim/sessions.ts"
+    "sim:sessions": "node --experimental-strip-types tools/balance-sim/sessions.ts",
+    "art:preview": "python3 tools/art/preview.py"
   },
   "dependencies": {
     "react": "^19.0.0",

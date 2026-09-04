@@ -92,7 +92,7 @@ export const DecorSchema = z.object({
   slotTypes: z.array(z.string()).min(1),
   categories: z.array(z.string()).min(1),
   items: z.array(z.object({
-    id: Id, category: z.string(), slotType: z.enum(['wall', 'floor', 'ceiling', 'bed']),
+    id: Id, category: z.string(), slotType: z.enum(['wall', 'floor', 'ceiling', 'bed', 'equipment']),
     nameKey: I18nKey, assetKey: AssetKey, decorPoints: PosInt, cost: Price,
     unlockLevel: Level, sellable: z.boolean(), giftable: z.boolean(), tier: PosInt,
   })).min(1),

@@ -113,9 +113,16 @@
         "categories": [
           "guest"
         ]
+      },
+      {
+        "slotType": "equipment",
+        "categories": [
+          "functional",
+          "commercial"
+        ]
       }
     ],
-    "note": "Decision 8b: quality = fill with diminishing returns on repeats (repeatFalloff stays, guarding the original's documented cheapest-item exploit); the variety requirement is neutralised by varietyFloor=1. Condition (hazards) still gates income elsewhere."
+    "note": "Decision 8b: quality = fill with diminishing returns on repeats (repeatFalloff stays, guarding the original's documented cheapest-item exploit); the variety requirement is neutralised by varietyFloor=1. Condition (hazards) still gates income elsewhere. Equipment (appliances and storage) is the mirror of the bed rule: a treadmill belongs in a room that works, never in a bedroom."
   },
   "upkeep": {
     "perRoomPerHour": 0,

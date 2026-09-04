@@ -47,14 +47,21 @@ export interface AnchorReach {
 const REACH_BY_CATEGORY: Readonly<Record<string, AnchorReach>> = {
   wallpaper: { left: 4, right: 4, up: 4, down: 4 },
   wallArt: { left: 4, right: 4, up: 4, down: 4 },
-  flooring: { left: 3, right: 3, up: 4, down: 4 },
-  rug: { left: 3, right: 3, up: 4, down: 4 },
+  // Floor coverings are held by their bottom edge now (decorArt.ts), so their
+  // reach is the same shape as a chair's rather than a poster's.
+  flooring: { left: 3, right: 3, up: 7, down: 0 },
+  rug: { left: 3, right: 3, up: 7, down: 0 },
   lighting: { left: 3, right: 3, up: 0, down: 5 },
   bed: { left: 4, right: 4, up: 6, down: 0 },
   seating: { left: 3, right: 3, up: 7, down: 0 },
   table: { left: 3, right: 3, up: 7, down: 0 },
   plant: { left: 3, right: 3, up: 7, down: 0 },
   luxury: { left: 3, right: 3, up: 7, down: 0 },
+  // Equipment is drawn on the 96x72 wall canvas rather than the 72x72 floor
+  // one — a washing machine is a tall box — so it reaches one unit further
+  // sideways and one further up than a chair does.
+  appliance: { left: 4, right: 4, up: 7, down: 0 },
+  storage: { left: 4, right: 4, up: 7, down: 0 },
 };
 
 /** Fallback for a category with no row: the widest reach its surface can need. */
@@ -63,6 +70,7 @@ const REACH_BY_SLOT_TYPE: Readonly<Record<string, AnchorReach>> = {
   ceiling: { left: 3, right: 3, up: 0, down: 5 },
   floor: { left: 3, right: 3, up: 7, down: 0 },
   bed: { left: 4, right: 4, up: 6, down: 0 },
+  equipment: { left: 4, right: 4, up: 7, down: 0 },
 };
 
 /**
@@ -122,6 +130,41 @@ function clampInset(bound: number): number {
   return Math.min(ANCHOR_EDGE_INSET, Math.max(0, Math.floor(bound / 2) - 1));
 }
 
+export interface AnchorRange {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+}
+
+/**
+ * The anchors a piece with this reach may legally occupy in this room.
+ *
+ * Split out of `firstFreeAnchor` because two callers now need the same
+ * arithmetic: the scan below, and `roomAnchors.ts`, which has a designed spot
+ * in mind and must pull it back inside these bounds rather than trusting that
+ * a number typed into a layout table fits the room it was written for.
+ */
+export function anchorRange(bounds: AnchorBounds, reach?: AnchorReach | null): AnchorRange {
+  const insetX = clampInset(bounds.w);
+  const insetY = clampInset(bounds.h);
+  // A reach never shrinks the inset below the flat one, and never grows it
+  // past what the room can hold: a piece too big for its room is clamped to
+  // the middle of the axis it does not fit on rather than pushed outside it.
+  const fit = (near: number, far: number, bound: number, flat: number): [number, number] => {
+    const lo = Math.max(flat, near);
+    const hi = Math.min(bound - 1 - Math.max(flat, far), bound - 1);
+    return lo <= hi ? [lo, hi] : [Math.floor((bound - 1) / 2), Math.floor((bound - 1) / 2)];
+  };
+  const [minX, maxX] = reach
+    ? fit(reach.left, reach.right, bounds.w, insetX)
+    : [insetX, Math.max(insetX, bounds.w - insetX - 1)];
+  const [minY, maxY] = reach
+    ? fit(reach.up, reach.down, bounds.h, insetY)
+    : [insetY, Math.max(insetY, bounds.h - insetY - 1)];
+  return { minX, maxX, minY, maxY };
+}
+
 /**
  * The first anchor that is not already in `taken`, preferring the surface
  * band `slotType` belongs on: near the ceiling, mid-wall, or near the floor.
@@ -147,22 +190,7 @@ export function firstFreeAnchor(
   taken: ReadonlySet<string>,
   reach?: AnchorReach | null,
 ): { x: number; y: number } {
-  const insetX = clampInset(bounds.w);
-  const insetY = clampInset(bounds.h);
-  // A reach never shrinks the inset below the flat one, and never grows it
-  // past what the room can hold: a piece too big for its room is clamped to
-  // the middle of the axis it does not fit on rather than pushed outside it.
-  const fit = (near: number, far: number, bound: number, flat: number): [number, number] => {
-    const lo = Math.max(flat, near);
-    const hi = Math.min(bound - 1 - Math.max(flat, far), bound - 1);
-    return lo <= hi ? [lo, hi] : [Math.floor((bound - 1) / 2), Math.floor((bound - 1) / 2)];
-  };
-  const [minX, maxX] = reach
-    ? fit(reach.left, reach.right, bounds.w, insetX)
-    : [insetX, Math.max(insetX, bounds.w - insetX - 1)];
-  const [minY, maxY] = reach
-    ? fit(reach.up, reach.down, bounds.h, insetY)
-    : [insetY, Math.max(insetY, bounds.h - insetY - 1)];
+  const { minX, maxX, minY, maxY } = anchorRange(bounds, reach);
 
   const preferredY = slotType === 'ceiling' ? minY
     : slotType === 'wall' ? minY + Math.round((maxY - minY) * 0.3)

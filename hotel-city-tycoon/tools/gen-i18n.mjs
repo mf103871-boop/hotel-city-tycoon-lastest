@@ -27,7 +27,8 @@ const STAFF_AR = {receptionist:'موظف استقبال',cleaner:'عامل نظ�
 const GUEST_AR = {standard:'نزيل',inspector:'مفتش'};
 const EVENT_AR = {pest:'حشرات',fire:'حريق',inspection:'زيارة تفتيش',ghost:'شبح',heatWave:'موجة حر',coldSnap:'موجة برد'};
 const CAT_AR = {wallpaper:'ورق جدران',flooring:'أرضية',bed:'سرير',seating:'مقعد',table:'طاولة',
-  lighting:'إضاءة',wallArt:'لوحة',plant:'نبتة',rug:'سجادة',luxury:'قطعة فاخرة'};
+  lighting:'إضاءة',wallArt:'لوحة',plant:'نبتة',rug:'سجادة',luxury:'قطعة فاخرة',
+  appliance:'جهاز',storage:'تخزين'};
 
 const ROOM_DESC = {
   lobby: ['Where every guest checks in. Your hotel needs exactly one.', 'من هنا يسجّل كل نزيل دخوله. فندقك يحتاج واحدة فقط.'],
@@ -146,6 +147,24 @@ const UI = {
   'decor.rug_antiquecarpet.name':['Antique Carpet','سجادة عتيقة'],
   'decor.luxury_privatebar.name':['Private Bar','بار خاص'],
   'decor.luxury_gallerypiece.name':['Gallery Piece','قطعة معرض'],
+  // Service-room equipment: the furniture the back of house actually needs,
+  // named for the job rather than for the style.
+  'decor.appliance_ironingBoard.name':['Ironing Board','طاولة كي'],
+  'decor.appliance_washer.name':['Washing Machine','غسالة'],
+  'decor.appliance_dryer.name':['Tumble Dryer','مجفّفة'],
+  'decor.appliance_treadmill.name':['Treadmill','جهاز جري'],
+  'decor.appliance_weightRack.name':['Weight Rack','رفّ أثقال'],
+  'decor.appliance_espressoBar.name':['Espresso Bar','ماكينة إسبريسو'],
+  'decor.appliance_prepStation.name':['Prep Station','ركن تحضير'],
+  'decor.appliance_arcadeCabinet.name':['Arcade Cabinet','آلة ألعاب'],
+  'decor.storage_linenShelf.name':['Linen Shelf','رفّ البياضات'],
+  'decor.storage_supplyCart.name':['Supply Cart','عربة التنظيف'],
+  'decor.storage_luggageRack.name':['Luggage Rack','حمّالة الحقائب'],
+  'decor.storage_lockers.name':['Staff Lockers','خزائن الموظفين'],
+  'decor.storage_toolRack.name':['Tool Rack','لوحة العدّة'],
+  'decor.storage_miniFridge.name':['Mini Fridge','ثلاجة صغيرة'],
+  'decor.storage_safeCabinet.name':['Safe Cabinet','خزنة'],
+  'decor.storage_displayCase.name':['Display Case','فترينة عرض'],
   'ui.shop':['Shop','المتجر'],
   'ui.city':['The city','المدينة'],
   'ui.cityHint':['Rival hotels, and where yours stands','فنادق منافسة، وموقع فندقك بينها'],

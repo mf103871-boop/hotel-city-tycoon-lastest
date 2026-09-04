@@ -67,6 +67,13 @@ export interface RoomViewDecorItem {
 export interface RoomViewData {
   /** Asset key for the finished art. Falls back to a drawn shell when absent. */
   assetKey?: string;
+  /**
+   * Transparent roach layer, stretched over the room's own art. Empty when the
+   * room is clean. It is a separate picture rather than a fifth room variant
+   * so a room can be dirty and infested at the same time without a combination
+   * of the two having to be drawn.
+   */
+  pestKey?: string;
   rect: Rect;
   category: 'guest' | 'commercial' | 'functional';
   label: string;
@@ -83,6 +90,8 @@ export interface RoomViewData {
 export class RoomView extends Container {
   private readonly shell = new Graphics();
   private readonly art = new Sprite();
+  /** The roach layer, over the room's own art and under its decor. */
+  private readonly pestArt = new Sprite();
   /** DEC-010 decor, drawn above the room's own art/shell and below badges. */
   private readonly decorLayer = new Container();
   private readonly meter = new Graphics();
@@ -101,8 +110,9 @@ export class RoomView extends Container {
     });
     this.caption.resolution = 2;
     this.art.visible = false;
-    this.addChild(this.shell, this.art, this.decorLayer, this.meter, this.caption, this.badges,
-      this.fireBadge, this.ghostBadge, this.pestBadge);
+    this.pestArt.visible = false;
+    this.addChild(this.shell, this.art, this.pestArt, this.decorLayer, this.meter, this.caption,
+      this.badges, this.fireBadge, this.ghostBadge, this.pestBadge);
   }
 
   /**
@@ -116,7 +126,7 @@ export class RoomView extends Container {
       .join('|');
     const key = `${assetGeneration()},${data.rect.x},${data.rect.y},${data.rect.w},${data.rect.h},${data.category},` +
       `${data.fill.toFixed(2)},${data.showMeter},${data.hasPest},${data.hasFire},${data.hasGhost},${data.occupants},` +
-      `${data.label},${data.assetKey ?? ''},${decorKey}`;
+      `${data.label},${data.assetKey ?? ''},${data.pestKey ?? ''},${decorKey}`;
     if (key === this.lastKey) return;
     this.lastKey = key;
 
@@ -134,12 +144,24 @@ export class RoomView extends Container {
       this.art.width = w;
       this.art.height = h;
       this.art.visible = true;
+      // No stroke over finished art: every room image carries its own dark
+      // frame (tools/art/hcstyle.py's room_frame), and a second brown outline
+      // on top of it read as a seam between the room and itself.
       this.shell.clear();
-      this.shell.roundRect(1, 1, w - 2, h - 2, 6).stroke({ width: 1, color: BORDER, alpha: 0.4 });
     } else {
       this.art.visible = false;
       this.shell.clear();
       this.shell.roundRect(1, 1, w - 2, h - 2, 6).fill(SHELL[data.category]).stroke({ width: 2, color: BORDER });
+    }
+
+    const pest = data.pestKey ? texture(data.pestKey) : null;
+    if (pest) {
+      this.pestArt.texture = pest;
+      this.pestArt.width = w;
+      this.pestArt.height = h;
+      this.pestArt.visible = true;
+    } else {
+      this.pestArt.visible = false;
     }
 
     this.drawDecor(data.decor, w, h);
@@ -154,7 +176,10 @@ export class RoomView extends Container {
       }
     }
 
-    this.caption.text = data.label;
+    // The room's name is a placeholder affordance: it tells the player what an
+    // untextured box is. Over finished art it is a debug label sitting across
+    // the floor of every room in the hotel, so it goes when the art arrives.
+    this.caption.text = art ? '' : data.label;
     this.caption.position.set(8, h - 22);
 
     // 5A: the incident art itself, drawn on the room. The coloured circle
@@ -264,6 +289,7 @@ export class RoomView extends Container {
   reset(): void {
     this.lastKey = '';
     this.art.visible = false;
+    this.pestArt.visible = false;
     this.visible = true;
     this.renderable = true;
   }

@@ -16,6 +16,17 @@ import { BLOCK_W, BLOCK_H, blockToWorld } from './layout.ts';
 const CHAR_W = 48;
 const CHAR_H = 72;
 const WALK_FRAMES = 6;
+/**
+ * How big a character is drawn, as a fraction of its 48x72 frame.
+ *
+ * Was 0.55, which put a guest 40 world pixels tall in a 96-pixel room — 41% of
+ * the interior, against the 58-72% ART-0 §5 asks for and the reference image
+ * shows. The people were the smallest thing on screen in a game about people.
+ * At 0.82 a guest stands 59 pixels tall in a 96-pixel room: the same
+ * proportion as the reference, still short of the ceiling, and still clear of
+ * the decor meter along the room's top edge.
+ */
+const CHARACTER_ART_SCALE = 0.82;
 /** A full stride cycle. Slower reads as a stroll, faster as a scurry. */
 const WALK_CYCLE_MS = 620;
 
@@ -140,8 +151,8 @@ export class CharacterView extends Container {
       : texture(data.assetKey);
     if (art) {
       this.sprite.texture = art;
-      this.sprite.width = CHAR_W * 0.55;
-      this.sprite.height = CHAR_H * 0.55;
+      this.sprite.width = CHAR_W * CHARACTER_ART_SCALE;
+      this.sprite.height = CHAR_H * CHARACTER_ART_SCALE;
       this.sprite.scale.x = Math.abs(this.sprite.scale.x) * (data.facing === 'left' ? -1 : 1);
       this.sprite.visible = true;
       this.fallback.clear();

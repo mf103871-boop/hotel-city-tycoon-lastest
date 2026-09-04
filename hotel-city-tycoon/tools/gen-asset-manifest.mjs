@@ -54,7 +54,12 @@ for (const room of rooms) {
 }
 
 // ---- decor: single sprites, sized by slot ---------------------------------
-const SLOT_SIZE = { wall: [96, 72], floor: [72, 72], ceiling: [72, 48], bed: [104, 64] };
+// Equipment — the washers, treadmills and shelving the service rooms are
+// furnished with — is drawn on the wall canvas rather than the floor one: a
+// machine is a tall box, and 72x72 crops the top off every one of them.
+const SLOT_SIZE = {
+  wall: [96, 72], floor: [72, 72], ceiling: [72, 48], bed: [104, 64], equipment: [96, 72],
+};
 for (const item of decor) {
   const [w, h] = SLOT_SIZE[item.slotType] ?? [72, 72];
   add({

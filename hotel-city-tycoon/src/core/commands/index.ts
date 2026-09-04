@@ -20,6 +20,7 @@ import { queueCapacity, receptionEfficiency } from '../systems/guests.ts';
 import { owned, grant, consume, sellValue } from '../systems/inventory.ts';
 import { slotAllowed } from '../systems/quality.ts';
 import { anchorBoundsFor, anchorKey, firstFreeAnchor, anchorReachFor } from '../systems/decorPlacement.ts';
+import { anchorFor } from '../systems/roomAnchors.ts';
 import { Rng } from '../rng/index.ts';
 import { nextTier } from '../systems/upgrades.ts';
 import { shopOffers, shopPeriod, isOfferTaken, giftState, weekIndexOf, activeSeason } from '../systems/liveops.ts';
@@ -187,9 +188,13 @@ export function execute(data: SimData, state: GameState, cmd: Command): CommandR
       // on top of; slotType picks which surface band it prefers.
       const bounds = anchorBoundsFor(data, room.defId);
       const takenAnchors = new Set(room.decor.map((p) => anchorKey(p.localX, p.localY)));
-      // HC-P1-S4: and the piece's own picture has to fit inside the room, so
-      // its reach insets the scan.
-      const anchor = firstFreeAnchor(bounds, def.slotType, takenAnchors, anchorReachFor(data, cmd.defId));
+      // The room's own plan first (`roomAnchors.ts`): a bed goes where that
+      // room keeps its bed, a lamp on its ceiling point, a rug on its floor.
+      // The scan is what answers when the plan runs out of places — it always
+      // answers, and HC-P1-S4's reach keeps whatever it picks inside the room.
+      const anchor = anchorFor(data, room.defId, cmd.defId, takenAnchors,
+        data.economy.limits.maxDecorPerRoom, room.decor)
+        ?? firstFreeAnchor(bounds, def.slotType, takenAnchors, anchorReachFor(data, cmd.defId));
       room.decor.push({
         id: `d${state.counters.decor++}`, defId: cmd.defId, slot: cmd.slot,
         localX: anchor.x, localY: anchor.y, flipX: false, zBias: 0,
