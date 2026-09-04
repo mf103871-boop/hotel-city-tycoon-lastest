@@ -77,10 +77,13 @@ export function shopOffers(data: SimData, state: GameState, epochMs: number): Sh
   // Room-scoped pieces stay off the shelf. A discount on the gym's rowing
   // machine is only an offer to a player who has a gym, and to everyone else
   // it is a slot of the week's five spent on something they cannot install.
-  // `giftable` finally earns its place in the data: it has been declared on
-  // every item since the first catalogue and read by nothing.
+  //
+  // `giftable` is deliberately NOT consulted here. It marks what may be given
+  // away free, and the shop sells: gating the shelf on it would have hidden
+  // every expensive piece in the game from the shop, which is most of what a
+  // discount is worth having on.
   const eligible = data.decor.filter((item) => item.unlockLevel <= state.player.level
-    && item.giftable && goesAnywhere(item));
+    && goesAnywhere(item));
   if (eligible.length === 0) return [];
 
   const season = activeSeason(data, epochMs);

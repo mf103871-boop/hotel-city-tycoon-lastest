@@ -14,7 +14,9 @@ import { advance } from '../../src/core/sim/tick.ts';
 import { resolveOffline } from '../../src/core/sim/offline.ts';
 import { shiftPhase, isOpen } from '../../src/core/systems/economy.ts';
 import { checkInTicks, receptionEfficiency } from '../../src/core/systems/guests.ts';
-import { fixturesFor } from '../../src/core/systems/roomAnchors.ts';
+import {
+  fixturesFor, slotAt, occupancyKey, spotKindFor,
+} from '../../src/core/systems/roomAnchors.ts';
 import { owned, grant, consume } from '../../src/core/systems/inventory.ts';
 import { shopOffers, giftState } from '../../src/core/systems/liveops.ts';
 import { objectiveProgress } from '../../src/core/systems/objectives.ts';
@@ -626,8 +628,10 @@ check('a room arrives furnished, and buying takes the built-in\'s place', () => 
   const piece = room.decor[0]!;
   assert(piece.localX === target.x && piece.localY === target.y,
     'the bought piece did not take the place it was asked for');
+  const slot = slotAt('economy', def.blocks.w, def.blocks.h, piece.localX, piece.localY,
+    spotKindFor('bed', 'bed'));
   const after = fixturesFor('economy', def.blocks.w, def.blocks.h,
-    new Set([`${piece.localX},${piece.localY}`]));
+    new Set([occupancyKey(slot!.kind, piece.localX, piece.localY)]));
   assert(after.length === built.length - 1, 'the built-in is still drawn under the new piece');
 });
 

@@ -185,6 +185,19 @@ export function execute(data: SimData, state: GameState, cmd: Command): CommandR
       // decorate sheet lists; this is the same rule, enforced.
       if (!decorFitsRoom(data, rdef, cmd.defId)) return reject('slotIncompatible');
 
+      // A place the player picked by hand wins over the room's own order, so
+      // "upgrade this one" puts the new piece exactly where the old one was.
+      // Resolved BEFORE anything is spent: it is the last thing that can
+      // refuse the command, and a refusal after the money has gone is both a
+      // charge for nothing and a break in the byte-identical guarantee.
+      const bounds = anchorBoundsFor(data, room.defId);
+      const takenAnchors = new Set(room.decor.map((p) => anchorKey(p.localX, p.localY)));
+      const wanted = cmd.planSlot === undefined ? null
+        : plannedSlot(room.defId, rdef.blocks.w, rdef.blocks.h, cmd.planSlot,
+          spotKindFor(def.category, def.slotType));
+      if (cmd.planSlot !== undefined && !wanted) return reject('slotIncompatible');
+      if (wanted && takenAnchors.has(anchorKey(wanted.x, wanted.y))) return reject('slotTaken');
+
       // Spend a copy the player already owns before spending their money.
       // Every validation above has passed, so consuming here cannot leave the
       // store short of an item that then fails to be placed.
@@ -197,15 +210,7 @@ export function execute(data: SimData, state: GameState, cmd: Command): CommandR
       // DEC-010: a freshly placed piece needs somewhere to stand, not just a
       // slot index. The room's own current pieces are what it must not land
       // on top of; slotType picks which surface band it prefers.
-      const bounds = anchorBoundsFor(data, room.defId);
-      const takenAnchors = new Set(room.decor.map((p) => anchorKey(p.localX, p.localY)));
-      // A place the player picked by hand wins over the room's own order, so
-      // "upgrade this one" puts the new piece exactly where the old one was.
-      const wanted = cmd.planSlot === undefined ? null
-        : plannedSlot(room.defId, rdef.blocks.w, rdef.blocks.h, cmd.planSlot,
-          spotKindFor(def.category, def.slotType));
-      if (cmd.planSlot !== undefined && !wanted) return reject('slotIncompatible');
-      if (wanted && takenAnchors.has(anchorKey(wanted.x, wanted.y))) return reject('slotTaken');
+      //
       // The room's own plan first (`roomAnchors.ts`): a bed goes where that
       // room keeps its bed, a lamp on its ceiling point, a rug on its floor.
       // The scan is what answers when the plan runs out of places — it always

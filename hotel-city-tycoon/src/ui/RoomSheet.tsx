@@ -78,9 +78,17 @@ export function RoomSheet({
       <Sheet
         title={swap ? t('ui.replaceWith') : t('ui.decorate')}
         subtitle={`${t(detail.nameKey)} · ${slots.length} ${t('ui.slotsFree')}`}
-        onClose={() => { setSwap(null); setMode('overview'); }}
+        onClose={() => { setSwap(null); setProblem(null); setMode('overview'); }}
       >
         <Meter fill={detail.fill} points={detail.decorPoints} target={detail.decorTarget} locale={locale} />
+        {/* A refusal here used to be silent: the row was tapped, nothing
+            happened, and a swap the player had started stayed started. */}
+        {problem && (
+          <p data-testid="decorate-problem"
+             className="mb-2 rounded-lg bg-rose-500/10 px-3 py-2 text-xs text-rose-300">
+            {t(problem)}
+          </p>
+        )}
         {catalogue.map((item) => (
           <OptionRow
           locale={locale}
@@ -107,7 +115,7 @@ export function RoomSheet({
               // A slot this kind of piece is actually allowed in, not just the
               // first empty index.
               const slot = slotsFor(state, roomId, item.slotType, item.defId)[0];
-              if (slot === undefined) return;
+              if (slot === undefined) { setProblem('reject.noSpace'); return; }
               const r = dispatch({
                 type: 'PLACE_DECOR', roomId, defId: item.defId, slot,
                 ...(swap?.planSlot !== undefined ? { planSlot: swap.planSlot } : {}),
@@ -176,7 +184,9 @@ export function RoomSheet({
               <button
                 type="button"
                 data-testid={`upgrade-decor-${fx.planSlot}`}
-                onClick={() => { setSwap({ planSlot: fx.planSlot }); setMode('decorate'); }}
+                onClick={() => {
+                  setSwap({ planSlot: fx.planSlot }); setProblem(null); setMode('decorate');
+                }}
                 className="ms-auto min-h-11 rounded-lg px-3 py-2 text-xs text-brass-300 hover:bg-white/5"
               >
                 {t('ui.upgrade')}
@@ -212,7 +222,9 @@ export function RoomSheet({
               <button
                 type="button"
                 data-testid={`replace-decor-${piece.defId}`}
-                onClick={() => { setSwap({ decorId: piece.id }); setMode('decorate'); }}
+                onClick={() => {
+                  setSwap({ decorId: piece.id }); setProblem(null); setMode('decorate');
+                }}
                 className="min-h-11 rounded-lg px-3 py-2 text-xs text-brass-300 hover:bg-white/5"
               >
                 {t('ui.replace')}
@@ -225,7 +237,7 @@ export function RoomSheet({
       {detail.decorSlots > 0 && (
         <button
           type="button"
-          onClick={() => { setSwap(null); setMode('decorate'); }}
+          onClick={() => { setSwap(null); setProblem(null); setMode('decorate'); }}
           className="mb-2 w-full rounded-xl bg-brass-500 px-4 py-3 font-semibold text-midnight-950 hover:bg-brass-400"
         >
           {t('ui.decorate')}

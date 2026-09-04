@@ -18,6 +18,7 @@
  */
 import {
   layoutFor, plannedRooms, slotsOfKind, spotKindFor, floorLineFor, fixturesFor,
+  slotAt, occupancyKey,
 } from '../../src/core/systems/roomAnchors.ts';
 import type { Slot, SpotKind } from '../../src/core/systems/roomAnchors.ts';
 import { slotAllowed, decorFitsRoom } from '../../src/core/systems/quality.ts';
@@ -278,8 +279,9 @@ check('a bought piece hides the built-in whose place it takes', () => {
     const before = fixturesFor(room.id, room.blocks.w, room.blocks.h, new Set());
     if (before.length === 0) continue;
     const target = before[0]!;
+    const slot = slotAt(room.id, room.blocks.w, room.blocks.h, target.x, target.y);
     const after = fixturesFor(room.id, room.blocks.w, room.blocks.h,
-      new Set([`${target.x},${target.y}`]));
+      new Set([occupancyKey(slot!.kind, target.x, target.y)]));
     eq(after.length, before.length - 1, `${room.id} still shows a built-in nobody can see`);
     assert(!after.some((f) => f.slot === target.slot),
       `${room.id} draws a built-in under the piece standing on it`);

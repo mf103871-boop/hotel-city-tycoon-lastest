@@ -15,7 +15,9 @@ import { decorFill } from '../core/systems/decor.ts';
 import { tierFor } from '../core/systems/stars.ts';
 import { owned as ownedCount, sellValue } from '../core/systems/inventory.ts';
 import { slotAllowed, decorFitsRoom } from '../core/systems/quality.ts';
-import { slotBoxPx, fixturesFor } from '../core/systems/roomAnchors.ts';
+import {
+  slotBoxPx, fixturesFor, occupancyKey, spotKindFor,
+} from '../core/systems/roomAnchors.ts';
 import { plotBounds, findFreeSpot, placementProblemAt } from '../core/state/grid.ts';
 import { tierOwned, nextTier, totalInvested } from '../core/systems/upgrades.ts';
 import {
@@ -151,14 +153,32 @@ function decorInfoOf(defId: string): { category: string; slotType: string; asset
   return decorIndex.get(defId);
 }
 
+/**
+ * Which designed places this room's own pieces are standing in.
+ *
+ * Keyed by kind as well as anchor: a floor covering shares its coordinate with
+ * whatever stands on it by design, so a rug must not be read as occupying the
+ * bed's place.
+ */
+function occupancyOf(room: RoomInstance): Set<string> {
+  const out = new Set<string>();
+  for (const piece of room.decor) {
+    const info = decorInfoOf(piece.defId);
+    if (!info) continue;
+    out.add(occupancyKey(spotKindFor(info.category, info.slotType), piece.localX, piece.localY));
+  }
+  return out;
+}
+
 function summariseDecor(room: RoomInstance, def: RoomDef | undefined): RoomSummaryDecor[] {
   const out: RoomSummaryDecor[] = room.decor.map((piece) => {
     const info = decorInfoOf(piece.defId);
     // The room's designed box for this spot. Looked up by anchor rather than
     // stored on the piece: the anchor already identifies the slot, so nothing
     // new has to be written into anyone's save.
-    const box = def
-      ? slotBoxPx(room.defId, def.blocks.w, def.blocks.h, piece.localX, piece.localY)
+    const box = def && info
+      ? slotBoxPx(room.defId, def.blocks.w, def.blocks.h, piece.localX, piece.localY,
+        spotKindFor(info.category, info.slotType))
       : null;
     return {
       id: piece.id,
@@ -180,7 +200,7 @@ function summariseDecor(room: RoomInstance, def: RoomDef | undefined): RoomSumma
   // The room's own furniture, in every designed place the player has not
   // taken over yet. A bought piece standing in a fixture's slot hides it,
   // which is the whole of "replace what the room came with".
-  const taken = new Set(room.decor.map((p) => `${p.localX},${p.localY}`));
+  const taken = occupancyOf(room);
   for (const fx of fixturesFor(room.defId, def?.blocks.w ?? 1, def?.blocks.h ?? 1, taken)) {
     const info = decorInfoOf(fx.defId);
     if (!info) continue;
@@ -575,9 +595,8 @@ export function roomDetail(state: GameState, roomId: string): RoomDetail | null 
   // rather than liquidated, so adding the decor's value here promised coins
   // that no longer arrive — and used to promise coins for gem-priced pieces.
   const refund = Math.round(def.cost.amount * D().economy.sellback.ratio);
-  const takenAnchors = new Set(room.decor.map((p) => `${p.localX},${p.localY}`));
   const builtIn: BuiltInDecorView[] = fixturesFor(room.defId, def.blocks.w, def.blocks.h,
-    takenAnchors)
+    occupancyOf(room))
     .map((fx) => {
       const item = D().decor.find((x) => x.id === fx.defId);
       return {

@@ -540,13 +540,21 @@ export function spotsOfKind(layout: readonly Slot[], kind: SpotKind, _roomW: num
 
 /**
  * The slot a piece standing at this anchor occupies, if the room designed one
- * there. This is how the renderer finds a piece's box: the anchor is the
- * identity, so nothing new has to be written into the save.
+ * there. This is how the renderer finds a piece's box: the anchor plus the
+ * kind of thing standing on it is the identity, so nothing new has to be
+ * written into the save.
+ *
+ * The kind matters because a floor covering is *meant* to share its place with
+ * the chair standing on it, so a room can have a `surface` slot and a `bed`
+ * slot at the same coordinate. Without the kind, a rug laid in the economy
+ * room resolved to the bed's slot and was drawn in the bed's box.
  */
 export function slotAt(roomDefId: string, blocksW: number, blocksH: number,
-                       x: number, y: number): Slot | null {
+                       x: number, y: number, kind?: SpotKind): Slot | null {
   const layout = layoutFor(roomDefId, blocksW, blocksH);
-  return layout.find((slot) => slot.x === x && slot.y === y) ?? null;
+  const here = layout.filter((slot) => slot.x === x && slot.y === y);
+  if (here.length === 0) return null;
+  return (kind && here.find((slot) => slot.kind === kind)) ?? here[0]!;
 }
 
 /** What the building puts in this room before the player buys anything. */
@@ -561,11 +569,23 @@ export interface RoomFixture {
 }
 
 /**
+ * The key a slot is occupied by, which is its kind AND its anchor.
+ *
+ * Not the anchor alone. A room may design a `surface` slot and a `bed` slot at
+ * the same coordinate on purpose — a rug belongs under the bed standing on it
+ * — and keying on the anchor alone meant that laying a rug in the economy room
+ * made its built-in bed vanish.
+ */
+export function occupancyKey(kind: SpotKind, x: number, y: number): string {
+  return `${kind}:${x},${y}`;
+}
+
+/**
  * The fixtures of a room that nothing is standing in front of.
  *
- * `occupied` is the set of anchors the room's own pieces hold, in the
- * `anchorKey` form. A bought piece standing in a fixture's slot hides it —
- * that is the upgrade the player can see.
+ * `occupied` holds `occupancyKey` values for the room's own pieces. A bought
+ * piece standing in a fixture's slot hides it — that is the upgrade the player
+ * can see — and a rug lying across a bed's feet hides nothing.
  */
 export function fixturesFor(roomDefId: string, blocksW: number, blocksH: number,
                             occupied: ReadonlySet<string>): RoomFixture[] {
@@ -574,7 +594,7 @@ export function fixturesFor(roomDefId: string, blocksW: number, blocksH: number,
   for (let i = 0; i < layout.length; i++) {
     const slot = layout[i]!;
     if (!slot.fixture) continue;
-    if (occupied.has(anchorKey(slot.x, slot.y))) continue;
+    if (occupied.has(occupancyKey(slot.kind, slot.x, slot.y))) continue;
     out.push({ slot: i, defId: slot.fixture, x: slot.x, y: slot.y, w: slot.w, h: slot.h });
   }
   return out;
@@ -716,8 +736,9 @@ export function plannedSlot(roomDefId: string, blocksW: number, blocksH: number,
  * the units; the conversion is the same 8 and 6 the whole file is built on.
  */
 export function slotBoxPx(roomDefId: string, blocksW: number, blocksH: number,
-                          x: number, y: number): { w: number; h: number } | null {
-  const slot = slotAt(roomDefId, blocksW, blocksH, x, y);
+                          x: number, y: number,
+                          kind?: SpotKind): { w: number; h: number } | null {
+  const slot = slotAt(roomDefId, blocksW, blocksH, x, y, kind);
   if (!slot) return null;
   return { w: slot.w * 8, h: slot.h * 6 };
 }
