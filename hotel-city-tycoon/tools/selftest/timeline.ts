@@ -15,7 +15,7 @@ import { resolveOffline } from '../../src/core/sim/offline.ts';
 import { shiftPhase, isOpen } from '../../src/core/systems/economy.ts';
 import { checkInTicks, receptionEfficiency } from '../../src/core/systems/guests.ts';
 import {
-  fixturesFor, slotAt, occupancyKey, spotKindFor,
+  fixturesFor, slotAt, occupancyKey, spotKindFor, layoutFor,
 } from '../../src/core/systems/roomAnchors.ts';
 import { owned, grant, consume } from '../../src/core/systems/inventory.ts';
 import { shopOffers, giftState } from '../../src/core/systems/liveops.ts';
@@ -641,6 +641,32 @@ check('a rug in a bedroom does not delete the bedroom\'s bed', () => {
   assert(detail.builtIn.length === before.length,
     `laying a rug removed ${before.length - detail.builtIn.length} of the room's built-in pieces`);
   assert(detail.builtIn.some((f) => f.defId === 'bed_cot'), 'the room lost its bed');
+});
+
+check('a rug does not take the bed\'s place away from the next bed', () => {
+  /*
+   * The two share a coordinate on purpose. Blocking by the bare anchor meant a
+   * rug laid first made the bed's place unavailable, and the bed that followed
+   * fell through to the scan and landed wherever it reached — the exact
+   * behaviour the room plans exist to remove.
+   */
+  initSelectors(data);
+  const state = fresh();
+  state.player.coins += 5_000_000;
+  state.player.level = 40;
+  const room = state.hotel.rooms.find((r) => r.defId === 'economy')!;
+  const def = data.rooms.find((r) => r.id === 'economy')!;
+  const bedSlot = layoutFor('economy', def.blocks.w, def.blocks.h)
+    .find((s) => s.kind === 'bed')!;
+  execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: 'rug_mat', slot: 0 });
+  const placedBed = execute(data, state, {
+    type: 'PLACE_DECOR', roomId: room.id, defId: 'bed_cot', slot: 1,
+  });
+  assert(placedBed.ok, `placing the bed failed: ${placedBed.ok === false ? placedBed.reason : ''}`);
+  const bed = room.decor.find((p) => p.defId === 'bed_cot')!;
+  assert(bed.localX === bedSlot.x && bed.localY === bedSlot.y,
+    `the bed landed at (${bed.localX},${bed.localY}) instead of its own place `
+    + `(${bedSlot.x},${bedSlot.y})`);
 });
 
 check('replacing refuses what the room refuses, and changes nothing when it does', () => {

@@ -645,14 +645,47 @@ export function anchorFor(
   const bounds = anchorBoundsFor(data, roomDefId);
   const layout = layoutFor(roomDefId, room.blocks.w, room.blocks.h);
 
-  const blocked: ReadonlySet<string> = kind === 'surface'
-    ? new Set(placed
-      .filter((p) => {
-        const other = data.decor.find((d) => d.id === p.defId);
-        return other && spotKindFor(other.category, other.slotType) === 'surface';
-      })
-      .map((p) => anchorKey(p.localX, p.localY)))
-    : taken;
+  /*
+   * What is standing where, and what class of thing it is.
+   *
+   * A room may design two places at one coordinate on purpose — a rug lies
+   * under the bed standing on it, and `decorArt.ts` draws floor coverings
+   * first for exactly that reason. Twelve coordinates across the 23 rooms are
+   * shared that way, eight of them a bed and its rug.
+   *
+   * So one point may hold two pieces, but only ever one floor covering and one
+   * thing standing on it. Blocking by the bare anchor made a rug take the
+   * bed's place away, so the next bed bought for that room fell through to the
+   * scan; ignoring the classes entirely would let a second rug stack on the
+   * first. The test is therefore whether the piece being placed and what is
+   * already there are complementary.
+   *
+   * `taken` is still honoured for anchors the caller did not describe: it is
+   * all some callers pass, and a busy anchor of unknown class is best treated
+   * as busy.
+   */
+  const occupiedBy = new Map<string, Set<SpotKind>>();
+  const described = new Set<string>();
+  for (const p of placed) {
+    const at = anchorKey(p.localX, p.localY);
+    described.add(at);
+    const other = data.decor.find((d) => d.id === p.defId);
+    if (!other) continue;
+    const has = occupiedBy.get(at) ?? new Set<SpotKind>();
+    has.add(spotKindFor(other.category, other.slotType));
+    occupiedBy.set(at, has);
+  }
+  const isBlocked = (spot: Spot): boolean => {
+    const at = anchorKey(spot.x, spot.y);
+    const here = occupiedBy.get(at);
+    if (here) {
+      for (const other of here) {
+        if ((other === 'surface') === (kind === 'surface')) return true;
+      }
+      return false;
+    }
+    return taken.has(at) && !described.has(at);
+  };
 
   /*
    * A slot is offered as it was designed, pulled back only inside the room's
@@ -703,7 +736,7 @@ export function anchorFor(
       for (const slot of slotsOfKind(layout, candidateKind, maxPieces)) {
         if (!accepts(slot)) continue;
         const spot = clamp(slot);
-        if (blocked.has(anchorKey(spot.x, spot.y))) continue;
+        if (isBlocked(spot)) continue;
         return spot;
       }
     }

@@ -125,11 +125,21 @@ check('every slot has enough places for the pieces the room may hold', () => {
   // twelve chandeliers — but a room whose plan is much smaller than its own
   // cap will fall through to the scan, which is the behaviour this whole
   // change exists to remove.
+  const short: string[] = [];
   for (const room of simData.rooms) {
     const layout = layoutFor(room.id, room.blocks.w, room.blocks.h);
     assert(layout.length >= Math.min(room.decorSlots, 8),
       `${room.id} plans ${layout.length} places for ${room.decorSlots} slots`);
+    if (layout.length < room.decorSlots) {
+      short.push(`${room.id} ${layout.length}/${room.decorSlots}`);
+    }
   }
+  // Printed rather than asserted away: these rooms are as full as their own
+  // pictures allow. What is left in them is eight or ten pixels between a
+  // window and a door, and a slot that narrow makes a worse place than the
+  // banded scan a piece falls back to. Worth seeing when a room is redrawn.
+  console.log(`      ${short.length} room(s) cannot design a place for every`
+    + ` slot they sell: ${short.join(', ')}`);
 });
 
 check('no slot hangs a piece outside its own room', () => {
@@ -286,6 +296,31 @@ check('a bought piece hides the built-in whose place it takes', () => {
     assert(!after.some((f) => f.slot === target.slot),
       `${room.id} draws a built-in under the piece standing on it`);
   }
+});
+
+check('a coordinate is only ever shared with a floor covering', () => {
+  /*
+   * The rule the rest of the model leans on. Two places at one coordinate is
+   * deliberate — a rug lies under the bed standing on it — and both
+   * `anchorFor` and `fixturesFor` now tell them apart by kind. That is only
+   * safe while every such pair has a `surface` in it: two things that stand on
+   * the floor sharing a coordinate would be two pieces in one spot.
+   */
+  let shared = 0;
+  for (const room of simData.rooms) {
+    const layout = layoutFor(room.id, room.blocks.w, room.blocks.h);
+    for (let i = 0; i < layout.length; i++) {
+      for (let j = i + 1; j < layout.length; j++) {
+        const a = layout[i]!;
+        const b = layout[j]!;
+        if (a.x !== b.x || a.y !== b.y) continue;
+        shared++;
+        assert(a.kind === 'surface' || b.kind === 'surface',
+          `${room.id} puts a ${a.kind} and a ${b.kind} at the same (${a.x},${a.y})`);
+      }
+    }
+  }
+  console.log(`      ${shared} shared coordinates, every one of them a floor covering`);
 });
 
 check('a piece in the OTHER place at the same coordinate hides nothing', () => {
