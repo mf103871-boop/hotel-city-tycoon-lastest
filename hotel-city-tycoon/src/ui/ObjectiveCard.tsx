@@ -24,7 +24,7 @@ export function ObjectiveCard({ locale }: { locale: Locale }) {
   const pct = Math.round(objective.progress * 100);
 
   return (
-    <div className="pointer-events-auto mb-2 rounded-xl border border-white/10 bg-midnight-900/85 px-4 py-2.5 backdrop-blur">
+    <div className="pointer-events-auto mb-2 rounded-xl border border-white/10 bg-midnight-900/92 px-4 py-2.5 backdrop-blur">
       <div className="flex items-baseline gap-2">
         <span className="text-[11px] uppercase tracking-[0.12em] text-brass-500">{t('ui.objective')}</span>
         <span className="min-w-0 flex-1 truncate text-sm text-sand-100">{t(objective.titleKey)}</span>

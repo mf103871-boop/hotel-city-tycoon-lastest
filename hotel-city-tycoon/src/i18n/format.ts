@@ -60,3 +60,30 @@ export function coins(locale: Locale, value: number): string {
 export function percent(locale: Locale, ratio: number): string {
   return formatter(locale, { style: 'percent', maximumFractionDigits: 0 }).format(ratio);
 }
+
+/**
+ * An ordered pair of numbers that must keep its order in Arabic.
+ *
+ * `"140 → 56"` in a right-to-left paragraph does not render as `140 → 56`.
+ * The Unicode bidi algorithm resolves each number to a right-to-left run and
+ * the arrow between them to a neutral that joins the two, so the group is laid
+ * out right-to-left and the browser paints `56 → 140`. Measured in Chromium
+ * rather than reasoned about — every pair of this shape reverses:
+ *
+ *     logical            Arabic painted
+ *     140 → 56           56 → 140         a discount reads as a price rise
+ *     ×1.36 → ×1.52      1.52× → 1.36×    an upgrade reads as a downgrade
+ *     2×1                1×2              a room's width and height swap
+ *
+ * LRI…PDI (U+2066, U+2069) isolates the run: it is placed as a single unit in
+ * the Arabic flow, so the pair reads correctly and the Arabic around it is
+ * unaffected. Isolate, not embed — U+202A would leave the surrounding text's
+ * direction to guesswork at the boundary.
+ *
+ * For an ordered pair only. A lone number needs nothing; digits already run
+ * left to right on their own, and wrapping ordinary localised prose would put
+ * its words in the wrong place.
+ */
+export function pair(text: string): string {
+  return `⁦${text}⁩`;
+}

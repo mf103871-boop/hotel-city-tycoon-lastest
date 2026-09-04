@@ -10,7 +10,7 @@
 import { useGameStore } from '../bridge/index.ts';
 import { shopSlots, shopRefreshIn } from '../bridge/selectors.ts';
 import { translate } from '../i18n/index.ts';
-import { coins } from '../i18n/format.ts';
+import { coins, pair } from '../i18n/format.ts';
 import type { Locale } from '../i18n/index.ts';
 import { Sheet, OptionRow } from './Sheet.tsx';
 import { playSound } from '../audio/index.ts';
@@ -48,7 +48,7 @@ export function ShopPanel({ locale, onClose }: { locale: Locale; onClose: () => 
             title={t(slot.nameKey)}
             meta={`+${slot.decorPoints} · ${Math.round(slot.discount * 100)}% ${t('ui.save')}`
               + (slot.owned > 0 ? ` · ${t('ui.owned')} ${slot.owned}` : '')}
-            detail={`${coins(locale, slot.fullPrice)} → ${coins(locale, slot.price)}`}
+            detail={pair(`${coins(locale, slot.fullPrice)} → ${coins(locale, slot.price)}`)}
             price={slot.price}
             currency={slot.currency}
             blockerLabel={

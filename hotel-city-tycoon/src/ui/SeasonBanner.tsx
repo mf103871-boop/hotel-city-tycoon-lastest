@@ -6,6 +6,7 @@
  */
 import { useGameStore } from '../bridge/index.ts';
 import { seasonBanner } from '../bridge/selectors.ts';
+import { Pair } from './Pair.tsx';
 import { translate } from '../i18n/index.ts';
 import type { Locale } from '../i18n/index.ts';
 
@@ -19,7 +20,7 @@ export function SeasonBanner({ locale }: { locale: Locale }) {
   const t = (k: string, v?: Record<string, string | number>) => translate(locale, k, v);
 
   return (
-    <div className="pointer-events-none absolute inset-x-3 top-24 z-10 rounded-xl border border-brass-500/30 bg-ink-900/85 px-4 py-2 backdrop-blur">
+    <div className="pointer-events-none absolute inset-x-3 top-24 z-10 rounded-xl border border-brass-500/30 bg-ink-900/92 px-4 py-2 backdrop-blur">
       <div className="flex items-baseline gap-2">
         <span className="text-sm font-semibold text-brass-400">{t(season.nameKey)}</span>
         <span className="ms-auto font-mono text-[11px] text-sand-400">
@@ -28,7 +29,7 @@ export function SeasonBanner({ locale }: { locale: Locale }) {
       </div>
       <p className="text-[11px] leading-snug text-sand-400">{t(season.descKey)}</p>
       <p className="mt-0.5 font-mono text-[11px] text-brass-400">
-        ×{season.incomeMultiplier.toFixed(2)} · ×{season.arrivalMultiplier.toFixed(2)}
+        <Pair>×{season.incomeMultiplier.toFixed(2)} · ×{season.arrivalMultiplier.toFixed(2)}</Pair>
       </p>
     </div>
   );

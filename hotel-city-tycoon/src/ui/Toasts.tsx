@@ -13,7 +13,7 @@ import type { Locale } from '../i18n/index.ts';
 const TONE_STYLE = {
   good: 'border-emerald-500/30 bg-emerald-950/80 text-emerald-100',
   bad: 'border-amber-500/30 bg-amber-950/80 text-amber-100',
-  neutral: 'border-white/10 bg-midnight-800/90 text-sand-200',
+  neutral: 'border-white/10 bg-midnight-800/92 text-sand-200',
 } as const;
 
 /**

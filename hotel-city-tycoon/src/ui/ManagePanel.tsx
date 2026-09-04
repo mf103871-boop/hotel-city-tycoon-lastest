@@ -14,8 +14,9 @@ import { useGameStore } from '../bridge/index.ts';
 import { nextExpansion, storedRoomViews, storedDecor } from '../bridge/selectors.ts';
 import { REJECTION_KEY } from '../bridge/rejections.ts';
 import { translate } from '../i18n/index.ts';
-import { coins as fmtCoins, num } from '../i18n/format.ts';
+import { coins as fmtCoins, num, pair } from '../i18n/format.ts';
 import type { Locale } from '../i18n/index.ts';
+import { Pair } from './Pair.tsx';
 import { Sheet, OptionRow } from './Sheet.tsx';
 import { blockerLabel } from './BuildPanel.tsx';
 
@@ -82,11 +83,11 @@ export function ManagePanel({
               <dl className="mb-3 grid grid-cols-2 gap-2 rounded-xl bg-white/[0.03] p-3">
                 <dt className="text-[11px] uppercase tracking-wide text-sand-400">{t('ui.plotNow')}</dt>
                 <dd className="text-end font-mono text-sm text-sand-100">
-                  {expansion.currentGrid.w}×{expansion.currentGrid.h} · {expansion.currentBlocks}
+                  <Pair>{expansion.currentGrid.w}×{expansion.currentGrid.h}</Pair> · {expansion.currentBlocks}
                 </dd>
                 <dt className="text-[11px] uppercase tracking-wide text-sand-400">{t('ui.plotAfter')}</dt>
                 <dd data-testid="plot-after" className="text-end font-mono text-sm text-brass-400">
-                  {expansion.grid.w}×{expansion.grid.h} · {expansion.blocks}
+                  <Pair>{expansion.grid.w}×{expansion.grid.h}</Pair> · {expansion.blocks}
                 </dd>
                 <dt className="text-[11px] uppercase tracking-wide text-sand-400">{t('ui.requiredLevel')}</dt>
                 <dd className="text-end font-mono text-sm text-sand-100">{expansion.unlockLevel}</dd>
@@ -95,7 +96,7 @@ export function ManagePanel({
                 locale={locale}
                 title={t('ui.expandPlot')}
                 meta={`+${expansion.blocks - expansion.currentBlocks} ${t('ui.blocks')}`}
-                detail={`${expansion.grid.w}×${expansion.grid.h}`}
+                detail={pair(`${expansion.grid.w}×${expansion.grid.h}`)}
                 price={expansion.cost}
                 currency="coins"
                 blockerLabel={blockerLabel(expansion.blocker, expansion.unlockLevel, t)}
@@ -119,7 +120,7 @@ export function ManagePanel({
               <div className="flex items-baseline gap-2">
                 <span className="text-sm font-medium text-sand-100">{t(room.nameKey)}</span>
                 <span className="ms-auto font-mono text-[11px] text-sand-400">
-                  {room.blocks.w}×{room.blocks.h}
+                  <Pair>{room.blocks.w}×{room.blocks.h}</Pair>
                 </span>
               </div>
               <p className="mt-0.5 text-[11px] text-sand-400">

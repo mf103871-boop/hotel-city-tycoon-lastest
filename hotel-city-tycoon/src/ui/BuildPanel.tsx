@@ -12,6 +12,7 @@ import { buildCatalog } from '../bridge/selectors.ts';
 import type { Blocker, BuildOption } from '../bridge/selectors.ts';
 import { translate } from '../i18n/index.ts';
 import type { Locale } from '../i18n/index.ts';
+import { pair } from '../i18n/format.ts';
 import { Sheet, OptionRow } from './Sheet.tsx';
 
 const TABS: Array<{ key: 'guest' | 'commercial' | 'functional'; labelKey: string }> = [
@@ -67,7 +68,7 @@ export function BuildPanel({ locale, onClose }: { locale: Locale; onClose: () =>
           title={t(option.nameKey)}
           meta={t(option.descKey)}
           detail={[
-            `${option.blocks.w}×${option.blocks.h}`,
+            pair(`${option.blocks.w}×${option.blocks.h}`),
             option.incomePerGuest ? `${option.incomePerGuest} ${t('ui.perGuest')}` : null,
           ].filter(Boolean).join(' · ')}
           price={option.cost.amount}

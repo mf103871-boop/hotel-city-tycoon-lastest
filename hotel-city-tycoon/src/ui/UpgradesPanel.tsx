@@ -14,6 +14,7 @@ import { upgradeOptions, upgradeInvestment } from '../bridge/selectors.ts';
 import { translate } from '../i18n/index.ts';
 import { coins as formatCoins } from '../i18n/format.ts';
 import type { Locale } from '../i18n/index.ts';
+import { Pair } from './Pair.tsx';
 import { Sheet } from './Sheet.tsx';
 import { blockerLabel } from './BuildPanel.tsx';
 import { playSound } from '../audio/index.ts';
@@ -76,7 +77,7 @@ export function UpgradesPanel({ locale, onClose }: { locale: Locale; onClose: ()
               </div>
               {option.next !== null && (
                 <span className="font-mono text-[11px] text-sand-500">
-                  ×{option.current.toFixed(2)} → ×{option.next.toFixed(2)}
+                  <Pair>×{option.current.toFixed(2)} → ×{option.next.toFixed(2)}</Pair>
                 </span>
               )}
             </div>

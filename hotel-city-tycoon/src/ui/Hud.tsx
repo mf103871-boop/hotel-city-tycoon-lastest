@@ -66,7 +66,7 @@ export function Hud({
         className="pointer-events-none absolute inset-x-0 top-0 z-10 p-3"
         style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top, 0px))' }}
       >
-        <div className="pointer-events-auto flex items-center gap-4 rounded-xl border border-white/5 bg-midnight-900/85 px-4 py-2.5 backdrop-blur">
+        <div className="pointer-events-auto flex items-center gap-4 rounded-xl border border-white/5 bg-midnight-900/92 px-4 py-2.5 backdrop-blur">
           <Readout label={t('ui.coins')} value={coins(locale, state.player.coins)} />
           <Readout label={t('ui.gems')} value={String(state.player.gems)} />
           <Readout label={t('ui.level')} value={String(state.player.level)} />
@@ -75,7 +75,17 @@ export function Hud({
             <span className="text-lg leading-tight text-brass-400">{'★'.repeat(state.hotel.stars)}</span>
           </div>
         </div>
-        <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/10">
+        {/*
+          * The level bar sits outside the panel, directly on the canvas.
+          *
+          * Its track was `bg-white/10` — white at a tenth over a sky-blue
+          * canvas, which is #7EC3FA against #6FBCF9: nothing. Sampled from a
+          * screenshot the empty track was pixel-identical to the sky, so the
+          * bar only existed once it had something to draw. Ink at 45% gives
+          * the track a floor of its own on any backdrop the renderer paints,
+          * and a rim keeps the coral fill off the sky directly.
+          */}
+        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink-950/45 ring-1 ring-ink-950/25">
           <div
             className="h-full bg-brass-500 transition-[width] duration-500"
             style={{ width: `${Math.round(levelBarProgress(state) * 100)}%` }}
@@ -89,7 +99,7 @@ export function Hud({
         style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
       >
         {objective}
-        <div className="pointer-events-auto rounded-xl border border-white/5 bg-midnight-900/85 px-4 py-3 backdrop-blur">
+        <div className="pointer-events-auto rounded-xl border border-white/5 bg-midnight-900/92 px-4 py-3 backdrop-blur">
           {open ? (
             <div className="flex items-baseline justify-between">
               <span className="text-xs uppercase tracking-[0.12em] text-sand-400">{t('ui.shiftEndsIn')}</span>

@@ -31,7 +31,7 @@ export function PhoneButton({ onOpen }: { onOpen: () => void }) {
       type="button"
       onClick={onOpen}
       aria-label="phone"
-      className="absolute end-16 top-24 z-20 flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 bg-midnight-900/85 text-lg backdrop-blur"
+      className="absolute end-16 top-24 z-20 flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 bg-midnight-900/92 text-lg backdrop-blur"
     >
       <span aria-hidden>📞</span>
       {attention > 0 && (

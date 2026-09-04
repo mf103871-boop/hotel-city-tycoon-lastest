@@ -37,16 +37,26 @@
   /*
    * The text ramp: warm neutrals, the chrome's own temperature.
    *
-   * Contrast against the panel these are used on (#221915, which is
-   * ink-900/85 over ink-950): 100 14.2:1, 200 12.3:1, 300 9.8:1, 400 7.1:1,
-   * 500 5.2:1. `sand-600` is 3.5:1 and so is not for text — it exists for the
-   * unlit pips of a star rating and nothing else.
+   * The floor these are measured against is not `ink-950`. Every panel in the
+   * game is translucent and sits on the *canvas*, so what is behind the text
+   * is `ink-900` at the panel's own opacity over whatever the renderer last
+   * painted there — and the brightest thing it can paint is a cream hotel wall
+   * (#FBE7B8), not the page ground. Measured on screen, the top bar is
+   * #303238 over the day sky, nowhere near the #221915 an ink-950 ground
+   * would give; a ramp tuned against that ground reads a full step better than
+   * it is, which is how `sand-500` came to be 3.9:1 in the shipped build while
+   * being calculated at 5.2:1.
+   *
+   * So: contrast against `ink-900/92` over a cream wall, the worst case the
+   * game can actually produce — 100 12.5:1, 200 10.8:1, 300 8.6:1, 400 5.8:1,
+   * 500 4.8:1. `sand-600` is 2.8:1 there and so is not for text at all — it
+   * exists for the unlit pips of a star rating, which are a shape too.
    */
   --color-sand-100: #f5e7d5;
   --color-sand-200: #e8d7c3;
   --color-sand-300: #d4c0ab;
   --color-sand-400: #b8a38f;
-  --color-sand-500: #9e8a78;
+  --color-sand-500: #a89380;
   --color-sand-600: #806e5e;
 
   /*

@@ -286,28 +286,88 @@ check('every colour class a component asks for actually exists', () => {
     `colour classes that produce no CSS: ${[...new Set(problems)].join(', ')}`);
 });
 
-check('every text colour in the theme is readable on the panels it is used on', () => {
+/** Composite `fg` at `alpha` over `bg`, both #rrggbb. */
+function over(fg: string, bg: string, alpha: number): string {
+  const f = hexToRgb(fg);
+  const b = hexToRgb(bg);
+  const ch = (i: 0 | 1 | 2) => Math.round(f[i] * alpha + b[i] * (1 - alpha));
+  return `#${[ch(0), ch(1), ch(2)].map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+}
+
+/**
+ * The brightest thing the renderer can paint behind a panel.
+ *
+ * Not the page ground. Every panel in this game is translucent and floats on
+ * the canvas, so a ramp measured against `ink-950` reads a whole step better
+ * than it is — which is exactly how `sand-500` was calculated at 5.2:1 and
+ * shipped at 3.9:1. The hotel can be panned under any panel, and its palest
+ * wall is hcstyle.py's `wallCream`.
+ */
+const BRIGHTEST_BACKDROP = '#fbe7b8';
+
+check('every text colour clears WCAG AA on the worst panel the game can make', () => {
   // `slate-500` (3.6:1) and `slate-600` (2.3:1) were the ramp for every piece
   // of secondary copy in the game. Both are below WCAG AA, and slate-600 was
   // carrying the text that explains why a purchase is refused.
   //
-  // sand-600 is deliberately exempt: it is 3.5:1 and exists only for the
-  // unlit ☆ of a star rating, which is a shape as well as a colour.
+  // sand-600 is exempt: it is not for text. It exists for the unlit ☆ of a
+  // star rating, which is a shape as well as a colour.
   const DECORATIVE = new Set(['sand-600']);
-  const panels = [
-    ['ink-950', T['ink-950']!],
-    ['ink-900', T['ink-900']!],
-    ['ink-800', T['ink-800']!],
-  ] as const;
+
+  // The lowest panel opacity any component actually uses, read from the
+  // source: lower the opacity anywhere and this floor drops with it.
+  //
+  // Only the three tokens that are actually text surfaces. `ink-950` is the
+  // page ground and the level bar's track — a bar carries no text, and folding
+  // its 45% into this floor would demand a text ramp no chrome needs.
+  let lowest = 1;
+  const found: string[] = [];
+  for (const [, src] of uiFiles()) {
+    for (const m of src.matchAll(/\bbg-(?:ink-900|midnight-900|midnight-800)\/(\d{2})\b/g)) {
+      const alpha = Number(m[1]) / 100;
+      found.push(m[0]);
+      if (alpha < lowest) lowest = alpha;
+    }
+  }
+  assert(found.length > 0, 'no translucent panel found — has the chrome changed?');
+  const panel = over(T['ink-900']!, BRIGHTEST_BACKDROP, lowest);
+
   const problems: string[] = [];
   for (const [name, hex] of Object.entries(T)) {
     if (!name.startsWith('sand-') || DECORATIVE.has(name)) continue;
-    for (const [panel, panelHex] of panels) {
-      const ratio = contrast(hex, panelHex);
-      if (ratio < 4.5) problems.push(`${name} on ${panel} is ${ratio.toFixed(2)}:1`);
+    const ratio = contrast(hex, panel);
+    if (ratio < 4.5) {
+      problems.push(`${name} on the ${Math.round(lowest * 100)}% panel (${panel}) is ${ratio.toFixed(2)}:1`);
     }
   }
+  // The money figures are the numbers the player is actually watching.
+  for (const name of ['brass-400', 'water-hi']) {
+    const ratio = contrast(T[name]!, panel);
+    if (ratio < 4.5) problems.push(`${name} is ${ratio.toFixed(2)}:1`);
+  }
   assert(problems.length === 0, `text colours below WCAG AA: ${problems.join(', ')}`);
+});
+
+check('nothing the canvas shows through is used to draw a control', () => {
+  // The level bar's track was `bg-white/10`, drawn outside the HUD panel
+  // directly on the canvas: white at a tenth over the sky is #7EC3FA against
+  // #6FBCF9, and a screenshot of the empty bar was pixel-identical to the sky.
+  // A control on bare canvas cannot lean on the page ground it is not on.
+  const problems: string[] = [];
+  for (const [file, src] of uiFiles()) {
+    for (const m of src.matchAll(/\bbg-white\/(\d{1,2})\b/g)) {
+      // Inside a panel a white veil is a legitimate raised surface; the sin is
+      // using one as the only body of a control that has no panel under it.
+      const around = src.slice(Math.max(0, m.index! - 400), m.index!);
+      const onCanvas = /pointer-events-(?:none|auto) absolute|absolute inset-x-0 (?:top|bottom)-0/.test(around)
+        && !/bg-(?:ink|midnight)-9\d0\//.test(src.slice(m.index!, m.index! + 200));
+      if (onCanvas && Number(m[1]) <= 10) {
+        problems.push(`${path.basename(file)}: ${m[0]} on bare canvas`);
+      }
+    }
+  }
+  assert(problems.length === 0,
+    `controls drawn in a veil the canvas shows straight through: ${problems.join(', ')}`);
 });
 
 check('nothing in the interface is painted in the cold ramp the palette replaced', () => {
@@ -323,6 +383,48 @@ check('nothing in the interface is painted in the cold ramp the palette replaced
   }
   assert(problems.length === 0,
     `cold-ramp colours on warm chrome: ${[...new Set(problems)].join(', ')}`);
+});
+
+check('ordered number pairs keep their order in Arabic', () => {
+  // `140 → 56` in a right-to-left paragraph is painted `56 → 140`: both
+  // numbers resolve to right-to-left runs and the arrow between them is a
+  // neutral that joins them, so the group is laid out right-to-left. Measured
+  // in Chromium, not reasoned about. In Arabic that made every shop discount
+  // read as a price rise, every upgrade as a downgrade, and every room's
+  // width and height swap places.
+  //
+  // The fix is an isolate: `pair()` from src/i18n/format.ts for strings, the
+  // <Pair> component for JSX. This finds a pair that has neither.
+  // Both sides have to be numbers. `3 × شبح` is a number and an Arabic word,
+  // and right-to-left is where that one belongs — the count reads first when
+  // read from the right. It is two *numbers* either side of the mark that
+  // swap, so an interpolation calling `t(...)` disqualifies the match.
+  const NUMERIC = (slot: string): boolean => !/\bt\(/.test(slot);
+  const PAIRED = [
+    /\{([^{}]*)\}[^{}<>]{0,12}(?:→|·|×)[^{}<>]{0,12}\{([^{}]*)\}/,
+    /\$\{([^{}]*)\}[^{}]{0,12}(?:→)[^{}]{0,12}\$\{([^{}]*)\}/,
+    /\$\{([^{}]*)\}\s*×\s*\$?\{?([^{}]*)\}?/,
+  ];
+  const problems: string[] = [];
+  for (const [file, src] of uiFiles()) {
+    if (/\/Pair\.tsx$/.test(file)) continue;
+    src.split('\n').forEach((raw, i) => {
+      const codeOnly = raw.replace(/\/\/.*$/, '').replace(/^\s*\*.*$/, '');
+      if (!/→|×/.test(codeOnly)) return;
+      if (/\bpair\(/.test(codeOnly) || /<Pair>/.test(codeOnly)) return;
+      // The mark itself has to be a separator, not a suffix on one number.
+      if (!/(?:→|(?:^|[\s}])×)/.test(codeOnly)) return;
+      for (const re of PAIRED) {
+        const m = re.exec(codeOnly);
+        if (!m) continue;
+        if (!NUMERIC(m[1] ?? '') || !NUMERIC(m[2] ?? '')) continue;
+        problems.push(`${path.basename(file)}:${i + 1}: ${codeOnly.trim().slice(0, 70)}`);
+        break;
+      }
+    });
+  }
+  assert(problems.length === 0,
+    `number pairs that reverse in Arabic: ${problems.join(' | ')}`);
 });
 
 console.log(line);

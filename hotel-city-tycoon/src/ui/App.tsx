@@ -207,7 +207,7 @@ export function App() {
             type="button"
             aria-label="Settings"
             onClick={() => setPanel('settings')}
-            className="absolute end-3 top-24 z-20 min-h-11 rounded-lg border border-white/10 bg-midnight-900/85
+            className="absolute end-3 top-24 z-20 min-h-11 rounded-lg border border-white/10 bg-midnight-900/92
                        px-4 py-2.5 text-sm text-sand-300 backdrop-blur"
           >
             ⚙
