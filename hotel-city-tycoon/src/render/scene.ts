@@ -22,7 +22,7 @@ import {
   fitCamera, clampCamera, pan, zoomAt, visibleRect, screenToWorld, worldToScreen,
 } from './camera.ts';
 import { GestureTracker } from './gestures.ts';
-import { Backdrop, INK, nightfall } from './backdrop.ts';
+import { Backdrop, INK, NIGHT, SKY, nightfall } from './backdrop.ts';
 import { FrameSampler, report } from './perf.ts';
 import type { CameraState, Viewport, WorldBounds, Insets } from './camera.ts';
 
@@ -85,6 +85,8 @@ export class HotelScene {
   private readonly domListeners = new AbortController();
   /** A rolling window of frame times, for the performance report. */
   readonly frames = new FrameSampler();
+  /** What the renderer is currently clearing to, so it is set only on a change. */
+  private clearColour = SKY;
   /** True once the first snapshot has been drawn, so the grid appears at boot. */
   private gridDrawn = false;
 
@@ -146,6 +148,18 @@ export class HotelScene {
       this.camera = clampCamera(this.camera, this.view, this.world, this.insets);
       this.drawGrid();
       this.gridDrawn = true;
+    }
+    // The clear colour follows the sky.
+    //
+    // app.ts pins it to daylight SKY, which is what shows for the instant
+    // before the first snapshot lands and at the very edge of a hard fling —
+    // so after dark a hard fling exposed a strip of noon sky at the border of
+    // a night picture. It is the one colour in the renderer that the night
+    // flag did not reach.
+    const clear = snapshot.night ? NIGHT.sky : SKY;
+    if (clear !== this.clearColour) {
+      this.clearColour = clear;
+      this.handle.app.renderer.background.color = clear;
     }
     // The backdrop redraws only when the plot, the hotel's outline or the
     // rating actually changed; it keys on those itself.

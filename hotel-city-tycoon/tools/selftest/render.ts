@@ -779,6 +779,48 @@ check('the renderer washes the world with the same night the art is baked in', (
 });
 
 
+check('the five guest desires read apart without their hue', () => {
+  // A desire is a four-pixel dot in a bubble over a guest's head, and the dot's
+  // colour is the whole message. Two of them used to be #E08030 and #F07858 —
+  // both mid-weight oranges, 1.03:1 apart, the same dot to anyone with a
+  // red-green deficiency. Hue alone is never enough at four pixels.
+  const source = fs.readFileSync('src/render/characterView.ts', 'utf8');
+  const block = /const DESIRE: Record<[^>]*>\s*=\s*\{([\s\S]*?)\n\};/.exec(source);
+  assert(block, 'characterView.ts has no DESIRE map');
+  const entries = [...block[1]!.matchAll(/(\w+):\s*\{\s*colour:\s*0x([0-9a-fA-F]{6}),\s*mark:\s*'(\w+)'/g)]
+    .map((m) => [m[1]!, parseInt(m[2]!, 16), m[3]!] as const);
+  assert(entries.length >= 5, `expected five desires, found ${entries.length}`);
+  const colours = entries.map((e) => [e[0], e[1]] as const);
+
+  // The mark is what actually carries the meaning: five colours this palette
+  // can offer only reach 1.35:1 in greyscale, and that is not a message on a
+  // four-pixel dot. Every desire needs its own shape.
+  const marks = entries.map((e) => e[2]);
+  assert(new Set(marks).size === marks.length,
+    `two desires share a mark: ${marks.join(', ')}`);
+
+  const lum = (c: number): number => {
+    const ch = (shift: number): number => {
+      const v = ((c >> shift) & 0xff) / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    };
+    return 0.2126 * ch(16) + 0.7152 * ch(8) + 0.0722 * ch(0);
+  };
+  // And the colours still have to pull their weight: strip the hue and no pair
+  // may collapse. 1.3:1 is what ART-0 §7's palette can actually deliver across
+  // five hues — the shape above is why that is enough rather than a compromise.
+  const MIN = 1.3;
+  for (let i = 0; i < colours.length; i++) {
+    for (let j = i + 1; j < colours.length; j++) {
+      const a = lum(colours[i]![1]);
+      const b = lum(colours[j]![1]);
+      const ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+      assert(ratio >= MIN,
+        `${colours[i]![0]} and ${colours[j]![0]} are ${ratio.toFixed(2)}:1 in greyscale — hue is all that separates them`);
+    }
+  }
+});
+
 console.log(line);
 if (failures.length === 0) console.log(`  ${passed} checks passed`);
 else { console.log(`  ${passed} passed, ${failures.length} FAILED`); failures.forEach(f => console.log(`    ✗ ${f}`)); }

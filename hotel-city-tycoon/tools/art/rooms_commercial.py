@@ -540,7 +540,7 @@ ROOMS = {
     "bar":        RoomSpec(P["wallNavy"], P["woodDk"], bar),
     "arcade":     RoomSpec(P["wallGrape"], P["carpet"], arcade),
     "cinema":     RoomSpec(P["wallNavy"], P["carpet"], cinema),
-    # The disco is the one room whose wall is not straight out of `ROOM_WALL`:
+    # The disco is the one room whose wall is not a palette entry as drawn:
     # the palette's mint was chosen when this room was still a spa, and a mint
     # disco cannot hold neon. A grape darkened toward the ink keeps it in the
     # family while giving the lights something to burn against. Its floor is

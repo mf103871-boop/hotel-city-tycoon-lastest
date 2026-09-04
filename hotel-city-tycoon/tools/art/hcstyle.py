@@ -169,33 +169,16 @@ P = {
     "blush":      rgb("#F79FA0"),
 }
 
-#: The wall colour every room type is built on. Two rooms next to each other
-#: never share one, which is what gives the facade its patchwork.
-ROOM_WALL = {
-    "lobby":        P["wallCream"],
-    "housekeeping": P["wallSky"],
-    "laundry":      P["wallSky"],
-    "staffRoom":    P["wallMint"],
-    "maintenance":  P["wallSlate"],
-    "business":     P["wallLilac"],
-    "economy":      P["wallMint"],
-    "standard":     P["wallCream"],
-    "double":       P["wallLilac"],
-    "family":       P["wallPeach"],
-    "deluxe":       P["wallMint"],
-    "executive":    P["wallSand"],
-    "honeymoon":    P["wallRose"],
-    "luxurySuite":  P["wallSand"],
-    "presidential": P["wallLilac"],
-    "cafe":         P["wallCream"],
-    "gym":          P["wallSky"],
-    "restaurant":   P["wallRed"],
-    "bar":          P["wallNavy"],
-    "arcade":       P["wallGrape"],
-    "cinema":       P["wallNavy"],
-    "spa":          P["wallMint"],
-    "pool":         P["wallTeal"],
-}
+#: Wall colours live in the RoomSpec tables of rooms_guest / rooms_commercial
+#: / rooms_service, and nowhere else.
+#:
+#: There used to be a ROOM_WALL dict here that claimed to be "the wall colour
+#: every room type is built on" and that "two rooms next to each other never
+#: share one". Nothing read it, both claims were false — five groups of rooms
+#: share a wall by design, and the table disagreed with the shipped art for
+#: deluxe, executive, presidential and spa — and a contract that nothing
+#: enforces and nothing consumes is worse than no contract, because the next
+#: person to read it believes it.
 
 
 # ------------------------------------------------------------------ line work
@@ -406,15 +389,32 @@ def save_png(img: Image.Image, path: str) -> None:
     Octree rather than median cut: it is the only method Pillow will run on an
     RGBA image, and transparency is not optional here — every sprite outside
     the room backgrounds has it.
+
+    But octree is asked for a palette, not promised one. Given `colors=N` for
+    an image that has exactly N colours it still merges neighbours wherever its
+    subdivision happens to put them, and near-neighbours are most of what flat
+    art is made of. `wallArt_projectorScreen` went in with 103 colours and came
+    out with 19: the screen's white face `#FBFCFD` and its tinted top band
+    `#E2F4FA` were merged into one `#F3F9FC`, so the 1x file lost the two-tone
+    screen that the @2x file still has. Two resolutions of the same sprite were
+    different pictures, which is the one thing `both_tiers` exists to prevent.
+
+    So the result is checked rather than assumed. Quantised output is kept only
+    when it is pixel-identical to what was drawn; anything else ships as
+    truecolour. Almost every asset is still quantised — flat art really is a
+    few hundred flat colours — and the handful that are not cost a few KB
+    against a budget with megabytes of headroom.
     """
     rgba = img.convert("RGBA")
     colours = rgba.getcolors(maxcolors=1 << 16)
     if colours is not None and len(colours) <= 256:
-        rgba.quantize(
+        quantised = rgba.quantize(
             colors=max(2, len(colours)), method=Image.FASTOCTREE, dither=Image.NONE,
-        ).save(path, optimize=True)
-    else:
-        rgba.save(path, optimize=True)
+        )
+        if list(quantised.convert("RGBA").getdata()) == list(rgba.getdata()):
+            quantised.save(path, optimize=True)
+            return
+    rgba.save(path, optimize=True)
 
 
 def both_tiers(fn, *args, **kwargs) -> list[str]:
@@ -996,7 +996,7 @@ def soften(img: Image.Image, radius: float = 0.4) -> Image.Image:
 
 
 __all__ = [
-    "SS", "BLOCK_W", "BLOCK_H", "ASSET_ROOT", "P", "ROOM_WALL", "RoomSpec",
+    "SS", "BLOCK_W", "BLOCK_H", "ASSET_ROOT", "P", "RoomSpec",
     "LW_FRAME", "LW_PROP", "LW_DETAIL", "LW_FACE",
     "CHAR_W", "CHAR_H", "FOOT_Y",
     "Canvas", "Person", "rgb", "mix", "shade", "tint", "alpha",

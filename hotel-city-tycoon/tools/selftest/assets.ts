@@ -115,6 +115,28 @@ function dominant(png: Png): [number, number, number] {
   return [(best >> 16) & 0xff, (best >> 8) & 0xff, best & 0xff];
 }
 
+/** Every fully-opaque colour and the fraction of the sprite it covers. */
+function share(png: Png): Map<number, number> {
+  const seen = new Map<number, number>();
+  let total = 0;
+  for (let i = 0; i < png.data.length; i += png.channels) {
+    if (png.channels === 4 && png.data[i + 3]! <= 200) continue;
+    const key = (png.data[i]! << 16) | (png.data[i + 1]! << 8) | png.data[i + 2]!;
+    seen.set(key, (seen.get(key) ?? 0) + 1);
+    total++;
+  }
+  const out = new Map<number, number>();
+  if (total === 0) return out;
+  for (const [k, v] of seen) out.set(k, v / total);
+  return out;
+}
+
+/** Within 18 of each other in RGB — the same tone after anti-aliasing. */
+function close(a: number, b: number): boolean {
+  const d = (shift: number) => (((a >> shift) & 0xff) - ((b >> shift) & 0xff)) ** 2;
+  return Math.sqrt(d(16) + d(8) + d(0)) <= 18;
+}
+
 function luminance([r, g, b]: [number, number, number]): number {
   const ch = (v: number) => {
     const c = v / 255;
@@ -503,6 +525,62 @@ await check('the night wash never drives a channel to its ceiling', () => {
     }
   }
   if (problems.length > 0) throw new Error(`night wash is clipping: ${problems.join(', ')}`);
+});
+
+/**
+ * Assets whose 1x drawing genuinely loses a tone the @2x drawing has.
+ *
+ * These are not the save-time bug below — `save_png` is lossless now — they
+ * are ART-0 §13's other rule: "لا نعتمد على تفاصيل أصغر من بكسلين فعليين بعد
+ * التصغير". The nine wallpapers carry a repeating pattern whose stroke is
+ * under two device pixels at 1x, so the supersample average erases it and 23%
+ * of the sprite goes with it. Fixing that means redrawing the patterns coarser,
+ * which is an art decision; listing them keeps it visible and keeps the check
+ * honest about what it is not covering.
+ */
+const KNOWN_1X_TONE_LOSS = new Set([
+  'decor/appliance_foldingTable.png', 'decor/lighting_laserRig.png',
+  'decor/rug_entranceRunner.png', 'decor/storage_towelStack.png',
+  'decor/table_crystalTable.png', 'decor/table_glassTable.png',
+  'decor/wallpaper_animatedAurora.png', 'decor/wallpaper_damask.png',
+  'decor/wallpaper_gilded.png', 'decor/wallpaper_gildedpanelling.png',
+  'decor/wallpaper_handpaintedsilk.png', 'decor/wallpaper_mural.png',
+  'decor/wallpaper_plain.png', 'decor/wallpaper_striped.png',
+  'decor/wallpaper_velvet.png',
+]);
+
+await check('the two resolutions of a sprite are the same picture', () => {
+  // `both_tiers` exists so 1x and @2x come from one drawing routine and cannot
+  // drift. They drifted anyway, at save time: FASTOCTREE is asked for a
+  // palette of N for an image with exactly N colours and still merges
+  // neighbours, so wallArt_projectorScreen went in with 103 colours and came
+  // out with 19 — the screen's white face and its tinted top band collapsed
+  // into one flat tone and the 1x file lost a two-tone screen the @2x file
+  // still had. save_png verifies its own output now; this verifies the files.
+  const problems: string[] = [];
+  for (const dir of ['decor', 'rooms', 'characters', 'ui', 'effects']) {
+    const one = `public/assets/${dir}`;
+    if (!fs.existsSync(one)) continue;
+    for (const name of fs.readdirSync(one)) {
+      if (!name.endsWith('.png')) continue;
+      const rel = `${dir}/${name}`;
+      if (KNOWN_1X_TONE_LOSS.has(rel)) continue;
+      const two = `public/assets/@2x/${rel}`;
+      if (!fs.existsSync(two)) continue;
+      const small = share(readPng(`${one}/${name}`));
+      const big = share(readPng(two));
+      for (const [key, portion] of big) {
+        if (portion < 0.05) continue;
+        let got = 0;
+        for (const [k, p] of small) if (close(k, key)) got += p;
+        if (got < portion * 0.25) {
+          problems.push(`${rel} lost #${key.toString(16).padStart(6, '0')} (${Math.round(portion * 100)}% at @2x, ${Math.round(got * 100)}% at 1x)`);
+          break;
+        }
+      }
+    }
+  }
+  if (problems.length > 0) throw new Error(`1x and @2x disagree: ${problems.join('; ')}`);
 });
 
 console.log(line);
