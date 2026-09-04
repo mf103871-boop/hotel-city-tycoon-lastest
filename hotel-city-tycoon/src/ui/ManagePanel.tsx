@@ -14,8 +14,9 @@ import { useGameStore } from '../bridge/index.ts';
 import { nextExpansion, storedRoomViews, storedDecor } from '../bridge/selectors.ts';
 import { REJECTION_KEY } from '../bridge/rejections.ts';
 import { translate } from '../i18n/index.ts';
-import { coins as fmtCoins, num } from '../i18n/format.ts';
+import { coins as fmtCoins, num, pair } from '../i18n/format.ts';
 import type { Locale } from '../i18n/index.ts';
+import { Pair } from './Pair.tsx';
 import { Sheet, OptionRow } from './Sheet.tsx';
 import { blockerLabel } from './BuildPanel.tsx';
 
@@ -57,7 +58,7 @@ export function ManagePanel({
             data-testid={`manage-tab-${key}`}
             onClick={() => { setTab(key); setProblem(null); setConfirmSell(null); }}
             className={`min-h-11 flex-1 rounded-lg px-3 py-2.5 text-xs transition
-              ${tab === key ? 'bg-brass-500 font-semibold text-midnight-950' : 'bg-white/5 text-slate-300'}`}
+              ${tab === key ? 'bg-brass-500 font-semibold text-midnight-950' : 'bg-white/5 text-sand-300'}`}
           >
             {t(labelKey)}
           </button>
@@ -75,27 +76,27 @@ export function ManagePanel({
       {tab === 'plot' && (
         <div data-testid="manage-plot">
           {!expansion && (
-            <p className="py-6 text-center text-sm text-slate-400">{t('ui.plotMaxed')}</p>
+            <p className="py-6 text-center text-sm text-sand-400">{t('ui.plotMaxed')}</p>
           )}
           {expansion && (
             <>
               <dl className="mb-3 grid grid-cols-2 gap-2 rounded-xl bg-white/[0.03] p-3">
-                <dt className="text-[11px] uppercase tracking-wide text-slate-400">{t('ui.plotNow')}</dt>
-                <dd className="text-end font-mono text-sm text-slate-100">
-                  {expansion.currentGrid.w}×{expansion.currentGrid.h} · {expansion.currentBlocks}
+                <dt className="text-[11px] uppercase tracking-wide text-sand-400">{t('ui.plotNow')}</dt>
+                <dd className="text-end font-mono text-sm text-sand-100">
+                  <Pair>{expansion.currentGrid.w}×{expansion.currentGrid.h}</Pair> · {expansion.currentBlocks}
                 </dd>
-                <dt className="text-[11px] uppercase tracking-wide text-slate-400">{t('ui.plotAfter')}</dt>
+                <dt className="text-[11px] uppercase tracking-wide text-sand-400">{t('ui.plotAfter')}</dt>
                 <dd data-testid="plot-after" className="text-end font-mono text-sm text-brass-400">
-                  {expansion.grid.w}×{expansion.grid.h} · {expansion.blocks}
+                  <Pair>{expansion.grid.w}×{expansion.grid.h}</Pair> · {expansion.blocks}
                 </dd>
-                <dt className="text-[11px] uppercase tracking-wide text-slate-400">{t('ui.requiredLevel')}</dt>
-                <dd className="text-end font-mono text-sm text-slate-100">{expansion.unlockLevel}</dd>
+                <dt className="text-[11px] uppercase tracking-wide text-sand-400">{t('ui.requiredLevel')}</dt>
+                <dd className="text-end font-mono text-sm text-sand-100">{expansion.unlockLevel}</dd>
               </dl>
               <OptionRow
                 locale={locale}
                 title={t('ui.expandPlot')}
                 meta={`+${expansion.blocks - expansion.currentBlocks} ${t('ui.blocks')}`}
-                detail={`${expansion.grid.w}×${expansion.grid.h}`}
+                detail={pair(`${expansion.grid.w}×${expansion.grid.h}`)}
                 price={expansion.cost}
                 currency="coins"
                 blockerLabel={blockerLabel(expansion.blocker, expansion.unlockLevel, t)}
@@ -112,17 +113,17 @@ export function ManagePanel({
       {tab === 'rooms' && (
         <div data-testid="manage-rooms" className="space-y-2">
           {rooms.length === 0 && (
-            <p className="py-6 text-center text-sm text-slate-400">{t('ui.noStoredRooms')}</p>
+            <p className="py-6 text-center text-sm text-sand-400">{t('ui.noStoredRooms')}</p>
           )}
           {rooms.map((room) => (
             <div key={room.id} data-testid={`stored-room-${room.id}`} className="rounded-xl bg-white/[0.03] p-3">
               <div className="flex items-baseline gap-2">
-                <span className="text-sm font-medium text-slate-100">{t(room.nameKey)}</span>
-                <span className="ms-auto font-mono text-[11px] text-slate-400">
-                  {room.blocks.w}×{room.blocks.h}
+                <span className="text-sm font-medium text-sand-100">{t(room.nameKey)}</span>
+                <span className="ms-auto font-mono text-[11px] text-sand-400">
+                  <Pair>{room.blocks.w}×{room.blocks.h}</Pair>
                 </span>
               </div>
-              <p className="mt-0.5 text-[11px] text-slate-400">
+              <p className="mt-0.5 text-[11px] text-sand-400">
                 {room.decorCount} {t('ui.pieces')} · {room.decorPoints} {t('ui.points')}
                 {' · '}{Math.round(room.cleanliness * 100)}% {t('ui.clean')}
               </p>
@@ -142,12 +143,12 @@ export function ManagePanel({
       {tab === 'decor' && (
         <div data-testid="manage-decor" className="space-y-2">
           {decor.length === 0 && (
-            <p className="py-6 text-center text-sm text-slate-400">{t('ui.noOwnedDecor')}</p>
+            <p className="py-6 text-center text-sm text-sand-400">{t('ui.noOwnedDecor')}</p>
           )}
           {decor.map((item) => (
             <div key={item.defId} data-testid={`owned-decor-${item.defId}`} className="rounded-xl bg-white/[0.03] p-3">
               <div className="flex items-baseline gap-2">
-                <span className="text-sm font-medium text-slate-100">{t(item.nameKey)}</span>
+                <span className="text-sm font-medium text-sand-100">{t(item.nameKey)}</span>
                 <span
                   data-testid={`owned-count-${item.defId}`}
                   className="ms-auto font-mono text-xs text-brass-400"
@@ -155,7 +156,7 @@ export function ManagePanel({
                   ×{num(locale, item.count)}
                 </span>
               </div>
-              <p className="mt-0.5 text-[11px] text-slate-400">
+              <p className="mt-0.5 text-[11px] text-sand-400">
                 +{item.decorPoints} {t('ui.points')}
                 {' · '}
                 {item.refund
@@ -182,7 +183,7 @@ export function ManagePanel({
                   <button
                     type="button"
                     onClick={() => setConfirmSell(null)}
-                    className="min-h-11 flex-1 rounded-lg bg-white/5 px-3 py-2.5 text-sm text-slate-300"
+                    className="min-h-11 flex-1 rounded-lg bg-white/5 px-3 py-2.5 text-sm text-sand-300"
                   >
                     {t('ui.cancel')}
                   </button>
@@ -193,7 +194,7 @@ export function ManagePanel({
                   data-testid={`sell-decor-${item.defId}`}
                   disabled={!item.refund}
                   onClick={() => setConfirmSell(item.defId)}
-                  className="mt-2 min-h-11 w-full rounded-lg bg-white/5 px-3 py-2.5 text-sm text-slate-200 disabled:opacity-40"
+                  className="mt-2 min-h-11 w-full rounded-lg bg-white/5 px-3 py-2.5 text-sm text-sand-200 disabled:opacity-40"
                 >
                   {t('ui.sell')}
                 </button>

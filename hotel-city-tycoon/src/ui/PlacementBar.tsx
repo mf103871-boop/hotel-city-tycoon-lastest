@@ -50,7 +50,7 @@ export function PlacementBar({
       data-testid="placement-bar"
       className="pointer-events-auto absolute inset-x-0 bottom-0 z-40 border-t border-white/10 bg-midnight-900/95 px-4 py-3 backdrop-blur"
     >
-      <p className="text-xs text-slate-300">
+      <p className="text-xs text-sand-300">
         {t(placement.kind === 'move' ? 'ui.moveHint' : 'ui.placeHint')}
       </p>
 
@@ -64,7 +64,7 @@ export function PlacementBar({
         data-testid="placement-status"
         data-valid={at === null ? 'none' : valid ? 'yes' : 'no'}
         className={`mt-1 text-sm font-medium ${
-          at === null ? 'text-slate-400' : valid ? 'text-emerald-400' : 'text-rose-400'
+          at === null ? 'text-sand-400' : valid ? 'text-emerald-400' : 'text-rose-400'
         }`}
       >
         {at === null
@@ -96,7 +96,7 @@ export function PlacementBar({
           type="button"
           data-testid="placement-cancel"
           onClick={onDone}
-          className="min-h-11 flex-1 rounded-lg bg-white/5 px-3 py-2.5 text-sm text-slate-300"
+          className="min-h-11 flex-1 rounded-lg bg-white/5 px-3 py-2.5 text-sm text-sand-300"
         >
           {t('ui.cancel')}
         </button>

@@ -13,7 +13,20 @@ import type { Locale } from '../i18n/index.ts';
 const TONE_STYLE = {
   good: 'border-emerald-500/30 bg-emerald-950/80 text-emerald-100',
   bad: 'border-amber-500/30 bg-amber-950/80 text-amber-100',
-  neutral: 'border-white/10 bg-midnight-800/90 text-slate-200',
+  neutral: 'border-white/10 bg-midnight-800/92 text-sand-200',
+} as const;
+
+/**
+ * A mark per tone, so a toast is not green-versus-amber and nothing else.
+ *
+ * Good news and bad news arrive in the same place, in the same shape, for the
+ * same couple of seconds; hue was the only thing separating them, which
+ * ART-0 §7 rules out and red-green colourblindness defeats outright.
+ */
+const TONE_MARK = {
+  good: '✓',
+  bad: '!',
+  neutral: '·',
 } as const;
 
 export function Toasts({
@@ -41,6 +54,7 @@ export function Toasts({
           key={notice.id}
           className={`w-full max-w-sm rounded-xl border px-4 py-2.5 text-sm shadow-lg backdrop-blur ${TONE_STYLE[notice.tone]}`}
         >
+          <span aria-hidden="true" className="me-2 font-bold">{TONE_MARK[notice.tone]}</span>
           {translate(locale, notice.titleKey, notice.values)}
           {notice.count > 1 && <span className="ms-2 opacity-60">×{notice.count}</span>}
         </div>

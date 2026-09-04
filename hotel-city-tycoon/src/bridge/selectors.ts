@@ -117,6 +117,16 @@ export interface RoomSummary {
   occupants: number;
   nameKey: string;
   /**
+   * This room's picture was drawn after dark, so nothing else need be.
+   *
+   * `dirty` has no night variant — there is no `*_dirty_night` file — so a
+   * grubby room keeps its daylight picture while the hotel is shut. Without
+   * this the one room the player has to act on was the brightest thing in a
+   * dark hotel, lit like noon among rooms that had gone to dusk. The renderer
+   * washes it instead of the art pipeline shipping 46 more files.
+   */
+  artIsNight: boolean;
+  /**
    * The picture this room is showing right now — base, night or dirty. The
    * renderer falls back to a drawn shell if the file is absent.
    */
@@ -269,6 +279,7 @@ export function summariseRoom(room: RoomInstance, open = true): RoomSummary {
     hasGhost: room.hasGhost,
     occupants: room.occupants.length,
     nameKey: def?.nameKey ?? `room.${room.defId}.name`,
+    artIsNight: variant === 'night',
     assetKey: `room.${room.defId}.${variant}`,
     // The infestation is a separate transparent layer, so it composites over
     // whichever variant is showing rather than needing one of its own.

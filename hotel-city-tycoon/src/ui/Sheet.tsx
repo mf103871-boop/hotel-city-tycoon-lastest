@@ -62,11 +62,11 @@ export function Sheet({
       >
         <header className="flex items-baseline gap-3 border-b border-white/5 px-4 py-3">
           <h2 id={titleId} className="text-base font-semibold text-white">{title}</h2>
-          {subtitle && <span className="text-xs text-slate-400">{subtitle}</span>}
+          {subtitle && <span className="text-xs text-sand-400">{subtitle}</span>}
           <button
             type="button"
             onClick={onClose}
-            className="ms-auto rounded-lg px-4 py-2 text-sm text-slate-400 hover:bg-white/5 hover:text-white"
+            className="ms-auto rounded-lg px-4 py-2 text-sm text-sand-400 hover:bg-white/5 hover:text-white"
           >
             ✕
           </button>
@@ -105,16 +105,27 @@ export function OptionRow({
       onClick={onPick}
       className={`mb-2 flex min-h-11 w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-start transition
         ${disabled
-          ? 'cursor-not-allowed border-white/5 bg-white/[0.02] opacity-55'
+          ? 'cursor-not-allowed border-white/5 bg-white/[0.02]'
           : 'border-white/10 bg-white/[0.04] hover:border-brass-500/70 hover:bg-white/[0.07]'}`}
     >
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm text-slate-100">{title}</span>
-        {meta && <span className="block text-[11px] leading-snug text-slate-400">{meta}</span>}
-        {detail && <span className="mt-0.5 block font-mono text-[11px] text-slate-500">{detail}</span>}
+        {/*
+          * A locked row is quietened by colour, not by `opacity-55`.
+          *
+          * That wrapper multiplied every child, including the one line that
+          * says *why* the row is locked: sand-500 at 55% is 1.9:1 against the
+          * sheet, so the requirement a player needs in order to unlock the
+          * thing was the least readable text on the panel. Dimming the title a
+          * step says "locked" just as clearly and leaves the reason legible.
+          */}
+        <span className={`block truncate text-sm ${disabled ? 'text-sand-400' : 'text-sand-100'}`}>
+          {title}
+        </span>
+        {meta && <span className="block text-[11px] leading-snug text-sand-400">{meta}</span>}
+        {detail && <span className="mt-0.5 block font-mono text-[11px] text-sand-500">{detail}</span>}
       </span>
       {blockerLabel ? (
-        <span className="shrink-0 text-[11px] text-slate-500">{blockerLabel}</span>
+        <span className="shrink-0 text-[11px] font-medium text-amber-300">{blockerLabel}</span>
       ) : label ? (
         <span className="shrink-0 text-[11px] text-emerald-300">{label}</span>
       ) : price !== undefined ? (

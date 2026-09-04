@@ -20,7 +20,7 @@ import type { Locale } from '../i18n/index.ts';
 function Readout({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col">
-      <span className="text-[11px] uppercase tracking-[0.12em] text-slate-400">{label}</span>
+      <span className="text-[11px] uppercase tracking-[0.12em] text-sand-400">{label}</span>
       <span className="font-mono text-lg leading-tight text-brass-400 tabular-nums">{value}</span>
     </div>
   );
@@ -61,21 +61,50 @@ export function Hud({
         safe-area padding keeps the bars clear of a notch or home indicator
         when the game is installed (viewport-fit=cover, standalone).
       */}
+      {/*
+        * A scrim behind the phone's own status bar.
+        *
+        * index.html asks for `black-translucent`, which makes iOS draw the
+        * clock, signal and battery as *white glyphs over the page* — and with
+        * viewport-fit=cover the page under them is bare canvas. White on the
+        * day sky (#6FBCF9) is 2.05:1: the player cannot read their own clock
+        * while the game is open. The HUD's safe-area padding pushed its panel
+        * clear of the notch and left that strip to the sky.
+        *
+        * Ink fading to nothing keeps the glyphs legible without drawing a hard
+        * band across the top of the picture, and it costs nothing when there
+        * is no inset to cover.
+        */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-ink-950/85 to-transparent"
+        style={{ height: 'calc(env(safe-area-inset-top, 0px) + 0.5rem)' }}
+      />
       <header
         data-hud="top"
         className="pointer-events-none absolute inset-x-0 top-0 z-10 p-3"
         style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top, 0px))' }}
       >
-        <div className="pointer-events-auto flex items-center gap-4 rounded-xl border border-white/5 bg-midnight-900/85 px-4 py-2.5 backdrop-blur">
+        <div className="pointer-events-auto flex items-center gap-4 rounded-xl border border-white/5 bg-midnight-900/92 px-4 py-2.5 backdrop-blur">
           <Readout label={t('ui.coins')} value={coins(locale, state.player.coins)} />
           <Readout label={t('ui.gems')} value={String(state.player.gems)} />
           <Readout label={t('ui.level')} value={String(state.player.level)} />
           <div className="ms-auto flex flex-col items-end">
-            <span className="text-[11px] uppercase tracking-[0.12em] text-slate-400">{t('ui.stars')}</span>
+            <span className="text-[11px] uppercase tracking-[0.12em] text-sand-400">{t('ui.stars')}</span>
             <span className="text-lg leading-tight text-brass-400">{'★'.repeat(state.hotel.stars)}</span>
           </div>
         </div>
-        <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/10">
+        {/*
+          * The level bar sits outside the panel, directly on the canvas.
+          *
+          * Its track was `bg-white/10` — white at a tenth over a sky-blue
+          * canvas, which is #7EC3FA against #6FBCF9: nothing. Sampled from a
+          * screenshot the empty track was pixel-identical to the sky, so the
+          * bar only existed once it had something to draw. Ink at 45% gives
+          * the track a floor of its own on any backdrop the renderer paints,
+          * and a rim keeps the coral fill off the sky directly.
+          */}
+        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink-950/45 ring-1 ring-ink-950/25">
           <div
             className="h-full bg-brass-500 transition-[width] duration-500"
             style={{ width: `${Math.round(levelBarProgress(state) * 100)}%` }}
@@ -89,10 +118,10 @@ export function Hud({
         style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
       >
         {objective}
-        <div className="pointer-events-auto rounded-xl border border-white/5 bg-midnight-900/85 px-4 py-3 backdrop-blur">
+        <div className="pointer-events-auto rounded-xl border border-white/5 bg-midnight-900/92 px-4 py-3 backdrop-blur">
           {open ? (
             <div className="flex items-baseline justify-between">
-              <span className="text-xs uppercase tracking-[0.12em] text-slate-400">{t('ui.shiftEndsIn')}</span>
+              <span className="text-xs uppercase tracking-[0.12em] text-sand-400">{t('ui.shiftEndsIn')}</span>
               <span className="font-mono text-xl text-brass-400 tabular-nums">
                 {String(hh).padStart(2, '0')}:{String(mm).padStart(2, '0')}:{String(ss).padStart(2, '0')}
               </span>
@@ -119,21 +148,21 @@ export function Hud({
             <button
               type="button"
               onClick={onOpenBuild}
-              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-slate-200 hover:border-brass-500/60"
+              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-sand-200 hover:border-brass-500/60"
             >
               + {t('ui.build')}
             </button>
             <button
               type="button"
               onClick={onOpenShop}
-              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-slate-200 hover:border-brass-500/60"
+              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-sand-200 hover:border-brass-500/60"
             >
               {t('ui.shop')}
             </button>
             <button
               type="button"
               onClick={onOpenCity}
-              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-slate-200 hover:border-brass-500/60"
+              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-sand-200 hover:border-brass-500/60"
             >
               {t('ui.city')}
             </button>
@@ -141,7 +170,7 @@ export function Hud({
               type="button"
               data-testid="open-manage"
               onClick={onOpenManage}
-              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-slate-200 hover:border-brass-500/60"
+              className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-sand-200 hover:border-brass-500/60"
             >
               {t('ui.manage')}
             </button>
@@ -151,14 +180,14 @@ export function Hud({
               <button
                 type="button"
                 onClick={onOpenUpgrades}
-                className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-slate-200 hover:border-brass-500/60"
+                className="min-w-0 flex-1 truncate rounded-lg border border-white/10 px-1.5 py-2.5 text-[13px] text-sand-200 hover:border-brass-500/60"
               >
                 {t('ui.upgrades')}
               </button>
             )}
           </div>
 
-          <p className="mt-2 text-center text-[11px] text-slate-500">
+          <p className="mt-2 text-center text-[11px] text-sand-500">
             {state.hotel.rooms.length} {t('ui.rooms')} · {state.stats.guestsServed} {t('ui.guestsServed').toLowerCase()}
             {urgent.length > 0 && (
               <span className="ms-2 text-amber-400">· {urgent.length} {t('ui.needsAttention')}</span>

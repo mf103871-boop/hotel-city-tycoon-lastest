@@ -221,11 +221,44 @@ check('animation respects a request for less motion', () => {
 });
 
 check('the interface does not depend on colour alone', () => {
-  // The decor meter turns green when full and the hazard badge is coloured.
-  // Both need a second signal.
-  const room = fs.readFileSync('src/ui/RoomSheet.tsx', 'utf8');
-  assert(/\{points\}\/\{target\}|\d+\/\d+/.test(room),
-    'the decor meter communicates only through colour and length');
+  // This assertion used to be `/\{points\}\/\{target\}|\d+\/\d+/`, and its
+  // second alternative matches any "digits/digits" in the file — which every
+  // Tailwind opacity modifier is. `border-brass-500/60` satisfied it. The
+  // check could not fail, so it was not a check.
+  //
+  // Each state the game paints a colour for is listed with the second signal
+  // that has to travel with it, and every one is asserted separately.
+  // Comments are stripped first. The star assertion below passed against the
+  // sentence in CityPanel's own docblock explaining the fix, which is the same
+  // failure mode as the regex this check replaced: matching prose, not code.
+  const read = (f: string) => fs.readFileSync(f, 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/^\s*\/\/.*$/gm, ' ');
+
+  const room = read('src/ui/RoomSheet.tsx');
+  assert(/\{points\}\/\{target\}/.test(room),
+    'the decor meter has no numeric readout — it is a colour and a length');
+
+  const toasts = read('src/ui/Toasts.tsx');
+  const marks = /const TONE_MARK = \{([^}]*)\}/.exec(toasts);
+  assert(marks, 'toast tones carry no mark beside their colour');
+  const tones = [...(/const TONE_STYLE = \{([^}]*)\}/.exec(toasts)?.[1] ?? '')
+    .matchAll(/^\s*(\w+):/gm)].map((m) => m[1]!);
+  assert(tones.length > 0, 'no toast tones found');
+  for (const tone of tones) {
+    assert(new RegExp(`\\b${tone}:`).test(marks[1]!), `toast tone "${tone}" has a colour but no mark`);
+  }
+
+  const city = read('src/ui/CityPanel.tsx');
+  assert(/★/.test(city) && /☆/.test(city),
+    'earned and unearned star pips are the same glyph in two colours');
+
+  // The room's hazards: each has its own sprite, and the drawn fallback under
+  // it must not be the only thing separating one hazard from another.
+  const roomView = read('src/render/roomView.ts');
+  const overlays = [...roomView.matchAll(/'(event\.\w+\.overlay)'/g)].map((m) => m[1]!);
+  assert(overlays.length >= 3, `expected a sprite per hazard, found ${overlays.length}`);
+  assert(new Set(overlays).size === overlays.length, 'two hazards share one overlay sprite');
 });
 
 // ---------------------------------------------------------------- input
@@ -245,6 +278,218 @@ check('text can grow without the layout collapsing', () => {
   }
   assert(problems.length === 0,
     `fixed pixel heights that break with larger text: ${problems.join(', ')}`);
+});
+
+// ---------------------------------------------------------------- palette
+/**
+ * Tailwind v4's own colour families.
+ *
+ * Any other family name in a utility class has to be declared in `@theme`, or
+ * Tailwind emits no rule at all for it — which is not a missing style but a
+ * wrong one, because the element then inherits whatever colour its parent had.
+ */
+const TAILWIND_FAMILIES = new Set([
+  'red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan',
+  'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose',
+  'slate', 'gray', 'zinc', 'neutral', 'stone',
+]);
+const TAILWIND_SHADES = new Set([
+  '50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950',
+]);
+
+const COLOUR_UTILITY = /\b(?:bg|text|border|ring|from|to|via|fill|stroke|shadow|outline|accent|caret|divide|placeholder|decoration)-([a-z]+)-([a-z0-9]+)(?=\b|\/)/g;
+
+/**
+ * Families that are not colours despite matching the shape.
+ *
+ * `bg-gradient-to-b` parses as family "gradient", shade "to"; so do the
+ * linear/radial/conic forms. They declare a direction, not a colour, and the
+ * colours themselves arrive through from-/via-/to-, which this check does see.
+ */
+const NOT_A_COLOUR = new Set(['gradient', 'linear', 'radial', 'conic']);
+
+check('every colour class a component asks for actually exists', () => {
+  // The check that would have caught `text-water-hi` and `text-brass-300`:
+  // six call sites across four components named colours that `@theme` never
+  // declared, so Tailwind emitted nothing and the gem price, the climate
+  // banner's border, the weekly-gift callout and the Upgrade/Replace actions
+  // all silently rendered in their parent's colour instead of their own.
+  const declared = new Set(Object.keys(T));
+  const problems: string[] = [];
+  for (const [file, src] of uiFiles()) {
+    for (const m of src.matchAll(COLOUR_UTILITY)) {
+      const [, family, shade] = m as unknown as [string, string, string];
+      if (NOT_A_COLOUR.has(family)) continue;
+      if (declared.has(`${family}-${shade}`)) continue;
+      if (TAILWIND_FAMILIES.has(family) && TAILWIND_SHADES.has(shade)) continue;
+      problems.push(`${path.basename(file)}: ${m[0]}`);
+    }
+  }
+  assert(problems.length === 0,
+    `colour classes that produce no CSS: ${[...new Set(problems)].join(', ')}`);
+});
+
+/** Composite `fg` at `alpha` over `bg`, both #rrggbb. */
+function over(fg: string, bg: string, alpha: number): string {
+  const f = hexToRgb(fg);
+  const b = hexToRgb(bg);
+  const ch = (i: 0 | 1 | 2) => Math.round(f[i] * alpha + b[i] * (1 - alpha));
+  return `#${[ch(0), ch(1), ch(2)].map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+}
+
+/**
+ * The brightest thing the renderer can paint behind a panel.
+ *
+ * Not the page ground. Every panel in this game is translucent and floats on
+ * the canvas, so a ramp measured against `ink-950` reads a whole step better
+ * than it is — which is exactly how `sand-500` was calculated at 5.2:1 and
+ * shipped at 3.9:1. The hotel can be panned under any panel, and its palest
+ * wall is hcstyle.py's `wallCream`.
+ */
+const BRIGHTEST_BACKDROP = '#fbe7b8';
+
+check('every text colour clears WCAG AA on the worst panel the game can make', () => {
+  // `slate-500` (3.6:1) and `slate-600` (2.3:1) were the ramp for every piece
+  // of secondary copy in the game. Both are below WCAG AA, and slate-600 was
+  // carrying the text that explains why a purchase is refused.
+  //
+  // sand-600 is exempt: it is not for text. It exists for the unlit ☆ of a
+  // star rating, which is a shape as well as a colour.
+  const DECORATIVE = new Set(['sand-600']);
+
+  // The lowest panel opacity any component actually uses, read from the
+  // source: lower the opacity anywhere and this floor drops with it.
+  //
+  // Only the three tokens that are actually text surfaces. `ink-950` is the
+  // page ground and the level bar's track — a bar carries no text, and folding
+  // its 45% into this floor would demand a text ramp no chrome needs.
+  let lowest = 1;
+  const found: string[] = [];
+  for (const [, src] of uiFiles()) {
+    for (const m of src.matchAll(/\bbg-(?:ink-900|midnight-900|midnight-800)\/(\d{2})\b/g)) {
+      const alpha = Number(m[1]) / 100;
+      found.push(m[0]);
+      if (alpha < lowest) lowest = alpha;
+    }
+  }
+  assert(found.length > 0, 'no translucent panel found — has the chrome changed?');
+  const panel = over(T['ink-900']!, BRIGHTEST_BACKDROP, lowest);
+
+  const problems: string[] = [];
+  for (const [name, hex] of Object.entries(T)) {
+    if (!name.startsWith('sand-') || DECORATIVE.has(name)) continue;
+    const ratio = contrast(hex, panel);
+    if (ratio < 4.5) {
+      problems.push(`${name} on the ${Math.round(lowest * 100)}% panel (${panel}) is ${ratio.toFixed(2)}:1`);
+    }
+  }
+  // The money figures are the numbers the player is actually watching.
+  for (const name of ['brass-400', 'water-hi']) {
+    const ratio = contrast(T[name]!, panel);
+    if (ratio < 4.5) problems.push(`${name} is ${ratio.toFixed(2)}:1`);
+  }
+  assert(problems.length === 0, `text colours below WCAG AA: ${problems.join(', ')}`);
+});
+
+check('nothing the canvas shows through is used to draw a control', () => {
+  // The level bar's track was `bg-white/10`, drawn outside the HUD panel
+  // directly on the canvas: white at a tenth over the sky is #7EC3FA against
+  // #6FBCF9, and a screenshot of the empty bar was pixel-identical to the sky.
+  // A control on bare canvas cannot lean on the page ground it is not on.
+  const problems: string[] = [];
+  for (const [file, src] of uiFiles()) {
+    for (const m of src.matchAll(/\bbg-white\/(\d{1,2})\b/g)) {
+      // Inside a panel a white veil is a legitimate raised surface; the sin is
+      // using one as the only body of a control that has no panel under it.
+      const around = src.slice(Math.max(0, m.index! - 400), m.index!);
+      const onCanvas = /pointer-events-(?:none|auto) absolute|absolute inset-x-0 (?:top|bottom)-0/.test(around)
+        && !/bg-(?:ink|midnight)-9\d0\//.test(src.slice(m.index!, m.index! + 200));
+      if (onCanvas && Number(m[1]) <= 10) {
+        problems.push(`${path.basename(file)}: ${m[0]} on bare canvas`);
+      }
+    }
+  }
+  assert(problems.length === 0,
+    `controls drawn in a veil the canvas shows straight through: ${problems.join(', ')}`);
+});
+
+check('nothing in the interface is painted in the cold ramp the palette replaced', () => {
+  // src/index.css says the interface was warmed so it would stop fighting the
+  // art's temperature. It said so while 92 elements were still written in
+  // Tailwind's blue-grey `slate` on warm brown chrome. A comment is not a
+  // guarantee; this is.
+  const problems: string[] = [];
+  for (const [file, src] of uiFiles()) {
+    for (const m of src.matchAll(/\b(?:bg|text|border|ring|fill|stroke|divide|placeholder)-(slate|gray|zinc|blue|indigo|sky|cyan)-\d+/g)) {
+      problems.push(`${path.basename(file)}: ${m[0]}`);
+    }
+  }
+  assert(problems.length === 0,
+    `cold-ramp colours on warm chrome: ${[...new Set(problems)].join(', ')}`);
+});
+
+check('ordered number pairs keep their order in Arabic', () => {
+  // `140 → 56` in a right-to-left paragraph is painted `56 → 140`: both
+  // numbers resolve to right-to-left runs and the arrow between them is a
+  // neutral that joins them, so the group is laid out right-to-left. Measured
+  // in Chromium, not reasoned about. In Arabic that made every shop discount
+  // read as a price rise, every upgrade as a downgrade, and every room's
+  // width and height swap places.
+  //
+  // The fix is an isolate: `pair()` from src/i18n/format.ts for strings, the
+  // <Pair> component for JSX. This finds a pair that has neither.
+  // Both sides have to be numbers. `3 × شبح` is a number and an Arabic word,
+  // and right-to-left is where that one belongs — the count reads first when
+  // read from the right. It is two *numbers* either side of the mark that
+  // swap, so an interpolation calling `t(...)` disqualifies the match.
+  const NUMERIC = (slot: string): boolean => !/\bt\(/.test(slot);
+  const PAIRED = [
+    /\{([^{}]*)\}[^{}<>]{0,12}(?:→|·|×)[^{}<>]{0,12}\{([^{}]*)\}/,
+    /\$\{([^{}]*)\}[^{}]{0,12}(?:→)[^{}]{0,12}\$\{([^{}]*)\}/,
+    /\$\{([^{}]*)\}\s*×\s*\$?\{?([^{}]*)\}?/,
+  ];
+  const problems: string[] = [];
+  for (const [file, src] of uiFiles()) {
+    if (/\/Pair\.tsx$/.test(file)) continue;
+    src.split('\n').forEach((raw, i) => {
+      const codeOnly = raw.replace(/\/\/.*$/, '').replace(/^\s*\*.*$/, '');
+      if (!/→|×/.test(codeOnly)) return;
+      if (/\bpair\(/.test(codeOnly) || /<Pair>/.test(codeOnly)) return;
+      // The mark itself has to be a separator, not a suffix on one number.
+      if (!/(?:→|(?:^|[\s}])×)/.test(codeOnly)) return;
+      for (const re of PAIRED) {
+        const m = re.exec(codeOnly);
+        if (!m) continue;
+        if (!NUMERIC(m[1] ?? '') || !NUMERIC(m[2] ?? '')) continue;
+        problems.push(`${path.basename(file)}:${i + 1}: ${codeOnly.trim().slice(0, 70)}`);
+        break;
+      }
+    });
+  }
+  assert(problems.length === 0,
+    `number pairs that reverse in Arabic: ${problems.join(' | ')}`);
+});
+
+check('the phone\'s own chrome agrees with the app it frames', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  const manifest = JSON.parse(fs.readFileSync('public/manifest.webmanifest', 'utf8')) as
+    { theme_color?: string; background_color?: string };
+  const meta = /<meta name="theme-color" content="(#[0-9a-fA-F]{6})"/.exec(html);
+  assert(meta, 'index.html declares no theme-color');
+  const declared = meta[1]!.toLowerCase();
+  assert(declared === manifest.theme_color?.toLowerCase(),
+    `theme-color disagrees between index.html (${declared}) and the manifest (${manifest.theme_color})`);
+  assert(manifest.theme_color?.toLowerCase() === manifest.background_color?.toLowerCase(),
+    `the manifest's theme and splash colours disagree (${manifest.theme_color} vs ${manifest.background_color})`);
+
+  // `black-translucent` puts white system glyphs over the page, and with
+  // viewport-fit=cover the page under them is the canvas — white on the day
+  // sky is 2.05:1. Something opaque has to cover the inset.
+  if (/apple-mobile-web-app-status-bar-style"\s+content="black-translucent"/.test(html)) {
+    const hud = fs.readFileSync('src/ui/Hud.tsx', 'utf8');
+    assert(/safe-area-inset-top/.test(hud) && /from-ink-950/.test(hud),
+      'black-translucent status bar with nothing painted behind the safe-area inset');
+  }
 });
 
 console.log(line);

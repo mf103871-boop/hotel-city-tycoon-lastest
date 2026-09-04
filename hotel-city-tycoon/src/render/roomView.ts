@@ -8,6 +8,7 @@
  */
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
 import { texture, assetGeneration, entryFor } from './assets.ts';
+import { INK, NIGHT_TINT, nightfall } from './backdrop.ts';
 import type { Rect } from '../core/state/grid.ts';
 import { roomWorldRect, BLOCK_W, BLOCK_H, anchorToLocalPx } from './layout.ts';
 import {
@@ -15,17 +16,41 @@ import {
 } from './decorArt.ts';
 import type { DecorBox } from './decorArt.ts';
 
-/** Category colours, chosen to read at a glance while zoomed out. */
+/**
+ * Category colours, chosen to read at a glance while zoomed out.
+ *
+ * Pastels from the art palette rather than the three warm browns that used to
+ * be here. Those were chosen when the renderer drew rooms on a warm charcoal
+ * clear colour; the world behind them is now sky, and a brown box on a pastel
+ * street was the wrong picture even for a room with no art yet.
+ */
 const SHELL = {
-  guest: 0x3a2b24,
-  commercial: 0x40302a,
-  functional: 0x2e2420,
+  guest: 0xfbe7b8,        // wallCream
+  commercial: 0xc9c2ec,   // wallLilac
+  functional: 0xbfe0fa,   // wallSky
 } as const;
 
-const BORDER = 0x5a463c;
-const METER_BG = 0x1a1210;
-const METER_LOW = 0xf07858;
-const METER_HIGH = 0x7fc4a0;
+const BORDER = INK;
+
+/**
+ * The decor meter.
+ *
+ * The track was a near-black warm brown from a palette the art no longer
+ * shares — the darkest thing in the picture, painted across the lightest.
+ * Ink at 22% was the first repair and it was not one: a translucent track
+ * takes the wall's own colour, so the fill was measured against a different
+ * ground in every room and landed at 1.01:1 on rose and teal. A meter whose
+ * fill is the same luminance as its track is a blank strip.
+ *
+ * It is solid ink now — one ground, every room — so the fills hold 5.5:1
+ * (coral) and 7.6:1 (green) against it wherever the bar is drawn, well past
+ * WCAG 1.4.11's 3:1 for a graphic. The rim is what keeps the bar itself
+ * visible on the four dark walls, where ink on ink is only 2.2:1.
+ */
+const METER_BG = INK;
+const METER_RIM = 0xdde2df;    // warmWhite
+const METER_LOW = 0xed5c47;    // coral
+const METER_HIGH = 0x5bb877;   // green
 
 /**
  * PLACEHOLDER decor colours — a technical stand-in, not a palette decision.
@@ -39,13 +64,12 @@ const METER_HIGH = 0x7fc4a0;
  * its art will take up.
  */
 const DECOR_PLACEHOLDER = {
-  wall: 0x6c8ebf,
-  ceiling: 0x6c8ebf,
-  floor: 0xd98a4f,
-  bed: 0xd98a4f,
+  wall: 0x8fa8c8,     // wallSlate
+  ceiling: 0x8fa8c8,
+  floor: 0xd9954e,    // wood
+  bed: 0xd9954e,
 } as const;
-const DECOR_PLACEHOLDER_DEFAULT = 0x8a8478;
-const DECOR_PLACEHOLDER_BORDER = 0x241b14;
+const DECOR_PLACEHOLDER_DEFAULT = 0xc3ccd8;   // metal
 /** Fallback box size when the piece has no manifest entry to size it from. */
 const DECOR_PLACEHOLDER_W = 24;
 const DECOR_PLACEHOLDER_H = 18;
@@ -73,6 +97,15 @@ export interface RoomViewData {
   /** Asset key for the finished art. Falls back to a drawn shell when absent. */
   assetKey?: string;
   /**
+   * That picture already has the night wash baked into it.
+   *
+   * False while the hotel is shut means the room is showing its `dirty`
+   * picture, which is only drawn for daylight — so the renderer washes it,
+   * rather than letting the one room that needs cleaning be the only lit thing
+   * in a dark hotel.
+   */
+  artIsNight?: boolean;
+  /**
    * Transparent roach layer, stretched over the room's own art. Empty when the
    * room is clean. It is a separate picture rather than a fifth room variant
    * so a room can be dirty and infested at the same time without a combination
@@ -90,6 +123,14 @@ export interface RoomViewData {
   hasGhost: boolean;
   occupants: number;
   decor: RoomViewDecorItem[];
+  /**
+   * The hotel is shut, so this room is showing its `*_night` picture.
+   *
+   * Decor is day-lit art composited on top of that picture, so without this a
+   * fully lit sofa stood in a dark room. The room's own art needs nothing —
+   * the wash is already baked into the file.
+   */
+  night?: boolean;
 }
 
 export class RoomView extends Container {
@@ -111,7 +152,8 @@ export class RoomView extends Container {
     super();
     this.caption = new Text({
       text: '',
-      style: { fontSize: 13, fill: 0xf8f0d8, fontFamily: 'system-ui, sans-serif' },
+      // On the pastel fallback shell, not on the art: ink, not cream.
+      style: { fontSize: 13, fill: INK, fontFamily: 'system-ui, sans-serif' },
     });
     this.caption.resolution = 2;
     this.art.visible = false;
@@ -132,7 +174,8 @@ export class RoomView extends Container {
       .join('|');
     const key = `${assetGeneration()},${data.rect.x},${data.rect.y},${data.rect.w},${data.rect.h},${data.category},` +
       `${data.fill.toFixed(2)},${data.showMeter},${data.hasPest},${data.hasFire},${data.hasGhost},${data.occupants},` +
-      `${data.label},${data.assetKey ?? ''},${data.pestKey ?? ''},${decorKey}`;
+      `${data.label},${data.assetKey ?? ''},${data.pestKey ?? ''},${data.night ? 'n' : 'd'},` +
+      `${data.artIsNight ? 'N' : 'D'},${decorKey}`;
     if (key === this.lastKey) return;
     this.lastKey = key;
 
@@ -145,10 +188,13 @@ export class RoomView extends Container {
     // Real art when it exists, drawn shell when it does not. The game runs
     // identically either way, which is what lets art land one file at a time.
     const art = data.assetKey ? texture(data.assetKey) : null;
+    const night = data.night === true;
     if (art) {
       this.art.texture = art;
       this.art.width = w;
       this.art.height = h;
+      // Only a picture that is not already a night picture needs washing.
+      this.art.tint = night && !data.artIsNight ? NIGHT_TINT : 0xffffff;
       this.art.visible = true;
       // No stroke over finished art: every room image carries its own dark
       // frame (tools/art/hcstyle.py's room_frame), and a second brown outline
@@ -157,7 +203,10 @@ export class RoomView extends Container {
     } else {
       this.art.visible = false;
       this.shell.clear();
-      this.shell.roundRect(1, 1, w - 2, h - 2, 6).fill(SHELL[data.category]).stroke({ width: 2, color: BORDER });
+      const shell = SHELL[data.category];
+      this.shell.roundRect(1, 1, w - 2, h - 2, 6)
+        .fill(night ? nightfall(shell) : shell)
+        .stroke({ width: 2, color: night ? nightfall(BORDER) : BORDER });
     }
 
     const pest = data.pestKey ? texture(data.pestKey) : null;
@@ -165,20 +214,26 @@ export class RoomView extends Container {
       this.pestArt.texture = pest;
       this.pestArt.width = w;
       this.pestArt.height = h;
+      // The roach layer is one picture for both day and night, so it always
+      // needs the wash when the rest of the room has had it.
+      this.pestArt.tint = night ? NIGHT_TINT : 0xffffff;
       this.pestArt.visible = true;
     } else {
       this.pestArt.visible = false;
     }
 
-    this.drawDecor(data.decor, w, h);
+    this.drawDecor(data.decor, w, h, night);
 
     this.meter.clear();
     if (data.showMeter) {
       const mw = w - 16;
-      this.meter.roundRect(8, 8, mw, 6, 3).fill(METER_BG);
+      const rim = night ? nightfall(METER_RIM) : METER_RIM;
+      this.meter.roundRect(7, 7, mw + 2, 8, 4).fill({ color: rim, alpha: 0.55 });
+      this.meter.roundRect(8, 8, mw, 6, 3).fill(night ? nightfall(METER_BG) : METER_BG);
       if (data.fill > 0) {
-        const colour = data.fill >= 0.999 ? METER_HIGH : METER_LOW;
-        this.meter.roundRect(8, 8, Math.max(3, mw * data.fill), 6, 3).fill(colour);
+        const base = data.fill >= 0.999 ? METER_HIGH : METER_LOW;
+        this.meter.roundRect(8, 8, Math.max(3, mw * data.fill), 6, 3)
+          .fill(night ? nightfall(base) : base);
       }
     }
 
@@ -193,9 +248,9 @@ export class RoomView extends Container {
     this.badges.clear();
     let bx = w - 18;
     const marks: Array<[Sprite, boolean, string, number]> = [
-      [this.fireBadge, data.hasFire, 'event.fire.overlay', 0xf07858],
-      [this.ghostBadge, data.hasGhost, 'event.ghost.overlay', 0xcabcf5],
-      [this.pestBadge, data.hasPest, 'event.pest.overlay', 0x8d9a4a],
+      [this.fireBadge, data.hasFire, 'event.fire.overlay', 0xed5c47],
+      [this.ghostBadge, data.hasGhost, 'event.ghost.overlay', 0xa7a1d3],
+      [this.pestBadge, data.hasPest, 'event.pest.overlay', 0x77cb8d],
     ];
     for (const [badge, on, key, fallback] of marks) {
       badge.visible = false;
@@ -208,12 +263,16 @@ export class RoomView extends Container {
         badge.position.set(bx - 9, 11);
         badge.visible = true;
       } else {
-        this.badges.circle(bx, 20, 7).fill(fallback);
+        this.badges.circle(bx, 20, 7).fill(fallback).stroke({ width: 1.5, color: INK });
       }
       bx -= 20;
     }
+    // Gold with an ink rim: an unrimmed orange dot vanished against the warm
+    // walls of half the catalogue and glared against the cool half.
     for (let i = 0; i < Math.min(data.occupants, 4); i++) {
-      this.badges.circle(14 + i * 12, h - 34, 4).fill(0xe08030);
+      this.badges.circle(14 + i * 12, h - 34, 4)
+        .fill(0xf5c24d)
+        .stroke({ width: 1, color: INK });
     }
   }
 
@@ -229,7 +288,8 @@ export class RoomView extends Container {
    * pieces (data/economy.json limits.maxDecorPerRoom), cheap enough that this
    * does not need RoomView's own texture-reuse tricks.
    */
-  private drawDecor(pieces: RoomViewDecorItem[], roomW: number, roomH: number): void {
+  private drawDecor(pieces: RoomViewDecorItem[], roomW: number, roomH: number,
+                    night: boolean): void {
     this.decorLayer.removeChildren();
     // Pixi draws children back-to-front in addChild order, so the comparator's
     // "lowest first" is literally the draw order.
@@ -271,9 +331,10 @@ export class RoomView extends Container {
         sprite.anchor.set(0.5);
         sprite.width = box.w;
         sprite.height = box.h;
+        if (night) sprite.tint = NIGHT_TINT;
         holder.addChild(sprite);
       } else {
-        holder.addChild(this.decorPlaceholder(piece, box));
+        holder.addChild(this.decorPlaceholder(piece, box, night));
       }
 
       this.decorLayer.addChild(holder);
@@ -281,18 +342,19 @@ export class RoomView extends Container {
   }
 
   /** The stand-in for a piece with no art, in the box its art will occupy. */
-  private decorPlaceholder(piece: RoomViewDecorItem, box: DecorBox): Container {
+  private decorPlaceholder(piece: RoomViewDecorItem, box: DecorBox, night: boolean): Container {
     const holder = new Container();
-    const fill = DECOR_PLACEHOLDER[piece.slotType as keyof typeof DECOR_PLACEHOLDER] ?? DECOR_PLACEHOLDER_DEFAULT;
+    const base = DECOR_PLACEHOLDER[piece.slotType as keyof typeof DECOR_PLACEHOLDER] ?? DECOR_PLACEHOLDER_DEFAULT;
+    const fill = night ? nightfall(base) : base;
     const g = new Graphics();
     g.roundRect(-box.w / 2, -box.h / 2, box.w, box.h, 3)
       .fill({ color: fill, alpha: 0.85 })
-      .stroke({ width: 1, color: DECOR_PLACEHOLDER_BORDER });
+      .stroke({ width: 1, color: night ? nightfall(INK) : INK });
     holder.addChild(g);
 
     const label = new Text({
       text: piece.category.slice(0, 4).toUpperCase(),
-      style: { fontSize: 7, fill: 0x1a130e, fontFamily: 'system-ui, sans-serif' },
+      style: { fontSize: 7, fill: INK, fontFamily: 'system-ui, sans-serif' },
     });
     label.resolution = 2;
     label.anchor.set(0.5);

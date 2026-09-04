@@ -14,6 +14,7 @@ import { upgradeOptions, upgradeInvestment } from '../bridge/selectors.ts';
 import { translate } from '../i18n/index.ts';
 import { coins as formatCoins } from '../i18n/format.ts';
 import type { Locale } from '../i18n/index.ts';
+import { Pair } from './Pair.tsx';
 import { Sheet } from './Sheet.tsx';
 import { blockerLabel } from './BuildPanel.tsx';
 import { playSound } from '../audio/index.ts';
@@ -46,23 +47,27 @@ export function UpgradesPanel({ locale, onClose }: { locale: Locale; onClose: ()
             }}
             className={`mb-2 min-h-11 w-full rounded-xl border px-4 py-3 text-start transition
               ${label
-                ? 'cursor-not-allowed border-white/5 bg-white/[0.02] opacity-55'
+                ? 'cursor-not-allowed border-white/5 bg-white/[0.02]'
                 : 'border-white/10 bg-white/[0.04] hover:border-coral-500/70 hover:bg-white/[0.07]'}`}
           >
             <div className="flex items-baseline gap-2">
-              <span className="text-sm text-slate-100">{t(option.nameKey)}</span>
-              <span className="font-mono text-[11px] text-slate-500">
+              {/* Locked rows dim by colour, not by an opacity wrapper that
+                  took the unlock requirement down to 1.9:1 with them. */}
+              <span className={`text-sm ${label ? 'text-sand-400' : 'text-sand-100'}`}>
+                {t(option.nameKey)}
+              </span>
+              <span className="font-mono text-[11px] text-sand-500">
                 {option.owned}/{option.total} {t('ui.owned')}
               </span>
               {label ? (
-                <span className="ms-auto text-[11px] text-slate-500">{label}</span>
+                <span className="ms-auto text-[11px] font-medium text-amber-300">{label}</span>
               ) : (
                 <span className="ms-auto font-mono text-sm tabular-nums text-brass-400">
                   {option.nextCost === null ? '—' : formatCoins(locale, option.nextCost)}
                 </span>
               )}
             </div>
-            <p className="mt-0.5 text-[11px] leading-snug text-slate-400">{t(option.descKey)}</p>
+            <p className="mt-0.5 text-[11px] leading-snug text-sand-400">{t(option.descKey)}</p>
             <div className="mt-1.5 flex items-center gap-2">
               <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/10">
                 <div
@@ -71,8 +76,8 @@ export function UpgradesPanel({ locale, onClose }: { locale: Locale; onClose: ()
                 />
               </div>
               {option.next !== null && (
-                <span className="font-mono text-[11px] text-slate-500">
-                  ×{option.current.toFixed(2)} → ×{option.next.toFixed(2)}
+                <span className="font-mono text-[11px] text-sand-500">
+                  <Pair>×{option.current.toFixed(2)} → ×{option.next.toFixed(2)}</Pair>
                 </span>
               )}
             </div>

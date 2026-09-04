@@ -101,7 +101,7 @@ export class ErrorBoundary extends Component<Props, State> {
       <div className="flex h-full items-center justify-center bg-ink-950 px-6">
         <section className="w-full max-w-sm rounded-2xl border border-white/10 bg-ink-900 p-5">
           <h1 className="text-lg font-semibold text-cream-100">Something broke</h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-sand-400">
             Your hotel is safe. This is a problem drawing the screen, not with
             your save.
           </p>
@@ -117,16 +117,16 @@ export class ErrorBoundary extends Component<Props, State> {
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="mt-2 min-h-11 w-full rounded-xl border border-white/10 px-4 py-3 text-sm text-slate-200"
+            className="mt-2 min-h-11 w-full rounded-xl border border-white/10 px-4 py-3 text-sm text-sand-200"
           >
             Reload
           </button>
 
           <details className="mt-4">
-            <summary className="cursor-pointer text-[11px] text-slate-500">
+            <summary className="cursor-pointer text-[11px] text-sand-500">
               Details for a bug report
             </summary>
-            <pre className="mt-2 max-h-40 overflow-auto rounded-lg bg-black/40 p-2 text-[11px] text-slate-400">
+            <pre className="mt-2 max-h-40 overflow-auto rounded-lg bg-black/40 p-2 text-[11px] text-sand-400">
               {error.message}
               {info ? `\n${info}` : ''}
             </pre>

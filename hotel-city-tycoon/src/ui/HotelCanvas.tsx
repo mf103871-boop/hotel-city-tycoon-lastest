@@ -14,7 +14,7 @@ import {
 } from '../render/index.ts';
 import type { SceneSnapshot } from '../render/index.ts';
 import { useGameStore } from '../bridge/index.ts';
-import { summariseRooms, gridSize } from '../bridge/selectors.ts';
+import { summariseRooms, gridSize, hotelIsOpen } from '../bridge/selectors.ts';
 import { characterViews, guestNear } from '../bridge/characters.ts';
 import type { GameState } from '../bridge/selectors.ts';
 
@@ -26,6 +26,11 @@ function toSnapshot(state: GameState): SceneSnapshot {
     // Decoration: the gold stars the backdrop paints over the building. The
     // HUD is where the player reads the rating; this is the hotel wearing it.
     stars: state.hotel.stars,
+    // A shut hotel is already showing its `*_night` room art (selectors.ts's
+    // roomArtVariant). This is that same fact handed to everything else the
+    // renderer draws, so the sky, the street, the furniture and the people go
+    // dark with the rooms instead of leaving a night hotel under a noon sky.
+    night: !hotelIsOpen(state),
     characters: characterViews(state).map((c) => ({
       id: c.id,
       assetKey: c.assetKey,
@@ -44,6 +49,7 @@ function toSnapshot(state: GameState): SceneSnapshot {
       category: r.category,
       label: r.defId,
       assetKey: r.assetKey,
+      artIsNight: r.artIsNight,
       pestKey: r.pestKey,
       fill: r.fill,
       showMeter: r.showMeter,

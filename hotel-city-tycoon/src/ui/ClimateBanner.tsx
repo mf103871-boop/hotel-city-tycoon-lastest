@@ -22,15 +22,18 @@ export function ClimateBanner({ locale }: { locale: Locale }) {
   const descKey = climate.eventId === 'heatWave' ? 'notice.heatWave' : 'notice.coldSnap';
 
   return (
-    <div className="pointer-events-none absolute inset-x-3 top-36 z-10 rounded-xl border border-water-hi/30 bg-ink-900/85 px-4 py-2 backdrop-blur">
+    /* `top-44`: the season banner starts at top-24 and is three lines tall, so
+       it reaches about 152px — this sat at 144 and painted over its multiplier
+       line. Both can be on screen at once, so they cannot share a row. */
+    <div className="pointer-events-none absolute inset-x-3 top-44 z-10 rounded-xl border border-water-hi/30 bg-ink-900/92 px-4 py-2 backdrop-blur">
       <div className="flex items-center gap-2">
         <img src={`${import.meta.env.BASE_URL}assets/effects/${climate.eventId}.png`} alt="" className="h-6 w-6 shrink-0" />
         <span className="text-sm font-semibold text-cream-100">{t(climate.nameKey)}</span>
-        <span className="ms-auto font-mono text-[11px] text-slate-400">
+        <span className="ms-auto font-mono text-[11px] text-sand-400">
           {minutes} {t('ui.minutesShort')}
         </span>
       </div>
-      <p className="mt-0.5 text-[11px] leading-snug text-slate-400">{t(descKey)}</p>
+      <p className="mt-0.5 text-[11px] leading-snug text-sand-400">{t(descKey)}</p>
     </div>
   );
 }

@@ -141,7 +141,7 @@ export function SettingsSheet({
   return (
     <Sheet title={t('ui.settings')} onClose={onClose}>
       <label className="mb-3 flex items-center justify-between rounded-xl border border-white/10 px-4 py-3">
-        <span className="text-sm text-slate-100">{t('ui.sound')}</span>
+        <span className="text-sm text-sand-100">{t('ui.sound')}</span>
         <input
           type="checkbox"
           checked={soundOn}
@@ -151,7 +151,7 @@ export function SettingsSheet({
       </label>
 
       <div className="mb-3 rounded-xl border border-white/10 px-4 py-3">
-        <span className="mb-2 block text-sm text-slate-100">{t('ui.language')}</span>
+        <span className="mb-2 block text-sm text-sand-100">{t('ui.language')}</span>
         <div className="flex gap-2">
           {LOCALES.map((code) => (
             <button
@@ -159,7 +159,7 @@ export function SettingsSheet({
               type="button"
               onClick={() => onLocaleChange(code)}
               className={`min-h-11 flex-1 rounded-lg px-3 py-2.5 text-xs transition
-                ${locale === code ? 'bg-brass-500 font-semibold text-midnight-950' : 'bg-white/5 text-slate-300'}`}
+                ${locale === code ? 'bg-brass-500 font-semibold text-midnight-950' : 'bg-white/5 text-sand-300'}`}
             >
               {code === 'ar' ? 'العربية' : 'English'}
             </button>
@@ -172,8 +172,8 @@ export function SettingsSheet({
         onClick={exportSave}
         className="mb-2 w-full rounded-xl border border-white/10 px-4 py-3 text-start hover:border-brass-500/60"
       >
-        <span className="block text-sm text-slate-100">{t('ui.exportSave')}</span>
-        <span className="block text-[11px] text-slate-400">{t('ui.exportSaveHint')}</span>
+        <span className="block text-sm text-sand-100">{t('ui.exportSave')}</span>
+        <span className="block text-[11px] text-sand-400">{t('ui.exportSaveHint')}</span>
       </button>
 
       <button
@@ -182,8 +182,8 @@ export function SettingsSheet({
         disabled={busy}
         className="mb-2 w-full rounded-xl border border-white/10 px-4 py-3 text-start hover:border-brass-500/60 disabled:opacity-50"
       >
-        <span className="block text-sm text-slate-100">{t('ui.importSave')}</span>
-        <span className="block text-[11px] text-slate-400">{t('ui.importSaveHint')}</span>
+        <span className="block text-sm text-sand-100">{t('ui.importSave')}</span>
+        <span className="block text-[11px] text-sand-400">{t('ui.importSaveHint')}</span>
       </button>
       <input
         ref={fileInput}
@@ -208,7 +208,7 @@ export function SettingsSheet({
               type="button"
               onClick={() => setConfirmReset(false)}
               disabled={busy}
-              className="flex-1 rounded-lg border border-white/10 px-3 py-2 text-xs text-slate-300 disabled:opacity-50"
+              className="flex-1 rounded-lg border border-white/10 px-3 py-2 text-xs text-sand-300 disabled:opacity-50"
             >
               {t('ui.cancel')}
             </button>
@@ -223,11 +223,14 @@ export function SettingsSheet({
           </div>
         </div>
       ) : (
+        /* Destructive, and it says so without being hovered: this is a phone
+           game, and on a touch screen the hover state this button used to rely
+           on for its only warning colour never happens. */
         <button
           type="button"
           onClick={() => setConfirmReset(true)}
           disabled={busy}
-          className="mt-3 w-full rounded-xl px-4 py-2.5 text-sm text-slate-500 hover:text-red-300 disabled:opacity-50"
+          className="mt-3 w-full rounded-xl border border-red-500/30 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 disabled:opacity-50"
         >
           {t('ui.resetGame')}
         </button>

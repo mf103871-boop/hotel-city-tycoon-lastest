@@ -540,7 +540,7 @@ def executive(c: Canvas, fy: float) -> None:
     and a mantel are architecture nobody can buy from the decor shop, and they
     take the left third so the middle of the floor stays free.
     """
-    wall = mix(P["wallSand"], P["wallSlate"], 0.40)
+    wall = mix(P["wallSlate"], P["warmWhite"], 0.40)
     _cornice(c, wall)
     _wainscot(c, wall, fy, 112, c.w - 112 - INSET, h=18.0, panels=8)
     _chimney_breast(c, wall, 10, fy, 96, 13.0)
@@ -639,8 +639,22 @@ ROOMS = {
     # Deluxe, executive and presidential move off their default wall: the
     # defaults repeat mint, sand and lilac inside one ladder, and a tier the
     # player cannot see the difference of is a tier they will not buy.
+    #
+    # Executive reached for that with mix(wallSand, wallSlate, 0.40), and the
+    # arithmetic ate it. Sand and slate sit on opposite sides of the blue-
+    # yellow axis (b* +16.6 and -19.2), so at 0.40 the hue cancels: the room
+    # shipped at #C9CAC4, chroma 2.8, against a minimum of 16.5 for every
+    # other room in the hotel. The one tier that was singled out for being
+    # hard to tell apart came out the only grey box in a hotel of pastels —
+    # the greyed-out colour an interface uses for something you cannot have.
+    #
+    # Lightening the slate instead of cancelling it keeps the cool, formal
+    # direction that mix was reaching for and gets the chroma back: #AEBFD1,
+    # chroma 11.2, L* 76.7 — still clearly below luxurySuite's 89.7 so the
+    # ladder still climbs, and 15.9 ΔE from its nearest neighbour in the
+    # guest ladder, which is further than any other candidate managed.
     "deluxe":       RoomSpec(mix(P["wallMint"], P["wallTeal"], 0.55), P["wood"], deluxe),
-    "executive":    RoomSpec(mix(P["wallSand"], P["wallSlate"], 0.40), P["woodDk"], executive),
+    "executive":    RoomSpec(mix(P["wallSlate"], P["warmWhite"], 0.40), P["woodDk"], executive),
     # A full-strength carpet under a rose wall is two reds shouting; pulling
     # it back towards the wall keeps the room warm instead of loud.
     "honeymoon":    RoomSpec(P["wallRose"], mix(P["carpet"], P["wallRose"], 0.34),

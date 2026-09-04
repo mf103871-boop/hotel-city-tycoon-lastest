@@ -207,8 +207,8 @@ export function App() {
             type="button"
             aria-label="Settings"
             onClick={() => setPanel('settings')}
-            className="absolute end-3 top-24 z-20 min-h-11 rounded-lg border border-white/10 bg-midnight-900/85
-                       px-4 py-2.5 text-sm text-slate-300 backdrop-blur"
+            className="absolute end-3 top-24 z-20 min-h-11 rounded-lg border border-white/10 bg-midnight-900/92
+                       px-4 py-2.5 text-sm text-sand-300 backdrop-blur"
           >
             ⚙
           </button>
@@ -234,11 +234,11 @@ export function App() {
           )}
         </>
       ) : (
-        <div className="flex h-full flex-col items-center justify-center gap-2 text-slate-500">
+        <div className="flex h-full flex-col items-center justify-center gap-2 text-sand-500">
           <span>…</span>
           {/* Visible without opening a console: two rounds of verification
               were spent establishing which build was actually live. */}
-          <span className="font-mono text-[11px] text-slate-600">
+          <span className="font-mono text-[11px] text-sand-500">
             {typeof __BUILD_ID__ === 'string' ? __BUILD_ID__ : 'dev'}
           </span>
         </div>

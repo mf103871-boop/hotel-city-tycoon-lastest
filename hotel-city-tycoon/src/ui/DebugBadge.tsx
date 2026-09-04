@@ -56,7 +56,7 @@ export function DebugBadge({ stats }: { stats: RenderStats }) {
       aria-expanded={open}
       onClick={() => setOpen(!open)}
       className="absolute start-3 top-24 z-30 rounded-lg border border-white/10 bg-black/70
-                 px-3 py-2 text-start font-mono text-[11px] leading-relaxed text-slate-300 backdrop-blur"
+                 px-3 py-2 text-start font-mono text-[11px] leading-relaxed text-sand-300 backdrop-blur"
     >
       {/* The readout is left-to-right; the badge's *position* follows the
           document direction. `dir` used to sit on the button itself, which
@@ -74,14 +74,14 @@ export function DebugBadge({ stats }: { stats: RenderStats }) {
           <div>
             fps <span className={fpsColour}>{stats.fps.toFixed(0)}</span>
             {stats.fpsP95Low > 0 && (
-              <span className="text-slate-500"> · p5 {stats.fpsP95Low.toFixed(0)}</span>
+              <span className="text-sand-500"> · p5 {stats.fpsP95Low.toFixed(0)}</span>
             )}
           </div>
           {stats.memoryMB !== null && <div>memory {stats.memoryMB.toFixed(0)}MB</div>}
           <div>rooms {stats.visibleRooms}/{stats.rooms} drawn</div>
           <div>people {stats.characters}</div>
           <div>zoom {stats.zoom.toFixed(2)}×</div>
-          <div className="mt-1 border-t border-white/10 pt-1 text-[10px] text-slate-500">
+          <div className="mt-1 border-t border-white/10 pt-1 text-[10px] text-sand-500">
             build {typeof __BUILD_ID__ === 'string' ? __BUILD_ID__ : 'dev'}
           </div>
         </>

@@ -32,6 +32,8 @@ import {
 } from '../../src/core/systems/roomAnchors.ts';
 import {
   boundingBox, SKY, CITY_FAR, CITY_NEAR, TREE_FAR, TREE_NEAR, ROAD, INK, GOLD,
+  SKY_HIGH, CITY_WINDOW, ROAD_LINE, KERB, GOLD_DARK,
+  NIGHT, NIGHT_TINT, NIGHT_WASH, nightfall,
 } from '../../src/render/backdrop.ts';
 import { loadSimData } from '../balance-sim/load-data.ts';
 import fs from 'node:fs';
@@ -705,15 +707,119 @@ check('the backdrop palette is the one the art is drawn from', () => {
     return parseInt(m[1]!, 16);
   };
   eq(SKY, hex('sky'), 'sky');
+  eq(SKY_HIGH, hex('skyHi'), 'high sky');
   eq(CITY_FAR, hex('cityFar'), 'far city');
   eq(CITY_NEAR, hex('cityNear'), 'near city');
   eq(TREE_FAR, hex('treeFar'), 'far trees');
   eq(TREE_NEAR, hex('treeNear'), 'near trees');
   eq(ROAD, hex('road'), 'road');
+  eq(ROAD_LINE, hex('roadLine'), 'road markings');
+  eq(KERB, hex('kerb'), 'kerb');
   eq(INK, hex('ink'), 'outline');
   eq(GOLD, hex('gold'), 'stars');
+  eq(GOLD_DARK, hex('goldDk'), 'star rim');
+  // cityWindow is the one backdrop colour with no hcstyle entry — it is a
+  // renderer-only tint — so it is asserted here rather than cross-checked.
+  eq(CITY_WINDOW, 0xd8e8f7, 'city windows');
 });
 
+check('the renderer washes the world with the same night the art is baked in', () => {
+  // The rooms switch to their `*_night` pictures the moment the hotel stops
+  // trading, and the sky, the street, the furniture and the people are painted
+  // by the renderer. If these two nights are not the same arithmetic, a
+  // periwinkle hotel stands under a noon sky — which is exactly what shipped.
+  const variants = fs.readFileSync('tools/art/hcvariants.py', 'utf8');
+  const tuple = (name: string): number[] => {
+    const m = new RegExp(`^${name}\\s*=\\s*\\(([^)]*)\\)`, 'm').exec(variants);
+    assert(m, `hcvariants.py has no ${name}`);
+    return m[1]!.split(',').map((v) => Number(v.trim()));
+  };
+  const scale = tuple('NIGHT_SCALE');
+  const lift = tuple('NIGHT_LIFT');
+  eq(scale.length, 3, 'NIGHT_SCALE is three channels');
+  eq(lift.length, 3, 'NIGHT_LIFT is three channels');
+  for (let i = 0; i < 3; i++) {
+    eq(NIGHT_WASH.scale[i], scale[i], `night scale channel ${i}`);
+    eq(NIGHT_WASH.lift[i], lift[i], `night lift channel ${i}`);
+  }
+
+  // And the wash must not clip. `blue * 0.84 + 54` reached 255 from an input
+  // of 240, so the top sixteen blue levels all landed on pure blue and every
+  // pale surface in the hotel — glass, tiles, the pale-blue walls — came out
+  // one flat electric periwinkle with its highlights gone.
+  for (let i = 0; i < 3; i++) {
+    const top = 255 * NIGHT_WASH.scale[i]! + NIGHT_WASH.lift[i]!;
+    assert(top <= 255,
+      `the night wash clips channel ${i} — white maps to ${top.toFixed(1)}, above 255`);
+  }
+
+  // Derived, never written twice.
+  eq(NIGHT.sky, nightfall(SKY), 'night sky');
+  eq(NIGHT.road, nightfall(ROAD), 'night road');
+  eq(NIGHT.ink, nightfall(INK), 'night outline');
+  eq(NIGHT_TINT, nightfall(0xffffff), 'the tint day-lit sprites take after dark');
+
+  // A night has to be darker than the day it replaces, on every colour the
+  // backdrop paints. The wash this replaced failed exactly here: it lifted
+  // blue so hard that a pale wall came out brighter than in daylight.
+  const luminance = (c: number): number => {
+    const ch = (shift: number): number => {
+      const v = ((c >> shift) & 0xff) / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    };
+    return 0.2126 * ch(16) + 0.7152 * ch(8) + 0.0722 * ch(0);
+  };
+  for (const [name, day] of [
+    ['sky', SKY], ['skyHigh', SKY_HIGH], ['cityFar', CITY_FAR], ['cityNear', CITY_NEAR],
+    ['treeFar', TREE_FAR], ['treeNear', TREE_NEAR], ['road', ROAD], ['kerb', KERB],
+    ['roadLine', ROAD_LINE], ['cityWindow', CITY_WINDOW],
+  ] as const) {
+    assert(luminance(nightfall(day)) < luminance(day), `${name} is not darker after dark`);
+  }
+});
+
+
+check('the five guest desires read apart without their hue', () => {
+  // A desire is a four-pixel dot in a bubble over a guest's head, and the dot's
+  // colour is the whole message. Two of them used to be #E08030 and #F07858 —
+  // both mid-weight oranges, 1.03:1 apart, the same dot to anyone with a
+  // red-green deficiency. Hue alone is never enough at four pixels.
+  const source = fs.readFileSync('src/render/characterView.ts', 'utf8');
+  const block = /const DESIRE: Record<[^>]*>\s*=\s*\{([\s\S]*?)\n\};/.exec(source);
+  assert(block, 'characterView.ts has no DESIRE map');
+  const entries = [...block[1]!.matchAll(/(\w+):\s*\{\s*colour:\s*0x([0-9a-fA-F]{6}),\s*mark:\s*'(\w+)'/g)]
+    .map((m) => [m[1]!, parseInt(m[2]!, 16), m[3]!] as const);
+  assert(entries.length >= 5, `expected five desires, found ${entries.length}`);
+  const colours = entries.map((e) => [e[0], e[1]] as const);
+
+  // The mark is what actually carries the meaning: five colours this palette
+  // can offer only reach 1.35:1 in greyscale, and that is not a message on a
+  // four-pixel dot. Every desire needs its own shape.
+  const marks = entries.map((e) => e[2]);
+  assert(new Set(marks).size === marks.length,
+    `two desires share a mark: ${marks.join(', ')}`);
+
+  const lum = (c: number): number => {
+    const ch = (shift: number): number => {
+      const v = ((c >> shift) & 0xff) / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    };
+    return 0.2126 * ch(16) + 0.7152 * ch(8) + 0.0722 * ch(0);
+  };
+  // And the colours still have to pull their weight: strip the hue and no pair
+  // may collapse. 1.3:1 is what ART-0 §7's palette can actually deliver across
+  // five hues — the shape above is why that is enough rather than a compromise.
+  const MIN = 1.3;
+  for (let i = 0; i < colours.length; i++) {
+    for (let j = i + 1; j < colours.length; j++) {
+      const a = lum(colours[i]![1]);
+      const b = lum(colours[j]![1]);
+      const ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+      assert(ratio >= MIN,
+        `${colours[i]![0]} and ${colours[j]![0]} are ${ratio.toFixed(2)}:1 in greyscale — hue is all that separates them`);
+    }
+  }
+});
 
 console.log(line);
 if (failures.length === 0) console.log(`  ${passed} checks passed`);
