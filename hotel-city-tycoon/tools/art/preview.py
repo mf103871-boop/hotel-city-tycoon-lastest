@@ -104,14 +104,22 @@ def sheet_rooms(module_name: str = "all", zoom: int = 2) -> None:
 def sheet_decor(category: str = "all", zoom: int = 3) -> None:
     import gen_decor
     items = [i for i in _decor_data() if category in ("all", i["category"])]
-    cols = 8
-    cell_w, cell_h = 120 * zoom // 2, 120 * zoom // 2
-    rows = (len(items) + cols - 1) // cols
-    sheet = Image.new("RGBA", (cols * cell_w + 20, rows * (cell_h + 18) + 20), SHEET_BG)
-
     items = [i for i in items if i["id"] in gen_decor.PIECES]
     if not items:
         raise SystemExit(f"no drawing routines yet for category '{category}'")
+    # Sized from the widest piece actually on the sheet. A fixed cell cropped
+    # the sides off every 96px wall piece, which is exactly the part of a
+    # picture frame you need to see.
+    widest = max(gen_decor.size_for(i)[0] for i in items)
+    tallest = max(gen_decor.size_for(i)[1] for i in items)
+    cols = 8
+    # The canvas renders at tier 2, then the sheet scales by zoom/2 — so a
+    # 96px piece lands at 96*2*zoom/2 px. Sizing the cell from the declared 1x
+    # width cropped the sides off every wall piece.
+    cell_w = widest * zoom + 14
+    cell_h = tallest * zoom + 14
+    rows = (len(items) + cols - 1) // cols
+    sheet = Image.new("RGBA", (cols * cell_w + 20, rows * (cell_h + 18) + 20), SHEET_BG)
     for n, item in enumerate(items):
         w, h = gen_decor.size_for(item)
         c = Canvas(w, h, tier=2)
@@ -134,19 +142,23 @@ def sheet_cast(zoom: int = 3) -> None:
     import gen_chars
     import characters
     people = gen_chars.roster()
-    cell = 80 * zoom // 2
+    # Sized from the sprite, not from a guess: at zoom 3 a 48x72 frame renders
+    # 216px tall, and an 120px cell stacked every row's feet into the next
+    # row's head.
+    cell_w = CHAR_W * zoom + 8
+    cell = CHAR_H * zoom + 8
     cols = 9
-    sheet = Image.new("RGBA", (cols * cell + 20, len(people) * (cell + 18) + 20), SHEET_BG)
+    sheet = Image.new("RGBA", (cols * cell_w + 20, len(people) * (cell + 20) + 20), SHEET_BG)
     for row, (kind, cid) in enumerate(people):
         member = characters.CAST[f"{kind}.{cid}"]
-        y = 10 + row * (cell + 18)
-        _label(sheet, f"{kind}.{cid}", 12, y + cell + 2)
+        y = 10 + row * (cell + 20)
+        _label(sheet, f"{kind}.{cid}", 12, y + cell + 4)
         poses = [("idle", 0), ("work" if kind == "staff" else "sleep", 0)]
         poses += [("walk", i) for i in range(6)]
         for col, (pose, phase) in enumerate(poses):
             img = gen_chars.frame(member, 2, pose, phase).image()
             img = img.resize((img.width * zoom // 2, img.height * zoom // 2), Image.LANCZOS)
-            sheet.alpha_composite(img, (10 + col * cell + (cell - img.width) // 2, y))
+            sheet.alpha_composite(img, (10 + col * cell_w + (cell_w - img.width) // 2, y))
     _write(sheet, "cast")
 
 
@@ -159,7 +171,7 @@ def sheet_icons(zoom: int = 4) -> None:
     drawn = [(p, wh) for p, wh in sorted(wanted.items()) if p in ui_icons.ICONS]
     if not drawn:
         raise SystemExit("no icon routines yet")
-    cell = 64 * zoom // 2 + 20
+    cell = 64 * zoom + 20
     cols = 7
     rows = (len(drawn) + cols - 1) // cols
     sheet = Image.new("RGBA", (cols * cell + 20, rows * (cell + 18) + 20), SHEET_BG)

@@ -564,18 +564,67 @@ check('every point the plan offers keeps its piece inside the room', () => {
   }
 });
 
-check('filling a room to the limit never hands out the same point twice', () => {
+check('filling a room to the limit never stands two pieces in one spot', () => {
+  // One exception, and it is the point of the rule rather than a hole in it: a
+  // rug is *supposed* to share its spot with the chair standing on it, so two
+  // pieces may hold one anchor as long as one of them is a floor covering.
   const limit = simData.economy.limits.maxDecorPerRoom;
+  const kindOf = (defId: string): string => {
+    const d = simData.decor.find((x) => x.id === defId)!;
+    return spotKindFor(d.category, d.slotType);
+  };
   for (const room of simData.rooms) {
     const taken = new Set<string>();
+    const at = new Map<string, string>();
+    const placed: Array<{ defId: string; localX: number; localY: number }> = [];
     const bounds = anchorBoundsFor(simData, room.id);
     for (let i = 0; i < limit; i++) {
       const item = simData.decor[i % simData.decor.length]!;
-      const anchor = anchorFor(simData, room.id, item.id, taken, limit)
+      const anchor = anchorFor(simData, room.id, item.id, taken, limit, placed)
         ?? firstFreeAnchor(bounds, item.slotType, taken, anchorReachFor(simData, item.id));
       const key = anchorKey(anchor.x, anchor.y);
-      assert(!taken.has(key), `${room.id} handed out ${key} twice at piece ${i + 1}`);
+      const sitting = at.get(key);
+      if (sitting !== undefined) {
+        const kinds = [kindOf(sitting), kindOf(item.id)];
+        assert(kinds.includes('surface'),
+          `${room.id} stood ${item.id} (${kinds[1]}) on ${sitting} (${kinds[0]}) at ${key}`);
+      }
+      at.set(key, item.id);
       taken.add(key);
+      placed.push({ defId: item.id, localX: anchor.x, localY: anchor.y });
+    }
+  }
+});
+
+check('a piece is offered a clear patch of floor while the room has one', () => {
+  // The failure this replaces was invisible to an anchor-equality check: a bed
+  // 57 pixels wide and a side table 40 pixels wide, one anchor unit apart,
+  // have different anchors and stand in the same place. Two pieces into an
+  // empty room, they must not.
+  //
+  // One piece per block, and no more: a room's designed points keep clear of
+  // what is painted into it — the maintenance bench, the lobby desk — so a
+  // two-block room really does run out of clear floor at the second piece, and
+  // demanding a third would only be demanding that the plan ignore its own
+  // fixtures.
+  for (const room of simData.rooms.filter((r) => r.blocks.w >= 2)) {
+    const taken = new Set<string>();
+    const placed: Array<{ defId: string; localX: number; localY: number }> = [];
+    const wanted = ['bed_single', 'seating_armchair', 'table_deskWood']
+      .slice(0, Math.min(3, room.blocks.w));
+    for (const defId of wanted) {
+      const anchor = anchorFor(simData, room.id, defId, taken, 24, placed);
+      assert(anchor, `${room.id} offered nothing for ${defId}`);
+      const reach = anchorReachFor(simData, defId)!;
+      for (const other of placed) {
+        const theirs = anchorReachFor(simData, other.defId)!;
+        const overlap = anchor.x - reach.left < other.localX + theirs.right
+          && anchor.x + reach.right > other.localX - theirs.left;
+        assert(!overlap,
+          `${room.id} put ${defId} at x=${anchor.x} across ${other.defId} at x=${other.localX}`);
+      }
+      taken.add(anchorKey(anchor.x, anchor.y));
+      placed.push({ defId, localX: anchor.x, localY: anchor.y });
     }
   }
 });

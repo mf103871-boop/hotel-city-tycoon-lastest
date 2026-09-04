@@ -211,6 +211,21 @@ LW_FACE = 0.9       # eyes, mouths, the finest thing drawn
 
 # ---------------------------------------------------------------------- canvas
 
+def _grow(box, pad: float):
+    """A box widened by a line width, so an outline is inside the scratch layer."""
+    return [box[0] - pad, box[1] - pad, box[2] + pad, box[3] + pad]
+
+
+def _shift(box, dx: float, dy: float):
+    return [box[0] - dx, box[1] - dy, box[2] - dx, box[3] - dy]
+
+
+def _bounds(points, pad: float):
+    xs = [p[0] for p in points]
+    ys = [p[1] for p in points]
+    return [min(xs) - pad, min(ys) - pad, max(xs) + pad, max(ys) + pad]
+
+
 class Canvas:
     """
     A drawing surface addressed in logical 1x pixels.
@@ -238,56 +253,111 @@ class Canvas:
     def _box(self, x, y, w, h):
         return [self._p(x), self._p(y), self._p(x + w) - 1, self._p(y + h) - 1]
 
+    # -- blending -----------------------------------------------------------
+    #
+    # Pillow's `ImageDraw.Draw(img, "RGBA")` only blends when the *image* is
+    # RGB. On an RGBA canvas — which every canvas here is, because sprites need
+    # transparency — a translucent fill REPLACES the pixel, alpha and all. A
+    # 50% white highlight over a coral wall did not lighten the wall; it cut a
+    # half-transparent hole through it.
+    #
+    # So anything translucent is drawn onto its own transparent layer and
+    # composited, which is what `alpha()` has always looked like it did. Opaque
+    # drawing — nearly all of it — still goes straight onto the canvas, so the
+    # cost only lands where blending is actually asked for.
+
+    @staticmethod
+    def _translucent(*colours) -> bool:
+        return any(c is not None and len(c) == 4 and c[3] < 255 for c in colours)
+
+    def _paint(self, colours, bbox, draw):
+        """
+        Run `draw(handle, dx, dy)` so translucent colours blend instead of
+        replace.
+
+        The scratch layer covers the shape's own bounding box rather than the
+        whole canvas. A supersampled four-block room is twelve megapixels;
+        allocating and compositing that for every translucent highlight turned
+        a nine-second generation into minutes. `dx`/`dy` are what the caller
+        subtracts from its coordinates to draw into that box.
+        """
+        if not self._translucent(*colours):
+            draw(self.d, 0, 0)
+            return
+        pad = 2
+        x0 = max(0, int(min(bbox[0], bbox[2])) - pad)
+        y0 = max(0, int(min(bbox[1], bbox[3])) - pad)
+        x1 = min(self.img.width, int(max(bbox[0], bbox[2])) + pad + 1)
+        y1 = min(self.img.height, int(max(bbox[1], bbox[3])) + pad + 1)
+        if x1 <= x0 or y1 <= y0:
+            return
+        layer = Image.new("RGBA", (x1 - x0, y1 - y0), (0, 0, 0, 0))
+        draw(ImageDraw.Draw(layer, "RGBA"), x0, y0)
+        self.img.alpha_composite(layer, (x0, y0))
+
     # -- primitives ---------------------------------------------------------
     def rect(self, x, y, w, h, fill=None, ink=None, lw=LW_PROP):
         if w <= 0 or h <= 0:
             return
-        if fill is not None:
-            self.d.rectangle(self._box(x, y, w, h), fill=fill)
-        if ink is not None:
-            self.d.rectangle(self._box(x, y, w, h), outline=ink, width=max(1, int(round(self._p(lw)))))
+        box = self._box(x, y, w, h)
+        width = max(1, int(round(self._p(lw)))) + max(0, int(round(self._p(lw))))
+        self._paint((fill, ink), _grow(box, width), lambda d, dx, dy: d.rectangle(
+            _shift(box, dx, dy), fill=fill, outline=ink,
+            width=max(1, int(round(self._p(lw)))) if ink else 0))
 
     def rrect(self, x, y, w, h, r=3.0, fill=None, ink=None, lw=LW_PROP):
         """A rounded rectangle. The default shape of nearly everything here."""
         if w <= 0 or h <= 0:
             return
         radius = max(0, min(self._p(r), self._p(min(w, h)) / 2 - 1))
-        self.d.rounded_rectangle(
-            self._box(x, y, w, h), radius=radius, fill=fill,
-            outline=ink, width=max(1, int(round(self._p(lw)))) if ink else 0,
-        )
+        box = self._box(x, y, w, h)
+        width = max(1, int(round(self._p(lw))))
+        self._paint((fill, ink), _grow(box, width), lambda d, dx, dy: d.rounded_rectangle(
+            _shift(box, dx, dy), radius=radius, fill=fill, outline=ink,
+            width=width if ink else 0))
 
     def ellipse(self, cx, cy, rx, ry, fill=None, ink=None, lw=LW_PROP):
         box = [self._p(cx - rx), self._p(cy - ry), self._p(cx + rx) - 1, self._p(cy + ry) - 1]
-        self.d.ellipse(box, fill=fill, outline=ink,
-                       width=max(1, int(round(self._p(lw)))) if ink else 0)
+        width = max(1, int(round(self._p(lw))))
+        self._paint((fill, ink), _grow(box, width), lambda d, dx, dy: d.ellipse(
+            _shift(box, dx, dy), fill=fill, outline=ink, width=width if ink else 0))
 
     def circle(self, cx, cy, r, fill=None, ink=None, lw=LW_PROP):
         self.ellipse(cx, cy, r, r, fill, ink, lw)
 
     def poly(self, pts, fill=None, ink=None, lw=LW_PROP):
         scaled = [(self._p(x), self._p(y)) for x, y in pts]
-        self.d.polygon(scaled, fill=fill, outline=ink,
-                       width=max(1, int(round(self._p(lw)))) if ink else 0)
+        width = max(1, int(round(self._p(lw))))
+        self._paint((fill, ink), _bounds(scaled, width), lambda d, dx, dy: d.polygon(
+            [(px - dx, py - dy) for px, py in scaled], fill=fill, outline=ink,
+            width=width if ink else 0))
 
     def line(self, pts, colour, lw=LW_DETAIL, cap=True):
         """A polyline with rounded joins — ART-0 §6 asks for rounded ends."""
         scaled = [(self._p(x), self._p(y)) for x, y in pts]
         width = max(1, int(round(self._p(lw))))
-        self.d.line(scaled, fill=colour, width=width, joint="curve")
-        if cap and width > 2:
-            r = width / 2
-            for x, y in (scaled[0], scaled[-1]):
-                self.d.ellipse([x - r, y - r, x + r, y + r], fill=colour)
+
+        def draw(d, dx, dy):
+            moved = [(px - dx, py - dy) for px, py in scaled]
+            d.line(moved, fill=colour, width=width, joint="curve")
+            if cap and width > 2:
+                r = width / 2
+                for x, y in (moved[0], moved[-1]):
+                    d.ellipse([x - r, y - r, x + r, y + r], fill=colour)
+        self._paint((colour,), _bounds(scaled, width * 2), draw)
 
     def arc(self, cx, cy, rx, ry, start, end, colour, lw=LW_DETAIL):
         box = [self._p(cx - rx), self._p(cy - ry), self._p(cx + rx) - 1, self._p(cy + ry) - 1]
-        self.d.arc(box, start, end, fill=colour, width=max(1, int(round(self._p(lw)))))
+        width = max(1, int(round(self._p(lw))))
+        self._paint((colour,), _grow(box, width), lambda d, dx, dy: d.arc(
+            _shift(box, dx, dy), start, end, fill=colour, width=width))
 
     def pie(self, cx, cy, rx, ry, start, end, fill=None, ink=None, lw=LW_PROP):
         box = [self._p(cx - rx), self._p(cy - ry), self._p(cx + rx) - 1, self._p(cy + ry) - 1]
-        self.d.pieslice(box, start, end, fill=fill, outline=ink,
-                        width=max(1, int(round(self._p(lw)))) if ink else 0)
+        width = max(1, int(round(self._p(lw))))
+        self._paint((fill, ink), _grow(box, width), lambda d, dx, dy: d.pieslice(
+            _shift(box, dx, dy), start, end, fill=fill, outline=ink,
+            width=width if ink else 0))
 
     # -- composition --------------------------------------------------------
     def blit(self, other: "Canvas", x: float, y: float):
@@ -818,7 +888,9 @@ def _draw_face(c: Canvas, who: Person, cx, cy, r, expression):
 
     my = cy + r * 0.46
     if expression == "happy":
-        c.pie(cx, my - r * 0.16, r * 0.24, r * 0.26, 10, 170, fill=P["ink"])
+        # A small open smile. The first version was a filled half-disc a
+        # quarter of the head wide, which at 30 pixels tall read as a snout.
+        c.pie(cx, my - r * 0.10, r * 0.17, r * 0.19, 8, 172, fill=P["ink"])
     elif expression == "sleep":
         c.ellipse(cx, my, r * 0.11, r * 0.09, fill=P["ink"])
     elif expression == "cross":

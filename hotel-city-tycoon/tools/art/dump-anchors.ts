@@ -21,10 +21,16 @@ import { slotAllowed } from '../../src/core/systems/quality.ts';
 
 const data = loadSimData();
 
-/** Categories in the order a player tends to buy them. */
+/**
+ * Categories in the order a player tends to buy them.
+ *
+ * The hero piece first — a bedroom gets a bed before it gets wallpaper — so a
+ * room capped at four slots shows the four things that would actually be in
+ * it, not four surface treatments and no furniture.
+ */
 const ORDER = [
-  'wallpaper', 'flooring', 'wallArt', 'lighting', 'rug',
-  'bed', 'seating', 'table', 'plant', 'luxury', 'appliance', 'storage',
+  'bed', 'appliance', 'seating', 'table', 'lighting', 'rug',
+  'storage', 'plant', 'wallArt', 'luxury', 'wallpaper', 'flooring',
 ];
 
 const out: Record<string, Record<string, [number, number]>> = {};
@@ -32,16 +38,22 @@ const out: Record<string, Record<string, [number, number]>> = {};
 for (const room of data.rooms) {
   const taken = new Set<string>();
   const placed: Record<string, [number, number]> = {};
+  const inRoom: Array<{ defId: string; localX: number; localY: number }> = [];
   const bounds = anchorBoundsFor(data, room.id);
 
   for (const category of ORDER) {
+    // Never more pieces than the room can actually hold: a one-block bedroom
+    // takes four, and furnishing it with ten in a preview shows a collision
+    // the game would never produce.
+    if (inRoom.length >= room.decorSlots) break;
     const item = data.decor
       .filter((d) => d.category === category && slotAllowed(data, room, d.id))
       .sort((a, b) => a.tier - b.tier)[0];
     if (!item) continue;
-    const anchor = anchorFor(data, room.id, item.id, taken)
+    const anchor = anchorFor(data, room.id, item.id, taken, 24, inRoom)
       ?? firstFreeAnchor(bounds, item.slotType, taken, anchorReachFor(data, item.id));
     taken.add(anchorKey(anchor.x, anchor.y));
+    inRoom.push({ defId: item.id, localX: anchor.x, localY: anchor.y });
     placed[item.id] = [anchor.x, anchor.y];
   }
   out[room.id] = placed;

@@ -402,6 +402,32 @@ export function spotsOfKind(layout: Layout, kind: SpotKind, roomW: number, limit
   return out.slice(0, limit);
 }
 
+/** A piece already in the room, as this file needs to see it. */
+export interface PlacedPiece {
+  defId: string;
+  localX: number;
+  localY: number;
+}
+
+/** Kinds that stand on the floor and therefore compete for the same span of it. */
+const STANDS_ON_FLOOR: ReadonlySet<SpotKind> = new Set<SpotKind>(['ground', 'bed']);
+
+/**
+ * The horizontal span a floor-standing piece occupies, in anchor units.
+ *
+ * Only the horizontal one, and only for pieces on the floor: everything
+ * standing in a room shares one floor line, so what decides whether two of
+ * them collide is whether their widths overlap. A poster hung above a bed is
+ * not a collision, and treating it as one would empty every wall.
+ */
+function floorSpan(data: SimData, defId: string, x: number): [number, number] | null {
+  const def = data.decor.find((d) => d.id === defId);
+  if (!def) return null;
+  if (!STANDS_ON_FLOOR.has(spotKindFor(def.category, def.slotType))) return null;
+  const reach = anchorReachFor(data, defId);
+  return reach ? [x - reach.left, x + reach.right] : [x - 3, x + 3];
+}
+
 /**
  * Where this piece goes in this room, or null if the plan has nothing left.
  *
@@ -410,6 +436,18 @@ export function spotsOfKind(layout: Layout, kind: SpotKind, roomW: number, limit
  * candidate is pulled inside the room's legal range for that piece's own reach
  * before it is offered, so a number typed into a layout above can be wrong
  * about a room's size without ever putting furniture through a wall.
+ *
+ * `placed` is what the room already holds. Two passes: the first offers only
+ * points where this piece's picture does not overlap another piece standing on
+ * the same floor, and the second drops that condition. That order is the whole
+ * difference between a bed with a side table beside it and a side table
+ * standing in the middle of the bed — an exact-anchor check alone cannot see
+ * the collision, because a 57-pixel bed and a 40-pixel table one anchor apart
+ * have different anchors and the same floor.
+ *
+ * The second pass matters as much as the first: an economy room is one block
+ * wide and holds four pieces, so at some point they *must* overlap, and a
+ * piece is never refused (DEC-010).
  */
 export function anchorFor(
   data: SimData | null,
@@ -417,6 +455,7 @@ export function anchorFor(
   defId: string,
   taken: ReadonlySet<string>,
   maxPieces = 24,
+  placed: readonly PlacedPiece[] = [],
 ): Spot | null {
   if (!data || !roomDefId) return null;
   const def = data.decor.find((d) => d.id === defId);
@@ -425,13 +464,46 @@ export function anchorFor(
 
   const kind = spotKindFor(def.category, def.slotType);
   const bounds = anchorBoundsFor(data, roomDefId);
-  const range = anchorRange(bounds, anchorReachFor(data, defId));
+  const reach = anchorReachFor(data, defId);
+  const range = anchorRange(bounds, reach);
   const layout = layoutFor(roomDefId, room.blocks.w, room.blocks.h);
+  const spots = spotsOfKind(layout, kind, bounds.w, maxPieces);
 
-  for (const spot of spotsOfKind(layout, kind, bounds.w, maxPieces)) {
-    const x = Math.min(Math.max(spot.x, range.minX), range.maxX);
-    const y = Math.min(Math.max(spot.y, range.minY), range.maxY);
-    if (!taken.has(anchorKey(x, y))) return { x, y };
+  const occupied = STANDS_ON_FLOOR.has(kind)
+    ? placed.map((p) => floorSpan(data, p.defId, p.localX)).filter((s): s is [number, number] => !!s)
+    : [];
+
+  /*
+   * A rug is allowed to share its anchor with the chair standing on it.
+   *
+   * Floor coverings draw first inside the front band (decorArt.ts gives them
+   * depth 0), so a rug under a table is the arrangement, not a clash — and
+   * treating the table's anchor as occupied pushed every rug off to a corner
+   * of the room by itself, which is the one place a rug never goes.
+   */
+  const blocked: ReadonlySet<string> = kind === 'surface'
+    ? new Set(placed
+      .filter((p) => {
+        const other = data.decor.find((d) => d.id === p.defId);
+        return other && spotKindFor(other.category, other.slotType) === 'surface';
+      })
+      .map((p) => anchorKey(p.localX, p.localY)))
+    : taken;
+  const clear = (x: number): boolean => {
+    if (occupied.length === 0) return true;
+    const lo = x - (reach?.left ?? 3);
+    const hi = x + (reach?.right ?? 3);
+    return !occupied.some(([a, b]) => lo < b && hi > a);
+  };
+
+  for (const wantClear of [true, false]) {
+    for (const spot of spots) {
+      const x = Math.min(Math.max(spot.x, range.minX), range.maxX);
+      const y = Math.min(Math.max(spot.y, range.minY), range.maxY);
+      if (blocked.has(anchorKey(x, y))) continue;
+      if (wantClear && !clear(x)) continue;
+      return { x, y };
+    }
   }
   return null;
 }

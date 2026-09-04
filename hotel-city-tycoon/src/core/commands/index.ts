@@ -193,7 +193,7 @@ export function execute(data: SimData, state: GameState, cmd: Command): CommandR
       // The scan is what answers when the plan runs out of places — it always
       // answers, and HC-P1-S4's reach keeps whatever it picks inside the room.
       const anchor = anchorFor(data, room.defId, cmd.defId, takenAnchors,
-        data.economy.limits.maxDecorPerRoom)
+        data.economy.limits.maxDecorPerRoom, room.decor)
         ?? firstFreeAnchor(bounds, def.slotType, takenAnchors, anchorReachFor(data, cmd.defId));
       room.decor.push({
         id: `d${state.counters.decor++}`, defId: cmd.defId, slot: cmd.slot,
