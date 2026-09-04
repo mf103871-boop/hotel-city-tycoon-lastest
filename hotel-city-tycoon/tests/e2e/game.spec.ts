@@ -173,14 +173,29 @@ test('tapping a room opens its sheet, and decorating moves the meter', async ({ 
 
   // And the piece that just landed can be swapped for another one without
   // taking it down first — the upgrade path a room's built-in furniture and
-  // everything bought after it share.
-  const afterPlacing = await meter.textContent();
-  const replace = page.locator('[data-testid^="replace-decor-"]').first();
+  // everything bought after it share. Placed pieces are listed on the room's
+  // overview rather than inside the catalogue the pick was made from, so step
+  // back out of it first.
+  await page.getByRole('button', { name: '✕' }).first().click();
+  const placedRow = page.getByTestId('placed-decor').locator('li').first();
+  const placedName = ((await placedRow.locator('span').first().textContent()) ?? '').trim();
+  const replace = placedRow.locator('[data-testid^="replace-decor-"]');
   await expect(replace, 'a placed piece offered no way to replace it').toBeVisible();
+  const wasPlaced = await replace.getAttribute('data-testid');
   await replace.click();
-  await page.getByRole('button', { name: /wallpaper|flooring|poster|rug/i }).first().click();
-  await expect(meter, 'replacing a piece left the meter untouched')
-    .not.toHaveText(afterPlacing ?? '');
+  // Any catalogue row but the piece already standing there: swapping something
+  // for itself is refused on purpose.
+  await page.locator('section[role="dialog"] button:enabled')
+    .filter({ hasText: /\+\d+/ })
+    .filter({ hasNotText: placedName })
+    .first()
+    .click();
+  // A successful swap hands the player straight back to the room's overview,
+  // so there is nothing left to close here.
+  await expect(page.locator(`[data-testid="${wasPlaced}"]`),
+    'replacing left the same piece standing there').toHaveCount(0);
+  await expect(page.locator('[data-testid^="replace-decor-"]'),
+    'replacing lost the piece instead of swapping it').toHaveCount(1);
 });
 
 // ---------------------------------------------------------------- objectives
