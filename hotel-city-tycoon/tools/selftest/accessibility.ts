@@ -221,11 +221,44 @@ check('animation respects a request for less motion', () => {
 });
 
 check('the interface does not depend on colour alone', () => {
-  // The decor meter turns green when full and the hazard badge is coloured.
-  // Both need a second signal.
-  const room = fs.readFileSync('src/ui/RoomSheet.tsx', 'utf8');
-  assert(/\{points\}\/\{target\}|\d+\/\d+/.test(room),
-    'the decor meter communicates only through colour and length');
+  // This assertion used to be `/\{points\}\/\{target\}|\d+\/\d+/`, and its
+  // second alternative matches any "digits/digits" in the file — which every
+  // Tailwind opacity modifier is. `border-brass-500/60` satisfied it. The
+  // check could not fail, so it was not a check.
+  //
+  // Each state the game paints a colour for is listed with the second signal
+  // that has to travel with it, and every one is asserted separately.
+  // Comments are stripped first. The star assertion below passed against the
+  // sentence in CityPanel's own docblock explaining the fix, which is the same
+  // failure mode as the regex this check replaced: matching prose, not code.
+  const read = (f: string) => fs.readFileSync(f, 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/^\s*\/\/.*$/gm, ' ');
+
+  const room = read('src/ui/RoomSheet.tsx');
+  assert(/\{points\}\/\{target\}/.test(room),
+    'the decor meter has no numeric readout — it is a colour and a length');
+
+  const toasts = read('src/ui/Toasts.tsx');
+  const marks = /const TONE_MARK = \{([^}]*)\}/.exec(toasts);
+  assert(marks, 'toast tones carry no mark beside their colour');
+  const tones = [...(/const TONE_STYLE = \{([^}]*)\}/.exec(toasts)?.[1] ?? '')
+    .matchAll(/^\s*(\w+):/gm)].map((m) => m[1]!);
+  assert(tones.length > 0, 'no toast tones found');
+  for (const tone of tones) {
+    assert(new RegExp(`\\b${tone}:`).test(marks[1]!), `toast tone "${tone}" has a colour but no mark`);
+  }
+
+  const city = read('src/ui/CityPanel.tsx');
+  assert(/★/.test(city) && /☆/.test(city),
+    'earned and unearned star pips are the same glyph in two colours');
+
+  // The room's hazards: each has its own sprite, and the drawn fallback under
+  // it must not be the only thing separating one hazard from another.
+  const roomView = read('src/render/roomView.ts');
+  const overlays = [...roomView.matchAll(/'(event\.\w+\.overlay)'/g)].map((m) => m[1]!);
+  assert(overlays.length >= 3, `expected a sprite per hazard, found ${overlays.length}`);
+  assert(new Set(overlays).size === overlays.length, 'two hazards share one overlay sprite');
 });
 
 // ---------------------------------------------------------------- input
@@ -266,6 +299,15 @@ const TAILWIND_SHADES = new Set([
 
 const COLOUR_UTILITY = /\b(?:bg|text|border|ring|from|to|via|fill|stroke|shadow|outline|accent|caret|divide|placeholder|decoration)-([a-z]+)-([a-z0-9]+)(?=\b|\/)/g;
 
+/**
+ * Families that are not colours despite matching the shape.
+ *
+ * `bg-gradient-to-b` parses as family "gradient", shade "to"; so do the
+ * linear/radial/conic forms. They declare a direction, not a colour, and the
+ * colours themselves arrive through from-/via-/to-, which this check does see.
+ */
+const NOT_A_COLOUR = new Set(['gradient', 'linear', 'radial', 'conic']);
+
 check('every colour class a component asks for actually exists', () => {
   // The check that would have caught `text-water-hi` and `text-brass-300`:
   // six call sites across four components named colours that `@theme` never
@@ -277,6 +319,7 @@ check('every colour class a component asks for actually exists', () => {
   for (const [file, src] of uiFiles()) {
     for (const m of src.matchAll(COLOUR_UTILITY)) {
       const [, family, shade] = m as unknown as [string, string, string];
+      if (NOT_A_COLOUR.has(family)) continue;
       if (declared.has(`${family}-${shade}`)) continue;
       if (TAILWIND_FAMILIES.has(family) && TAILWIND_SHADES.has(shade)) continue;
       problems.push(`${path.basename(file)}: ${m[0]}`);
@@ -425,6 +468,28 @@ check('ordered number pairs keep their order in Arabic', () => {
   }
   assert(problems.length === 0,
     `number pairs that reverse in Arabic: ${problems.join(' | ')}`);
+});
+
+check('the phone\'s own chrome agrees with the app it frames', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  const manifest = JSON.parse(fs.readFileSync('public/manifest.webmanifest', 'utf8')) as
+    { theme_color?: string; background_color?: string };
+  const meta = /<meta name="theme-color" content="(#[0-9a-fA-F]{6})"/.exec(html);
+  assert(meta, 'index.html declares no theme-color');
+  const declared = meta[1]!.toLowerCase();
+  assert(declared === manifest.theme_color?.toLowerCase(),
+    `theme-color disagrees between index.html (${declared}) and the manifest (${manifest.theme_color})`);
+  assert(manifest.theme_color?.toLowerCase() === manifest.background_color?.toLowerCase(),
+    `the manifest's theme and splash colours disagree (${manifest.theme_color} vs ${manifest.background_color})`);
+
+  // `black-translucent` puts white system glyphs over the page, and with
+  // viewport-fit=cover the page under them is the canvas — white on the day
+  // sky is 2.05:1. Something opaque has to cover the inset.
+  if (/apple-mobile-web-app-status-bar-style"\s+content="black-translucent"/.test(html)) {
+    const hud = fs.readFileSync('src/ui/Hud.tsx', 'utf8');
+    assert(/safe-area-inset-top/.test(hud) && /from-ink-950/.test(hud),
+      'black-translucent status bar with nothing painted behind the safe-area inset');
+  }
 });
 
 console.log(line);

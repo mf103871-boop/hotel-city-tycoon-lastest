@@ -35,14 +35,20 @@ const BORDER = INK;
 /**
  * The decor meter.
  *
- * The track was a near-black warm brown, painted across the top of finished
- * pastel room art on every room with a decor target — the darkest thing in the
- * picture, sitting on the lightest. It is ink at a low alpha now, so it reads
- * as a recess in the wall rather than as a bar stuck to it, and both fills are
- * ART-0 §7 palette colours instead of the interface's coral and mint.
+ * The track was a near-black warm brown from a palette the art no longer
+ * shares — the darkest thing in the picture, painted across the lightest.
+ * Ink at 22% was the first repair and it was not one: a translucent track
+ * takes the wall's own colour, so the fill was measured against a different
+ * ground in every room and landed at 1.01:1 on rose and teal. A meter whose
+ * fill is the same luminance as its track is a blank strip.
+ *
+ * It is solid ink now — one ground, every room — so the fills hold 5.5:1
+ * (coral) and 7.6:1 (green) against it wherever the bar is drawn, well past
+ * WCAG 1.4.11's 3:1 for a graphic. The rim is what keeps the bar itself
+ * visible on the four dark walls, where ink on ink is only 2.2:1.
  */
 const METER_BG = INK;
-const METER_BG_ALPHA = 0.22;
+const METER_RIM = 0xdde2df;    // warmWhite
 const METER_LOW = 0xed5c47;    // coral
 const METER_HIGH = 0x5bb877;   // green
 
@@ -221,10 +227,13 @@ export class RoomView extends Container {
     this.meter.clear();
     if (data.showMeter) {
       const mw = w - 16;
-      this.meter.roundRect(8, 8, mw, 6, 3).fill({ color: METER_BG, alpha: METER_BG_ALPHA });
+      const rim = night ? nightfall(METER_RIM) : METER_RIM;
+      this.meter.roundRect(7, 7, mw + 2, 8, 4).fill({ color: rim, alpha: 0.55 });
+      this.meter.roundRect(8, 8, mw, 6, 3).fill(night ? nightfall(METER_BG) : METER_BG);
       if (data.fill > 0) {
-        const colour = data.fill >= 0.999 ? METER_HIGH : METER_LOW;
-        this.meter.roundRect(8, 8, Math.max(3, mw * data.fill), 6, 3).fill(colour);
+        const base = data.fill >= 0.999 ? METER_HIGH : METER_LOW;
+        this.meter.roundRect(8, 8, Math.max(3, mw * data.fill), 6, 3)
+          .fill(night ? nightfall(base) : base);
       }
     }
 

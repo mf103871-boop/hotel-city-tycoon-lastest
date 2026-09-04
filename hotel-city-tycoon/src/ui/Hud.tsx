@@ -61,6 +61,25 @@ export function Hud({
         safe-area padding keeps the bars clear of a notch or home indicator
         when the game is installed (viewport-fit=cover, standalone).
       */}
+      {/*
+        * A scrim behind the phone's own status bar.
+        *
+        * index.html asks for `black-translucent`, which makes iOS draw the
+        * clock, signal and battery as *white glyphs over the page* — and with
+        * viewport-fit=cover the page under them is bare canvas. White on the
+        * day sky (#6FBCF9) is 2.05:1: the player cannot read their own clock
+        * while the game is open. The HUD's safe-area padding pushed its panel
+        * clear of the notch and left that strip to the sky.
+        *
+        * Ink fading to nothing keeps the glyphs legible without drawing a hard
+        * band across the top of the picture, and it costs nothing when there
+        * is no inset to cover.
+        */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-ink-950/85 to-transparent"
+        style={{ height: 'calc(env(safe-area-inset-top, 0px) + 0.5rem)' }}
+      />
       <header
         data-hud="top"
         className="pointer-events-none absolute inset-x-0 top-0 z-10 p-3"
