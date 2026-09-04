@@ -9,7 +9,119 @@
  * Run: node --experimental-strip-types tools/selftest/assets.ts
  */
 import fs from 'node:fs';
+import zlib from 'node:zlib';
 import { loadSimData } from '../balance-sim/load-data.ts';
+
+/**
+ * A minimal PNG reader, because nothing here has ever read a shipped pixel.
+ *
+ * Every test in this file until now checked the manifest — that a key has a
+ * file and a path resolves. None of them opened one. That is how a night wash
+ * that clipped every pale blue to #0000FF shipped through a green suite: the
+ * only thing that would have caught it is looking at the pixels.
+ *
+ * Handles the 8-bit RGB/RGBA/indexed, non-interlaced files the art pipeline
+ * produces — `save_png` quantises anything under 256 colours, so the pest
+ * overlays arrive palettised — and refuses anything else rather than guessing.
+ */
+interface Png { width: number; height: number; channels: number; data: Buffer }
+
+function readPng(path: string): Png {
+  const file = fs.readFileSync(path);
+  if (file.readUInt32BE(0) !== 0x89504e47) throw new Error(`${path} is not a PNG`);
+  let pos = 8;
+  let width = 0; let height = 0; let depth = 0; let colour = 0; let interlace = 0;
+  const idat: Buffer[] = [];
+  let palette: Buffer | null = null;
+  let alphas: Buffer | null = null;
+  while (pos < file.length) {
+    const len = file.readUInt32BE(pos);
+    const type = file.toString('ascii', pos + 4, pos + 8);
+    const body = file.subarray(pos + 8, pos + 8 + len);
+    pos += 12 + len;
+    if (type === 'IHDR') {
+      width = body.readUInt32BE(0); height = body.readUInt32BE(4);
+      depth = body[8]!; colour = body[9]!; interlace = body[12]!;
+    } else if (type === 'IDAT') idat.push(body);
+    else if (type === 'PLTE') palette = body;
+    else if (type === 'tRNS') alphas = body;
+    else if (type === 'IEND') break;
+  }
+  if (depth !== 8 || interlace !== 0 || (colour !== 2 && colour !== 6 && colour !== 3)) {
+    throw new Error(`${path}: unsupported PNG (depth ${depth}, colour ${colour}, interlace ${interlace})`);
+  }
+  if (colour === 3 && !palette) throw new Error(`${path}: indexed PNG with no palette`);
+  const channels = colour === 6 ? 4 : colour === 3 ? 1 : 3;
+  const raw = zlib.inflateSync(Buffer.concat(idat));
+  const stride = width * channels;
+  const out = Buffer.alloc(stride * height);
+  let prev = Buffer.alloc(stride);
+  let read = 0;
+  for (let y = 0; y < height; y++) {
+    const filter = raw[read++]!;
+    const line = Buffer.from(raw.subarray(read, read + stride));
+    read += stride;
+    for (let x = 0; x < stride; x++) {
+      const a = x >= channels ? line[x - channels]! : 0;
+      const b = prev[x]!;
+      const c = x >= channels ? prev[x - channels]! : 0;
+      if (filter === 1) line[x] = (line[x]! + a) & 0xff;
+      else if (filter === 2) line[x] = (line[x]! + b) & 0xff;
+      else if (filter === 3) line[x] = (line[x]! + ((a + b) >> 1)) & 0xff;
+      else if (filter === 4) {
+        const p = a + b - c;
+        const pa = Math.abs(p - a); const pb = Math.abs(p - b); const pc = Math.abs(p - c);
+        line[x] = (line[x]! + (pa <= pb && pa <= pc ? a : pb <= pc ? b : c)) & 0xff;
+      }
+    }
+    line.copy(out, y * stride);
+    prev = line;
+  }
+  if (colour !== 3) return { width, height, channels, data: out };
+
+  // Expand the palette so every caller sees RGBA and none of them has to know
+  // which of the three encodings a given file happens to use.
+  const rgba = Buffer.alloc(width * height * 4);
+  for (let i = 0; i < width * height; i++) {
+    const idx = out[i]!;
+    rgba[i * 4] = palette![idx * 3]!;
+    rgba[i * 4 + 1] = palette![idx * 3 + 1]!;
+    rgba[i * 4 + 2] = palette![idx * 3 + 2]!;
+    rgba[i * 4 + 3] = alphas && idx < alphas.length ? alphas[idx]! : 255;
+  }
+  return { width, height, channels: 4, data: rgba };
+}
+
+/** Every shipped room PNG, both tiers. */
+function roomFiles(): string[] {
+  const out: string[] = [];
+  for (const dir of ['public/assets/rooms', 'public/assets/@2x/rooms']) {
+    if (!fs.existsSync(dir)) continue;
+    for (const name of fs.readdirSync(dir)) if (name.endsWith('.png')) out.push(`${dir}/${name}`);
+  }
+  return out;
+}
+
+/** The most common fully-opaque colour, as [r, g, b]. */
+function dominant(png: Png): [number, number, number] {
+  const seen = new Map<number, number>();
+  for (let i = 0; i < png.data.length; i += png.channels) {
+    if (png.channels === 4 && png.data[i + 3]! <= 200) continue;
+    const key = (png.data[i]! << 16) | (png.data[i + 1]! << 8) | png.data[i + 2]!;
+    seen.set(key, (seen.get(key) ?? 0) + 1);
+  }
+  let best = 0; let count = -1;
+  for (const [k, v] of seen) if (v > count) { count = v; best = k; }
+  return [(best >> 16) & 0xff, (best >> 8) & 0xff, best & 0xff];
+}
+
+function luminance([r, g, b]: [number, number, number]): number {
+  const ch = (v: number) => {
+    const c = v / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b);
+}
 
 const manifest = JSON.parse(fs.readFileSync('public/assets/manifest.json', 'utf8'));
 const data = loadSimData();
@@ -339,6 +451,59 @@ await check('the night, dirty and pest variants are drawn, not merely shipped', 
   console.log(`      ${data.rooms.length} rooms x 4 states, all present`);
 });
 
+
+await check('no shipped asset uses pure black, which ART-0 §6 forbids', () => {
+  // "الخط الخارجي داكن مائل إلى الكحلي، وليس أسود نقيًا" — outlines are deep
+  // navy, never pure black. Nothing has ever checked a pixel for it.
+  const offenders: string[] = [];
+  for (const file of roomFiles()) {
+    const png = readPng(file);
+    for (let i = 0; i < png.data.length; i += png.channels) {
+      if (png.channels === 4 && png.data[i + 3]! <= 200) continue;
+      if (png.data[i] === 0 && png.data[i + 1] === 0 && png.data[i + 2] === 0) {
+        offenders.push(file);
+        break;
+      }
+    }
+  }
+  if (offenders.length > 0) throw new Error(`pure black in ${offenders.length}: ${offenders.slice(0, 4).join(', ')}`);
+});
+
+await check('every night room is actually darker than the room it is the night of', () => {
+  // The wash that shipped scaled blue by 0.84 and added 54, which reaches 255
+  // from an input of 240: every pale blue surface pinned to pure blue and the
+  // hotel came out brighter and more electric after dark than before it. The
+  // LUT parity test in render.ts guards the numbers; this guards the pixels,
+  // which is what a player sees and what a regenerate could change on its own.
+  const problems: string[] = [];
+  for (const night of roomFiles().filter((f) => f.includes('_night'))) {
+    const base = night.replace('_night', '_base');
+    if (!fs.existsSync(base)) continue;
+    const dn = luminance(dominant(readPng(night)));
+    const db = luminance(dominant(readPng(base)));
+    if (dn >= db) problems.push(`${night} ${dn.toFixed(3)} >= ${db.toFixed(3)}`);
+  }
+  if (problems.length > 0) throw new Error(`night is not darker: ${problems.join(', ')}`);
+});
+
+await check('the night wash never drives a channel to its ceiling', () => {
+  // The clip itself, measured rather than inferred: an image whose blue is
+  // pinned at 255 over a wide area has lost every highlight it had.
+  const problems: string[] = [];
+  for (const night of roomFiles().filter((f) => f.includes('_night'))) {
+    const png = readPng(night);
+    let pinned = 0; let opaque = 0;
+    for (let i = 0; i < png.data.length; i += png.channels) {
+      if (png.channels === 4 && png.data[i + 3]! <= 200) continue;
+      opaque++;
+      if (png.data[i + 2] === 255) pinned++;
+    }
+    if (opaque > 0 && pinned / opaque > 0.02) {
+      problems.push(`${night} ${(100 * pinned / opaque).toFixed(1)}% of pixels at blue 255`);
+    }
+  }
+  if (problems.length > 0) throw new Error(`night wash is clipping: ${problems.join(', ')}`);
+});
 
 console.log(line);
 if (failures.length === 0) console.log(`  ${passed} checks passed`);
