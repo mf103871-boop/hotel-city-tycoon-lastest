@@ -14,6 +14,9 @@ import { advance } from '../../src/core/sim/tick.ts';
 import { resolveOffline } from '../../src/core/sim/offline.ts';
 import { shiftPhase, isOpen } from '../../src/core/systems/economy.ts';
 import { checkInTicks, receptionEfficiency } from '../../src/core/systems/guests.ts';
+import {
+  fixturesFor, slotAt, occupancyKey, spotKindFor, layoutFor,
+} from '../../src/core/systems/roomAnchors.ts';
 import { owned, grant, consume } from '../../src/core/systems/inventory.ts';
 import { shopOffers, giftState } from '../../src/core/systems/liveops.ts';
 import { objectiveProgress } from '../../src/core/systems/objectives.ts';
@@ -559,6 +562,157 @@ check('buy, place, remove, place again — one item, tracked throughout', () => 
   assert(removed.ok, 'removing failed');
   assert(owned(state, offer.defId) === 1, 'removing did not return the item');
   assert(state.player.coins === coinsAfterBuy, 'removing quietly sold the item');
+});
+
+check('replacing a piece swaps it in place and hands the old one back', () => {
+  const state = fresh();
+  state.player.coins += 5_000_000;
+  state.player.level = 40;
+  const room = state.hotel.rooms.find((r) => r.defId === 'economy')!;
+  execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
+  const piece = room.decor[0]!;
+  const wasAt = { x: piece.localX, y: piece.localY, slot: piece.slot, id: piece.id };
+  const pointsBefore = room.decorPoints;
+
+  const swapped = execute(data, state, {
+    type: 'REPLACE_DECOR', roomId: room.id, decorId: piece.id, defId: 'wallpaper_striped',
+  });
+  assert(swapped.ok, `replacing failed: ${swapped.ok === false ? swapped.reason : ''}`);
+  assert(room.decor.length === 1, 'replacing added a piece instead of swapping one');
+  const now = room.decor[0]!;
+  assert(now.id === wasAt.id, 'the swap minted a new piece id');
+  assert(now.slot === wasAt.slot, 'the swap moved the piece to another slot');
+  assert(now.defId === 'wallpaper_striped', 'the swap did not take');
+  assert(now.localX === wasAt.x && now.localY === wasAt.y,
+    'a like-for-like swap moved the piece off its own place');
+  assert(owned(state, 'wallpaper_plain') === 1, 'the replaced piece was not handed back');
+  assert(room.decorPoints > pointsBefore, 'the meter did not follow the swap');
+});
+
+check('a swap lands where the old piece stood, not on the room\'s first free place', () => {
+  // The failure this catches: `anchorFor` walks the plan from the top, so the
+  // third chair swapped in a restaurant moved to the first table's place.
+  const state = fresh();
+  state.player.coins += 5_000_000;
+  state.player.level = 40;
+  execute(data, state, { type: 'BUILD_ROOM', defId: 'restaurant' });
+  const room = state.hotel.rooms.find((r) => r.defId === 'restaurant')!;
+  for (let i = 0; i < 3; i++) {
+    const r = execute(data, state, {
+      type: 'PLACE_DECOR', roomId: room.id, defId: 'seating_cafeChair', slot: i,
+    });
+    assert(r.ok, `placing chair ${i} failed: ${r.ok === false ? r.reason : ''}`);
+  }
+  const third = room.decor[2]!;
+  const was = { x: third.localX, y: third.localY };
+  const swapped = execute(data, state, {
+    type: 'REPLACE_DECOR', roomId: room.id, decorId: third.id, defId: 'seating_loveseat',
+  });
+  assert(swapped.ok, `swapping failed: ${swapped.ok === false ? swapped.reason : ''}`);
+  assert(third.localX === was.x && third.localY === was.y,
+    `the swap moved the piece from (${was.x},${was.y}) to (${third.localX},${third.localY})`);
+  // And it did not land on top of one of the other two.
+  for (const other of room.decor.filter((p) => p.id !== third.id)) {
+    assert(!(other.localX === third.localX && other.localY === third.localY),
+      'the swap stood the new piece on another one');
+  }
+});
+
+check('a rug in a bedroom does not delete the bedroom\'s bed', () => {
+  /*
+   * The rug and the bed share a coordinate in eight of the nine bedrooms —
+   * deliberately, because a rug lies under the bed standing on it. Hiding a
+   * built-in by coordinate alone meant a sixty-coin level-2 rug deleted the
+   * room's bed, and the save migration re-anchored every legacy rug onto
+   * exactly that coordinate, so it would have happened on one load.
+   */
+  initSelectors(data);
+  const state = fresh();
+  state.player.coins += 5_000_000;
+  state.player.level = 40;
+  const room = state.hotel.rooms.find((r) => r.defId === 'economy')!;
+  const def = data.rooms.find((r) => r.id === 'economy')!;
+  const before = fixturesFor('economy', def.blocks.w, def.blocks.h, new Set());
+  const placedOk = execute(data, state, {
+    type: 'PLACE_DECOR', roomId: room.id, defId: 'rug_mat', slot: 0,
+  });
+  assert(placedOk.ok, `placing the rug failed: ${placedOk.ok === false ? placedOk.reason : ''}`);
+  const detail = roomDetail(state, room.id)!;
+  assert(detail.builtIn.length === before.length,
+    `laying a rug removed ${before.length - detail.builtIn.length} of the room's built-in pieces`);
+  assert(detail.builtIn.some((f) => f.defId === 'bed_cot'), 'the room lost its bed');
+});
+
+check('a rug does not take the bed\'s place away from the next bed', () => {
+  /*
+   * The two share a coordinate on purpose. Blocking by the bare anchor meant a
+   * rug laid first made the bed's place unavailable, and the bed that followed
+   * fell through to the scan and landed wherever it reached — the exact
+   * behaviour the room plans exist to remove.
+   */
+  initSelectors(data);
+  const state = fresh();
+  state.player.coins += 5_000_000;
+  state.player.level = 40;
+  const room = state.hotel.rooms.find((r) => r.defId === 'economy')!;
+  const def = data.rooms.find((r) => r.id === 'economy')!;
+  const bedSlot = layoutFor('economy', def.blocks.w, def.blocks.h)
+    .find((s) => s.kind === 'bed')!;
+  execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: 'rug_mat', slot: 0 });
+  const placedBed = execute(data, state, {
+    type: 'PLACE_DECOR', roomId: room.id, defId: 'bed_cot', slot: 1,
+  });
+  assert(placedBed.ok, `placing the bed failed: ${placedBed.ok === false ? placedBed.reason : ''}`);
+  const bed = room.decor.find((p) => p.defId === 'bed_cot')!;
+  assert(bed.localX === bedSlot.x && bed.localY === bedSlot.y,
+    `the bed landed at (${bed.localX},${bed.localY}) instead of its own place `
+    + `(${bedSlot.x},${bedSlot.y})`);
+});
+
+check('replacing refuses what the room refuses, and changes nothing when it does', () => {
+  const state = fresh();
+  state.player.coins += 5_000_000;
+  state.player.level = 40;
+  const room = state.hotel.rooms.find((r) => r.defId === 'housekeeping')!;
+  execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
+  const piece = room.decor[0]!;
+
+  const before = JSON.stringify(state);
+  // A bed in a cleaning cupboard, and the same piece it already is: both are
+  // refused, and a refusal has to leave the state byte-identical.
+  for (const defId of ['bed_single', 'wallpaper_plain']) {
+    const r = execute(data, state, {
+      type: 'REPLACE_DECOR', roomId: room.id, decorId: piece.id, defId,
+    });
+    assert(!r.ok, `replacing with ${defId} was allowed in a housekeeping room`);
+    assert(JSON.stringify(state) === before, `a refused swap with ${defId} changed the state`);
+  }
+});
+
+check('a room arrives furnished, and buying takes the built-in\'s place', () => {
+  const state = fresh();
+  state.player.coins += 5_000_000;
+  state.player.level = 40;
+  const room = state.hotel.rooms.find((r) => r.defId === 'economy')!;
+  const def = data.rooms.find((r) => r.id === 'economy')!;
+  const built = fixturesFor('economy', def.blocks.w, def.blocks.h, new Set());
+  assert(built.length > 0, 'an economy room arrives with nothing in it');
+  assert(room.decorPoints === 0, 'the built-in furniture moved the decor meter');
+
+  // The upgrade path: name the place, and the bought piece lands exactly there.
+  const target = built[0]!;
+  const placed = execute(data, state, {
+    type: 'PLACE_DECOR', roomId: room.id, defId: 'bed_single', slot: 0, planSlot: target.slot,
+  });
+  assert(placed.ok, `upgrading the built-in failed: ${placed.ok === false ? placed.reason : ''}`);
+  const piece = room.decor[0]!;
+  assert(piece.localX === target.x && piece.localY === target.y,
+    'the bought piece did not take the place it was asked for');
+  const slot = slotAt('economy', def.blocks.w, def.blocks.h, piece.localX, piece.localY,
+    spotKindFor('bed', 'bed'));
+  const after = fixturesFor('economy', def.blocks.w, def.blocks.h,
+    new Set([occupancyKey(slot!.kind, piece.localX, piece.localY)]));
+  assert(after.length === built.length - 1, 'the built-in is still drawn under the new piece');
 });
 
 check('placing without owning one buys it outright', () => {

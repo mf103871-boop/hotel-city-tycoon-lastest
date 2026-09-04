@@ -14,7 +14,10 @@ import type { RoomDef, SimData } from '../core/data-source.ts';
 import { decorFill } from '../core/systems/decor.ts';
 import { tierFor } from '../core/systems/stars.ts';
 import { owned as ownedCount, sellValue } from '../core/systems/inventory.ts';
-import { slotAllowed } from '../core/systems/quality.ts';
+import { slotAllowed, decorFitsRoom } from '../core/systems/quality.ts';
+import {
+  slotBoxPx, slotAt, fixturesFor, occupancyKey, spotKindFor,
+} from '../core/systems/roomAnchors.ts';
 import { plotBounds, findFreeSpot, placementProblemAt } from '../core/state/grid.ts';
 import { tierOwned, nextTier, totalInvested } from '../core/systems/upgrades.ts';
 import {
@@ -81,6 +84,20 @@ export interface RoomSummaryDecor {
   localY: number;
   flipX: boolean;
   zBias: number;
+  /**
+   * The box the room's plan gives this spot, in room-local pixels, or 0 when
+   * the piece is standing somewhere the plan never designed (a legacy anchor,
+   * or the scan's fallback). The renderer fits the sprite inside it.
+   */
+  boxW: number;
+  boxH: number;
+  /**
+   * True for a piece the building puts there rather than one the player
+   * bought. Built-ins are drawn and nothing else: they are not in the save,
+   * they score no decor points and they cannot be sold, so a furnished-looking
+   * room costs the economy nothing.
+   */
+  builtIn: boolean;
 }
 
 export interface RoomSummary {
@@ -136,9 +153,42 @@ function decorInfoOf(defId: string): { category: string; slotType: string; asset
   return decorIndex.get(defId);
 }
 
-function summariseDecor(room: RoomInstance): RoomSummaryDecor[] {
-  return room.decor.map((piece) => {
+/**
+ * Which designed places this room's own pieces are standing in.
+ *
+ * Keyed by kind as well as anchor, because a floor covering shares its
+ * coordinate with whatever stands on it by design: a rug must not be read as
+ * occupying the bed's place.
+ *
+ * The kind is the SLOT's, not the piece's. A chair can be routed into a bed's
+ * place when a room has run out of floor (`anchorFor`'s neighbouring-kind
+ * passes), and keying that on the chair's own kind would leave the room's
+ * built-in bed drawn underneath it.
+ */
+function occupancyOf(room: RoomInstance, def: RoomDef | undefined): Set<string> {
+  const out = new Set<string>();
+  for (const piece of room.decor) {
     const info = decorInfoOf(piece.defId);
+    if (!info) continue;
+    const wants = spotKindFor(info.category, info.slotType);
+    const slot = def
+      ? slotAt(room.defId, def.blocks.w, def.blocks.h, piece.localX, piece.localY, wants)
+      : null;
+    out.add(occupancyKey(slot?.kind ?? wants, piece.localX, piece.localY));
+  }
+  return out;
+}
+
+function summariseDecor(room: RoomInstance, def: RoomDef | undefined): RoomSummaryDecor[] {
+  const out: RoomSummaryDecor[] = room.decor.map((piece) => {
+    const info = decorInfoOf(piece.defId);
+    // The room's designed box for this spot. Looked up by anchor rather than
+    // stored on the piece: the anchor already identifies the slot, so nothing
+    // new has to be written into anyone's save.
+    const box = def && info
+      ? slotBoxPx(room.defId, def.blocks.w, def.blocks.h, piece.localX, piece.localY,
+        spotKindFor(info.category, info.slotType))
+      : null;
     return {
       id: piece.id,
       defId: piece.defId,
@@ -151,8 +201,34 @@ function summariseDecor(room: RoomInstance): RoomSummaryDecor[] {
       localY: piece.localY,
       flipX: piece.flipX,
       zBias: piece.zBias,
+      boxW: box?.w ?? 0,
+      boxH: box?.h ?? 0,
+      builtIn: false,
     };
   });
+  // The room's own furniture, in every designed place the player has not
+  // taken over yet. A bought piece standing in a fixture's slot hides it,
+  // which is the whole of "replace what the room came with".
+  const taken = occupancyOf(room, def);
+  for (const fx of fixturesFor(room.defId, def?.blocks.w ?? 1, def?.blocks.h ?? 1, taken)) {
+    const info = decorInfoOf(fx.defId);
+    if (!info) continue;
+    out.push({
+      id: `fx:${room.id}:${fx.slot}`,
+      defId: fx.defId,
+      category: info.category,
+      slotType: info.slotType,
+      assetKey: info.assetKey,
+      localX: fx.x,
+      localY: fx.y,
+      flipX: false,
+      zBias: 0,
+      boxW: fx.w * 8,
+      boxH: fx.h * 6,
+      builtIn: true,
+    });
+  }
+  return out;
 }
 
 /**
@@ -197,7 +273,7 @@ export function summariseRoom(room: RoomInstance, open = true): RoomSummary {
     // The infestation is a separate transparent layer, so it composites over
     // whichever variant is showing rather than needing one of its own.
     pestKey: room.hasPest ? `room.${room.defId}.pest` : '',
-    decor: summariseDecor(room),
+    decor: summariseDecor(room, def),
   };
 }
 
@@ -389,6 +465,11 @@ export function decorCatalog(state: GameState, roomId: string): DecorOption[] {
 
   return D().decor
     .filter((item) => item.unlockLevel <= state.player.level + 10)
+    // The room's own catalogue. Every bed used to be listed for the gym,
+    // greyed out with "No room on your plot" — a reason that was not the
+    // reason, on eight rows the player could never buy. A room now shows what
+    // belongs in it and nothing else.
+    .filter((item) => slotAllowed(D(), def, item.id) && decorFitsRoom(D(), def, item.id))
     .map((item) => {
       /*
        * Ownership is checked before money.
@@ -405,7 +486,7 @@ export function decorCatalog(state: GameState, roomId: string): DecorOption[] {
       else if (held === 0 && (item.cost.currency === 'coins'
         ? state.player.coins < item.cost.amount
         : state.player.gems < item.cost.amount)) blocker = 'cannotAfford';
-      else if (slotsFor(state, roomId, item.slotType).length === 0) blocker = 'noSpace';
+      else if (slotsFor(state, roomId, item.slotType, item.id).length === 0) blocker = 'noSpace';
       return {
         defId: item.id,
         nameKey: item.nameKey,
@@ -430,12 +511,19 @@ export function decorCatalog(state: GameState, roomId: string): DecorOption[] {
  * the compatibility rule then refused, so the row looked available and the
  * command said no. The catalog now asks the same question the core asks.
  */
-export function slotsFor(state: GameState, roomId: string, slotType: string): number[] {
+export function slotsFor(state: GameState, roomId: string, slotType: string,
+                         defId?: string): number[] {
   const room = state.hotel.rooms.find((r) => r.id === roomId);
   const def = room ? roomDefOf(room.defId) : undefined;
   if (!room || !def) return [];
-  const item = D().decor.find((d) => d.slotType === slotType);
-  if (item && !slotAllowed(D(), def, item.id)) return [];
+  // The piece the player actually tapped when the caller knows it. Asking
+  // about the first catalogue entry of the same slotType was right only while
+  // every rule was a rule about slot types; a room scope is per item, so the
+  // proxy answered for the wrong piece.
+  const item = defId
+    ? D().decor.find((d) => d.id === defId)
+    : D().decor.find((d) => d.slotType === slotType);
+  if (item && !(slotAllowed(D(), def, item.id) && decorFitsRoom(D(), def, item.id))) return [];
   return freeSlots(state, roomId);
 }
 
@@ -457,6 +545,20 @@ export interface PlacedDecorView {
   slot: number;
   decorPoints: number;
   refund: number;
+}
+
+/**
+ * A piece the building put in the room, as the room sheet shows it.
+ *
+ * `planSlot` is the numbered place it stands in, which is what the upgrade
+ * button hands back to PLACE_DECOR so the bought piece lands exactly there.
+ */
+export interface BuiltInDecorView {
+  planSlot: number;
+  defId: string;
+  nameKey: string;
+  category: string;
+  slotType: string;
 }
 
 export interface RoomDetail {
@@ -486,6 +588,7 @@ export interface RoomDetail {
   storeBlocker: 'roomRequired' | 'roomOccupied' | 'roomHasHazard' | 'roomTooDirty' | null;
   canSell: boolean;
   placed: PlacedDecorView[];
+  builtIn: BuiltInDecorView[];
 }
 
 /** Everything the room sheet shows when a room is tapped. */
@@ -501,6 +604,19 @@ export function roomDetail(state: GameState, roomId: string): RoomDetail | null 
   // rather than liquidated, so adding the decor's value here promised coins
   // that no longer arrive — and used to promise coins for gem-priced pieces.
   const refund = Math.round(def.cost.amount * D().economy.sellback.ratio);
+  const builtIn: BuiltInDecorView[] = fixturesFor(room.defId, def.blocks.w, def.blocks.h,
+    occupancyOf(room, def))
+    .map((fx) => {
+      const item = D().decor.find((x) => x.id === fx.defId);
+      return {
+        planSlot: fx.slot,
+        defId: fx.defId,
+        nameKey: item?.nameKey ?? `decor.${fx.defId}.name`,
+        category: item?.category ?? 'unknown',
+        slotType: item?.slotType ?? 'floor',
+      };
+    });
+
   const placed: PlacedDecorView[] = room.decor.map((p) => {
     const item = D().decor.find((x) => x.id === p.defId);
     const value = item ? sellValue(D(), item) : null;
@@ -553,6 +669,7 @@ export function roomDetail(state: GameState, roomId: string): RoomDetail | null 
       : room.cleanliness < D().economy.cleanliness.incomeGateThreshold ? 'roomTooDirty'
       : null,
     placed: placed.sort((a, b) => a.slot - b.slot),
+    builtIn,
   };
 }
 

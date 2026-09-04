@@ -13,6 +13,10 @@ The pieces themselves live in two modules, split by what they are:
     decor_surfaces.py   wallpaper, flooring, wallArt, lighting, rug
     decor_props.py      bed, seating, table, plant, luxury, and the service
                         room equipment added for the back of house
+    decor_service.py    the back of house and the lobby
+    decor_fitness.py    the gym and the poolside
+    decor_dining.py     the cafe, the restaurant and the bar
+    decor_leisure.py    the arcade, the cinema and the disco
 
 Each exports `PIECES: dict[str, callable]`, where the callable takes the canvas
 and draws on it.
@@ -27,7 +31,8 @@ the drawing, not a detail:
 |-----------------------------------|--------|----------------------------------|
 | bed, seating, table, plant, luxury| (.5, 1)| **stand on the bottom edge**     |
 | lighting                          | (.5, 0)| **hang from the top edge**       |
-| wallpaper, wallArt, flooring, rug | (.5,.5)| **be centred**                   |
+| flooring, rug                     | (.5, 1)| **stand on the bottom edge**     |
+| wallpaper, wallArt                | (.5,.5)| **be centred**                   |
 
 A floor piece drawn floating in the middle of its canvas hovers above the floor
 in the room; a lamp drawn centred hangs by nothing. Both are invisible in a
@@ -47,8 +52,17 @@ from hcstyle import Canvas  # noqa: E402
 
 import decor_surfaces       # noqa: E402
 import decor_props          # noqa: E402
+import decor_service        # noqa: E402
+import decor_fitness        # noqa: E402
+import decor_dining         # noqa: E402
+import decor_leisure        # noqa: E402
 
-PIECES = {**decor_surfaces.PIECES, **decor_props.PIECES}
+PIECES = {
+    **decor_surfaces.PIECES, **decor_props.PIECES,
+    # HC-P1-S5: the pieces that belong to one room rather than to the hotel.
+    **decor_service.PIECES, **decor_fitness.PIECES,
+    **decor_dining.PIECES, **decor_leisure.PIECES,
+}
 
 #: Must match SLOT_SIZE in tools/gen-asset-manifest.mjs.
 SLOT_SIZE = {
@@ -56,11 +70,19 @@ SLOT_SIZE = {
     "floor": (72, 72),
     "ceiling": (72, 48),
     "bed": (104, 64),
+    # `equipment` was missing, so every washer, treadmill and locker was drawn
+    # on the 72x72 default while the manifest declared 96x72 — and the renderer
+    # sizes from the manifest, so all sixteen were stretched a third wider than
+    # they were drawn. Nothing caught it: the only on-disk dimension check
+    # covers walk sheets.
+    "equipment": (96, 72),
 }
 
 #: Where a category's art is anchored — mirrors src/render/decorArt.ts.
 ANCHOR_Y = {
-    "wallpaper": 0.5, "flooring": 0.5, "wallArt": 0.5, "rug": 0.5,
+    # flooring and rug stand on the bottom edge, exactly like a chair — see
+    # src/render/decorArt.ts, which is the contract this table mirrors.
+    "wallpaper": 0.5, "flooring": 1.0, "wallArt": 0.5, "rug": 1.0,
     "lighting": 0.0,
     "bed": 1.0, "seating": 1.0, "table": 1.0, "plant": 1.0, "luxury": 1.0,
     "appliance": 1.0, "storage": 1.0, "service": 1.0,

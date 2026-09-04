@@ -32,6 +32,7 @@ that brief made executable.
 | `rooms_service.py` `rooms_guest.py` `rooms_commercial.py` | The 23 rooms, split by what they are for. |
 | `gen_decor.py` | Driver: sizes each piece from `data/decor.json` and the manifest's slot table. |
 | `decor_surfaces.py` `decor_props.py` | The catalogue: wall and floor treatments, then everything that stands in a room. |
+| `decor_service.py` `decor_fitness.py` `decor_dining.py` `decor_leisure.py` | The pieces that belong to one room rather than to the hotel — the back of house and the lobby, the gym and the poolside, the cafe/restaurant/bar, the arcade/cinema/disco. |
 | `gen_chars.py` | Driver: idle, walk sheet, thumb and work/sleep for every staff role and guest type. |
 | `characters.py` | The casting table — who each of them is. |
 | `gen_ui.py` `ui_icons.py` | Currency, shift timers and the six incident badges. |
@@ -64,11 +65,25 @@ file in it exists.
 ## What a room may not contain
 
 Beds, chairs, tables, lamps, rugs, plants and pictures are **decor sprites**,
-composited over the room at runtime at the anchors
+composited over the room at runtime at the slots
 `src/core/systems/roomAnchors.ts` hands out. A room that draws one shows it
 twice the moment a player buys one. The exception `ASSET-SPEC.md` §1 grants is
 fixed equipment — a cafe's counter, a cinema's screen, a pool's water — because
 that is part of the building.
+
+The laundry and housekeeping used to break that rule, and it showed: installing
+`appliance_washer` put a fourth machine beside the three the laundry painted,
+and `storage_linenShelf` stood a second shelf unit in front of housekeeping's
+own. The laundry now paints the *plumbing* — three tiled bays with a plinth and
+a stop tap — and the machines are decor standing in them; housekeeping's
+shelving is half the width it was. A room's slot table names which of those
+places the building furnishes itself (`fixture`), so a new room still arrives
+looking like a laundry.
+
+`tools/selftest/room-fixtures.json` records what every room paints and where,
+in the same 1x pixels, and `tools/selftest/slots.ts` checks the slot table
+against it on every run. Change a room routine and update that file in the same
+commit, or the check is measuring a picture that no longer exists.
 
 ## Looking at it
 

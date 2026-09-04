@@ -207,6 +207,7 @@ check('a refused command changes nothing at all', () => {
     { type: 'SELL_ROOM', roomId: 'nothing' },
     { type: 'PLACE_DECOR', roomId: 'nothing', defId: 'nothing', slot: 0 },
     { type: 'REMOVE_DECOR', roomId: 'nothing', decorId: 'nothing' },
+    { type: 'REPLACE_DECOR', roomId: 'nothing', decorId: 'nothing', defId: 'nothing' },
     { type: 'SELL_DECOR', defId: 'nothing' },
     { type: 'MOVE_ROOM', roomId: 'nothing', x: 0, y: 0 },
     { type: 'STORE_ROOM', roomId: 'nothing' },

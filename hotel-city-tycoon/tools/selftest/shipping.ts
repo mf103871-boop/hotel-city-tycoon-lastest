@@ -190,7 +190,7 @@ check('the commands a player can issue are exercised', () => {
     BUILD_ROOM: /build/, PLACE_DECOR: /decorat/, START_SHIFT: /shift|open hotel/,
     CLAIM_OBJECTIVE: /objective|claim/, BUY_SHOP_OFFER: /shop/,
     CLAIM_GIFT: /daily gift|collect/, VISIT_NEIGHBOUR: /visit/,
-    BUY_UPGRADE: /upgrade/, HIRE_STAFF: /staff/,
+    BUY_UPGRADE: /upgrade/, HIRE_STAFF: /staff/, REPLACE_DECOR: /replace/,
   };
   const untested = Object.keys(words).filter((c) => all.includes(c) && !words[c]!.test(spec));
   assert(untested.length === 0, `never reached from a browser: ${untested.join(', ')}`);

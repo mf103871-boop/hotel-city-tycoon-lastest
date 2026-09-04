@@ -120,6 +120,32 @@ export function decorDrawSize(declaredW: number, declaredH: number): { w: number
   return { w: declaredW * DECOR_ART_SCALE, h: declaredH * DECOR_ART_SCALE };
 }
 
+/**
+ * The size a piece is drawn at inside a designed slot — HC-P1-S5.
+ *
+ * `decorDrawSize` is the piece's natural size: one number for the whole
+ * catalogue, because the manifest declares a sprite's size from its slot type
+ * alone. A room's slot (`roomAnchors.ts`) says how much space that room
+ * actually has there, and this fits the picture into it.
+ *
+ * Fit, not stretch. The sprite's width and height are set independently by
+ * Pixi, so scaling each axis to the box would squash a treadmill into a
+ * doorway-shaped smear; one scale factor for both axes keeps the drawing the
+ * shape it was drawn. And never above 1: a slot roomier than the art does not
+ * make the art bigger, because upscaling a 72-pixel sprite is how flat art
+ * turns to mush.
+ */
+export function fitDecorSize(
+  declaredW: number,
+  declaredH: number,
+  box: { w: number; h: number } | null,
+): { w: number; h: number } {
+  const natural = decorDrawSize(declaredW, declaredH);
+  if (!box || box.w <= 0 || box.h <= 0) return natural;
+  const scale = Math.min(1, box.w / natural.w, box.h / natural.h);
+  return { w: natural.w * scale, h: natural.h * scale };
+}
+
 /** The subset of a placed piece this module needs to order it. */
 export interface DecorOrderable {
   id: string;

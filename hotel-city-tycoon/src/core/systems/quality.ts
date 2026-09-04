@@ -191,6 +191,25 @@ export function hotelScore(data: SimData, state: GameState): ScoreBreakdown {
   return { ...parts, total: Math.max(0, Math.min(100, total)) };
 }
 
+/**
+ * Does this piece belong in this kind of room at all?
+ *
+ * The catalogue filter, and the second half of PLACE_DECOR's answer. It is
+ * deliberately NOT part of `slotAllowed`: that one is re-run over every stored
+ * piece on every load (`state/invariants.ts`), so tightening it would condemn
+ * the save of anyone who had already put a treadmill in their arcade — legal
+ * at the time, and not their fault. A room's own list is a rule about what the
+ * shop offers from here on, not a rule about the past.
+ *
+ * A piece with an empty `roomScope` goes anywhere, which is what every piece
+ * meant before the field existed.
+ */
+export function decorFitsRoom(data: SimData, def: RoomDef, decorId: string): boolean {
+  const scope = decorDef(data, decorId).roomScope;
+  if (!scope || scope.length === 0) return true;
+  return scope.some((token) => token === 'any' || token === def.category || token === def.id);
+}
+
 /** May this piece go in this room? */
 export function slotAllowed(data: SimData, def: RoomDef, decorId: string): boolean {
   const slotType = decorDef(data, decorId).slotType;

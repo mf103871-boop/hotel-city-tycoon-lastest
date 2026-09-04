@@ -11,7 +11,7 @@ import { texture, assetGeneration, entryFor } from './assets.ts';
 import type { Rect } from '../core/state/grid.ts';
 import { roomWorldRect, BLOCK_W, BLOCK_H, anchorToLocalPx } from './layout.ts';
 import {
-  decorArtSpec, decorDrawSize, compareDecorDraw, decorBox, clampDecorBox,
+  decorArtSpec, fitDecorSize, compareDecorDraw, decorBox, clampDecorBox,
 } from './decorArt.ts';
 import type { DecorBox } from './decorArt.ts';
 
@@ -62,6 +62,11 @@ export interface RoomViewDecorItem {
   localY: number;
   flipX: boolean;
   zBias: number;
+  /** The box the room's plan gives this spot, in room-local pixels. 0 = none. */
+  boxW: number;
+  boxH: number;
+  /** The building's own furniture rather than something the player bought. */
+  builtIn: boolean;
 }
 
 export interface RoomViewData {
@@ -122,7 +127,8 @@ export class RoomView extends Container {
    */
   update(data: RoomViewData, plotHeight: number): void {
     const decorKey = data.decor
-      .map((p) => `${p.id}:${p.assetKey}:${p.localX}:${p.localY}:${p.flipX ? 1 : 0}:${p.zBias}`)
+      .map((p) => `${p.id}:${p.assetKey}:${p.localX}:${p.localY}:${p.flipX ? 1 : 0}:${p.zBias}`
+        + `:${p.boxW}x${p.boxH}`)
       .join('|');
     const key = `${assetGeneration()},${data.rect.x},${data.rect.y},${data.rect.w},${data.rect.h},${data.category},` +
       `${data.fill.toFixed(2)},${data.showMeter},${data.hasPest},${data.hasFire},${data.hasGhost},${data.occupants},` +
@@ -234,11 +240,19 @@ export class RoomView extends Container {
       // Sized from what the manifest declares, not from the texture: a file
       // that ships one pixel off must not shift the room's layout.
       const entry = piece.assetKey ? entryFor(piece.assetKey) : undefined;
+      // Fitted into the room's own box for this spot when the plan designed
+      // one (roomAnchors.ts) — that is what makes a piece the size the room
+      // has space for rather than the size every piece in the game is.
+      const fitBox = piece.boxW > 0 && piece.boxH > 0
+        ? { w: piece.boxW, h: piece.boxH }
+        : null;
       const size = entry
-        ? decorDrawSize(entry.width, entry.height)
+        ? fitDecorSize(entry.width, entry.height, fitBox)
         : art
-          ? decorDrawSize(art.width, art.height)
-          : { w: DECOR_PLACEHOLDER_W, h: DECOR_PLACEHOLDER_H };
+          ? fitDecorSize(art.width, art.height, fitBox)
+          : fitBox
+            ? { w: Math.min(DECOR_PLACEHOLDER_W, fitBox.w), h: Math.min(DECOR_PLACEHOLDER_H, fitBox.h) }
+            : { w: DECOR_PLACEHOLDER_W, h: DECOR_PLACEHOLDER_H };
       // A room draws its own decor and nobody else's, whatever anchor an older
       // save handed it (decorArt.ts's clampDecorBox).
       const box = clampDecorBox(

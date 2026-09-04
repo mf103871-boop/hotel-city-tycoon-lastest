@@ -61,6 +61,8 @@ export interface DecorDef {
   id: string; category: string; slotType: string; assetKey: string; nameKey: string;
   decorPoints: number; cost: Price; unlockLevel: number;
   sellable: boolean; giftable: boolean; tier: number;
+  /** Room ids, room categories, or `any` — see `decorFitsRoom` in quality.ts. */
+  roomScope: string[];
 }
 
 export interface StaffRoleDef {

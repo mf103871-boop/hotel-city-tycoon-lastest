@@ -19,9 +19,63 @@
   ],
   "entries": [
     {
+      "key": "decor.appliance.airHockey",
+      "bundle": "decor",
+      "file": "decor/appliance_airHockey.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 4 · transparent background"
+    },
+    {
       "key": "decor.appliance.arcadeCabinet",
       "bundle": "decor",
       "file": "decor/appliance_arcadeCabinet.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 4 · transparent background"
+    },
+    {
+      "key": "decor.appliance.beerTap",
+      "bundle": "decor",
+      "file": "decor/appliance_beerTap.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 3 · transparent background"
+    },
+    {
+      "key": "decor.appliance.cakeDisplay",
+      "bundle": "decor",
+      "file": "decor/appliance_cakeDisplay.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 3 · transparent background"
+    },
+    {
+      "key": "decor.appliance.clawMachine",
+      "bundle": "decor",
+      "file": "decor/appliance_clawMachine.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 4 · transparent background"
+    },
+    {
+      "key": "decor.appliance.coffeeMachine",
+      "bundle": "decor",
+      "file": "decor/appliance_coffeeMachine.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 2 · transparent background"
+    },
+    {
+      "key": "decor.appliance.djBooth",
+      "bundle": "decor",
+      "file": "decor/appliance_djBooth.png",
       "width": 96,
       "height": 72,
       "required": false,
@@ -46,6 +100,15 @@
       "note": "appliance · tier 3 · transparent background"
     },
     {
+      "key": "decor.appliance.foldingTable",
+      "bundle": "decor",
+      "file": "decor/appliance_foldingTable.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 2 · transparent background"
+    },
+    {
       "key": "decor.appliance.ironingBoard",
       "bundle": "decor",
       "file": "decor/appliance_ironingBoard.png",
@@ -53,6 +116,24 @@
       "height": 72,
       "required": true,
       "note": "appliance · tier 1 · transparent background"
+    },
+    {
+      "key": "decor.appliance.pinballTable",
+      "bundle": "decor",
+      "file": "decor/appliance_pinballTable.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 3 · transparent background"
+    },
+    {
+      "key": "decor.appliance.popcornCart",
+      "bundle": "decor",
+      "file": "decor/appliance_popcornCart.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 3 · transparent background"
     },
     {
       "key": "decor.appliance.prepStation",
@@ -64,9 +145,54 @@
       "note": "appliance · tier 4 · transparent background"
     },
     {
+      "key": "decor.appliance.printer",
+      "bundle": "decor",
+      "file": "decor/appliance_printer.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 2 · transparent background"
+    },
+    {
+      "key": "decor.appliance.punchBag",
+      "bundle": "decor",
+      "file": "decor/appliance_punchBag.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 3 · transparent background"
+    },
+    {
+      "key": "decor.appliance.rowingMachine",
+      "bundle": "decor",
+      "file": "decor/appliance_rowingMachine.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 3 · transparent background"
+    },
+    {
+      "key": "decor.appliance.spinBike",
+      "bundle": "decor",
+      "file": "decor/appliance_spinBike.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 2 · transparent background"
+    },
+    {
       "key": "decor.appliance.treadmill",
       "bundle": "decor",
       "file": "decor/appliance_treadmill.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "appliance · tier 2 · transparent background"
+    },
+    {
+      "key": "decor.appliance.vacuum",
+      "bundle": "decor",
+      "file": "decor/appliance_vacuum.png",
       "width": 96,
       "height": 72,
       "required": false,
@@ -262,6 +388,15 @@
       "note": "lighting · tier 1 · transparent background"
     },
     {
+      "key": "decor.lighting.candelabra",
+      "bundle": "decor",
+      "file": "decor/lighting_candelabra.png",
+      "width": 72,
+      "height": 48,
+      "required": false,
+      "note": "lighting · tier 4 · transparent background"
+    },
+    {
       "key": "decor.lighting.chandelier",
       "bundle": "decor",
       "file": "decor/lighting_chandelier.png",
@@ -296,6 +431,24 @@
       "height": 48,
       "required": true,
       "note": "lighting · tier 2 · transparent background"
+    },
+    {
+      "key": "decor.lighting.laserRig",
+      "bundle": "decor",
+      "file": "decor/lighting_laserRig.png",
+      "width": 72,
+      "height": 48,
+      "required": false,
+      "note": "lighting · tier 4 · transparent background"
+    },
+    {
+      "key": "decor.lighting.lobbyLantern",
+      "bundle": "decor",
+      "file": "decor/lighting_lobbyLantern.png",
+      "width": 72,
+      "height": 48,
+      "required": false,
+      "note": "lighting · tier 3 · transparent background"
     },
     {
       "key": "decor.lighting.pendant",
@@ -343,6 +496,24 @@
       "note": "luxury · tier 5 · transparent background"
     },
     {
+      "key": "decor.luxury.cocktailCart",
+      "bundle": "decor",
+      "file": "decor/luxury_cocktailCart.png",
+      "width": 72,
+      "height": 72,
+      "required": false,
+      "note": "luxury · tier 4 · transparent background"
+    },
+    {
+      "key": "decor.luxury.divingBoard",
+      "bundle": "decor",
+      "file": "decor/luxury_divingBoard.png",
+      "width": 72,
+      "height": 72,
+      "required": false,
+      "note": "luxury · tier 4 · transparent background"
+    },
+    {
       "key": "decor.luxury.fireplace",
       "bundle": "decor",
       "file": "decor/luxury_fireplace.png",
@@ -377,6 +548,15 @@
       "height": 72,
       "required": false,
       "note": "luxury · tier 1 · transparent background"
+    },
+    {
+      "key": "decor.luxury.parasol",
+      "bundle": "decor",
+      "file": "decor/luxury_parasol.png",
+      "width": 72,
+      "height": 72,
+      "required": false,
+      "note": "luxury · tier 2 · transparent background"
     },
     {
       "key": "decor.luxury.piano",
@@ -424,6 +604,15 @@
       "note": "plant · tier 2 · transparent background"
     },
     {
+      "key": "decor.plant.lobbyFicus",
+      "bundle": "decor",
+      "file": "decor/plant_lobbyFicus.png",
+      "width": 72,
+      "height": 72,
+      "required": false,
+      "note": "plant · tier 2 · transparent background"
+    },
+    {
       "key": "decor.plant.orchidWall",
       "bundle": "decor",
       "file": "decor/plant_orchidWall.png",
@@ -436,6 +625,15 @@
       "key": "decor.plant.palm",
       "bundle": "decor",
       "file": "decor/plant_palm.png",
+      "width": 72,
+      "height": 72,
+      "required": false,
+      "note": "plant · tier 3 · transparent background"
+    },
+    {
+      "key": "decor.plant.poolPalm",
+      "bundle": "decor",
+      "file": "decor/plant_poolPalm.png",
       "width": 72,
       "height": 72,
       "required": false,
@@ -478,6 +676,15 @@
       "note": "rug · tier 5 · transparent background"
     },
     {
+      "key": "decor.rug.entranceRunner",
+      "bundle": "decor",
+      "file": "decor/rug_entranceRunner.png",
+      "width": 72,
+      "height": 72,
+      "required": true,
+      "note": "rug · tier 2 · transparent background"
+    },
+    {
       "key": "decor.rug.mat",
       "bundle": "decor",
       "file": "decor/rug_mat.png",
@@ -514,6 +721,15 @@
       "note": "rug · tier 2 · transparent background"
     },
     {
+      "key": "decor.rug.yogaMat",
+      "bundle": "decor",
+      "file": "decor/rug_yogaMat.png",
+      "width": 72,
+      "height": 72,
+      "required": true,
+      "note": "rug · tier 1 · transparent background"
+    },
+    {
       "key": "decor.seating_salonset",
       "bundle": "decor",
       "file": "decor/seating_salonset.png",
@@ -541,6 +757,24 @@
       "note": "seating · tier 2 · transparent background"
     },
     {
+      "key": "decor.seating.barStool",
+      "bundle": "decor",
+      "file": "decor/seating_barStool.png",
+      "width": 72,
+      "height": 72,
+      "required": false,
+      "note": "seating · tier 2 · transparent background"
+    },
+    {
+      "key": "decor.seating.cafeChair",
+      "bundle": "decor",
+      "file": "decor/seating_cafeChair.png",
+      "width": 72,
+      "height": 72,
+      "required": false,
+      "note": "seating · tier 2 · transparent background"
+    },
+    {
       "key": "decor.seating.chaise",
       "bundle": "decor",
       "file": "decor/seating_chaise.png",
@@ -550,9 +784,45 @@
       "note": "seating · tier 4 · transparent background"
     },
     {
+      "key": "decor.seating.cinemaSeats",
+      "bundle": "decor",
+      "file": "decor/seating_cinemaSeats.png",
+      "width": 72,
+      "height": 72,
+      "required": false,
+      "note": "seating · tier 3 · transparent background"
+    },
+    {
+      "key": "decor.seating.lobbyBench",
+      "bundle": "decor",
+      "file": "decor/seating_lobbyBench.png",
+      "width": 72,
+      "height": 72,
+      "required": true,
+      "note": "seating · tier 1 · transparent background"
+    },
+    {
+      "key": "decor.seating.loungeBooth",
+      "bundle": "decor",
+      "file": "decor/seating_loungeBooth.png",
+      "width": 72,
+      "height": 72,
+      "required": false,
+      "note": "seating · tier 3 · transparent background"
+    },
+    {
       "key": "decor.seating.loveseat",
       "bundle": "decor",
       "file": "decor/seating_loveseat.png",
+      "width": 72,
+      "height": 72,
+      "required": false,
+      "note": "seating · tier 3 · transparent background"
+    },
+    {
+      "key": "decor.seating.staffSofa",
+      "bundle": "decor",
+      "file": "decor/seating_staffSofa.png",
       "width": 72,
       "height": 72,
       "required": false,
@@ -568,6 +838,15 @@
       "note": "seating · tier 1 · transparent background"
     },
     {
+      "key": "decor.seating.sunLounger",
+      "bundle": "decor",
+      "file": "decor/seating_sunLounger.png",
+      "width": 72,
+      "height": 72,
+      "required": false,
+      "note": "seating · tier 3 · transparent background"
+    },
+    {
       "key": "decor.seating.throne",
       "bundle": "decor",
       "file": "decor/seating_throne.png",
@@ -577,6 +856,15 @@
       "note": "seating · tier 5 · transparent background"
     },
     {
+      "key": "decor.storage.amenityShelf",
+      "bundle": "decor",
+      "file": "decor/storage_amenityShelf.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "storage · tier 2 · transparent background"
+    },
+    {
       "key": "decor.storage.displayCase",
       "bundle": "decor",
       "file": "decor/storage_displayCase.png",
@@ -584,6 +872,24 @@
       "height": 72,
       "required": false,
       "note": "storage · tier 5 · transparent background"
+    },
+    {
+      "key": "decor.storage.dumbbellRack",
+      "bundle": "decor",
+      "file": "decor/storage_dumbbellRack.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "storage · tier 2 · transparent background"
+    },
+    {
+      "key": "decor.storage.laundryBasket",
+      "bundle": "decor",
+      "file": "decor/storage_laundryBasket.png",
+      "width": 96,
+      "height": 72,
+      "required": true,
+      "note": "storage · tier 1 · transparent background"
     },
     {
       "key": "decor.storage.linenShelf",
@@ -622,6 +928,15 @@
       "note": "storage · tier 3 · transparent background"
     },
     {
+      "key": "decor.storage.partsBin",
+      "bundle": "decor",
+      "file": "decor/storage_partsBin.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "storage · tier 2 · transparent background"
+    },
+    {
       "key": "decor.storage.safeCabinet",
       "bundle": "decor",
       "file": "decor/storage_safeCabinet.png",
@@ -629,6 +944,15 @@
       "height": 72,
       "required": false,
       "note": "storage · tier 4 · transparent background"
+    },
+    {
+      "key": "decor.storage.stepLadder",
+      "bundle": "decor",
+      "file": "decor/storage_stepLadder.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "storage · tier 1 · transparent background"
     },
     {
       "key": "decor.storage.supplyCart",
@@ -649,6 +973,24 @@
       "note": "storage · tier 2 · transparent background"
     },
     {
+      "key": "decor.storage.towelStack",
+      "bundle": "decor",
+      "file": "decor/storage_towelStack.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "storage · tier 2 · transparent background"
+    },
+    {
+      "key": "decor.storage.wineRack",
+      "bundle": "decor",
+      "file": "decor/storage_wineRack.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "storage · tier 3 · transparent background"
+    },
+    {
       "key": "decor.table_marbleconsole",
       "bundle": "decor",
       "file": "decor/table_marbleconsole.png",
@@ -665,6 +1007,15 @@
       "height": 72,
       "required": false,
       "note": "table · tier 7 · transparent background"
+    },
+    {
+      "key": "decor.table.cafeTable",
+      "bundle": "decor",
+      "file": "decor/table_cafeTable.png",
+      "width": 72,
+      "height": 72,
+      "required": false,
+      "note": "table · tier 2 · transparent background"
     },
     {
       "key": "decor.table.crystalTable",
@@ -685,6 +1036,15 @@
       "note": "table · tier 2 · transparent background"
     },
     {
+      "key": "decor.table.diningTable",
+      "bundle": "decor",
+      "file": "decor/table_diningTable.png",
+      "width": 72,
+      "height": 72,
+      "required": false,
+      "note": "table · tier 3 · transparent background"
+    },
+    {
       "key": "decor.table.glassTable",
       "bundle": "decor",
       "file": "decor/table_glassTable.png",
@@ -697,6 +1057,15 @@
       "key": "decor.table.marbleTable",
       "bundle": "decor",
       "file": "decor/table_marbleTable.png",
+      "width": 72,
+      "height": 72,
+      "required": false,
+      "note": "table · tier 4 · transparent background"
+    },
+    {
+      "key": "decor.table.meetingTable",
+      "bundle": "decor",
+      "file": "decor/table_meetingTable.png",
       "width": 72,
       "height": 72,
       "required": false,
@@ -728,6 +1097,15 @@
       "height": 72,
       "required": false,
       "note": "wallArt · tier 7 · transparent background"
+    },
+    {
+      "key": "decor.wallArt.cityMap",
+      "bundle": "decor",
+      "file": "decor/wallArt_cityMap.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "wallArt · tier 2 · transparent background"
     },
     {
       "key": "decor.wallArt.masterpiece",
@@ -764,6 +1142,15 @@
       "height": 72,
       "required": true,
       "note": "wallArt · tier 2 · transparent background"
+    },
+    {
+      "key": "decor.wallArt.projectorScreen",
+      "bundle": "decor",
+      "file": "decor/wallArt_projectorScreen.png",
+      "width": 96,
+      "height": 72,
+      "required": false,
+      "note": "wallArt · tier 3 · transparent background"
     },
     {
       "key": "decor.wallArt.sculptureWall",
