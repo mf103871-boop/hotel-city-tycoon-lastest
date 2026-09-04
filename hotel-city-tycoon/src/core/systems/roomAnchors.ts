@@ -187,9 +187,11 @@ const LAYOUTS: Layout = {
     s('ceiling', 12, 2, 5, 5),
   ],
   laundry: [
-    s('ground', 5, 14, 6, 7, 'appliance_washer'),
-    s('ground', 16, 14, 6, 7, 'appliance_washer'),
-    s('ground', 27, 14, 6, 7, 'appliance_dryer'),
+    // On the bays, not merely near them: the machine bays are painted at px
+    // 12-58, 90-137 and 169-215, whose centres are units 4, 14 and 24.
+    s('ground', 4, 14, 6, 7, 'appliance_washer'),
+    s('ground', 14, 14, 6, 7, 'appliance_washer'),
+    s('ground', 24, 14, 6, 7, 'appliance_dryer'),
     s('surface', 16, 14, 6, 7),
     s('wall', 9, 8, 3, 6),
     s('wall', 29, 8, 3, 6),

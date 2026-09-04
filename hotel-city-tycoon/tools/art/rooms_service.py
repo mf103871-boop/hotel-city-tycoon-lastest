@@ -222,15 +222,25 @@ def maintenance(c: Canvas, fy: float) -> None:
     c.circle(w * 0.30, 9.5, 4.4, fill=P["coral"], ink=P["ink"], lw=LW_PROP)
     c.circle(w * 0.30, 9.5, 1.6, fill=P["metal"], ink=P["ink"], lw=LW_FACE)
 
-    # Pegboard and tools.
+    # The pegboard, and only the pegboard.
+    #
+    # It used to carry a hammer, a saw and a spanner, which is the same object
+    # `storage_toolRack` sells: buying that stood a second board of tools in
+    # the room beside the first. What is bolted to the building is the board —
+    # perforated ply, hooks, and the shadow of what hangs on them — and the
+    # tools are decor standing in front of it.
     px, pw = 10.0, min(w * 0.40, 76)
     c.rrect(px, 22, pw, 30, r=1.8, fill=P["woodPale"], ink=P["ink"], lw=LW_PROP)
-    # A hammer, a saw and a spanner, drawn as silhouettes so they survive 1x.
-    c.line([(px + 10, 27), (px + 10, 40)], P["woodDk"], 1.6)
-    c.rrect(px + 6.5, 25.5, 7.0, 3.0, r=1.0, fill=P["metalDk"], ink=P["ink"], lw=LW_FACE)
-    c.poly([(px + 22, 27), (px + 34, 27), (px + 22, 38)], fill=P["metal"], ink=P["ink"], lw=LW_FACE)
-    c.line([(px + 44, 27), (px + 44, 40)], P["metal"], 1.8)
-    c.circle(px + 44, 26.5, 2.2, ink=P["metalDk"], lw=1.2)
+    c.rrect(px + 2, 24, pw - 4, 26, r=1.2, fill=shade(P["woodPale"], 0.10))
+    for row in range(3):
+        for col in range(int((pw - 10) // 9)):
+            c.circle(px + 7 + col * 9.0, 28.5 + row * 8.5, 1.1,
+                     fill=shade(P["woodPale"], 0.34))
+    # Two hooks, empty, so the board reads as a place things hang rather than
+    # as a sheet of pegboard-coloured wall.
+    for hx in (px + 16, px + pw - 18):
+        c.line([(hx, 26.5), (hx, 31.0)], P["metalDk"], 1.6)
+        c.line([(hx, 31.0), (hx + 3.0, 31.0)], P["metalDk"], 1.6)
 
     # Workbench with a vice: the fixed furniture of the room.
     counter(c, 8, fy, min(w * 0.46, 84), 16, body=P["metalDk"], top=P["metal"])
