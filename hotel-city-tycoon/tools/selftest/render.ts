@@ -620,6 +620,14 @@ check('a piece is offered a clear patch of floor while the room has one', () => 
       const anchor = anchorFor(simData, room.id, defId, taken, 24, placed);
       assert(anchor, `${room.id} offered nothing for ${defId}`);
       const slot = slotAt(room.id, room.blocks.w, room.blocks.h, anchor.x, anchor.y);
+      // A floor covering's place is allowed to sit under a standing piece —
+      // that is the arrangement, not a clash — so a piece that ended up in a
+      // `surface` slot is not compared against anything.
+      if (slot?.kind === 'surface') {
+        taken.add(anchorKey(anchor.x, anchor.y));
+        placed.push({ defId, localX: anchor.x, localY: anchor.y });
+        continue;
+      }
       const half = slot ? slot.w / 2 : anchorReachFor(simData, defId)!.left;
       const lo = anchor.x - half;
       const hi = anchor.x + half;

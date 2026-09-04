@@ -464,6 +464,65 @@ export const MIGRATIONS: Record<number, Migration> = {
       ...(storedRooms !== undefined ? { storedRooms } : {}),
     };
   },
+  /**
+   * 18 → 19: every placed piece moves onto the room's designed slot.
+   *
+   * HC-P1-S5 replaced the point list `anchorFor` used to consult with a slot
+   * table measured against each room's own picture, and the old points were
+   * often inside it — the laundry stood furniture in two of its washing
+   * machines, the pool stood two pieces in the water. A returning player's
+   * rooms were arranged by those numbers, so this re-runs the placement they
+   * would get today.
+   *
+   * Note the spread: `...piece` comes FIRST here and the anchor overwrites it,
+   * which is the opposite of step 17. Seventeen was adding a field that had
+   * never existed and had to let any existing value win; this one exists to
+   * move pieces that already have one, and copying that shape would have made
+   * it a silent no-op.
+   *
+   * Nothing is deleted and nothing changes room. A piece whose definition has gone,
+   * or a room the table has no plan for, keeps whatever anchor it had.
+   */
+  18: (state, data) => {
+    const reanchor = (list: unknown, roomDefId: string | undefined): unknown => {
+      if (!Array.isArray(list)) return list;
+      const bounds = anchorBoundsFor(data, roomDefId);
+      const taken = new Set<string>();
+      const placed: Array<{ defId: string; localX: number; localY: number }> = [];
+      return list.map((raw) => {
+        if (!raw || typeof raw !== 'object') return raw;
+        const piece = raw as Record<string, unknown>;
+        const defId = piece['defId'] as string;
+        const slotType = slotTypeFor(data, defId);
+        const anchor = anchorFor(data, roomDefId, defId, taken, 24, placed)
+          ?? firstFreeAnchor(bounds, slotType, taken, anchorReachFor(data, defId));
+        taken.add(anchorKey(anchor.x, anchor.y));
+        placed.push({ defId, localX: anchor.x, localY: anchor.y });
+        return { ...piece, localX: anchor.x, localY: anchor.y };
+      });
+    };
+
+    const hotel = state['hotel'] as { rooms?: Array<Record<string, unknown>> } | undefined;
+    const rooms = (hotel?.rooms ?? []).map((r) => ({
+      ...r,
+      decor: reanchor(r['decor'], r['defId'] as string | undefined),
+    }));
+    // Stored rooms are re-anchored too. They come back verbatim when the
+    // player puts them down again, so a room left in storage across this
+    // update would otherwise keep the old arrangement for ever.
+    const storedRooms = Array.isArray(state['storedRooms'])
+      ? (state['storedRooms'] as Array<Record<string, unknown>>).map((r) => ({
+          ...r,
+          decor: reanchor(r['decor'], r['defId'] as string | undefined),
+        }))
+      : state['storedRooms'];
+
+    return {
+      ...state,
+      ...(hotel ? { hotel: { ...hotel, rooms } } : {}),
+      ...(storedRooms !== undefined ? { storedRooms } : {}),
+    };
+  },
 };
 
 export function migrate(

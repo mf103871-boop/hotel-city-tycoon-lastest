@@ -63,6 +63,7 @@ function toSnapshot(state: GameState): SceneSnapshot {
         zBias: p.zBias,
         boxW: p.boxW,
         boxH: p.boxH,
+        builtIn: p.builtIn,
       })),
     })),
   };

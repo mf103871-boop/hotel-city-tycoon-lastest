@@ -20,7 +20,7 @@ import { queueCapacity, receptionEfficiency } from '../systems/guests.ts';
 import { owned, grant, consume, sellValue } from '../systems/inventory.ts';
 import { slotAllowed, decorFitsRoom } from '../systems/quality.ts';
 import { anchorBoundsFor, anchorKey, firstFreeAnchor, anchorReachFor } from '../systems/decorPlacement.ts';
-import { anchorFor } from '../systems/roomAnchors.ts';
+import { anchorFor, plannedSlot, spotKindFor } from '../systems/roomAnchors.ts';
 import { Rng } from '../rng/index.ts';
 import { nextTier } from '../systems/upgrades.ts';
 import { shopOffers, shopPeriod, isOfferTaken, giftState, weekIndexOf, activeSeason } from '../systems/liveops.ts';
@@ -31,8 +31,14 @@ export type Command =
   /** Omit x/y to let the game place the room in the first free spot. */
   | { type: 'BUILD_ROOM'; defId: string; x?: number; y?: number }
   | { type: 'SELL_ROOM'; roomId: string }
-  | { type: 'PLACE_DECOR'; roomId: string; defId: string; slot: number }
+  /**
+   * `planSlot` is the numbered place in the room's own plan the player picked
+   * — the "upgrade" button on a built-in. Omitted, the room chooses.
+   */
+  | { type: 'PLACE_DECOR'; roomId: string; defId: string; slot: number; planSlot?: number }
   | { type: 'REMOVE_DECOR'; roomId: string; decorId: string }
+  /** Swap a placed piece for another one, in the place it already occupies. */
+  | { type: 'REPLACE_DECOR'; roomId: string; decorId: string; defId: string }
   | { type: 'START_SHIFT'; shiftId: string }
   | { type: 'CLEAR_HAZARD'; roomId: string; hazard: 'pest' | 'fire' }
   | { type: 'EXPAND_PLOT'; plotId: string }
@@ -75,7 +81,8 @@ export type RejectReason =
   | 'hotelClosed' | 'dragOnCooldown' | 'unknownCommand' | 'noReceptionist'
   | 'notOwned' | 'notRefundable'
   | 'unknownStaff' | 'roomHasHazard' | 'roomTooDirty' | 'roomRequired'
-  | 'notStored' | 'sameSpot' | 'storageFull' | 'slotIncompatible' | 'notNextPlot';
+  | 'notStored' | 'sameSpot' | 'storageFull' | 'slotIncompatible' | 'notNextPlot'
+  | 'sameDecor';
 
 export type CommandResult =
   | { ok: true; events: SimEvent[] }
@@ -192,11 +199,18 @@ export function execute(data: SimData, state: GameState, cmd: Command): CommandR
       // on top of; slotType picks which surface band it prefers.
       const bounds = anchorBoundsFor(data, room.defId);
       const takenAnchors = new Set(room.decor.map((p) => anchorKey(p.localX, p.localY)));
+      // A place the player picked by hand wins over the room's own order, so
+      // "upgrade this one" puts the new piece exactly where the old one was.
+      const wanted = cmd.planSlot === undefined ? null
+        : plannedSlot(room.defId, rdef.blocks.w, rdef.blocks.h, cmd.planSlot,
+          spotKindFor(def.category, def.slotType));
+      if (cmd.planSlot !== undefined && !wanted) return reject('slotIncompatible');
+      if (wanted && takenAnchors.has(anchorKey(wanted.x, wanted.y))) return reject('slotTaken');
       // The room's own plan first (`roomAnchors.ts`): a bed goes where that
       // room keeps its bed, a lamp on its ceiling point, a rug on its floor.
       // The scan is what answers when the plan runs out of places — it always
       // answers, and HC-P1-S4's reach keeps whatever it picks inside the room.
-      const anchor = anchorFor(data, room.defId, cmd.defId, takenAnchors,
+      const anchor = wanted ?? anchorFor(data, room.defId, cmd.defId, takenAnchors,
         data.economy.limits.maxDecorPerRoom, room.decor)
         ?? firstFreeAnchor(bounds, def.slotType, takenAnchors, anchorReachFor(data, cmd.defId));
       room.decor.push({
@@ -225,6 +239,63 @@ export function execute(data: SimData, state: GameState, cmd: Command): CommandR
       room.decor = room.decor.filter((p) => p.id !== cmd.decorId);
       grant(state, placed.defId);
       room.decorPoints = computeDecorPoints(data, room);
+      refreshStars(data, state, out);
+      return { ok: true, events: out };
+    }
+
+    case 'REPLACE_DECOR': {
+      /*
+       * Swap what is standing in a place for something better, without the
+       * player having to take the old one down first and hope the new one
+       * lands where it stood.
+       *
+       * Every validation happens before the first mutation, which is the rule
+       * the whole command layer rests on: a rejected command has to leave the
+       * state byte-identical. `consume` is safe to call ahead of the money
+       * check because it returns false without touching anything when the
+       * store is short.
+       */
+      const room = state.hotel.rooms.find((r) => r.id === cmd.roomId);
+      if (!room) return reject('unknownRoom');
+      const placed = room.decor.find((p) => p.id === cmd.decorId);
+      if (!placed) return reject('unknownDecor');
+      const def = data.decor.find((d) => d.id === cmd.defId);
+      if (!def) return reject('unknownDecor');
+      if (placed.defId === cmd.defId) return reject('sameDecor');
+      if (def.unlockLevel > state.player.level) return reject('notUnlocked');
+
+      const rdef = roomDef(data, room.defId);
+      if (!slotAllowed(data, rdef, cmd.defId)) return reject('slotIncompatible');
+      if (!decorFitsRoom(data, rdef, cmd.defId)) return reject('slotIncompatible');
+
+      const fromStore = consume(state, cmd.defId);
+      if (!fromStore) {
+        if (!canAfford(state, def.cost)) return reject('cannotAfford');
+        pay(state, def.cost, 'decorBuy');
+      }
+
+      // The piece that was there goes back to the player's store, exactly as
+      // REMOVE_DECOR would have returned it. Nothing is sold and nothing is
+      // destroyed — a swap costs the difference in what you own, not in coins.
+      grant(state, placed.defId);
+
+      // Re-anchored for the new piece, because a bed and a lamp do not want
+      // the same place. The piece being replaced is left out of what counts as
+      // taken, so the obvious case — a better version of the same kind — puts
+      // the new one exactly where the old one stood.
+      const others = room.decor.filter((p) => p.id !== placed.id);
+      const takenAnchors = new Set(others.map((p) => anchorKey(p.localX, p.localY)));
+      const anchor = anchorFor(data, room.defId, cmd.defId, takenAnchors,
+        data.economy.limits.maxDecorPerRoom, others)
+        ?? firstFreeAnchor(anchorBoundsFor(data, room.defId), def.slotType, takenAnchors,
+          anchorReachFor(data, cmd.defId));
+      placed.defId = cmd.defId;
+      placed.localX = anchor.x;
+      placed.localY = anchor.y;
+      room.decorPoints = computeDecorPoints(data, room);
+      if (!fromStore) {
+        grantXp(data, state, Math.round(def.cost.amount * data.economy.xp.grantOnDecorPlace), out);
+      }
       refreshStars(data, state, out);
       return { ok: true, events: out };
     }

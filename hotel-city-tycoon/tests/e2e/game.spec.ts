@@ -170,6 +170,17 @@ test('tapping a room opens its sheet, and decorating moves the meter', async ({ 
   await page.getByRole('button', { name: /wallpaper|flooring/i }).first().click();
 
   await expect(meter, 'placing decor did not move the meter').not.toHaveText(before ?? '');
+
+  // And the piece that just landed can be swapped for another one without
+  // taking it down first — the upgrade path a room's built-in furniture and
+  // everything bought after it share.
+  const afterPlacing = await meter.textContent();
+  const replace = page.locator('[data-testid^="replace-decor-"]').first();
+  await expect(replace, 'a placed piece offered no way to replace it').toBeVisible();
+  await replace.click();
+  await page.getByRole('button', { name: /wallpaper|flooring|poster|rug/i }).first().click();
+  await expect(meter, 'replacing a piece left the meter untouched')
+    .not.toHaveText(afterPlacing ?? '');
 });
 
 // ---------------------------------------------------------------- objectives

@@ -34,11 +34,17 @@ import type { RngCursors } from '../rng/index.ts';
  *        ever draw it. DEC-010 (docs/HC-P1-S1-PLACEMENT-DECISION.md) adds a
  *        local anchor (`localX`/`localY`, 16 units per block), one flip axis
  *        and a draw-order bias; `slot` is untouched.
+ * 18 → 19: every placed piece moves onto its room's designed slot. The point
+ *        list those anchors came from had never been checked against the room
+ *        it was written for, and often sat inside it — furniture inside the
+ *        laundry's washing machines, sunbeds in the pool. HC-P1-S5 measured
+ *        each room and replaced the points with a slot table, and this step
+ *        re-runs the placement a returning player would get today.
  *
  * Each step gives an older save the field a fresh game would have started
  * with, so migrating never costs a player anything.
  */
-export const SCHEMA_VERSION = 18;
+export const SCHEMA_VERSION = 19;
 
 // ---------------------------------------------------------------- pieces
 

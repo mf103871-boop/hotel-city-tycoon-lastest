@@ -269,7 +269,8 @@
       "tier": 1,
       "roomScope": [
         "economy",
-        "standard"
+        "standard",
+        "family"
       ]
     },
     {

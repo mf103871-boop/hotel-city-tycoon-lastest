@@ -65,6 +65,8 @@ export interface RoomViewDecorItem {
   /** The box the room's plan gives this spot, in room-local pixels. 0 = none. */
   boxW: number;
   boxH: number;
+  /** The building's own furniture rather than something the player bought. */
+  builtIn: boolean;
 }
 
 export interface RoomViewData {

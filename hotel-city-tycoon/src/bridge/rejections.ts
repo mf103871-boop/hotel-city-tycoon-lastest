@@ -20,6 +20,7 @@ export const REJECTION_KEY: Record<RejectReason, string> = {
   notStored: 'reject.notStored',
   notNextPlot: 'reject.notNextPlot',
   slotIncompatible: 'reject.slotIncompatible',
+  sameDecor: 'reject.sameDecor',
   sameSpot: 'reject.sameSpot',
   storageFull: 'reject.storageFull',
   notOwned: 'reject.notOwned',

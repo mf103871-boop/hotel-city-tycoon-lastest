@@ -165,11 +165,11 @@ export function floorLineFor(roomDefId: string, blocksH: number): number {
  */
 const LAYOUTS: Layout = {
   lobby: [
-    s('ground', 7, 14, 4, 7),
+    s('ground', 7, 14, 4, 7, 'seating_lobbyBench'),
     s('ground', 11, 14, 4, 7),
     s('ground', 15, 14, 4, 7),
     s('ground', 29, 14, 4, 7),
-    s('surface', 11, 14, 6, 7),
+    s('surface', 11, 14, 6, 7, 'rug_entranceRunner'),
     s('surface', 29, 14, 6, 7),
     s('wall', 8, 8, 5, 6),
     s('wall', 15, 8, 5, 6),
@@ -178,8 +178,8 @@ const LAYOUTS: Layout = {
     s('ceiling', 17, 2, 4, 5),
   ],
   housekeeping: [
-    s('ground', 3, 14, 5, 7),
-    s('ground', 8, 14, 5, 7),
+    s('ground', 3, 14, 5, 7, 'storage_supplyCart'),
+    s('ground', 8, 14, 5, 7, 'storage_laundryBasket'),
     s('ground', 13, 14, 5, 7),
     s('surface', 8, 14, 6, 7),
     s('wall', 4, 11, 7, 6),
@@ -187,17 +187,17 @@ const LAYOUTS: Layout = {
     s('ceiling', 12, 2, 5, 5),
   ],
   laundry: [
-    s('ground', 5, 14, 6, 7),
-    s('ground', 16, 14, 6, 7),
-    s('ground', 27, 14, 6, 7),
+    s('ground', 5, 14, 6, 7, 'appliance_washer'),
+    s('ground', 16, 14, 6, 7, 'appliance_washer'),
+    s('ground', 27, 14, 6, 7, 'appliance_dryer'),
     s('surface', 16, 14, 6, 7),
     s('wall', 9, 8, 3, 6),
     s('wall', 29, 8, 3, 6),
     s('ceiling', 16, 2, 5, 5),
   ],
   staffRoom: [
-    s('ground', 14, 14, 5, 7),
-    s('ground', 19, 14, 5, 7),
+    s('ground', 14, 14, 5, 7, 'storage_lockers'),
+    s('ground', 19, 14, 5, 7, 'appliance_coffeeMachine'),
     s('ground', 24, 14, 5, 7),
     s('ground', 29, 14, 5, 7),
     s('surface', 16, 14, 6, 7),
@@ -208,8 +208,8 @@ const LAYOUTS: Layout = {
     s('ceiling', 25, 2, 3, 5),
   ],
   maintenance: [
-    s('ground', 15, 14, 5, 7),
-    s('ground', 20, 14, 5, 7),
+    s('ground', 15, 14, 5, 7, 'storage_toolRack'),
+    s('ground', 20, 14, 5, 7, 'storage_stepLadder'),
     s('ground', 25, 14, 5, 7),
     s('surface', 20, 14, 6, 7),
     s('wall', 17, 8, 7, 6),
@@ -217,7 +217,7 @@ const LAYOUTS: Layout = {
     s('ceiling', 21, 2, 5, 5),
   ],
   business: [
-    s('ground', 3, 14, 5, 7),
+    s('ground', 3, 14, 5, 7, 'appliance_printer'),
     s('ground', 8, 14, 5, 7),
     s('ground', 14, 14, 5, 7),
     s('ground', 28, 14, 5, 7),
@@ -231,14 +231,14 @@ const LAYOUTS: Layout = {
     s('ceiling', 36, 2, 5, 5),
   ],
   economy: [
-    s('bed', 6, 14, 8, 6),
+    s('bed', 6, 14, 8, 6, 'bed_cot'),
     s('surface', 6, 14, 6, 7),
     s('wall', 3, 11, 5, 6),
     s('wall', 8, 11, 5, 6),
     s('ceiling', 11, 2, 5, 5),
   ],
   standard: [
-    s('bed', 5, 14, 8, 6),
+    s('bed', 5, 14, 8, 6, 'bed_single'),
     s('surface', 5, 14, 6, 7),
     s('wall', 9, 8, 2, 6),
     s('wall', 15, 8, 2, 6),
@@ -246,8 +246,8 @@ const LAYOUTS: Layout = {
     s('ceiling', 14, 1, 4, 5),
   ],
   double: [
-    s('bed', 6, 14, 8, 6),
-    s('bed', 18, 14, 8, 6),
+    s('bed', 6, 14, 8, 6, 'bed_single'),
+    s('bed', 18, 14, 8, 6, 'bed_single'),
     s('ground', 12, 14, 4, 7),
     s('surface', 6, 14, 6, 7),
     s('surface', 18, 14, 6, 7),
@@ -258,9 +258,9 @@ const LAYOUTS: Layout = {
     s('ceiling', 30, 2, 3, 5),
   ],
   family: [
-    s('bed', 7, 14, 8, 6),
-    s('bed', 20, 14, 8, 6),
-    s('bed', 20, 10, 8, 4),
+    s('bed', 7, 14, 8, 6, 'bed_single'),
+    s('bed', 20, 14, 8, 6, 'bed_cot'),
+    s('bed', 20, 10, 8, 4, 'bed_cot'),
     s('surface', 7, 14, 6, 7),
     s('surface', 20, 14, 6, 7),
     s('wall', 1, 8, 2, 6),
@@ -269,7 +269,7 @@ const LAYOUTS: Layout = {
     s('ceiling', 13, 2, 2, 5),
   ],
   deluxe: [
-    s('bed', 12, 14, 8, 6),
+    s('bed', 12, 14, 8, 6, 'bed_queen'),
     s('ground', 4, 14, 4, 7),
     s('ground', 20, 14, 4, 7),
     s('ground', 30, 14, 4, 7),
@@ -285,7 +285,7 @@ const LAYOUTS: Layout = {
     s('ceiling', 30, 2, 2, 5),
   ],
   executive: [
-    s('bed', 28, 14, 8, 6),
+    s('bed', 28, 14, 8, 6, 'bed_king'),
     s('ground', 17, 14, 5, 7),
     s('ground', 35, 14, 5, 7),
     s('ground', 40, 14, 5, 7),
@@ -300,7 +300,7 @@ const LAYOUTS: Layout = {
     s('ceiling', 34, 2, 2, 5),
   ],
   honeymoon: [
-    s('bed', 15, 14, 8, 6),
+    s('bed', 15, 14, 8, 6, 'bed_canopy'),
     s('ground', 3, 14, 5, 7),
     s('ground', 8, 14, 5, 7),
     s('ground', 26, 14, 5, 7),
@@ -318,8 +318,8 @@ const LAYOUTS: Layout = {
     s('ceiling', 27, 2, 2, 5),
   ],
   luxurySuite: [
-    s('bed', 13, 14, 8, 6),
-    s('bed', 39, 14, 8, 6),
+    s('bed', 13, 14, 8, 6, 'bed_floating'),
+    s('bed', 39, 14, 8, 6, 'bed_floating'),
     s('ground', 2, 14, 4, 7),
     s('ground', 7, 14, 4, 7),
     s('ground', 19, 14, 4, 7),
@@ -344,8 +344,8 @@ const LAYOUTS: Layout = {
     s('ceiling', 63, 2, 2, 5),
   ],
   presidential: [
-    s('bed', 18, 30, 8, 6),
-    s('bed', 27, 30, 8, 6),
+    s('bed', 18, 30, 8, 6, 'bed_fourposter'),
+    s('bed', 27, 30, 8, 6, 'bed_fourposter'),
     s('ground', 46, 30, 4, 7),
     s('ground', 6, 16, 5, 6),
     s('ground', 12, 16, 5, 6),
@@ -368,8 +368,8 @@ const LAYOUTS: Layout = {
     s('ceiling', 46, 2, 4, 5),
   ],
   cafe: [
-    s('ground', 18, 14, 4, 7),
-    s('ground', 22, 14, 4, 7),
+    s('ground', 18, 14, 4, 7, 'table_cafeTable'),
+    s('ground', 22, 14, 4, 7, 'seating_cafeChair'),
     s('ground', 26, 14, 4, 7),
     s('ground', 30, 14, 4, 7),
     s('surface', 20, 14, 6, 7),
@@ -381,8 +381,8 @@ const LAYOUTS: Layout = {
     s('ceiling', 17, 2, 2, 5),
   ],
   gym: [
-    s('ground', 3, 14, 6, 7),
-    s('ground', 10, 14, 6, 7),
+    s('ground', 3, 14, 6, 7, 'appliance_treadmill'),
+    s('ground', 10, 14, 6, 7, 'storage_dumbbellRack'),
     s('ground', 16, 14, 6, 7),
     s('ground', 22, 14, 6, 7),
     s('ground', 29, 14, 6, 7),
@@ -394,8 +394,8 @@ const LAYOUTS: Layout = {
     s('ceiling', 17, 2, 3, 5),
   ],
   restaurant: [
-    s('ground', 19, 14, 4, 7),
-    s('ground', 23, 14, 4, 7),
+    s('ground', 19, 14, 4, 7, 'table_diningTable'),
+    s('ground', 23, 14, 4, 7, 'seating_cafeChair'),
     s('ground', 28, 14, 4, 7),
     s('ground', 32, 14, 4, 7),
     s('ground', 37, 14, 4, 7),
@@ -413,8 +413,8 @@ const LAYOUTS: Layout = {
     s('ceiling', 24, 2, 5, 5),
   ],
   bar: [
-    s('ground', 24, 14, 5, 7),
-    s('ground', 29, 14, 5, 7),
+    s('ground', 24, 14, 5, 7, 'seating_barStool'),
+    s('ground', 29, 14, 5, 7, 'seating_barStool'),
     s('surface', 27, 14, 6, 7),
     s('wall', 23, 8, 3, 6),
     s('wall', 27, 8, 3, 6),
@@ -423,7 +423,7 @@ const LAYOUTS: Layout = {
     s('ceiling', 21, 2, 2, 5),
   ],
   arcade: [
-    s('ground', 3, 14, 6, 7),
+    s('ground', 3, 14, 6, 7, 'appliance_arcadeCabinet'),
     s('ground', 10, 14, 6, 7),
     s('ground', 16, 14, 6, 7),
     s('ground', 22, 14, 6, 7),
@@ -437,9 +437,9 @@ const LAYOUTS: Layout = {
     s('ceiling', 15, 2, 5, 5),
   ],
   cinema: [
-    s('ground', 2, 14, 4, 7),
-    s('ground', 13, 14, 5, 7),
-    s('ground', 20, 14, 5, 7),
+    s('ground', 2, 14, 4, 7, 'seating_cinemaSeats'),
+    s('ground', 13, 14, 5, 7, 'seating_cinemaSeats'),
+    s('ground', 20, 14, 5, 7, 'seating_cinemaSeats'),
     s('ground', 28, 14, 5, 7),
     s('ground', 35, 14, 5, 7),
     s('ground', 46, 14, 4, 7),
@@ -452,7 +452,7 @@ const LAYOUTS: Layout = {
     s('ceiling', 47, 2, 2, 5),
   ],
   spa: [
-    s('ground', 12, 12, 4, 7),
+    s('ground', 12, 12, 4, 7, 'appliance_djBooth'),
     s('ground', 16, 12, 4, 7),
     s('ground', 20, 12, 4, 7),
     s('ground', 25, 12, 4, 7),
@@ -471,8 +471,8 @@ const LAYOUTS: Layout = {
     s('ceiling', 37, 2, 5, 5),
   ],
   pool: [
-    s('ground', 2, 10, 4, 7),
-    s('ground', 6, 10, 4, 7),
+    s('ground', 2, 10, 4, 7, 'seating_sunLounger'),
+    s('ground', 6, 10, 4, 7, 'luxury_parasol'),
     s('ground', 58, 10, 4, 7),
     s('ground', 62, 10, 4, 7),
     s('surface', 4, 10, 6, 7),
@@ -651,27 +651,33 @@ export function anchorFor(
   });
 
   /*
-   * Three passes over the slots of each kind, and the order is the whole
-   * behaviour a player sees.
+   * The order the room offers its places, and it is the whole behaviour a
+   * player sees.
    *
-   * First the places the room left empty, so a bought plant does not evict the
-   * laundry's washing machine. Then the places whose fixture is the same
-   * category as the piece being bought — a better washer standing where the
-   * built-in washer stood, which is the upgrade. Only then anything else.
+   * A piece takes an empty place of its own kind first, so a bought plant does
+   * not evict the laundry's washing machine. Failing that it takes the place
+   * of a built-in of the SAME category — a better washer standing where the
+   * built-in washer stood, which is the upgrade the player asked for. Only
+   * when its own kind is exhausted does it spill onto a neighbouring surface,
+   * and only at the very end may it displace a built-in of another kind.
    */
   const sameCategory = (slot: Slot): boolean => {
     if (!slot.fixture) return false;
     const built = data.decor.find((d) => d.id === slot.fixture);
     return !!built && built.category === def.category;
   };
-  const passes: Array<(slot: Slot) => boolean> = [
-    (slot) => !slot.fixture,
-    sameCategory,
-    () => true,
+  const free = (slot: Slot): boolean => !slot.fixture;
+  const anything = (): boolean => true;
+  const own = [kind];
+  const near = NEIGHBOURING_KINDS[kind];
+  const order: Array<[SpotKind[], (slot: Slot) => boolean]> = [
+    [own, free], [own, sameCategory],
+    [near, free], [near, sameCategory],
+    [own, anything], [near, anything],
   ];
 
-  for (const accepts of passes) {
-    for (const candidateKind of [kind, ...NEIGHBOURING_KINDS[kind]]) {
+  for (const [kinds, accepts] of order) {
+    for (const candidateKind of kinds) {
       for (const slot of slotsOfKind(layout, candidateKind, maxPieces)) {
         if (!accepts(slot)) continue;
         const spot = clamp(slot);
@@ -681,6 +687,22 @@ export function anchorFor(
     }
   }
   return null;
+}
+
+/**
+ * One numbered place in a room's plan, when the caller has a particular one in
+ * mind — the player tapping "upgrade" on the built-in the room came with.
+ *
+ * Returns null for an index nobody designed, or for a place that does not take
+ * this kind of piece: a lamp cannot be hung where a bed goes.
+ */
+export function plannedSlot(roomDefId: string, blocksW: number, blocksH: number,
+                            index: number, kind: SpotKind): Slot | null {
+  const layout = layoutFor(roomDefId, blocksW, blocksH);
+  const slot = layout[index];
+  if (!slot) return null;
+  if (slot.kind !== kind && !NEIGHBOURING_KINDS[kind].includes(slot.kind)) return null;
+  return slot;
 }
 
 /**

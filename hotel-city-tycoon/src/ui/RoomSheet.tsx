@@ -53,6 +53,15 @@ export function RoomSheet({
   const state = useGameStore((s) => s.state);
   const dispatch = useGameStore((s) => s.dispatch);
   const [mode, setMode] = useState<'overview' | 'decorate'>('overview');
+  /*
+   * What the next pick from the catalogue is for.
+   *
+   * `null` is the plain case — buy something and the room decides where it
+   * goes. A `decorId` means the player tapped Replace on a piece they own, and
+   * the pick swaps it in place. A `planSlot` means they tapped Upgrade on one
+   * of the room's own built-in pieces, and the pick takes that exact place.
+   */
+  const [swap, setSwap] = useState<{ decorId?: string; planSlot?: number } | null>(null);
   if (!state) return null;
 
   const detail = roomDetail(state, roomId);
@@ -67,9 +76,9 @@ export function RoomSheet({
     const catalogue = decorCatalog(state, roomId);
     return (
       <Sheet
-        title={t('ui.decorate')}
+        title={swap ? t('ui.replaceWith') : t('ui.decorate')}
         subtitle={`${t(detail.nameKey)} · ${slots.length} ${t('ui.slotsFree')}`}
-        onClose={() => setMode('overview')}
+        onClose={() => { setSwap(null); setMode('overview'); }}
       >
         <Meter fill={detail.fill} points={detail.decorPoints} target={detail.decorTarget} locale={locale} />
         {catalogue.map((item) => (
@@ -85,12 +94,26 @@ export function RoomSheet({
               : { price: item.cost.amount, currency: item.cost.currency })}
             blockerLabel={blockerLabel(item.blocker, item.unlockLevel, t)}
             onPick={() => {
+              // Swapping a piece the player already owns keeps its place and
+              // its slot, so it never needs one of its own.
+              if (swap?.decorId) {
+                const r = dispatch({
+                  type: 'REPLACE_DECOR', roomId, decorId: swap.decorId, defId: item.defId,
+                });
+                setProblem(r.ok ? null : REJECTION_KEY[r.reason]);
+                if (r.ok) { setSwap(null); setMode('overview'); }
+                return;
+              }
               // A slot this kind of piece is actually allowed in, not just the
               // first empty index.
               const slot = slotsFor(state, roomId, item.slotType, item.defId)[0];
-              if (slot !== undefined) {
-                dispatch({ type: 'PLACE_DECOR', roomId, defId: item.defId, slot });
-              }
+              if (slot === undefined) return;
+              const r = dispatch({
+                type: 'PLACE_DECOR', roomId, defId: item.defId, slot,
+                ...(swap?.planSlot !== undefined ? { planSlot: swap.planSlot } : {}),
+              });
+              setProblem(r.ok ? null : REJECTION_KEY[r.reason]);
+              if (r.ok && swap) { setSwap(null); setMode('overview'); }
             }}
           />
         ))}
@@ -139,6 +162,30 @@ export function RoomSheet({
         </div>
       </dl>
 
+      {detail.builtIn.length > 0 && (
+        <ul data-testid="built-in-decor" className="mb-3 space-y-1.5">
+          {detail.builtIn.map((fx) => (
+            <li
+              key={fx.planSlot}
+              className="flex items-center gap-2 rounded-lg bg-white/[0.02] px-3 py-2"
+            >
+              <span className="text-xs text-slate-300">{t(fx.nameKey)}</span>
+              <span className="rounded bg-white/5 px-1.5 py-0.5 text-[11px] text-slate-400">
+                {t('ui.builtIn')}
+              </span>
+              <button
+                type="button"
+                data-testid={`upgrade-decor-${fx.planSlot}`}
+                onClick={() => { setSwap({ planSlot: fx.planSlot }); setMode('decorate'); }}
+                className="ms-auto min-h-11 rounded-lg px-3 py-2 text-xs text-brass-300 hover:bg-white/5"
+              >
+                {t('ui.upgrade')}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
       {detail.placed.length > 0 && (
         <ul data-testid="placed-decor" className="mb-3 space-y-1.5">
           {detail.placed.map((piece) => (
@@ -162,6 +209,14 @@ export function RoomSheet({
               >
                 {t('ui.remove')}
               </button>
+              <button
+                type="button"
+                data-testid={`replace-decor-${piece.defId}`}
+                onClick={() => { setSwap({ decorId: piece.id }); setMode('decorate'); }}
+                className="min-h-11 rounded-lg px-3 py-2 text-xs text-brass-300 hover:bg-white/5"
+              >
+                {t('ui.replace')}
+              </button>
             </li>
           ))}
         </ul>
@@ -170,7 +225,7 @@ export function RoomSheet({
       {detail.decorSlots > 0 && (
         <button
           type="button"
-          onClick={() => setMode('decorate')}
+          onClick={() => { setSwap(null); setMode('decorate'); }}
           className="mb-2 w-full rounded-xl bg-brass-500 px-4 py-3 font-semibold text-midnight-950 hover:bg-brass-400"
         >
           {t('ui.decorate')}
