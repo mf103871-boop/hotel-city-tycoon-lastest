@@ -95,6 +95,17 @@ export const DecorSchema = z.object({
     id: Id, category: z.string(), slotType: z.enum(['wall', 'floor', 'ceiling', 'bed', 'equipment']),
     nameKey: I18nKey, assetKey: AssetKey, decorPoints: PosInt, cost: Price,
     unlockLevel: Level, sellable: z.boolean(), giftable: z.boolean(), tier: PosInt,
+    /*
+     * Which rooms may hold this piece, as a list of tokens: a room id
+     * (`gym`), a room category (`guest`), or `any`. An empty list means the
+     * same as `any` — it is what every piece meant before the field existed.
+     *
+     * This is what gives each room a catalogue of its own. The slotType rule
+     * in economy.json is coarse by design (no bed outside a bedroom, no
+     * equipment inside one); it cannot say that a treadmill belongs in the
+     * gym and not in the arcade, and the gym's list is the whole point.
+     */
+    roomScope: z.array(z.string().min(1)).min(1),
   })).min(1),
 });
 

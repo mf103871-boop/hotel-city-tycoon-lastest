@@ -224,10 +224,31 @@ if (!tiers.some(t => t.stars === start.stars)) err('economy.json', `start.stars 
 // ---------------------------------------------------------------- 10. decor
 const decorCats = new Set(D['decor.json'].categories);
 const decorSlots = new Set(D['decor.json'].slotTypes);
+const roomCats = new Set(rooms.map(r => r.category));
 for (const d of decorItems) {
   if (!decorCats.has(d.category)) err('decor.json', `item "${d.id}" has category "${d.category}" not in categories[]`);
   if (!decorSlots.has(d.slotType)) err('decor.json', `item "${d.id}" has slotType "${d.slotType}" not in slotTypes[]`);
+  // A room scope is a promise about where a piece can be bought. A typo in it
+  // silently removes the piece from every list in the game, which is the sort
+  // of thing nobody notices until a room has nothing left to buy.
+  for (const token of d.roomScope ?? []) {
+    if (token !== 'any' && !roomIds.has(token) && !roomCats.has(token)) {
+      err('decor.json', `item "${d.id}" is scoped to "${token}", which is neither a room nor a room category`);
+    }
+  }
 }
+// The two rules that decide whether a piece may go in a room, mirrored from
+// src/core/systems/quality.ts so the reachability check below asks the same
+// question the game asks.
+const slotTypeRooms = new Map(
+  (D['economy.json'].roomQuality.slotTypeRooms ?? []).map(r => [r.slotType, r.categories]));
+const fitsRoom = (d, r) => {
+  const allowed = slotTypeRooms.get(d.slotType);
+  if (allowed && allowed.length > 0 && !allowed.includes(r.category)) return false;
+  const scope = d.roomScope ?? [];
+  return scope.length === 0
+    || scope.some(t => t === 'any' || t === r.category || t === r.id);
+};
 // a level-1 player must be able to start filling the meter
 const l1Decor = decorItems.filter(d => d.unlockLevel === 1 && d.cost.currency === 'coins');
 if (l1Decor.length < 3) err('decor.json', `only ${l1Decor.length} coin-priced decor items at L1 — a new player cannot fill a room`);
@@ -240,8 +261,11 @@ const startRooms = new Set(start.prebuiltRooms);
 for (const r of rooms) {
   if (r.decorTarget === 0) continue;
   const by = startRooms.has(r.id) ? r.unlockLevel : Math.min(maxLevel, r.unlockLevel + GRACE);
+  // Scoped to the room's own catalogue. Unscoped, this check certified the
+  // lobby as fillable by counting bed_cot — which slotAllowed has always
+  // refused to install in a functional room.
   const avail = decorItems
-    .filter(d => d.unlockLevel <= by && d.cost.currency === 'coins')
+    .filter(d => d.unlockLevel <= by && d.cost.currency === 'coins' && fitsRoom(d, r))
     .sort((a, b) => b.decorPoints - a.decorPoints)
     .slice(0, r.decorSlots)
     .reduce((n, d) => n + d.decorPoints, 0);

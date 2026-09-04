@@ -41,7 +41,7 @@ function assert(c: unknown, m: string): asserts c { if (!c) throw new Error(m); 
  * genuinely read by bracket access (`state.ledger['starBonus']`) would then
  * look dead. Word the messages around the field names.
  *
- * A field named in an interface is described, not consumed. `giftable` is
+ * A field named in an interface is described, not consumed. `sellable` is
  * declared on `DecorDef` and read by nothing, and the sweep counted the
  * declaration itself as the reader — the exact blind spot that let `efficiency`
  * pass for two phases.
@@ -167,7 +167,6 @@ const RESERVED = new Map<string, string>([
   ['starsNote', 'Documentation: the settled 2-star start and how to revisit it. Signed off after Phase 5.'],
 
   // --- Phase 2: inventory, shop, building, storage
-  ['giftable', 'Phase 7 — the ownership model now exists; gifting still needs a recipient, which is the social scope.'],
 
   // --- Phase 4: staff, cleaning, maintenance, incidents
   ['roomsPerCleaner', 'Phase 4 — cleaning capacity gets one source of truth; online and offline disagree today.'],

@@ -18,7 +18,7 @@ import { grantXp, isUnlocked } from '../systems/progression.ts';
 import { clearHazard } from '../systems/events.ts';
 import { queueCapacity, receptionEfficiency } from '../systems/guests.ts';
 import { owned, grant, consume, sellValue } from '../systems/inventory.ts';
-import { slotAllowed } from '../systems/quality.ts';
+import { slotAllowed, decorFitsRoom } from '../systems/quality.ts';
 import { anchorBoundsFor, anchorKey, firstFreeAnchor, anchorReachFor } from '../systems/decorPlacement.ts';
 import { anchorFor } from '../systems/roomAnchors.ts';
 import { Rng } from '../rng/index.ts';
@@ -173,6 +173,10 @@ export function execute(data: SimData, state: GameState, cmd: Command): CommandR
       // A bed belongs in a bedroom. Nothing stopped one being installed in the
       // laundry, where it counted towards the rating just the same.
       if (!slotAllowed(data, rdef, cmd.defId)) return reject('slotIncompatible');
+      // And a treadmill belongs in the gym rather than in whichever room the
+      // player happened to have open. The room's own catalogue is what the
+      // decorate sheet lists; this is the same rule, enforced.
+      if (!decorFitsRoom(data, rdef, cmd.defId)) return reject('slotIncompatible');
 
       // Spend a copy the player already owns before spending their money.
       // Every validation above has passed, so consuming here cannot leave the

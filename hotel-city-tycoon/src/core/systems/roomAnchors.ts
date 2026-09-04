@@ -76,6 +76,19 @@ export interface Slot extends Spot {
   w: number;
   /** Box height in anchor units (6px each). */
   h: number;
+  /**
+   * The piece the building itself puts here — the laundry's washing machines,
+   * the gym's treadmill, the bed in a bedroom.
+   *
+   * A fixture is drawn, and nothing else. It is not in `room.decor`, it costs
+   * nothing, it scores no decor points, it cannot be sold and it does not use
+   * up a slot the player paid for, so it moves no number in the economy. What
+   * it does is stop a newly built room looking like an empty box, and give the
+   * player something to upgrade: buying a piece of the same category takes the
+   * fixture's place, which is what "replace what is already in the room"
+   * means from the inside.
+   */
+  fixture?: string;
 }
 
 /** Which kind of spot each decor category asks for. */
@@ -123,8 +136,9 @@ const NEIGHBOURING_KINDS: Readonly<Record<SpotKind, SpotKind[]>> = {
 
 type Layout = Readonly<Record<string, readonly Slot[]>>;
 
-const s = (kind: SpotKind, x: number, y: number, w: number, h: number): Slot =>
-  ({ kind, x, y, w, h });
+const s = (kind: SpotKind, x: number, y: number, w: number, h: number,
+           fixture?: string): Slot =>
+  (fixture === undefined ? { kind, x, y, w, h } : { kind, x, y, w, h, fixture });
 
 /**
  * The painted floor line of a room, in anchor units.
@@ -533,6 +547,37 @@ export function slotAt(roomDefId: string, blocksW: number, blocksH: number,
   return layout.find((slot) => slot.x === x && slot.y === y) ?? null;
 }
 
+/** What the building puts in this room before the player buys anything. */
+export interface RoomFixture {
+  /** Stable within a room: the slot's index in its plan. */
+  slot: number;
+  defId: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/**
+ * The fixtures of a room that nothing is standing in front of.
+ *
+ * `occupied` is the set of anchors the room's own pieces hold, in the
+ * `anchorKey` form. A bought piece standing in a fixture's slot hides it —
+ * that is the upgrade the player can see.
+ */
+export function fixturesFor(roomDefId: string, blocksW: number, blocksH: number,
+                            occupied: ReadonlySet<string>): RoomFixture[] {
+  const out: RoomFixture[] = [];
+  const layout = layoutFor(roomDefId, blocksW, blocksH);
+  for (let i = 0; i < layout.length; i++) {
+    const slot = layout[i]!;
+    if (!slot.fixture) continue;
+    if (occupied.has(anchorKey(slot.x, slot.y))) continue;
+    out.push({ slot: i, defId: slot.fixture, x: slot.x, y: slot.y, w: slot.w, h: slot.h });
+  }
+  return out;
+}
+
 /** A piece already in the room, as this file needs to see it. */
 export interface PlacedPiece {
   defId: string;
@@ -605,11 +650,34 @@ export function anchorFor(
     y: Math.min(Math.max(slot.y, 0), bounds.h - 1),
   });
 
-  for (const candidateKind of [kind, ...NEIGHBOURING_KINDS[kind]]) {
-    for (const slot of slotsOfKind(layout, candidateKind, maxPieces)) {
-      const spot = clamp(slot);
-      if (blocked.has(anchorKey(spot.x, spot.y))) continue;
-      return spot;
+  /*
+   * Three passes over the slots of each kind, and the order is the whole
+   * behaviour a player sees.
+   *
+   * First the places the room left empty, so a bought plant does not evict the
+   * laundry's washing machine. Then the places whose fixture is the same
+   * category as the piece being bought — a better washer standing where the
+   * built-in washer stood, which is the upgrade. Only then anything else.
+   */
+  const sameCategory = (slot: Slot): boolean => {
+    if (!slot.fixture) return false;
+    const built = data.decor.find((d) => d.id === slot.fixture);
+    return !!built && built.category === def.category;
+  };
+  const passes: Array<(slot: Slot) => boolean> = [
+    (slot) => !slot.fixture,
+    sameCategory,
+    () => true,
+  ];
+
+  for (const accepts of passes) {
+    for (const candidateKind of [kind, ...NEIGHBOURING_KINDS[kind]]) {
+      for (const slot of slotsOfKind(layout, candidateKind, maxPieces)) {
+        if (!accepts(slot)) continue;
+        const spot = clamp(slot);
+        if (blocked.has(anchorKey(spot.x, spot.y))) continue;
+        return spot;
+      }
     }
   }
   return null;

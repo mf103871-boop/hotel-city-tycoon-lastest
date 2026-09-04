@@ -57,13 +57,30 @@ export function msUntilShopRefresh(data: SimData, epochMs: number): number {
  * player's level are excluded: a discount on something unbuyable is an advert,
  * not an offer.
  */
+/**
+ * May this piece be handed out without knowing which room it is for?
+ *
+ * The shop and the weekly gift both give a player an item before they choose
+ * where it goes, so both may only offer pieces that go anywhere. A piece
+ * scoped to one room would otherwise sit in the store unplaceable.
+ */
+function goesAnywhere(item: { roomScope: string[] }): boolean {
+  return item.roomScope.length === 0 || item.roomScope.includes('any');
+}
+
 export function shopOffers(data: SimData, state: GameState, epochMs: number): ShopOffer[] {
   const period = shopPeriod(data, epochMs);
   const rng = new Rng(state.seed + period * 7919, {
     guestSpawn: 0, guestType: 0, guestDesire: 0, roomPick: 0, events: 0, staffGrade: 0, poke: 0,
   });
 
-  const eligible = data.decor.filter((item) => item.unlockLevel <= state.player.level);
+  // Room-scoped pieces stay off the shelf. A discount on the gym's rowing
+  // machine is only an offer to a player who has a gym, and to everyone else
+  // it is a slot of the week's five spent on something they cannot install.
+  // `giftable` finally earns its place in the data: it has been declared on
+  // every item since the first catalogue and read by nothing.
+  const eligible = data.decor.filter((item) => item.unlockLevel <= state.player.level
+    && item.giftable && goesAnywhere(item));
   if (eligible.length === 0) return [];
 
   const season = activeSeason(data, epochMs);
@@ -227,7 +244,8 @@ export function weekIndexOf(data: SimData, epochMs: number): number {
  */
 export function weeklyGiftItem(data: SimData, epochMs: number): string {
   const pool = data.decor
-    .filter((d) => d.cost.currency === 'coins' && d.cost.amount <= data.gifts.maxItemCost)
+    .filter((d) => d.cost.currency === 'coins' && d.cost.amount <= data.gifts.maxItemCost
+      && d.giftable && goesAnywhere(d))
     .sort((a, b) => a.id.localeCompare(b.id));
   const week = weekIndexOf(data, epochMs);
   const roll = mulberry32(Math.imul(week + 1, 0x9e3779b9) >>> 0);

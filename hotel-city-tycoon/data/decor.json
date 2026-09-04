@@ -38,7 +38,10 @@
       "unlockLevel": 1,
       "sellable": true,
       "giftable": true,
-      "tier": 1
+      "tier": 1,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "wallpaper_striped",
@@ -54,7 +57,10 @@
       "unlockLevel": 3,
       "sellable": true,
       "giftable": true,
-      "tier": 2
+      "tier": 2,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "wallpaper_damask",
@@ -70,7 +76,10 @@
       "unlockLevel": 7,
       "sellable": true,
       "giftable": true,
-      "tier": 3
+      "tier": 3,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "wallpaper_velvet",
@@ -86,7 +95,10 @@
       "unlockLevel": 13,
       "sellable": true,
       "giftable": false,
-      "tier": 4
+      "tier": 4,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "wallpaper_gilded",
@@ -102,7 +114,10 @@
       "unlockLevel": 21,
       "sellable": true,
       "giftable": false,
-      "tier": 5
+      "tier": 5,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "wallpaper_mural",
@@ -118,7 +133,10 @@
       "unlockLevel": 31,
       "sellable": true,
       "giftable": false,
-      "tier": 6
+      "tier": 6,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "flooring_concrete",
@@ -134,7 +152,10 @@
       "unlockLevel": 1,
       "sellable": true,
       "giftable": true,
-      "tier": 1
+      "tier": 1,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "flooring_carpet",
@@ -150,7 +171,10 @@
       "unlockLevel": 3,
       "sellable": true,
       "giftable": true,
-      "tier": 2
+      "tier": 2,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "flooring_oak",
@@ -166,7 +190,10 @@
       "unlockLevel": 7,
       "sellable": true,
       "giftable": true,
-      "tier": 3
+      "tier": 3,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "flooring_marble",
@@ -182,7 +209,10 @@
       "unlockLevel": 13,
       "sellable": true,
       "giftable": false,
-      "tier": 4
+      "tier": 4,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "flooring_mosaic",
@@ -198,7 +228,10 @@
       "unlockLevel": 21,
       "sellable": true,
       "giftable": false,
-      "tier": 5
+      "tier": 5,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "flooring_obsidian",
@@ -214,7 +247,10 @@
       "unlockLevel": 31,
       "sellable": true,
       "giftable": false,
-      "tier": 6
+      "tier": 6,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "bed_cot",
@@ -230,7 +266,11 @@
       "unlockLevel": 1,
       "sellable": true,
       "giftable": true,
-      "tier": 1
+      "tier": 1,
+      "roomScope": [
+        "economy",
+        "standard"
+      ]
     },
     {
       "id": "bed_single",
@@ -246,7 +286,13 @@
       "unlockLevel": 4,
       "sellable": true,
       "giftable": true,
-      "tier": 2
+      "tier": 2,
+      "roomScope": [
+        "economy",
+        "standard",
+        "double",
+        "family"
+      ]
     },
     {
       "id": "bed_queen",
@@ -262,7 +308,13 @@
       "unlockLevel": 9,
       "sellable": true,
       "giftable": false,
-      "tier": 3
+      "tier": 3,
+      "roomScope": [
+        "standard",
+        "double",
+        "family",
+        "deluxe"
+      ]
     },
     {
       "id": "bed_king",
@@ -278,7 +330,13 @@
       "unlockLevel": 15,
       "sellable": true,
       "giftable": false,
-      "tier": 4
+      "tier": 4,
+      "roomScope": [
+        "double",
+        "family",
+        "deluxe",
+        "executive"
+      ]
     },
     {
       "id": "bed_canopy",
@@ -294,7 +352,13 @@
       "unlockLevel": 23,
       "sellable": true,
       "giftable": false,
-      "tier": 5
+      "tier": 5,
+      "roomScope": [
+        "family",
+        "deluxe",
+        "executive",
+        "honeymoon"
+      ]
     },
     {
       "id": "bed_floating",
@@ -310,7 +374,13 @@
       "unlockLevel": 34,
       "sellable": true,
       "giftable": false,
-      "tier": 6
+      "tier": 6,
+      "roomScope": [
+        "deluxe",
+        "executive",
+        "honeymoon",
+        "luxurySuite"
+      ]
     },
     {
       "id": "seating_stool",
@@ -326,7 +396,18 @@
       "unlockLevel": 2,
       "sellable": true,
       "giftable": true,
-      "tier": 1
+      "tier": 1,
+      "roomScope": [
+        "lobby",
+        "staffRoom",
+        "housekeeping",
+        "maintenance",
+        "cafe",
+        "bar",
+        "gym",
+        "economy",
+        "standard"
+      ]
     },
     {
       "id": "seating_armchair",
@@ -342,7 +423,15 @@
       "unlockLevel": 5,
       "sellable": true,
       "giftable": true,
-      "tier": 2
+      "tier": 2,
+      "roomScope": [
+        "guest",
+        "lobby",
+        "staffRoom",
+        "cafe",
+        "cinema",
+        "business"
+      ]
     },
     {
       "id": "seating_loveseat",
@@ -358,7 +447,13 @@
       "unlockLevel": 10,
       "sellable": true,
       "giftable": false,
-      "tier": 3
+      "tier": 3,
+      "roomScope": [
+        "guest",
+        "lobby",
+        "cafe",
+        "restaurant"
+      ]
     },
     {
       "id": "seating_chaise",
@@ -374,7 +469,16 @@
       "unlockLevel": 16,
       "sellable": true,
       "giftable": false,
-      "tier": 4
+      "tier": 4,
+      "roomScope": [
+        "deluxe",
+        "executive",
+        "honeymoon",
+        "luxurySuite",
+        "presidential",
+        "spa",
+        "pool"
+      ]
     },
     {
       "id": "seating_throne",
@@ -390,7 +494,13 @@
       "unlockLevel": 25,
       "sellable": true,
       "giftable": false,
-      "tier": 5
+      "tier": 5,
+      "roomScope": [
+        "presidential",
+        "luxurySuite",
+        "restaurant",
+        "lobby"
+      ]
     },
     {
       "id": "table_sideTable",
@@ -406,7 +516,13 @@
       "unlockLevel": 2,
       "sellable": true,
       "giftable": true,
-      "tier": 1
+      "tier": 1,
+      "roomScope": [
+        "guest",
+        "lobby",
+        "staffRoom",
+        "cafe"
+      ]
     },
     {
       "id": "table_deskWood",
@@ -422,7 +538,15 @@
       "unlockLevel": 5,
       "sellable": true,
       "giftable": true,
-      "tier": 2
+      "tier": 2,
+      "roomScope": [
+        "business",
+        "executive",
+        "standard",
+        "double",
+        "staffRoom",
+        "maintenance"
+      ]
     },
     {
       "id": "table_glassTable",
@@ -438,7 +562,13 @@
       "unlockLevel": 10,
       "sellable": true,
       "giftable": false,
-      "tier": 3
+      "tier": 3,
+      "roomScope": [
+        "guest",
+        "cafe",
+        "lobby",
+        "bar"
+      ]
     },
     {
       "id": "table_marbleTable",
@@ -454,7 +584,16 @@
       "unlockLevel": 17,
       "sellable": true,
       "giftable": false,
-      "tier": 4
+      "tier": 4,
+      "roomScope": [
+        "deluxe",
+        "executive",
+        "honeymoon",
+        "luxurySuite",
+        "presidential",
+        "restaurant",
+        "spa"
+      ]
     },
     {
       "id": "table_crystalTable",
@@ -470,7 +609,13 @@
       "unlockLevel": 26,
       "sellable": true,
       "giftable": false,
-      "tier": 5
+      "tier": 5,
+      "roomScope": [
+        "luxurySuite",
+        "presidential",
+        "bar",
+        "restaurant"
+      ]
     },
     {
       "id": "lighting_bulb",
@@ -486,7 +631,10 @@
       "unlockLevel": 1,
       "sellable": true,
       "giftable": true,
-      "tier": 1
+      "tier": 1,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "lighting_lamp",
@@ -502,7 +650,10 @@
       "unlockLevel": 4,
       "sellable": true,
       "giftable": true,
-      "tier": 2
+      "tier": 2,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "lighting_pendant",
@@ -518,7 +669,10 @@
       "unlockLevel": 8,
       "sellable": true,
       "giftable": true,
-      "tier": 3
+      "tier": 3,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "lighting_chandelier",
@@ -534,7 +688,10 @@
       "unlockLevel": 14,
       "sellable": true,
       "giftable": false,
-      "tier": 4
+      "tier": 4,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "lighting_crystalTiers",
@@ -550,7 +707,10 @@
       "unlockLevel": 22,
       "sellable": true,
       "giftable": false,
-      "tier": 5
+      "tier": 5,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "lighting_starfield",
@@ -566,7 +726,10 @@
       "unlockLevel": 33,
       "sellable": true,
       "giftable": false,
-      "tier": 6
+      "tier": 6,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "wallArt_poster",
@@ -582,7 +745,10 @@
       "unlockLevel": 2,
       "sellable": true,
       "giftable": true,
-      "tier": 1
+      "tier": 1,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "wallArt_print",
@@ -598,7 +764,10 @@
       "unlockLevel": 5,
       "sellable": true,
       "giftable": true,
-      "tier": 2
+      "tier": 2,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "wallArt_painting",
@@ -614,7 +783,10 @@
       "unlockLevel": 9,
       "sellable": true,
       "giftable": true,
-      "tier": 3
+      "tier": 3,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "wallArt_sculptureWall",
@@ -630,7 +802,10 @@
       "unlockLevel": 15,
       "sellable": true,
       "giftable": false,
-      "tier": 4
+      "tier": 4,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "wallArt_masterpiece",
@@ -646,7 +821,10 @@
       "unlockLevel": 24,
       "sellable": true,
       "giftable": false,
-      "tier": 5
+      "tier": 5,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "plant_succulent",
@@ -662,7 +840,10 @@
       "unlockLevel": 1,
       "sellable": true,
       "giftable": true,
-      "tier": 1
+      "tier": 1,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "plant_fern",
@@ -678,7 +859,10 @@
       "unlockLevel": 3,
       "sellable": true,
       "giftable": true,
-      "tier": 2
+      "tier": 2,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "plant_palm",
@@ -694,7 +878,10 @@
       "unlockLevel": 8,
       "sellable": true,
       "giftable": true,
-      "tier": 3
+      "tier": 3,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "plant_bonsai",
@@ -710,7 +897,10 @@
       "unlockLevel": 14,
       "sellable": true,
       "giftable": false,
-      "tier": 4
+      "tier": 4,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "plant_orchidWall",
@@ -726,7 +916,10 @@
       "unlockLevel": 22,
       "sellable": true,
       "giftable": false,
-      "tier": 5
+      "tier": 5,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "rug_mat",
@@ -742,7 +935,10 @@
       "unlockLevel": 2,
       "sellable": true,
       "giftable": true,
-      "tier": 1
+      "tier": 1,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "rug_woolRug",
@@ -758,7 +954,10 @@
       "unlockLevel": 4,
       "sellable": true,
       "giftable": true,
-      "tier": 2
+      "tier": 2,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "rug_persianRug",
@@ -774,7 +973,10 @@
       "unlockLevel": 9,
       "sellable": true,
       "giftable": true,
-      "tier": 3
+      "tier": 3,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "rug_silkRug",
@@ -790,7 +992,10 @@
       "unlockLevel": 16,
       "sellable": true,
       "giftable": false,
-      "tier": 4
+      "tier": 4,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "rug_antiqueRug",
@@ -806,7 +1011,10 @@
       "unlockLevel": 25,
       "sellable": true,
       "giftable": false,
-      "tier": 5
+      "tier": 5,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "luxury_minibar",
@@ -822,7 +1030,18 @@
       "unlockLevel": 12,
       "sellable": true,
       "giftable": false,
-      "tier": 1
+      "tier": 1,
+      "roomScope": [
+        "double",
+        "family",
+        "deluxe",
+        "executive",
+        "honeymoon",
+        "luxurySuite",
+        "presidential",
+        "bar",
+        "staffRoom"
+      ]
     },
     {
       "id": "luxury_fireplace",
@@ -838,7 +1057,15 @@
       "unlockLevel": 18,
       "sellable": true,
       "giftable": false,
-      "tier": 2
+      "tier": 2,
+      "roomScope": [
+        "deluxe",
+        "honeymoon",
+        "luxurySuite",
+        "presidential",
+        "lobby",
+        "bar"
+      ]
     },
     {
       "id": "luxury_jacuzzi",
@@ -854,7 +1081,14 @@
       "unlockLevel": 26,
       "sellable": true,
       "giftable": false,
-      "tier": 3
+      "tier": 3,
+      "roomScope": [
+        "honeymoon",
+        "luxurySuite",
+        "presidential",
+        "spa",
+        "pool"
+      ]
     },
     {
       "id": "luxury_piano",
@@ -870,7 +1104,14 @@
       "unlockLevel": 36,
       "sellable": true,
       "giftable": false,
-      "tier": 4
+      "tier": 4,
+      "roomScope": [
+        "bar",
+        "restaurant",
+        "lobby",
+        "presidential",
+        "luxurySuite"
+      ]
     },
     {
       "id": "luxury_aquarium",
@@ -886,7 +1127,15 @@
       "unlockLevel": 45,
       "sellable": true,
       "giftable": false,
-      "tier": 5
+      "tier": 5,
+      "roomScope": [
+        "lobby",
+        "restaurant",
+        "bar",
+        "presidential",
+        "luxurySuite",
+        "spa"
+      ]
     },
     {
       "id": "wallpaper_animatedAurora",
@@ -902,7 +1151,10 @@
       "unlockLevel": 15,
       "sellable": false,
       "giftable": false,
-      "tier": 99
+      "tier": 99,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "lighting_hologram",
@@ -918,7 +1170,10 @@
       "unlockLevel": 15,
       "sellable": false,
       "giftable": false,
-      "tier": 99
+      "tier": 99,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "luxury_goldStatue",
@@ -934,7 +1189,14 @@
       "unlockLevel": 15,
       "sellable": false,
       "giftable": false,
-      "tier": 99
+      "tier": 99,
+      "roomScope": [
+        "lobby",
+        "presidential",
+        "luxurySuite",
+        "restaurant",
+        "spa"
+      ]
     },
     {
       "id": "wallpaper_handpaintedsilk",
@@ -950,7 +1212,10 @@
       },
       "unlockLevel": 38,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "wallpaper_gildedpanelling",
@@ -966,7 +1231,10 @@
       },
       "unlockLevel": 46,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "flooring_inlaidparquet",
@@ -982,7 +1250,10 @@
       },
       "unlockLevel": 42,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "flooring_onyxfloor",
@@ -998,7 +1269,10 @@
       },
       "unlockLevel": 50,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "bed_fourposter",
@@ -1014,7 +1288,13 @@
       },
       "unlockLevel": 38,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "executive",
+        "honeymoon",
+        "luxurySuite",
+        "presidential"
+      ]
     },
     {
       "id": "bed_emperorbed",
@@ -1030,7 +1310,12 @@
       },
       "unlockLevel": 46,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "honeymoon",
+        "luxurySuite",
+        "presidential"
+      ]
     },
     {
       "id": "seating_velvetchaise",
@@ -1046,7 +1331,13 @@
       },
       "unlockLevel": 42,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "honeymoon",
+        "luxurySuite",
+        "presidential",
+        "spa"
+      ]
     },
     {
       "id": "seating_salonset",
@@ -1062,7 +1353,13 @@
       },
       "unlockLevel": 50,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "luxurySuite",
+        "presidential",
+        "lobby",
+        "restaurant"
+      ]
     },
     {
       "id": "table_marbleconsole",
@@ -1078,7 +1375,13 @@
       },
       "unlockLevel": 38,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "luxurySuite",
+        "presidential",
+        "honeymoon",
+        "lobby"
+      ]
     },
     {
       "id": "table_writingdesk",
@@ -1094,7 +1397,13 @@
       },
       "unlockLevel": 46,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "executive",
+        "business",
+        "presidential",
+        "luxurySuite"
+      ]
     },
     {
       "id": "lighting_crystalchandelier",
@@ -1110,7 +1419,10 @@
       },
       "unlockLevel": 42,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "lighting_constellationlights",
@@ -1126,7 +1438,10 @@
       },
       "unlockLevel": 50,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "wallArt_commissionedportrait",
@@ -1142,7 +1457,10 @@
       },
       "unlockLevel": 38,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "wallArt_originallandscape",
@@ -1158,7 +1476,10 @@
       },
       "unlockLevel": 46,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "plant_indoorolivetree",
@@ -1174,7 +1495,10 @@
       },
       "unlockLevel": 42,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "plant_wintergarden",
@@ -1190,7 +1514,10 @@
       },
       "unlockLevel": 50,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "rug_silkrunner",
@@ -1206,7 +1533,10 @@
       },
       "unlockLevel": 38,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "rug_antiquecarpet",
@@ -1222,7 +1552,10 @@
       },
       "unlockLevel": 46,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "any"
+      ]
     },
     {
       "id": "luxury_privatebar",
@@ -1238,7 +1571,12 @@
       },
       "unlockLevel": 42,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "presidential",
+        "luxurySuite",
+        "bar"
+      ]
     },
     {
       "id": "luxury_gallerypiece",
@@ -1254,7 +1592,13 @@
       },
       "unlockLevel": 50,
       "sellable": true,
-      "giftable": false
+      "giftable": false,
+      "roomScope": [
+        "presidential",
+        "luxurySuite",
+        "lobby",
+        "restaurant"
+      ]
     },
     {
       "id": "appliance_ironingBoard",
@@ -1270,7 +1614,11 @@
       "unlockLevel": 4,
       "sellable": true,
       "giftable": true,
-      "tier": 1
+      "tier": 1,
+      "roomScope": [
+        "laundry",
+        "housekeeping"
+      ]
     },
     {
       "id": "appliance_washer",
@@ -1286,7 +1634,10 @@
       "unlockLevel": 8,
       "sellable": true,
       "giftable": true,
-      "tier": 2
+      "tier": 2,
+      "roomScope": [
+        "laundry"
+      ]
     },
     {
       "id": "appliance_treadmill",
@@ -1302,7 +1653,10 @@
       "unlockLevel": 11,
       "sellable": true,
       "giftable": true,
-      "tier": 2
+      "tier": 2,
+      "roomScope": [
+        "gym"
+      ]
     },
     {
       "id": "appliance_dryer",
@@ -1318,7 +1672,10 @@
       "unlockLevel": 13,
       "sellable": true,
       "giftable": true,
-      "tier": 2
+      "tier": 2,
+      "roomScope": [
+        "laundry"
+      ]
     },
     {
       "id": "appliance_weightRack",
@@ -1334,7 +1691,10 @@
       "unlockLevel": 16,
       "sellable": true,
       "giftable": true,
-      "tier": 3
+      "tier": 3,
+      "roomScope": [
+        "gym"
+      ]
     },
     {
       "id": "appliance_espressoBar",
@@ -1350,7 +1710,12 @@
       "unlockLevel": 20,
       "sellable": true,
       "giftable": true,
-      "tier": 3
+      "tier": 3,
+      "roomScope": [
+        "cafe",
+        "staffRoom",
+        "lobby"
+      ]
     },
     {
       "id": "appliance_prepStation",
@@ -1366,7 +1731,11 @@
       "unlockLevel": 24,
       "sellable": true,
       "giftable": false,
-      "tier": 4
+      "tier": 4,
+      "roomScope": [
+        "restaurant",
+        "cafe"
+      ]
     },
     {
       "id": "appliance_arcadeCabinet",
@@ -1382,7 +1751,10 @@
       "unlockLevel": 28,
       "sellable": true,
       "giftable": false,
-      "tier": 4
+      "tier": 4,
+      "roomScope": [
+        "arcade"
+      ]
     },
     {
       "id": "storage_linenShelf",
@@ -1398,7 +1770,11 @@
       "unlockLevel": 2,
       "sellable": true,
       "giftable": true,
-      "tier": 1
+      "tier": 1,
+      "roomScope": [
+        "housekeeping",
+        "laundry"
+      ]
     },
     {
       "id": "storage_supplyCart",
@@ -1414,7 +1790,11 @@
       "unlockLevel": 5,
       "sellable": true,
       "giftable": true,
-      "tier": 1
+      "tier": 1,
+      "roomScope": [
+        "housekeeping",
+        "maintenance"
+      ]
     },
     {
       "id": "storage_luggageRack",
@@ -1430,7 +1810,11 @@
       "unlockLevel": 9,
       "sellable": true,
       "giftable": true,
-      "tier": 2
+      "tier": 2,
+      "roomScope": [
+        "lobby",
+        "business"
+      ]
     },
     {
       "id": "storage_lockers",
@@ -1446,7 +1830,13 @@
       "unlockLevel": 10,
       "sellable": true,
       "giftable": true,
-      "tier": 2
+      "tier": 2,
+      "roomScope": [
+        "staffRoom",
+        "gym",
+        "business",
+        "pool"
+      ]
     },
     {
       "id": "storage_toolRack",
@@ -1462,7 +1852,10 @@
       "unlockLevel": 14,
       "sellable": true,
       "giftable": true,
-      "tier": 2
+      "tier": 2,
+      "roomScope": [
+        "maintenance"
+      ]
     },
     {
       "id": "storage_miniFridge",
@@ -1478,7 +1871,13 @@
       "unlockLevel": 18,
       "sellable": true,
       "giftable": true,
-      "tier": 3
+      "tier": 3,
+      "roomScope": [
+        "staffRoom",
+        "bar",
+        "cafe",
+        "business"
+      ]
     },
     {
       "id": "storage_safeCabinet",
@@ -1494,7 +1893,12 @@
       "unlockLevel": 26,
       "sellable": true,
       "giftable": false,
-      "tier": 4
+      "tier": 4,
+      "roomScope": [
+        "business",
+        "maintenance",
+        "lobby"
+      ]
     },
     {
       "id": "storage_displayCase",
@@ -1510,8 +1914,858 @@
       "unlockLevel": 34,
       "sellable": true,
       "giftable": false,
-      "tier": 5
+      "tier": 5,
+      "roomScope": [
+        "lobby",
+        "arcade",
+        "restaurant",
+        "cafe"
+      ]
+    },
+    {
+      "id": "seating_lobbyBench",
+      "category": "seating",
+      "slotType": "floor",
+      "nameKey": "decor.seating_lobbyBench.name",
+      "assetKey": "decor.seating.lobbyBench",
+      "decorPoints": 45,
+      "cost": {
+        "currency": "coins",
+        "amount": 350
+      },
+      "unlockLevel": 1,
+      "sellable": true,
+      "giftable": true,
+      "tier": 1,
+      "roomScope": [
+        "lobby"
+      ]
+    },
+    {
+      "id": "rug_entranceRunner",
+      "category": "rug",
+      "slotType": "floor",
+      "nameKey": "decor.rug_entranceRunner.name",
+      "assetKey": "decor.rug.entranceRunner",
+      "decorPoints": 70,
+      "cost": {
+        "currency": "coins",
+        "amount": 800
+      },
+      "unlockLevel": 5,
+      "sellable": true,
+      "giftable": true,
+      "tier": 2,
+      "roomScope": [
+        "lobby",
+        "business"
+      ]
+    },
+    {
+      "id": "plant_lobbyFicus",
+      "category": "plant",
+      "slotType": "floor",
+      "nameKey": "decor.plant_lobbyFicus.name",
+      "assetKey": "decor.plant.lobbyFicus",
+      "decorPoints": 85,
+      "cost": {
+        "currency": "coins",
+        "amount": 1100
+      },
+      "unlockLevel": 6,
+      "sellable": true,
+      "giftable": false,
+      "tier": 2,
+      "roomScope": [
+        "lobby",
+        "business"
+      ]
+    },
+    {
+      "id": "wallArt_cityMap",
+      "category": "wallArt",
+      "slotType": "wall",
+      "nameKey": "decor.wallArt_cityMap.name",
+      "assetKey": "decor.wallArt.cityMap",
+      "decorPoints": 80,
+      "cost": {
+        "currency": "coins",
+        "amount": 900
+      },
+      "unlockLevel": 6,
+      "sellable": true,
+      "giftable": true,
+      "tier": 2,
+      "roomScope": [
+        "lobby",
+        "business"
+      ]
+    },
+    {
+      "id": "lighting_lobbyLantern",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_lobbyLantern.name",
+      "assetKey": "decor.lighting.lobbyLantern",
+      "decorPoints": 150,
+      "cost": {
+        "currency": "coins",
+        "amount": 4000
+      },
+      "unlockLevel": 12,
+      "sellable": true,
+      "giftable": false,
+      "tier": 3,
+      "roomScope": [
+        "lobby",
+        "restaurant"
+      ]
+    },
+    {
+      "id": "storage_laundryBasket",
+      "category": "storage",
+      "slotType": "equipment",
+      "nameKey": "decor.storage_laundryBasket.name",
+      "assetKey": "decor.storage.laundryBasket",
+      "decorPoints": 40,
+      "cost": {
+        "currency": "coins",
+        "amount": 600
+      },
+      "unlockLevel": 4,
+      "sellable": true,
+      "giftable": true,
+      "tier": 1,
+      "roomScope": [
+        "laundry",
+        "housekeeping"
+      ]
+    },
+    {
+      "id": "appliance_vacuum",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_vacuum.name",
+      "assetKey": "decor.appliance.vacuum",
+      "decorPoints": 55,
+      "cost": {
+        "currency": "coins",
+        "amount": 1000
+      },
+      "unlockLevel": 6,
+      "sellable": true,
+      "giftable": false,
+      "tier": 2,
+      "roomScope": [
+        "housekeeping"
+      ]
+    },
+    {
+      "id": "storage_amenityShelf",
+      "category": "storage",
+      "slotType": "equipment",
+      "nameKey": "decor.storage_amenityShelf.name",
+      "assetKey": "decor.storage.amenityShelf",
+      "decorPoints": 70,
+      "cost": {
+        "currency": "coins",
+        "amount": 1600
+      },
+      "unlockLevel": 9,
+      "sellable": true,
+      "giftable": false,
+      "tier": 2,
+      "roomScope": [
+        "housekeeping",
+        "laundry"
+      ]
+    },
+    {
+      "id": "appliance_foldingTable",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_foldingTable.name",
+      "assetKey": "decor.appliance.foldingTable",
+      "decorPoints": 70,
+      "cost": {
+        "currency": "coins",
+        "amount": 2000
+      },
+      "unlockLevel": 10,
+      "sellable": true,
+      "giftable": false,
+      "tier": 2,
+      "roomScope": [
+        "laundry",
+        "housekeeping"
+      ]
+    },
+    {
+      "id": "storage_stepLadder",
+      "category": "storage",
+      "slotType": "equipment",
+      "nameKey": "decor.storage_stepLadder.name",
+      "assetKey": "decor.storage.stepLadder",
+      "decorPoints": 45,
+      "cost": {
+        "currency": "coins",
+        "amount": 800
+      },
+      "unlockLevel": 6,
+      "sellable": true,
+      "giftable": true,
+      "tier": 1,
+      "roomScope": [
+        "maintenance",
+        "housekeeping"
+      ]
+    },
+    {
+      "id": "appliance_coffeeMachine",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_coffeeMachine.name",
+      "assetKey": "decor.appliance.coffeeMachine",
+      "decorPoints": 65,
+      "cost": {
+        "currency": "coins",
+        "amount": 1500
+      },
+      "unlockLevel": 9,
+      "sellable": true,
+      "giftable": false,
+      "tier": 2,
+      "roomScope": [
+        "staffRoom",
+        "business",
+        "lobby"
+      ]
+    },
+    {
+      "id": "storage_partsBin",
+      "category": "storage",
+      "slotType": "equipment",
+      "nameKey": "decor.storage_partsBin.name",
+      "assetKey": "decor.storage.partsBin",
+      "decorPoints": 75,
+      "cost": {
+        "currency": "coins",
+        "amount": 2200
+      },
+      "unlockLevel": 12,
+      "sellable": true,
+      "giftable": false,
+      "tier": 2,
+      "roomScope": [
+        "maintenance"
+      ]
+    },
+    {
+      "id": "seating_staffSofa",
+      "category": "seating",
+      "slotType": "floor",
+      "nameKey": "decor.seating_staffSofa.name",
+      "assetKey": "decor.seating.staffSofa",
+      "decorPoints": 130,
+      "cost": {
+        "currency": "coins",
+        "amount": 3400
+      },
+      "unlockLevel": 14,
+      "sellable": true,
+      "giftable": false,
+      "tier": 3,
+      "roomScope": [
+        "staffRoom"
+      ]
+    },
+    {
+      "id": "appliance_printer",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_printer.name",
+      "assetKey": "decor.appliance.printer",
+      "decorPoints": 80,
+      "cost": {
+        "currency": "coins",
+        "amount": 2400
+      },
+      "unlockLevel": 12,
+      "sellable": true,
+      "giftable": false,
+      "tier": 2,
+      "roomScope": [
+        "business"
+      ]
+    },
+    {
+      "id": "wallArt_projectorScreen",
+      "category": "wallArt",
+      "slotType": "wall",
+      "nameKey": "decor.wallArt_projectorScreen.name",
+      "assetKey": "decor.wallArt.projectorScreen",
+      "decorPoints": 170,
+      "cost": {
+        "currency": "coins",
+        "amount": 5000
+      },
+      "unlockLevel": 16,
+      "sellable": true,
+      "giftable": false,
+      "tier": 3,
+      "roomScope": [
+        "business",
+        "cinema"
+      ]
+    },
+    {
+      "id": "table_meetingTable",
+      "category": "table",
+      "slotType": "floor",
+      "nameKey": "decor.table_meetingTable.name",
+      "assetKey": "decor.table.meetingTable",
+      "decorPoints": 200,
+      "cost": {
+        "currency": "coins",
+        "amount": 6800
+      },
+      "unlockLevel": 20,
+      "sellable": true,
+      "giftable": false,
+      "tier": 4,
+      "roomScope": [
+        "business",
+        "executive"
+      ]
+    },
+    {
+      "id": "rug_yogaMat",
+      "category": "rug",
+      "slotType": "floor",
+      "nameKey": "decor.rug_yogaMat.name",
+      "assetKey": "decor.rug.yogaMat",
+      "decorPoints": 45,
+      "cost": {
+        "currency": "coins",
+        "amount": 500
+      },
+      "unlockLevel": 5,
+      "sellable": true,
+      "giftable": true,
+      "tier": 1,
+      "roomScope": [
+        "gym",
+        "spa"
+      ]
+    },
+    {
+      "id": "appliance_spinBike",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_spinBike.name",
+      "assetKey": "decor.appliance.spinBike",
+      "decorPoints": 80,
+      "cost": {
+        "currency": "coins",
+        "amount": 2600
+      },
+      "unlockLevel": 9,
+      "sellable": true,
+      "giftable": false,
+      "tier": 2,
+      "roomScope": [
+        "gym"
+      ]
+    },
+    {
+      "id": "storage_dumbbellRack",
+      "category": "storage",
+      "slotType": "equipment",
+      "nameKey": "decor.storage_dumbbellRack.name",
+      "assetKey": "decor.storage.dumbbellRack",
+      "decorPoints": 85,
+      "cost": {
+        "currency": "coins",
+        "amount": 3000
+      },
+      "unlockLevel": 11,
+      "sellable": true,
+      "giftable": false,
+      "tier": 2,
+      "roomScope": [
+        "gym"
+      ]
+    },
+    {
+      "id": "appliance_rowingMachine",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_rowingMachine.name",
+      "assetKey": "decor.appliance.rowingMachine",
+      "decorPoints": 120,
+      "cost": {
+        "currency": "coins",
+        "amount": 4600
+      },
+      "unlockLevel": 14,
+      "sellable": true,
+      "giftable": false,
+      "tier": 3,
+      "roomScope": [
+        "gym"
+      ]
+    },
+    {
+      "id": "appliance_punchBag",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_punchBag.name",
+      "assetKey": "decor.appliance.punchBag",
+      "decorPoints": 145,
+      "cost": {
+        "currency": "coins",
+        "amount": 6200
+      },
+      "unlockLevel": 18,
+      "sellable": true,
+      "giftable": false,
+      "tier": 3,
+      "roomScope": [
+        "gym"
+      ]
+    },
+    {
+      "id": "table_diningTable",
+      "category": "table",
+      "slotType": "floor",
+      "nameKey": "decor.table_diningTable.name",
+      "assetKey": "decor.table.diningTable",
+      "decorPoints": 145,
+      "cost": {
+        "currency": "coins",
+        "amount": 4200
+      },
+      "unlockLevel": 12,
+      "sellable": true,
+      "giftable": false,
+      "tier": 3,
+      "roomScope": [
+        "restaurant"
+      ]
+    },
+    {
+      "id": "storage_wineRack",
+      "category": "storage",
+      "slotType": "equipment",
+      "nameKey": "decor.storage_wineRack.name",
+      "assetKey": "decor.storage.wineRack",
+      "decorPoints": 165,
+      "cost": {
+        "currency": "coins",
+        "amount": 5400
+      },
+      "unlockLevel": 16,
+      "sellable": true,
+      "giftable": false,
+      "tier": 3,
+      "roomScope": [
+        "restaurant",
+        "bar"
+      ]
+    },
+    {
+      "id": "seating_cafeChair",
+      "category": "seating",
+      "slotType": "floor",
+      "nameKey": "decor.seating_cafeChair.name",
+      "assetKey": "decor.seating.cafeChair",
+      "decorPoints": 95,
+      "cost": {
+        "currency": "coins",
+        "amount": 2200
+      },
+      "unlockLevel": 20,
+      "sellable": true,
+      "giftable": false,
+      "tier": 2,
+      "roomScope": [
+        "cafe",
+        "restaurant"
+      ]
+    },
+    {
+      "id": "table_cafeTable",
+      "category": "table",
+      "slotType": "floor",
+      "nameKey": "decor.table_cafeTable.name",
+      "assetKey": "decor.table.cafeTable",
+      "decorPoints": 110,
+      "cost": {
+        "currency": "coins",
+        "amount": 2800
+      },
+      "unlockLevel": 20,
+      "sellable": true,
+      "giftable": false,
+      "tier": 2,
+      "roomScope": [
+        "cafe",
+        "restaurant"
+      ]
+    },
+    {
+      "id": "appliance_cakeDisplay",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_cakeDisplay.name",
+      "assetKey": "decor.appliance.cakeDisplay",
+      "decorPoints": 160,
+      "cost": {
+        "currency": "coins",
+        "amount": 7200
+      },
+      "unlockLevel": 22,
+      "sellable": true,
+      "giftable": false,
+      "tier": 3,
+      "roomScope": [
+        "cafe"
+      ]
+    },
+    {
+      "id": "lighting_candelabra",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_candelabra.name",
+      "assetKey": "decor.lighting.candelabra",
+      "decorPoints": 260,
+      "cost": {
+        "currency": "coins",
+        "amount": 12000
+      },
+      "unlockLevel": 22,
+      "sellable": true,
+      "giftable": false,
+      "tier": 4,
+      "roomScope": [
+        "restaurant",
+        "presidential",
+        "luxurySuite"
+      ]
+    },
+    {
+      "id": "seating_barStool",
+      "category": "seating",
+      "slotType": "floor",
+      "nameKey": "decor.seating_barStool.name",
+      "assetKey": "decor.seating.barStool",
+      "decorPoints": 100,
+      "cost": {
+        "currency": "coins",
+        "amount": 2400
+      },
+      "unlockLevel": 14,
+      "sellable": true,
+      "giftable": false,
+      "tier": 2,
+      "roomScope": [
+        "bar",
+        "cafe"
+      ]
+    },
+    {
+      "id": "appliance_beerTap",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_beerTap.name",
+      "assetKey": "decor.appliance.beerTap",
+      "decorPoints": 175,
+      "cost": {
+        "currency": "coins",
+        "amount": 6000
+      },
+      "unlockLevel": 18,
+      "sellable": true,
+      "giftable": false,
+      "tier": 3,
+      "roomScope": [
+        "bar"
+      ]
+    },
+    {
+      "id": "luxury_cocktailCart",
+      "category": "luxury",
+      "slotType": "floor",
+      "nameKey": "decor.luxury_cocktailCart.name",
+      "assetKey": "decor.luxury.cocktailCart",
+      "decorPoints": 300,
+      "cost": {
+        "currency": "coins",
+        "amount": 17000
+      },
+      "unlockLevel": 26,
+      "sellable": true,
+      "giftable": false,
+      "tier": 4,
+      "roomScope": [
+        "bar",
+        "restaurant",
+        "spa"
+      ]
+    },
+    {
+      "id": "seating_cinemaSeats",
+      "category": "seating",
+      "slotType": "floor",
+      "nameKey": "decor.seating_cinemaSeats.name",
+      "assetKey": "decor.seating.cinemaSeats",
+      "decorPoints": 190,
+      "cost": {
+        "currency": "coins",
+        "amount": 6600
+      },
+      "unlockLevel": 17,
+      "sellable": true,
+      "giftable": false,
+      "tier": 3,
+      "roomScope": [
+        "cinema"
+      ]
+    },
+    {
+      "id": "appliance_popcornCart",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_popcornCart.name",
+      "assetKey": "decor.appliance.popcornCart",
+      "decorPoints": 200,
+      "cost": {
+        "currency": "coins",
+        "amount": 8000
+      },
+      "unlockLevel": 20,
+      "sellable": true,
+      "giftable": false,
+      "tier": 3,
+      "roomScope": [
+        "cinema",
+        "arcade"
+      ]
+    },
+    {
+      "id": "storage_towelStack",
+      "category": "storage",
+      "slotType": "equipment",
+      "nameKey": "decor.storage_towelStack.name",
+      "assetKey": "decor.storage.towelStack",
+      "decorPoints": 120,
+      "cost": {
+        "currency": "coins",
+        "amount": 4000
+      },
+      "unlockLevel": 24,
+      "sellable": true,
+      "giftable": false,
+      "tier": 2,
+      "roomScope": [
+        "pool",
+        "spa",
+        "gym"
+      ]
+    },
+    {
+      "id": "luxury_parasol",
+      "category": "luxury",
+      "slotType": "floor",
+      "nameKey": "decor.luxury_parasol.name",
+      "assetKey": "decor.luxury.parasol",
+      "decorPoints": 180,
+      "cost": {
+        "currency": "coins",
+        "amount": 7000
+      },
+      "unlockLevel": 24,
+      "sellable": true,
+      "giftable": false,
+      "tier": 2,
+      "roomScope": [
+        "pool"
+      ]
+    },
+    {
+      "id": "seating_sunLounger",
+      "category": "seating",
+      "slotType": "floor",
+      "nameKey": "decor.seating_sunLounger.name",
+      "assetKey": "decor.seating.sunLounger",
+      "decorPoints": 200,
+      "cost": {
+        "currency": "coins",
+        "amount": 8500
+      },
+      "unlockLevel": 24,
+      "sellable": true,
+      "giftable": false,
+      "tier": 3,
+      "roomScope": [
+        "pool"
+      ]
+    },
+    {
+      "id": "plant_poolPalm",
+      "category": "plant",
+      "slotType": "floor",
+      "nameKey": "decor.plant_poolPalm.name",
+      "assetKey": "decor.plant.poolPalm",
+      "decorPoints": 210,
+      "cost": {
+        "currency": "coins",
+        "amount": 9000
+      },
+      "unlockLevel": 26,
+      "sellable": true,
+      "giftable": false,
+      "tier": 3,
+      "roomScope": [
+        "pool",
+        "spa"
+      ]
+    },
+    {
+      "id": "luxury_divingBoard",
+      "category": "luxury",
+      "slotType": "floor",
+      "nameKey": "decor.luxury_divingBoard.name",
+      "assetKey": "decor.luxury.divingBoard",
+      "decorPoints": 320,
+      "cost": {
+        "currency": "coins",
+        "amount": 22000
+      },
+      "unlockLevel": 30,
+      "sellable": true,
+      "giftable": false,
+      "tier": 4,
+      "roomScope": [
+        "pool"
+      ]
+    },
+    {
+      "id": "appliance_pinballTable",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_pinballTable.name",
+      "assetKey": "decor.appliance.pinballTable",
+      "decorPoints": 230,
+      "cost": {
+        "currency": "coins",
+        "amount": 15000
+      },
+      "unlockLevel": 28,
+      "sellable": true,
+      "giftable": false,
+      "tier": 3,
+      "roomScope": [
+        "arcade"
+      ]
+    },
+    {
+      "id": "appliance_clawMachine",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_clawMachine.name",
+      "assetKey": "decor.appliance.clawMachine",
+      "decorPoints": 280,
+      "cost": {
+        "currency": "coins",
+        "amount": 21000
+      },
+      "unlockLevel": 32,
+      "sellable": true,
+      "giftable": false,
+      "tier": 4,
+      "roomScope": [
+        "arcade"
+      ]
+    },
+    {
+      "id": "appliance_airHockey",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_airHockey.name",
+      "assetKey": "decor.appliance.airHockey",
+      "decorPoints": 340,
+      "cost": {
+        "currency": "coins",
+        "amount": 30000
+      },
+      "unlockLevel": 36,
+      "sellable": true,
+      "giftable": false,
+      "tier": 4,
+      "roomScope": [
+        "arcade"
+      ]
+    },
+    {
+      "id": "seating_loungeBooth",
+      "category": "seating",
+      "slotType": "floor",
+      "nameKey": "decor.seating_loungeBooth.name",
+      "assetKey": "decor.seating.loungeBooth",
+      "decorPoints": 280,
+      "cost": {
+        "currency": "coins",
+        "amount": 16000
+      },
+      "unlockLevel": 30,
+      "sellable": true,
+      "giftable": false,
+      "tier": 3,
+      "roomScope": [
+        "spa",
+        "bar"
+      ]
+    },
+    {
+      "id": "appliance_djBooth",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_djBooth.name",
+      "assetKey": "decor.appliance.djBooth",
+      "decorPoints": 330,
+      "cost": {
+        "currency": "coins",
+        "amount": 24000
+      },
+      "unlockLevel": 30,
+      "sellable": true,
+      "giftable": false,
+      "tier": 4,
+      "roomScope": [
+        "spa"
+      ]
+    },
+    {
+      "id": "lighting_laserRig",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_laserRig.name",
+      "assetKey": "decor.lighting.laserRig",
+      "decorPoints": 360,
+      "cost": {
+        "currency": "coins",
+        "amount": 27000
+      },
+      "unlockLevel": 32,
+      "sellable": true,
+      "giftable": false,
+      "tier": 4,
+      "roomScope": [
+        "spa",
+        "arcade"
+      ]
     }
   ],
-  "note": " Two tiers were added to every category reaching levels 38 and 50: the catalogue stopped around level 25 while the progression curve now runs to 60, leaving a player past their first month with one item left to want in the whole game."
+  "note": " Two tiers were added to every category reaching levels 38 and 50: the catalogue stopped around level 25 while the progression curve now runs to 60, leaving a player past their first month with one item left to want in the whole game.  Room scope (HC-P1-S5): every piece now names the rooms it belongs in, and 43 pieces were added for the rooms that had nothing of their own — the gym had a treadmill and a weight rack against eight slots, the pool and the cinema had nothing at all, and the back of house shared one cleaning trolley."
 }

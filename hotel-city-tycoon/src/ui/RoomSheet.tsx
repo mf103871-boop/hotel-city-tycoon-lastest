@@ -87,7 +87,7 @@ export function RoomSheet({
             onPick={() => {
               // A slot this kind of piece is actually allowed in, not just the
               // first empty index.
-              const slot = slotsFor(state, roomId, item.slotType)[0];
+              const slot = slotsFor(state, roomId, item.slotType, item.defId)[0];
               if (slot !== undefined) {
                 dispatch({ type: 'PLACE_DECOR', roomId, defId: item.defId, slot });
               }

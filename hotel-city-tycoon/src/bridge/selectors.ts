@@ -14,7 +14,7 @@ import type { RoomDef, SimData } from '../core/data-source.ts';
 import { decorFill } from '../core/systems/decor.ts';
 import { tierFor } from '../core/systems/stars.ts';
 import { owned as ownedCount, sellValue } from '../core/systems/inventory.ts';
-import { slotAllowed } from '../core/systems/quality.ts';
+import { slotAllowed, decorFitsRoom } from '../core/systems/quality.ts';
 import { slotBoxPx } from '../core/systems/roomAnchors.ts';
 import { plotBounds, findFreeSpot, placementProblemAt } from '../core/state/grid.ts';
 import { tierOwned, nextTier, totalInvested } from '../core/systems/upgrades.ts';
@@ -405,6 +405,11 @@ export function decorCatalog(state: GameState, roomId: string): DecorOption[] {
 
   return D().decor
     .filter((item) => item.unlockLevel <= state.player.level + 10)
+    // The room's own catalogue. Every bed used to be listed for the gym,
+    // greyed out with "No room on your plot" — a reason that was not the
+    // reason, on eight rows the player could never buy. A room now shows what
+    // belongs in it and nothing else.
+    .filter((item) => slotAllowed(D(), def, item.id) && decorFitsRoom(D(), def, item.id))
     .map((item) => {
       /*
        * Ownership is checked before money.
@@ -421,7 +426,7 @@ export function decorCatalog(state: GameState, roomId: string): DecorOption[] {
       else if (held === 0 && (item.cost.currency === 'coins'
         ? state.player.coins < item.cost.amount
         : state.player.gems < item.cost.amount)) blocker = 'cannotAfford';
-      else if (slotsFor(state, roomId, item.slotType).length === 0) blocker = 'noSpace';
+      else if (slotsFor(state, roomId, item.slotType, item.id).length === 0) blocker = 'noSpace';
       return {
         defId: item.id,
         nameKey: item.nameKey,
@@ -446,12 +451,19 @@ export function decorCatalog(state: GameState, roomId: string): DecorOption[] {
  * the compatibility rule then refused, so the row looked available and the
  * command said no. The catalog now asks the same question the core asks.
  */
-export function slotsFor(state: GameState, roomId: string, slotType: string): number[] {
+export function slotsFor(state: GameState, roomId: string, slotType: string,
+                         defId?: string): number[] {
   const room = state.hotel.rooms.find((r) => r.id === roomId);
   const def = room ? roomDefOf(room.defId) : undefined;
   if (!room || !def) return [];
-  const item = D().decor.find((d) => d.slotType === slotType);
-  if (item && !slotAllowed(D(), def, item.id)) return [];
+  // The piece the player actually tapped when the caller knows it. Asking
+  // about the first catalogue entry of the same slotType was right only while
+  // every rule was a rule about slot types; a room scope is per item, so the
+  // proxy answered for the wrong piece.
+  const item = defId
+    ? D().decor.find((d) => d.id === defId)
+    : D().decor.find((d) => d.slotType === slotType);
+  if (item && !(slotAllowed(D(), def, item.id) && decorFitsRoom(D(), def, item.id))) return [];
   return freeSlots(state, roomId);
 }
 

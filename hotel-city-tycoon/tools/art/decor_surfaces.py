@@ -50,7 +50,12 @@ PANEL_X, PANEL_Y, PANEL_W, PANEL_H = 5.0, 4.0, 86.0, 64.0
 #: The floor band, inside a 72x72 canvas — wide and short, centred on the
 #: canvas because the renderer hangs floor pieces from their middle.
 BAND_X, BAND_W = 2.0, 68.0
-BAND_CY = 36.0
+# A floor covering is held by the BOTTOM of its canvas (decorArt.ts anchors
+# flooring and rug at (0.5, 1)), so the strip has to be drawn down there.
+# Centred at 36 it looked right on a sprite sheet and floated ten pixels above
+# the carpet in the game — the one place the preview and the renderer had
+# always disagreed.
+BAND_CY = 62.0
 
 #: Lighting hangs in a 72x48 canvas from the top edge.
 LIGHT_CX = 36.0
