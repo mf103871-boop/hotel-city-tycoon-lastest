@@ -55,15 +55,15 @@ AMBER = mix(P["gold"], P["coral"], 0.28)
 
 
 def _squiggle(c: Canvas, x: float, y: float, colour, flip: float = 1.0,
-              lw: float = 1.3) -> None:
+              lw: float = 1.2) -> None:
     """
-    One confetti tilde: a five-pixel zigzag.
+    One confetti tilde: a four-pixel zigzag.
 
     Shorter than that it is a dot and longer it is a worm; at 55% this is a
     bright fleck with a kink in it, which is what blacklight carpet has.
     """
-    c.line([(x, y + 1.2 * flip), (x + 1.7, y - 1.2 * flip),
-            (x + 3.4, y + 1.2 * flip), (x + 5.1, y - 1.2 * flip)], colour, lw)
+    c.line([(x, y + 1.0 * flip), (x + 1.5, y - 1.0 * flip),
+            (x + 3.0, y + 1.0 * flip), (x + 4.5, y - 1.0 * flip)], colour, lw)
 
 
 def _planet(c: Canvas, cx: float, cy: float, r: float, body, ring) -> None:
@@ -86,25 +86,29 @@ def _pin_star(c: Canvas, cx: float, cy: float, r: float = 1.3) -> None:
 
 
 def _chevron(c: Canvas, cx: float, cy: float, dx: float, dy: float, colour,
-             size: float = 4.6, thick: float = 2.6) -> None:
+             half_w: float = 5.6, depth: float = 7.4, thick: float = 3.2) -> None:
     """
     A chunky chevron arrow pointing along (dx, dy), one of the four unit axes.
 
-    Six points: the outer V and the inner V a stroke-width behind it. Filled
-    rather than stroked so it stays one bright wedge at 55% instead of two
-    thin legs that fall apart.
+    Six points: a tip, two fat wings and a notch cut up into the back. Filled
+    rather than stroked, and thick to more than a third of its own depth, so
+    it stays one bright wedge at 55% instead of two thin legs that fall apart.
     """
-    # Axis vectors: `a` points the way the arrow points, `b` is across it.
+    # `a` points the way the arrow points, `b` runs across it.
     ax, ay = dx, dy
     bx, by = -dy, dx
-    tip = (cx + ax * size, cy + ay * size)
+
+    def at(along: float, across: float) -> tuple[float, float]:
+        return (cx + ax * along + bx * across, cy + ay * along + by * across)
+
+    front, back = depth / 2, -depth / 2
     pts = [
-        tip,
-        (cx - ax * size + bx * size, cy - ay * size + by * size),
-        (cx - ax * size + bx * (size - thick), cy - ay * size + by * (size - thick)),
-        (cx + ax * (size - thick * 1.1), cy + ay * (size - thick * 1.1)),
-        (cx - ax * size - bx * (size - thick), cy - ay * size - by * (size - thick)),
-        (cx - ax * size - bx * size, cy - ay * size - by * size),
+        at(front, 0.0),
+        at(back, half_w),
+        at(back, half_w - thick),
+        at(front - thick * 1.15, 0.0),
+        at(back, -(half_w - thick)),
+        at(back, -half_w),
     ]
     c.poly(pts, fill=colour, ink=P["ink"], lw=LW_FACE)
 
@@ -168,13 +172,16 @@ def flooring_galaxyCarpet(c: Canvas) -> None:
     neon = (MAGENTA, CYAN, YELLOW)
     # Confetti: three rows, staggered, colour cycling so neighbours differ.
     for row in range(3):
-        ry = y + 5.0 + row * 5.6
-        for i in range(9):
-            fx = x + 4.0 + i * 7.2 + ((i * 5 + row * 2) % 4) * 1.1
-            if fx > x + w - 9.0 or ry > bottom - 3.0:
+        ry = y + 5.0 + row * 5.8
+        for i in range(8):
+            fx = x + 4.0 + i * 8.2 + ((i * 5 + row * 2) % 4) * 1.1
+            if fx > x + w - 8.0 or ry > bottom - 3.0:
                 continue
-            # Leave room where the planets go.
-            if (row == 1 and 2 <= i <= 3) or (row == 0 and 6 <= i <= 7):
+            # Leave room where the planets go, and drop every fifth fleck so
+            # the rows do not read as three ruled lines of pattern.
+            if (row == 1 and 2 <= i <= 3) or (row == 0 and 5 <= i <= 6):
+                continue
+            if (i * 2 + row * 3) % 5 == 0:
                 continue
             _squiggle(c, fx, ry, neon[(i + row) % 3], flip=1.0 if (i + row) % 2 else -1.0)
     # Pin-stars between the confetti: white, tiny, few.
@@ -207,14 +214,16 @@ def rug_danceGameMat(c: Canvas) -> None:
     silver = tint(P["metal"], 0.30)
     c.rrect(x + 2.2, y + 2.2, w - 4.4, h - 4.4, r=1.8, ink=silver, lw=1.6)
     cx = x + w / 2
-    cy = y + (bottom - y) / 2 + 0.6
-    reach = 8.4
+    # The cross is centred on the visible part of the pad, and the up and
+    # down arrows are set so the down arrow's back sits just inside the rim.
+    cy = y + 2.2 + (bottom - y - 2.2) / 2
+    reach = 6.2
     _chevron(c, cx, cy - reach, 0.0, -1.0, MAGENTA)
     _chevron(c, cx, cy + reach, 0.0, 1.0, CYAN)
-    _chevron(c, cx - reach * 1.35, cy, -1.0, 0.0, YELLOW)
-    _chevron(c, cx + reach * 1.35, cy, 1.0, 0.0, YELLOW)
+    _chevron(c, cx - reach * 1.85, cy, -1.0, 0.0, YELLOW)
+    _chevron(c, cx + reach * 1.85, cy, 1.0, 0.0, YELLOW)
     # The blank centre is a shade lighter than the pad: a panel, not a hole.
-    c.rrect(cx - 4.2, cy - 3.6, 8.4, 7.2, r=1.2, fill=tint(charcoal, 0.10),
+    c.rrect(cx - 3.4, cy - 2.6, 6.8, 5.2, r=1.0, fill=tint(charcoal, 0.10),
             ink=shade(charcoal, 0.30), lw=LW_FACE)
 
 
@@ -236,8 +245,8 @@ def wallArt_hiScoreBoard(c: Canvas) -> None:
     # The halo first, so the panel's own outline sits on top of it.
     c.rrect(px - 2.4, py - 2.4, pw + 4.8, ph + 4.8, r=4.0, ink=alpha(MAGENTA, 0.20), lw=3.6)
     ix, iy, iw, ih = _art_frame(c, pw, ph, black, depth=6.0)
-    c.rrect(px + 2.6, py + 2.6, pw - 5.2, ph - 5.2, r=2.6, ink=alpha(MAGENTA, 0.35), lw=4.0)
-    c.rrect(px + 2.6, py + 2.6, pw - 5.2, ph - 5.2, r=2.6, ink=MAGENTA, lw=2.0)
+    c.rrect(px + 2.6, py + 2.6, pw - 5.2, ph - 5.2, r=2.6, ink=alpha(MAGENTA, 0.35), lw=4.6)
+    c.rrect(px + 2.6, py + 2.6, pw - 5.2, ph - 5.2, r=2.6, ink=MAGENTA, lw=2.6)
     c.rrect(px + 2.6, py + 2.6, pw - 5.2, ph - 5.2, r=2.6, ink=alpha(P["white"], 0.35), lw=0.8)
     # Three rows, each a rank mark, a name and a score.
     row_h = 6.4
@@ -325,16 +334,16 @@ def rug_multiplexCarpet(c: Canvas) -> None:
     # Teal squiggles on a three-row stagger.
     for row in range(3):
         ry = y + 5.4 + row * 7.6
-        for i in range(6):
-            fx = x + 4.0 + i * 9.0 + ((i * 3 + row * 5) % 4) * 1.2
-            if fx > x + w - 9.0 or ry > bottom - 3.0:
+        for i in range(5):
+            fx = x + 4.0 + i * 10.6 + ((i * 3 + row * 5) % 4) * 1.4
+            if fx > x + w - 8.0 or ry > bottom - 3.0:
                 continue
-            _squiggle(c, fx, ry, TEAL, flip=1.0 if (i + row) % 2 else -1.0, lw=1.4)
+            _squiggle(c, fx, ry, TEAL, flip=1.0 if (i + row) % 2 else -1.0, lw=1.3)
     # Magenta stars, placed between the squiggle rows.
     for sx, sy in ((x + 12.0, y + 9.6), (x + 33.0, y + 17.0), (x + 47.0, y + 8.2),
                    (x + 21.0, y + 21.6), (x + 44.0, y + 20.8)):
         if sy < bottom - 3.0:
-            _star(c, sx, sy, 2.6, fill=MAGENTA, ink=None)
+            _star(c, sx, sy, 2.4, fill=MAGENTA, ink=None)
     # Yellow dots, smallest of the three, filling the gaps.
     for dx, dy in ((x + 6.0, y + 16.4), (x + 25.0, y + 13.6), (x + 39.0, y + 13.0),
                    (x + 52.0, y + 15.8), (x + 16.0, y + 5.0), (x + 30.0, y + 24.0),
@@ -364,17 +373,17 @@ def flooring_aisleLights(c: Canvas) -> None:
     bottom = min(y + h, c.h)
     # A darker foot along the front edge so the strip has a side.
     c.rect(x + 1.4, bottom - 3.6, w - 2.8, 2.4, fill=shade(charcoal, 0.28))
-    # The LEDs: nine along the front edge, each with a halo that spills past
-    # the outline onto the floor in front.
-    n = 9
+    # The LEDs: eleven along the front edge, each with a halo that spills
+    # past the outline onto the floor in front.
+    n = 11
     ly = bottom - 2.4
     for i in range(n):
-        lx = x + 5.0 + i * (w - 10.0) / (n - 1)
-        c.circle(lx, ly, 3.0, fill=alpha(AMBER, 0.30))
+        lx = x + 4.6 + i * (w - 9.2) / (n - 1)
+        c.circle(lx, ly, 2.6, fill=alpha(AMBER, 0.30))
     for i in range(n):
-        lx = x + 5.0 + i * (w - 10.0) / (n - 1)
-        c.circle(lx, ly, 1.4, fill=AMBER)
-        c.circle(lx - 0.4, ly - 0.4, 0.5, fill=tint(AMBER, 0.60))
+        lx = x + 4.6 + i * (w - 9.2) / (n - 1)
+        c.circle(lx, ly, 1.2, fill=AMBER)
+        c.circle(lx - 0.35, ly - 0.35, 0.45, fill=tint(AMBER, 0.60))
 
 
 PIECES = {
