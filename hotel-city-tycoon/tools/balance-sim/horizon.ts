@@ -19,6 +19,7 @@ import { operatingProfit, netProfit, OPERATING } from '../../src/core/systems/ec
 import { isOpen } from '../../src/core/systems/economy.ts';
 import { computeStars } from '../../src/core/systems/stars.ts';
 import type { GameState } from '../../src/core/state/types.ts';
+import { catalogueFor, catalogueIndex } from '../../src/core/data-source.ts';
 
 const data = loadSimData();
 const TPS = data.economy.simulation.ticksPerSecond;
@@ -101,18 +102,16 @@ function reinvest(s: GameState): void {
   for (const room of s.hotel.rooms) {
     const def = data.rooms.find((d) => d.id === room.defId);
     if (!def || def.decorSlots === 0) continue;
-    const used = new Set(room.decor.map((p) => p.slot));
     const kinds = new Set(room.decor.map((p) => data.decor.find((x) => x.id === p.defId)?.category));
-    for (const item of data.decor) {
+    for (const id of catalogueFor(data, room.defId)) {
+      const item = data.decor.find((x) => x.id === id)!;
       if (room.decor.length >= Math.min(6, def.decorSlots)) break;
       if (item.unlockLevel > s.player.level || item.cost.currency !== 'coins') continue;
       if (kinds.has(item.category)) continue;
       if (s.player.coins < item.cost.amount * 6) continue;
-      let slot = 0;
-      while (used.has(slot) && slot < def.decorSlots) slot++;
-      if (slot >= def.decorSlots) break;
+      if (room.decor.some((p) => p.defId === id)) continue;
+      const slot = catalogueIndex(data, room.defId, id);
       if (execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: item.id, slot }).ok) {
-        used.add(slot);
         kinds.add(item.category);
       }
     }

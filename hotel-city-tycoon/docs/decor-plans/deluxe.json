@@ -1,0 +1,72 @@
+{
+  "room": "deluxe",
+  "items": [
+    {
+      "id": "bed_loftSleigh",
+      "category": "bed",
+      "slotType": "bed",
+      "new": true,
+      "nameEn": "Loft Sleigh Bed",
+      "nameAr": "سرير الزلاجة الخشبي",
+      "artBrief": "A walnut sleigh bed whose headboard and footboard both curl outward in a thick S-scroll (the headboard taller), with a cream mattress, two plump linen pillows and a chunky teal cable-knit throw folded across the foot with its fringe hanging over the edge. At 40px it reads as a dark-wood bed with a curl at each end and a teal band across the foot; the queen has a straight lavender padded headboard and no footboard, the king a tall buttoned headboard, the canopy and four-poster have posts, the floating bed has no legs, the emperor bed is gold."
+    },
+    {
+      "id": "seating_armchair",
+      "category": "seating",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "rug_silkrunner",
+      "category": "rug",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "table_glassTable",
+      "category": "table",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "flooring_inlaidparquet",
+      "category": "flooring",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "wallArt_commissionedportrait",
+      "category": "wallArt",
+      "slotType": "wall",
+      "new": false
+    },
+    {
+      "id": "lighting_loftRattan",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "new": true,
+      "nameEn": "Loft Rattan Pendant",
+      "nameAr": "مصباح خوص معلّق",
+      "artBrief": "A wide open-weave rattan bell shade in honey and tan, flared at the mouth like an upturned basket, hung on a knotted jute cord from a small wooden ceiling disc, with a warm amber bulb glowing through the diagonal lattice gaps and a soft warm pool of light below. At 40px it reads as a tan basket-shaped bell with a criss-cross texture; the pendant is a smooth coral half-dome on brass, the lamp a plain linen cone, the lobby lantern a glazed brass box, and every chandelier is glass, crystal or candles."
+    },
+    {
+      "id": "plant_fern",
+      "category": "plant",
+      "slotType": "floor",
+      "new": false
+    }
+  ],
+  "slots": [
+    { "kind": "bed",     "x": 12, "y": 14, "w": 8, "h": 6, "fixture": "bed_queen" },
+    { "kind": "ground",  "x": 3,  "y": 14, "w": 5, "h": 7 },
+    { "kind": "surface", "x": 12, "y": 14, "w": 6, "h": 7 },
+    { "kind": "ground",  "x": 20, "y": 14, "w": 5, "h": 7 },
+    { "kind": "surface", "x": 20, "y": 14, "w": 6, "h": 7 },
+    { "kind": "wall",    "x": 20, "y": 8,  "w": 6, "h": 6 },
+    { "kind": "ceiling", "x": 26, "y": 0,  "w": 6, "h": 4 },
+    { "kind": "ground",  "x": 30, "y": 14, "w": 4, "h": 7 }
+  ],
+  "extraFixtureSlots": [],
+  "requiredFixtures": ["bed_queen"],
+  "designNotes": "The painted door (x 190-222) splits the floor into a wide left span and a narrow right corner, so the three standing pieces plus the bed take the left span with 12-20px gaps (Armchair 4-44 by the left arch, the Loft Sleigh Bed 64-128 under the two arched windows on the built-in bed's slot, the Glass Table 140-180 as a nightstand by the door) and the Fern fills the corner past the door at 224-256, using the room's whole width. The Silk Runner lies under the bed and the Inlaid Parquet under the glass table by the door, 16px apart, both drawn at full 40px. The only blank wall wide enough for a picture is the stretch between the right arch and the door below the ceiling rose, so the Commissioned Portrait hangs there at y 30-66, its foot resting exactly on the wainscot rail and its top clear of the rose (y1 27). The ceiling rose itself is a painted feature no box may cross and every span over the windows is too low, so the Loft Rattan Pendant hangs from the top of the ceiling just right of the rose, over the door's transom (box 184-232 x 0-24, clear of the door top at 27.5 and of the portrait). The two new pieces are what only a cosy gem-priced loft would own: a walnut sleigh bed with a knitted throw and a woven rattan bell shade."
+}

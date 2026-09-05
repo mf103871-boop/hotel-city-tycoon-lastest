@@ -1,0 +1,78 @@
+{
+  "room": "business",
+  "items": [
+    {
+      "id": "appliance_paperShredder",
+      "category": "appliance",
+      "slotType": "equipment",
+      "new": true,
+      "nameEn": "Paper Shredder",
+      "nameAr": "آلة فرم الورق",
+      "artBrief": "A tall charcoal bin with a lighter grey slotted hood, one white sheet feeding into the top slot, and a clear front window full of pale paper strips. At 40px it reads as a dark upright column with a white-striped belly, nothing like the printer's flat grey box or the round-doored laundry machines."
+    },
+    {
+      "id": "table_meetingTable",
+      "category": "table",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "flooring_officeCarpet",
+      "category": "flooring",
+      "slotType": "floor",
+      "new": true,
+      "nameEn": "Office Carpet Tiles",
+      "nameAr": "بلاط موكيت مكتبي",
+      "artBrief": "A flat square of office carpet tiles laid as a 3x3 checker of slate grey and dove grey with a faint tweed speckle, edged with a thin darker seam. At 40px it reads as a grey grid of squares, unlike the plain plush red carpet, the oak boards or any of the polished stone floors."
+    },
+    {
+      "id": "wallArt_projectorScreen",
+      "category": "wallArt",
+      "slotType": "wall",
+      "new": false
+    },
+    {
+      "id": "plant_lobbyFicus",
+      "category": "plant",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "lighting_officePanel",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "new": true,
+      "nameEn": "Office Panel Light",
+      "nameAr": "لوح إضاءة مكتبي",
+      "artBrief": "A wide flat LED panel, a glowing cool-white rectangle in a slim brushed-grey frame, hung from the ceiling on two short steel rods with a soft blue-white glow beneath it. At 40px it reads as a floating white slab, unlike every round bulb, cord pendant or tiered chandelier in the game."
+    },
+    {
+      "id": "wallpaper_officePartition",
+      "category": "wallpaper",
+      "slotType": "wall",
+      "new": true,
+      "nameEn": "Glass Partition",
+      "nameAr": "حاجز زجاجي مصنفر",
+      "artBrief": "A tall pale blue-grey translucent glass panel in a thin brushed-steel frame, with a frosted horizontal privacy band across the middle and one faint diagonal sheen. At 40px it reads as a cool sheet of frosted glass, unlike the patterned damask, striped, velvet and gilded wallpapers."
+    },
+    {
+      "id": "luxury_gallerypiece",
+      "category": "luxury",
+      "slotType": "floor",
+      "new": false
+    }
+  ],
+  "slots": [
+    { "kind": "ground",  "x": 3,  "y": 14, "w": 6, "h": 7, "fixture": "appliance_printer" },
+    { "kind": "ground",  "x": 11, "y": 14, "w": 8, "h": 7 },
+    { "kind": "surface", "x": 11, "y": 14, "w": 8, "h": 7 },
+    { "kind": "wall",    "x": 11, "y": 8,  "w": 7, "h": 7 },
+    { "kind": "ground",  "x": 28, "y": 14, "w": 6, "h": 7 },
+    { "kind": "ceiling", "x": 36, "y": 2,  "w": 6, "h": 5 },
+    { "kind": "wall",    "x": 44, "y": 8,  "w": 7, "h": 7 },
+    { "kind": "ground",  "x": 44, "y": 14, "w": 7, "h": 7 }
+  ],
+  "extraFixtureSlots": [],
+  "requiredFixtures": ["appliance_printer"],
+  "designNotes": "The painted room splits the floor into three free spans (left of the filing cabinets, between the cabinets and the workstation, and right of the workstation), so the four standing pieces take one span each with the meeting table and the printer corner sharing the wide left span at a 12px gap. The built-in printer keeps its corner by the door as the slot the Paper Shredder upgrades, which keeps the room to four standing boxes drawn near full size instead of five cramped ones. The Projector Screen hangs on the blank wall between the window and the wall clock, directly over the Meeting Table on its Office Carpet Tiles, making a presentation nook next to the painted whiteboard. The Lobby Ficus softens the narrow gap between the cabinets and the workstation, the Office Panel Light hangs over the workstation's monitors (its box stops above them at y=42), and the Glass Partition and Gallery Piece make an executive corner on the blank wall right of the desk. Nothing hangs over the window, the whiteboard or the desk, and the only wall/ceiling boxes near each other are on opposite ends of the room."
+}

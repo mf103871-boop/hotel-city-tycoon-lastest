@@ -1,0 +1,71 @@
+{
+  "room": "luxurySuite",
+  "items": [
+    {
+      "id": "plant_wintergarden",
+      "category": "plant",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "bed_emperorbed",
+      "category": "bed",
+      "slotType": "bed",
+      "new": false
+    },
+    {
+      "id": "wallpaper_gildedpanelling",
+      "category": "wallpaper",
+      "slotType": "wall",
+      "new": false
+    },
+    {
+      "id": "lighting_crystalchandelier",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "new": false
+    },
+    {
+      "id": "table_marbleconsole",
+      "category": "table",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "seating_salonset",
+      "category": "seating",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "rug_ermineHearth",
+      "category": "rug",
+      "slotType": "floor",
+      "new": true,
+      "nameEn": "Ermine Hearth Rug",
+      "nameAr": "سجادة فرو القاقم",
+      "artBrief": "A flat white fur hearth rug with a softly scalloped, fluffy outline instead of a straight woven edge, a loose diamond scatter of short black ermine tail-tips across the pile, and a thin gold braid round the rim - the imperial trim that matches the Emperor Bed's gilt. At 40px it reads as a white cloud-shaped strip dotted with black dashes lying on the floor; every other rug is a straight-edged woven rectangle or runner in red, lavender, green, brown or coir with a fringe, and none is white, furry or spotted."
+    },
+    {
+      "id": "luxury_fireplace",
+      "category": "luxury",
+      "slotType": "floor",
+      "new": false
+    }
+  ],
+  "slots": [
+    { "kind": "ground",  "x": 4,  "y": 14, "w": 5, "h": 7 },
+    { "kind": "bed",     "x": 14, "y": 14, "w": 8, "h": 6, "fixture": "bed_floating" },
+    { "kind": "wall",    "x": 14, "y": 8,  "w": 7, "h": 6 },
+    { "kind": "ceiling", "x": 18, "y": 0,  "w": 5, "h": 5 },
+    { "kind": "ground",  "x": 23, "y": 14, "w": 5, "h": 7 },
+    { "kind": "ground",  "x": 41, "y": 14, "w": 5, "h": 7 },
+    { "kind": "surface", "x": 45, "y": 14, "w": 6, "h": 7 },
+    { "kind": "ground",  "x": 49, "y": 14, "w": 5, "h": 7 }
+  ],
+  "extraFixtureSlots": [
+    { "kind": "bed", "x": 32, "y": 14, "w": 8, "h": 6, "fixture": "bed_floating" }
+  ],
+  "requiredFixtures": ["bed_floating", "bed_floating"],
+  "designNotes": "The painted double doors (px 418-490) leave one 418px run of floor, and the only solid wall stretches are the 90px between the window and the bay (px 80-170, under the left ceiling rose) and the 76px between the bay and the doors (px 342-418, under the right rose), so the room is read left to right as garden, bedroom, salon, hearth: the Winter Garden stands under the small window (px 12-52), the Emperor Bed takes the first built-in floating bed's place squarely on the left solid wall (px 80-144) with the Gilded Panelling hung behind its headboard (px 84-140 x 30-66, just under the rose which ends at 27.5) and the Crystal Chandelier hanging at full 40x26 from the ceiling beside the rose over the bed's foot (px 124-164 x 0-30, its box meeting the panel's top edge without crossing it). The Marble Console stands under the left half of the bay window (px 164-204), the second floating bed keeps its own slot as a built-in in the middle of the bay (px 224-288) so the two beds are held apart by the console, and the Salon Set sits at the right end of the bay (px 308-348) facing the Fireplace on the right solid wall beside the doors (px 372-412). The Ermine Hearth Rug lies between the settee and the fire (box px 336-384), its ends tucked under the salon stool and the mantel so it reads as the hearth rug of the sitting group while about three quarters of it stays visible. Standing boxes are 5 units wide (full 40px art) with 20-28px clear gaps, the beds keep 64x36, and nothing hangs over a window, a rose or the doors. The one new piece is a white ermine-spotted fur hearth rug - the imperial trim only this gem loft would own, and the only white or furry rug in the game."
+}

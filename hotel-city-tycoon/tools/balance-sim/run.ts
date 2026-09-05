@@ -22,6 +22,7 @@ import { nextTier, tierOwned } from '../../src/core/systems/upgrades.ts';
 import { decorFill } from '../../src/core/systems/decor.ts';
 import type { SimData } from '../../src/core/data-source.ts';
 import type { GameState } from '../../src/core/state/types.ts';
+import { catalogueFor, catalogueIndex } from '../../src/core/data-source.ts';
 
 const DAYS = Number(process.env.DAYS ?? 30);
 const ACTIVE_MIN_PER_DAY = Number(process.env.ACTIVE_MIN ?? 8);
@@ -178,18 +179,14 @@ function decorate(d: SimData, s: GameState): void {
     const target = targets[0];
     if (!target) return;
 
-    const used = new Set(target.room.decor.map((p) => p.slot));
-    let slot = -1;
-    for (let i = 0; i < target.def.decorSlots; i++) {
-      if (!used.has(i)) { slot = i; break; }
-    }
-    if (slot < 0) return;
-
-    const item = d.decor
+    const item = catalogueFor(d, target.room.defId)
+      .map((id) => d.decor.find((x) => x.id === id)!)
       .filter((x) => x.unlockLevel <= s.player.level && x.cost.currency === 'coins')
       .filter((x) => x.cost.amount <= s.player.coins * 0.15)
+      .filter((x) => !target.room.decor.some((p) => p.defId === x.id))
       .sort((a, b) => b.decorPoints - a.decorPoints)[0];
     if (!item) return;
+    const slot = catalogueIndex(d, target.room.defId, item.id);
 
     const res = execute(d, s, { type: 'PLACE_DECOR', roomId: target.room.id, defId: item.id, slot });
     if (!res.ok) return;

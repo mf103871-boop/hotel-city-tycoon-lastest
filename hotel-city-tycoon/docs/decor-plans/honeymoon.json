@@ -1,0 +1,126 @@
+{
+ "room": "honeymoon",
+ "items": [
+  {
+   "id": "bed_petalCanopy",
+   "category": "bed",
+   "slotType": "bed",
+   "new": true,
+   "nameEn": "Petal Canopy Bed",
+   "nameAr": "سرير بمظلة وردية",
+   "artBrief": "A canopy bed whose four slender white posts carry a swagged blush-pink drape with a scalloped hem, white bedding scattered with three small rose petals. The pink swag over white posts is what tells it from the built-in canopy's plain frame."
+  },
+  {
+   "id": "seating_velvetchaise",
+   "category": "seating",
+   "slotType": "floor",
+   "new": false
+  },
+  {
+   "id": "plant_orchidWall",
+   "category": "plant",
+   "slotType": "floor",
+   "new": false
+  },
+  {
+   "id": "luxury_jacuzzi",
+   "category": "luxury",
+   "slotType": "floor",
+   "new": false
+  },
+  {
+   "id": "rug_roseGarland",
+   "category": "rug",
+   "slotType": "floor",
+   "new": true,
+   "nameEn": "Rose Garland Rug",
+   "nameAr": "سجادة إكليل الورد",
+   "artBrief": "A cream oval rug edged with a garland of small rose-pink blooms and green leaves, an ivory heart-shaped field in the middle. Oval with a flowered border, unlike every rectangular rug."
+  },
+  {
+   "id": "wallpaper_handpaintedsilk",
+   "category": "wallpaper",
+   "slotType": "wall",
+   "new": false
+  },
+  {
+   "id": "wallArt_originallandscape",
+   "category": "wallArt",
+   "slotType": "wall",
+   "new": false
+  },
+  {
+   "id": "lighting_roseChandelier",
+   "category": "lighting",
+   "slotType": "ceiling",
+   "new": true,
+   "nameEn": "Rose Chandelier",
+   "nameAr": "ثريا الورد",
+   "artBrief": "A small chandelier whose three arms end in blush-pink glass roses instead of candles, hung on a short gold chain, a soft pink glow beneath. The pink rose heads make it unlike the crystal and candle chandeliers."
+  }
+ ],
+ "slots": [
+  {
+   "kind": "bed",
+   "x": 15,
+   "y": 14,
+   "w": 8,
+   "h": 6,
+   "fixture": "bed_canopy"
+  },
+  {
+   "kind": "ground",
+   "x": 5,
+   "y": 14,
+   "w": 5,
+   "h": 7
+  },
+  {
+   "kind": "ground",
+   "x": 22,
+   "y": 14,
+   "w": 4,
+   "h": 7
+  },
+  {
+   "kind": "ground",
+   "x": 27,
+   "y": 14,
+   "w": 4,
+   "h": 7
+  },
+  {
+   "kind": "surface",
+   "x": 15,
+   "y": 14,
+   "w": 6,
+   "h": 7
+  },
+  {
+   "kind": "wall",
+   "x": 22,
+   "y": 8,
+   "w": 5,
+   "h": 6
+  },
+  {
+   "kind": "wall",
+   "x": 2,
+   "y": 8,
+   "w": 4,
+   "h": 6
+  },
+  {
+   "kind": "ceiling",
+   "x": 21,
+   "y": 0,
+   "w": 3,
+   "h": 4
+  }
+ ],
+ "extraFixtureSlots": [],
+ "requiredFixtures": [
+  "bed_canopy"
+ ],
+ "designNotes": "The balcony doors (px 234-322) and the suite door (338-370) leave one run of floor on the left: the chaise by the left wall, the canopy bed on its built-in's place between the two windows, the orchid and the jacuzzi filling the run up to the balcony with 8px gaps. The silk panel hangs on the blank wall between the right window and the balcony, the landscape over the chaise on the left wall, and the rose chandelier hangs in the ceiling gap between the right window and the ceiling rose, clear of both."
+}

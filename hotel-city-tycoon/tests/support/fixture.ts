@@ -16,6 +16,7 @@ export function simData(): SimData {
     economy: read('economy.json'),
     rooms: read('rooms.json').rooms,
     decor: read('decor.json').items,
+    decorCatalogues: read('decor.json').catalogues,
     staffRoles: read('staff.json').roles,
     staffGrades: read('staff.json').grades,
     guestTypes: read('guests.json').types,

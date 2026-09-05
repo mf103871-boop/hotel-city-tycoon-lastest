@@ -7,7 +7,7 @@
  * cheat detection and analytics for free.
  */
 import type { SimData } from '../data-source.ts';
-import { roomDef, shiftDef, roomById } from '../data-source.ts';
+import { roomDef, shiftDef, roomById, catalogueIndex } from '../data-source.ts';
 import type { GameState, SimEvent } from '../state/types.ts';
 import { makeRoom } from '../state/init.ts';
 import { findFreeSpot, contains, footprintOf, placementProblemAt } from '../state/grid.ts';
@@ -19,10 +19,7 @@ import { clearHazard } from '../systems/events.ts';
 import { queueCapacity, receptionEfficiency } from '../systems/guests.ts';
 import { owned, grant, consume, sellValue } from '../systems/inventory.ts';
 import { slotAllowed, decorFitsRoom } from '../systems/quality.ts';
-import { anchorBoundsFor, anchorKey, firstFreeAnchor, anchorReachFor } from '../systems/decorPlacement.ts';
-import {
-  anchorFor, plannedSlot, slotForKindAt, spotKindFor,
-} from '../systems/roomAnchors.ts';
+import { catalogueSlot } from '../systems/roomAnchors.ts';
 import { Rng } from '../rng/index.ts';
 import { nextTier } from '../systems/upgrades.ts';
 import { shopOffers, shopPeriod, isOfferTaken, giftState, weekIndexOf, activeSeason } from '../systems/liveops.ts';
@@ -34,10 +31,12 @@ export type Command =
   | { type: 'BUILD_ROOM'; defId: string; x?: number; y?: number }
   | { type: 'SELL_ROOM'; roomId: string }
   /**
-   * `planSlot` is the numbered place in the room's own plan the player picked
-   * — the "upgrade" button on a built-in. Omitted, the room chooses.
+   * Buy (or take from the store) one of the room's own pieces and install it
+   * in its designed place. `slot` is the piece's position in the room's
+   * catalogue — the same number `decorCatalog` reports — and nothing else is
+   * accepted, because the place IS the position.
    */
-  | { type: 'PLACE_DECOR'; roomId: string; defId: string; slot: number; planSlot?: number }
+  | { type: 'PLACE_DECOR'; roomId: string; defId: string; slot: number }
   | { type: 'REMOVE_DECOR'; roomId: string; decorId: string }
   /** Swap a placed piece for another one, in the place it already occupies. */
   | { type: 'REPLACE_DECOR'; roomId: string; decorId: string; defId: string }
@@ -84,7 +83,7 @@ export type RejectReason =
   | 'notOwned' | 'notRefundable'
   | 'unknownStaff' | 'roomHasHazard' | 'roomTooDirty' | 'roomRequired'
   | 'notStored' | 'sameSpot' | 'storageFull' | 'slotIncompatible' | 'notNextPlot'
-  | 'sameDecor';
+  | 'sameDecor' | 'alreadyPlaced';
 
 export type CommandResult =
   | { ok: true; events: SimEvent[] }
@@ -176,29 +175,35 @@ export function execute(data: SimData, state: GameState, cmd: Command): CommandR
       if (def.unlockLevel > state.player.level) return reject('notUnlocked');
 
       const rdef = roomDef(data, room.defId);
-      if (cmd.slot < 0 || cmd.slot >= rdef.decorSlots) return reject('noSpace');
+      /*
+       * The room's own catalogue, and nothing else.
+       *
+       * Every room sells eight pieces of its own (`decor.json` `catalogues`),
+       * and the position of a piece in that list is the numbered place it
+       * stands in. A piece the room does not sell has no place here, so it is
+       * refused the same way a bed in the laundry always was. `slot` has to be
+       * that position too: the UI reports it, and a caller asking for another
+       * number is asking for a place that belongs to a different piece.
+       */
+      const index = catalogueIndex(data, room.defId, cmd.defId);
+      if (index < 0) return reject('slotIncompatible');
+      if (cmd.slot !== index) return reject('slotIncompatible');
+      if (index >= rdef.decorSlots) return reject('noSpace');
       if (room.decor.length >= data.economy.limits.maxDecorPerRoom) return reject('decorLimitReached');
-      if (room.decor.some((p) => p.slot === cmd.slot)) return reject('slotTaken');
-      // A bed belongs in a bedroom. Nothing stopped one being installed in the
-      // laundry, where it counted towards the rating just the same.
+      // Once. A piece has one place in its room, so a second copy would have
+      // nowhere to stand — and the meter was never meant to be filled by
+      // buying the cheapest thing eight times over.
+      if (room.decor.some((p) => p.defId === cmd.defId)) return reject('alreadyPlaced');
+      if (room.decor.some((p) => p.slot === index)) return reject('slotTaken');
       if (!slotAllowed(data, rdef, cmd.defId)) return reject('slotIncompatible');
-      // And a treadmill belongs in the gym rather than in whichever room the
-      // player happened to have open. The room's own catalogue is what the
-      // decorate sheet lists; this is the same rule, enforced.
       if (!decorFitsRoom(data, rdef, cmd.defId)) return reject('slotIncompatible');
 
-      // A place the player picked by hand wins over the room's own order, so
-      // "upgrade this one" puts the new piece exactly where the old one was.
-      // Resolved BEFORE anything is spent: it is the last thing that can
-      // refuse the command, and a refusal after the money has gone is both a
-      // charge for nothing and a break in the byte-identical guarantee.
-      const bounds = anchorBoundsFor(data, room.defId);
-      const takenAnchors = new Set(room.decor.map((p) => anchorKey(p.localX, p.localY)));
-      const wanted = cmd.planSlot === undefined ? null
-        : plannedSlot(room.defId, rdef.blocks.w, rdef.blocks.h, cmd.planSlot,
-          spotKindFor(def.category, def.slotType));
-      if (cmd.planSlot !== undefined && !wanted) return reject('slotIncompatible');
-      if (wanted && takenAnchors.has(anchorKey(wanted.x, wanted.y))) return reject('slotTaken');
+      // The designed place, resolved BEFORE anything is spent: it is the last
+      // thing that can refuse the command, and a refusal after the money has
+      // gone is both a charge for nothing and a break in the byte-identical
+      // guarantee.
+      const place = catalogueSlot(room.defId, rdef.blocks.w, rdef.blocks.h, index);
+      if (!place) return reject('noSpace');
 
       // Spend a copy the player already owns before spending their money.
       // Every validation above has passed, so consuming here cannot leave the
@@ -209,20 +214,9 @@ export function execute(data: SimData, state: GameState, cmd: Command): CommandR
         pay(state, def.cost, 'decorBuy');
       }
 
-      // DEC-010: a freshly placed piece needs somewhere to stand, not just a
-      // slot index. The room's own current pieces are what it must not land
-      // on top of; slotType picks which surface band it prefers.
-      //
-      // The room's own plan first (`roomAnchors.ts`): a bed goes where that
-      // room keeps its bed, a lamp on its ceiling point, a rug on its floor.
-      // The scan is what answers when the plan runs out of places — it always
-      // answers, and HC-P1-S4's reach keeps whatever it picks inside the room.
-      const anchor = wanted ?? anchorFor(data, room.defId, cmd.defId, takenAnchors,
-        data.economy.limits.maxDecorPerRoom, room.decor)
-        ?? firstFreeAnchor(bounds, def.slotType, takenAnchors, anchorReachFor(data, cmd.defId));
       room.decor.push({
-        id: `d${state.counters.decor++}`, defId: cmd.defId, slot: cmd.slot,
-        localX: anchor.x, localY: anchor.y, flipX: false, zBias: 0,
+        id: `d${state.counters.decor++}`, defId: cmd.defId, slot: index,
+        localX: place.x, localY: place.y, flipX: false, zBias: 0,
       });
       room.decorPoints = computeDecorPoints(data, room);
       // XP is for the purchase, not for moving a piece between rooms. Paying it
@@ -252,9 +246,8 @@ export function execute(data: SimData, state: GameState, cmd: Command): CommandR
 
     case 'REPLACE_DECOR': {
       /*
-       * Swap what is standing in a place for something better, without the
-       * player having to take the old one down first and hope the new one
-       * lands where it stood.
+       * Swap what is standing in the room for another of the room's own
+       * pieces, without the player having to take the old one down first.
        *
        * Every validation happens before the first mutation, which is the rule
        * the whole command layer rests on: a rejected command has to leave the
@@ -272,8 +265,17 @@ export function execute(data: SimData, state: GameState, cmd: Command): CommandR
       if (def.unlockLevel > state.player.level) return reject('notUnlocked');
 
       const rdef = roomDef(data, room.defId);
+      // The same catalogue rule as PLACE_DECOR: the new piece must be one the
+      // room sells, and it may already be standing in its own place.
+      const index = catalogueIndex(data, room.defId, cmd.defId);
+      if (index < 0) return reject('slotIncompatible');
+      if (index >= rdef.decorSlots) return reject('noSpace');
+      if (room.decor.some((p) => p.defId === cmd.defId)) return reject('alreadyPlaced');
+      if (room.decor.some((p) => p.id !== placed.id && p.slot === index)) return reject('slotTaken');
       if (!slotAllowed(data, rdef, cmd.defId)) return reject('slotIncompatible');
       if (!decorFitsRoom(data, rdef, cmd.defId)) return reject('slotIncompatible');
+      const place = catalogueSlot(room.defId, rdef.blocks.w, rdef.blocks.h, index);
+      if (!place) return reject('noSpace');
 
       const fromStore = consume(state, cmd.defId);
       if (!fromStore) {
@@ -286,30 +288,13 @@ export function execute(data: SimData, state: GameState, cmd: Command): CommandR
       // destroyed — a swap costs the difference in what you own, not in coins.
       grant(state, placed.defId);
 
-      /*
-       * The place the old piece stood in, whenever the new one can use it.
-       *
-       * That is the entire promise of a swap, and it does not fall out of
-       * asking the room where the piece should go: `anchorFor` walks the plan
-       * from the top and hands back the FIRST free place of the right kind,
-       * which is the old one only by coincidence. Replacing the third chair in
-       * a restaurant moved it to the first table's place.
-       *
-       * A swap that changes what kind of thing is standing there — a lamp for
-       * a rug — cannot keep the place, and falls back to the room's own order.
-       */
-      const others = room.decor.filter((p) => p.id !== placed.id);
-      const takenAnchors = new Set(others.map((p) => anchorKey(p.localX, p.localY)));
-      const inPlace = slotForKindAt(room.defId, rdef.blocks.w, rdef.blocks.h,
-        placed.localX, placed.localY, spotKindFor(def.category, def.slotType));
-      const anchor = inPlace
-        ?? anchorFor(data, room.defId, cmd.defId, takenAnchors,
-          data.economy.limits.maxDecorPerRoom, others)
-        ?? firstFreeAnchor(anchorBoundsFor(data, room.defId), def.slotType, takenAnchors,
-          anchorReachFor(data, cmd.defId));
+      // The new piece stands in ITS place, not the old one's: every piece a
+      // room sells has one designed spot, and a swap that kept the old spot
+      // would put a lamp where the rug goes.
       placed.defId = cmd.defId;
-      placed.localX = anchor.x;
-      placed.localY = anchor.y;
+      placed.slot = index;
+      placed.localX = place.x;
+      placed.localY = place.y;
       room.decorPoints = computeDecorPoints(data, room);
       if (!fromStore) {
         grantXp(data, state, Math.round(def.cost.amount * data.economy.xp.grantOnDecorPlace), out);

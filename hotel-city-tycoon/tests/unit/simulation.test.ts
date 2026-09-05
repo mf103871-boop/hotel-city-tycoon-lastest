@@ -4,6 +4,7 @@ import { createInitialState } from '../../src/core/state/init.ts';
 import { advance } from '../../src/core/sim/tick.ts';
 import { resolveOffline } from '../../src/core/sim/offline.ts';
 import { execute } from '../../src/core/commands/index.ts';
+import { catalogueFor } from '../../src/core/data-source.ts';
 import { isOpen, totalShiftCost } from '../../src/core/systems/economy.ts';
 import { decorFill, decorMultiplier } from '../../src/core/systems/decor.ts';
 import { computeStars } from '../../src/core/systems/stars.ts';
@@ -83,13 +84,18 @@ describe('commands validate before they mutate', () => {
       .toMatchObject({ ok: false, reason: 'noSpace' });
   });
 
-  it('refuses to reuse a decor slot', () => {
+  it('installs a piece once, and only in its own place', () => {
     const s = fresh();
     s.player.coins = 1_000_000;
     const room = s.hotel.rooms.find((r) => r.defId === 'economy')!;
-    execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
-    expect(execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: 'flooring_concrete', slot: 0 }))
-      .toMatchObject({ ok: false, reason: 'slotTaken' });
+    const [first, second] = catalogueFor(data, 'economy');
+    execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: first!, slot: 0 });
+    expect(execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: first!, slot: 0 }))
+      .toMatchObject({ ok: false, reason: 'alreadyPlaced' });
+    expect(execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: second!, slot: 0 }))
+      .toMatchObject({ ok: false, reason: 'slotIncompatible' });
+    expect(execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: second!, slot: 1 }))
+      .toMatchObject({ ok: true });
   });
 });
 
@@ -100,7 +106,7 @@ describe('decor drives income', () => {
     const room = s.hotel.rooms.find((r) => r.defId === 'economy')!;
     const def = data.rooms.find((r) => r.id === 'economy')!;
     const before = decorMultiplier(data, def, room);
-    execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
+    execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: catalogueFor(data, 'economy')[0]!, slot: 0 });
     expect(decorMultiplier(data, def, room)).toBeGreaterThan(before);
     expect(decorFill(def, room)).toBeGreaterThan(0);
   });

@@ -31,7 +31,10 @@ export { Rng, STREAMS, createCursors } from './rng/index.ts';
 export type { RngCursors, StreamName } from './rng/index.ts';
 
 export type * from './data-source.ts';
-export { roomDef, decorDef, shiftDef, isGuestRoom, isCommercialRoom, isFunctionalRoom } from './data-source.ts';
+export {
+  roomDef, decorDef, shiftDef, catalogueFor, catalogueIndex,
+  isGuestRoom, isCommercialRoom, isFunctionalRoom,
+} from './data-source.ts';
 
 // selectors the UI needs
 export { decorFill, decorMultiplier, averageDecorFill } from './systems/decor.ts';

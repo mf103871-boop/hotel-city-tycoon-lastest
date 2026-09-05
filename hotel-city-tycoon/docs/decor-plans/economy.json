@@ -1,0 +1,75 @@
+{
+  "room": "economy",
+  "items": [
+    {
+      "id": "bed_metalFrame",
+      "category": "bed",
+      "slotType": "bed",
+      "new": true,
+      "nameEn": "Metal Frame Bed",
+      "nameAr": "سرير معدني",
+      "artBrief": "A hostel single on a tubular grey-steel frame: two round uprights joined by a curved top bar at the head, a lower matching hoop at the foot, four thin tube legs, a thin mattress in blue-and-white ticking stripes, one flat white pillow and a folded grey blanket across the foot. At 40 px it reads as a low bed with bare metal hoops at both ends - unlike the cot (mint, barred full height, child-sized), the single (plank headboard) and every padded, canopied or posted bed above it."
+    },
+    {
+      "id": "table_crateNightstand",
+      "category": "table",
+      "slotType": "floor",
+      "new": true,
+      "nameEn": "Crate Nightstand",
+      "nameAr": "طاولة صناديق",
+      "artBrief": "Two plastic milk crates stacked as a bedside table - a blue crate on a red one, each a squat box with a lattice of square holes on its face - with a small black clock radio showing red digits on top and a paperback tucked into the upper crate. At 40 px it reads as two bright lattice boxes with a black brick on top; no other table in the game is stacked, plastic or perforated (the rest are legged tables, desks and consoles)."
+    },
+    {
+      "id": "flooring_carpet",
+      "category": "flooring",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "rug_woolRug",
+      "category": "rug",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "wallpaper_striped",
+      "category": "wallpaper",
+      "slotType": "wall",
+      "new": false
+    },
+    {
+      "id": "wallArt_poster",
+      "category": "wallArt",
+      "slotType": "wall",
+      "new": false
+    },
+    {
+      "id": "lighting_ceilingFan",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "new": true,
+      "nameEn": "Ceiling Fan",
+      "nameAr": "مروحة سقف",
+      "artBrief": "A short dark rod from the ceiling down to a round cream motor hub with a small warm bulb and a faint glow beneath it, three wide flat blades in pale pine with a dark edge fanning out almost to the canvas sides (the middle blade seen edge-on as a thin bar, the outer two as tapered paddles), and a tiny pull-chain. At 40 px it is the only lighting piece with a wide horizontal silhouette - a flat T - where every lamp, bulb, pendant, lantern and chandelier is a hanging drop."
+    },
+    {
+      "id": "lighting_lamp",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "new": false
+    }
+  ],
+  "slots": [
+    { "kind": "bed",     "x": 3,  "y": 14, "w": 6, "h": 6, "fixture": "bed_cot" },
+    { "kind": "ground",  "x": 9,  "y": 14, "w": 4, "h": 7 },
+    { "kind": "surface", "x": 3,  "y": 14, "w": 6, "h": 7 },
+    { "kind": "surface", "x": 9,  "y": 14, "w": 4, "h": 7 },
+    { "kind": "wall",    "x": 3,  "y": 11, "w": 6, "h": 6 },
+    { "kind": "wall",    "x": 9,  "y": 7,  "w": 4, "h": 5 },
+    { "kind": "ceiling", "x": 9,  "y": 0,  "w": 4, "h": 4 },
+    { "kind": "ceiling", "x": 14, "y": 0,  "w": 4, "h": 5 }
+  ],
+  "extraFixtureSlots": [],
+  "requiredFixtures": ["bed_cot"],
+  "designNotes": "The budget room is 128 px wide with a window top-left and a door filling the right end, so the only clear floor is the 88 px left of the door: the bed goes hard against the left wall under the window (0-48 px, replacing the built-in cot) and the crate nightstand takes the one remaining floor spot between bed and door (56-88 px), an exact 8 px gap from the bed and flush to the door frame. The striped wallpaper is the feature panel on the only clear wall under the window, showing above and around the bed head; the taped poster hangs in the 35 px column between window and door, above the crates and below the fan. The ceiling fan sits at the room's centre-right where a fan belongs (56-88 px, hanging from y=0 because the room has no cornice) and the cone lamp takes the top-right corner over the door, so the two lights are 8 px apart and neither touches a wall box or the window. The carpet lies under the bed at full 40 px and the wool rug where the guest steps out of bed by the door, under the crates, keeping the two surfaces 8 px apart. Every kind is placed where the painted room has real space, so nothing is drawn below 60% of natural size."
+}

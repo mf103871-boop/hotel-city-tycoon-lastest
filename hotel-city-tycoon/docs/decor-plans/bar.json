@@ -1,0 +1,134 @@
+{
+ "room": "bar",
+ "items": [
+  {
+   "id": "appliance_beerTap",
+   "category": "appliance",
+   "slotType": "equipment",
+   "new": false
+  },
+  {
+   "id": "luxury_privatebar",
+   "category": "luxury",
+   "slotType": "floor",
+   "new": false
+  },
+  {
+   "id": "wallpaper_bottleGreen",
+   "category": "wallpaper",
+   "slotType": "wall",
+   "new": true,
+   "nameEn": "Bottle-Green Panelling",
+   "nameAr": "ألواح خضراء داكنة",
+   "artBrief": "A wall panel of deep bottle-green tongue-and-groove boards with a brass picture rail along the top and a single brass hook. Dark green vertical boards, unlike every patterned wallpaper."
+  },
+  {
+   "id": "wallArt_sculptureWall",
+   "category": "wallArt",
+   "slotType": "wall",
+   "new": false
+  },
+  {
+   "id": "lighting_neonCocktail",
+   "category": "lighting",
+   "slotType": "ceiling",
+   "new": true,
+   "nameEn": "Neon Cocktail Sign",
+   "nameAr": "لافتة نيون كوكتيل",
+   "artBrief": "A hanging neon sign: a coral martini-glass outline with a mint olive on a stick, on a dark backing plate hung from two short chains, with a coral glow. The glowing glass silhouette is unlike any lamp."
+  },
+  {
+   "id": "lighting_pubLantern",
+   "category": "lighting",
+   "slotType": "ceiling",
+   "new": true,
+   "nameEn": "Pub Lantern",
+   "nameAr": "فانوس الحانة",
+   "artBrief": "A small brass-framed hexagonal lantern with amber glass panes hung on a single chain, a warm amber glow. Compact and six-sided, unlike the round shades and crystal tiers."
+  },
+  {
+   "id": "flooring_pubBoards",
+   "category": "flooring",
+   "slotType": "floor",
+   "new": true,
+   "nameEn": "Pub Floorboards",
+   "nameAr": "ألواح أرضية الحانة",
+   "artBrief": "A strip of wide dark-walnut floorboards with visible nail heads at each end and a lighter worn path down the middle. Dark planks with a pale worn stripe, unlike the tiles and carpets."
+  },
+  {
+   "id": "rug_barMat",
+   "category": "rug",
+   "slotType": "floor",
+   "new": true,
+   "nameEn": "Bar Mat",
+   "nameAr": "بساط البار",
+   "artBrief": "A small rectangular black rubber bar mat with a raised diamond grid and a coral stripe along the front edge. Tiny, black and gridded, unlike every woven rug."
+  }
+ ],
+ "slots": [
+  {
+   "kind": "ground",
+   "x": 24,
+   "y": 14,
+   "w": 4,
+   "h": 7,
+   "fixture": "seating_barStool"
+  },
+  {
+   "kind": "ground",
+   "x": 30,
+   "y": 14,
+   "w": 4,
+   "h": 7,
+   "fixture": "seating_barStool"
+  },
+  {
+   "kind": "wall",
+   "x": 24,
+   "y": 8,
+   "w": 4,
+   "h": 6
+  },
+  {
+   "kind": "wall",
+   "x": 30,
+   "y": 8,
+   "w": 4,
+   "h": 6
+  },
+  {
+   "kind": "ceiling",
+   "x": 21,
+   "y": 0,
+   "w": 3,
+   "h": 5
+  },
+  {
+   "kind": "ceiling",
+   "x": 1,
+   "y": 0,
+   "w": 2,
+   "h": 4
+  },
+  {
+   "kind": "surface",
+   "x": 28,
+   "y": 14,
+   "w": 5,
+   "h": 7
+  },
+  {
+   "kind": "surface",
+   "x": 23,
+   "y": 14,
+   "w": 2,
+   "h": 7
+  }
+ ],
+ "extraFixtureSlots": [],
+ "requiredFixtures": [
+  "seating_barStool",
+  "seating_barStool"
+ ],
+ "designNotes": "The painted counter (px 10-168) owns the left two thirds of the floor, so the two built-in stools keep the only floor there is at 176-208 and 224-256, each the place a bought piece takes over: the draught taps stand where the first stool was and the private bar where the second. The panelling and the sculpture share the blank wall right of the counter with an 8px gap; the neon cocktail sign hangs in the ceiling gap between the back bar and the glass rack, and the little pub lantern in the far left corner. The floorboards lie under the stools and the bar mat just past the counter's end."
+}

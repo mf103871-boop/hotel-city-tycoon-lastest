@@ -1,0 +1,81 @@
+{
+  "room": "cafe",
+  "items": [
+    {
+      "id": "appliance_espressoBar",
+      "category": "appliance",
+      "slotType": "equipment",
+      "new": false
+    },
+    {
+      "id": "seating_stool",
+      "category": "seating",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "appliance_cakeDisplay",
+      "category": "appliance",
+      "slotType": "equipment",
+      "new": false
+    },
+    {
+      "id": "rug_latteRug",
+      "category": "rug",
+      "slotType": "floor",
+      "new": true,
+      "nameEn": "Latte Art Rug",
+      "nameAr": "سجادة فن اللاتيه",
+      "artBrief": "A round coffee-brown rug seen slightly from above, with a cream rosetta-and-heart latte-art swirl in the centre and a thin cream rim like the lip of a cup, a few short cream tassels around the edge. At 40px it reads as a top-down latte on the floor; every other rug in the game is a rectangle or a runner with a woven border, none is round and none is brown with a cream pour."
+    },
+    {
+      "id": "flooring_macaronTiles",
+      "category": "flooring",
+      "slotType": "floor",
+      "new": true,
+      "nameEn": "Macaron Tiles",
+      "nameAr": "بلاط الماكرون",
+      "artBrief": "A square patch of chunky hexagon tiles in pastel macaron colours (blush pink, mint, lemon, lilac) with cream grout, colours scattered so no two neighbours match. At 40px it reads as a candy-coloured honeycomb; unlike marble (veined slabs), mosaic (tiny bright tesserae) or parquet (wood strips), the tiles are big flat hexagons in sugary pastels."
+    },
+    {
+      "id": "wallArt_cupcakeBunting",
+      "category": "wallArt",
+      "slotType": "wall",
+      "new": true,
+      "nameEn": "Cupcake Bunting",
+      "nameAr": "أعلام الكب كيك",
+      "artBrief": "A string of five pastel pennant flags (coral, mint, lemon, cream, coral) hung in a shallow sag between two small wall pins, each flag with one dot and the middle flag carrying a tiny cupcake. At 40px it reads as a zig-zag of colour on a line; it is the only wall piece in the game that is a hanging string instead of a framed rectangle."
+    },
+    {
+      "id": "lighting_cupcakePendant",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "new": true,
+      "nameEn": "Cupcake Pendant",
+      "nameAr": "مصباح الكب كيك",
+      "artBrief": "A pendant lamp whose shade is a giant cupcake: a pleated coral paper case flaring out like a fan, a cream frosting swirl on top with a red cherry, hanging from one dark cord, the case glowing pale yellow from inside. At 40px the ridged flared cup under a soft dome reads as a cupcake at once; every other light in the game is a glass, crystal, metal, neon or candle fixture."
+    },
+    {
+      "id": "wallpaper_sprinkleWall",
+      "category": "wallpaper",
+      "slotType": "wall",
+      "new": true,
+      "nameEn": "Sprinkle Wallpaper",
+      "nameAr": "ورق حائط الرشّات",
+      "artBrief": "A cream panel scattered with short tilted sugar-sprinkle dashes in coral, mint, lemon and chocolate brown, edged by a pale pink scalloped border like the rim of a cupcake case. At 40px it reads as confetti on cream; unlike plain, striped, damask or gilded it has no repeating geometric motif, just loose bright dashes."
+    }
+  ],
+  "slots": [
+    { "kind": "ground", "x": 18, "y": 14, "w": 4, "h": 7, "fixture": "table_cafeTable" },
+    { "kind": "ground", "x": 23, "y": 14, "w": 4, "h": 7, "fixture": "seating_cafeChair" },
+    { "kind": "ground", "x": 29, "y": 14, "w": 5, "h": 7 },
+    { "kind": "surface", "x": 23, "y": 14, "w": 5, "h": 7 },
+    { "kind": "surface", "x": 29, "y": 14, "w": 5, "h": 7 },
+    { "kind": "wall", "x": 4, "y": 2, "w": 5, "h": 4 },
+    { "kind": "ceiling", "x": 10, "y": 0, "w": 5, "h": 4 },
+    { "kind": "wall", "x": 17, "y": 4, "w": 4, "h": 8 }
+  ],
+  "extraFixtureSlots": [],
+  "requiredFixtures": ["table_cafeTable", "seating_cafeChair"],
+  "designNotes": "The painted counter owns the whole left half of the floor line, so the only standing room is the right half (x 128-256 px): the espresso bar goes at the counter's end where it continues the service run, the stool sits in the middle for a customer, and the wide cake display stands under the menu board. Both built-ins share catalogue slots because nothing else fits on the floor: the bistro table is the fixture in the espresso bar's slot and the bentwood chair is the fixture in the stool's slot, so the untouched room still shows a matching table-and-chair set side by side and buying either piece replaces it. The latte-art rug lies under the stool and the macaron tiles under the cake display, drawn at full 40px because surfaces may share the floor with standing pieces. The clear wall is the strip above the cup shelf and the gap between counter and menu board: the bunting hangs high over the left end of the counter, the cupcake pendant drops from the ceiling over the counter's centre above the cups, and the sprinkle wallpaper panel fills the bare strip between the shelf and the board at eye level, so no lamp overlaps a picture and nothing hangs over the shelf, the counter or the board."
+}

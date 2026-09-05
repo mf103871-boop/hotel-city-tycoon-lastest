@@ -107,6 +107,12 @@ export const DecorSchema = z.object({
      */
     roomScope: z.array(z.string().min(1)).min(1),
   })).min(1),
+  /*
+   * Each room's own shop: exactly eight item ids, sold in this room and in no
+   * other, in the order of the room's numbered places (roomAnchors.ts designs
+   * one slot per position). A piece in no catalogue is a built-in.
+   */
+  catalogues: z.record(z.string().min(1), z.array(Id).length(8)),
 });
 
 export const NeighboursSchema = z.object({

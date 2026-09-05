@@ -31,6 +31,7 @@ export function blockerLabel(
     case 'cannotAfford': return t('ui.cannotAfford');
     case 'noSpace': return t('ui.noSpace');
     case 'alreadyExists': return t('ui.alreadyExists');
+    case 'placed': return t('ui.installed');
     default: return null;
   }
 }

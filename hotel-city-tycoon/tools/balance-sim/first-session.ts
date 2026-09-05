@@ -19,6 +19,7 @@ import { isOpen, totalShiftCost } from '../../src/core/systems/economy.ts';
 import { objectiveProgress } from '../../src/core/systems/objectives.ts';
 import type { GameState } from '../../src/core/state/types.ts';
 import type { SimData } from '../../src/core/data-source.ts';
+import { catalogueFor, catalogueIndex } from '../../src/core/data-source.ts';
 
 const data = loadSimData();
 const TPS = data.economy.simulation.ticksPerSecond;
@@ -108,12 +109,16 @@ function play(state: GameState, minute: number): void {
     return def ? r.decor.length < def.decorSlots && def.decorSlots > 0 : false;
   });
   if (room) {
-    const item = [...data.decor]
+    const item = catalogueFor(data, room.defId)
+      .map((id) => data.decor.find((d) => d.id === id)!)
       .filter((d) => d.unlockLevel <= state.player.level && d.cost.currency === 'coins'
-        && d.cost.amount <= state.player.coins * 0.4)
+        && d.cost.amount <= state.player.coins * 0.4
+        && !room.decor.some((p) => p.defId === d.id))
       .sort((a, b) => b.decorPoints - a.decorPoints)[0];
     if (item) {
-      execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: item.id, slot: room.decor.length });
+      execute(data, state, {
+        type: 'PLACE_DECOR', roomId: room.id, defId: item.id, slot: catalogueIndex(data, room.defId, item.id),
+      });
       return;
     }
   }

@@ -44,7 +44,7 @@ import type { RngCursors } from '../rng/index.ts';
  * Each step gives an older save the field a fresh game would have started
  * with, so migrating never costs a player anything.
  */
-export const SCHEMA_VERSION = 19;
+export const SCHEMA_VERSION = 20;
 
 // ---------------------------------------------------------------- pieces
 

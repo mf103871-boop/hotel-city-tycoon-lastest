@@ -11,6 +11,7 @@
 import { loadSimData } from '../balance-sim/load-data.ts';
 import { createInitialState } from '../../src/core/state/init.ts';
 import { execute } from '../../src/core/commands/index.ts';
+import { catalogueFor } from '../../src/core/data-source.ts';
 import type { GameState } from '../../src/core/state/types.ts';
 
 // The bridge binds its own data at module load, so the tests run against the
@@ -125,19 +126,26 @@ await check('the menu blocker agrees with what the command actually does', () =>
 });
 
 // ---------------------------------------------------------------- decorate
-await check('the decorate menu only offers items that fit a free slot', () => {
+await check('the decorate menu is the room\'s own eight, and an installed piece is marked rather than hidden', () => {
   const s = rich();
   const room = s.hotel.rooms.find((r) => r.defId === 'economy')!;
-  const before = decorCatalog(s, room.id).filter((o) => o.blocker === null);
+  const menu = decorCatalog(s, room.id);
+  eq(menu.length, 8, 'the menu is not the room\'s eight pieces');
+  eq(menu.map((o) => o.defId).join(','), catalogueFor(data, 'economy').join(','),
+    'the menu is not in the room\'s own order');
+  menu.forEach((o, i) => eq(o.slot, i, `"${o.defId}" reports slot ${o.slot}, not its position ${i}`));
+  const before = menu.filter((o) => o.blocker === null);
   assert(before.length > 0, 'nothing was offered for an empty room');
 
-  const def = data.rooms.find((r) => r.id === 'economy')!;
-  for (let i = 0; i < def.decorSlots; i++) {
-    execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: i });
+  for (const option of menu) {
+    const r = execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: option.defId, slot: option.slot });
+    assert(r.ok, `the menu offered "${option.defId}" and the command refused it (${r.ok === false ? r.reason : ''})`);
   }
   eq(freeSlots(s, room.id).length, 0, 'the room should be full');
-  const after = decorCatalog(s, room.id).filter((o) => o.blocker === null);
-  eq(after.length, 0, 'a full room still offered decor');
+  const after = decorCatalog(s, room.id);
+  eq(after.length, 8, 'a full room hid its own pieces');
+  eq(after.filter((o) => o.blocker === null).length, 0, 'a full room still offered decor');
+  eq(after.filter((o) => o.placed && o.blocker === 'placed').length, 8, 'an installed piece is not marked installed');
 });
 
 await check('meterShare tells the player how far one item gets them', () => {
@@ -156,7 +164,7 @@ await check('placing decor moves the meter the amount the menu promised', () => 
   const room = s.hotel.rooms.find((r) => r.defId === 'economy')!;
   const option = decorCatalog(s, room.id).find((o) => o.blocker === null)!;
   const before = roomDetail(s, room.id)!.fill;
-  execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: option.defId, slot: 0 });
+  execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: option.defId, slot: option.slot });
   const after = roomDetail(s, room.id)!.fill;
   const moved = after - before;
   assert(Math.abs(moved - option.meterShare) < 0.02,
@@ -195,7 +203,7 @@ await check('the refund shown matches what selling actually pays', () => {
   const s = rich();
   execute(data, s, { type: 'BUILD_ROOM', defId: 'standard' });
   const room = s.hotel.rooms[s.hotel.rooms.length - 1]!;
-  execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
+  execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: catalogueFor(data, 'standard')[0]!, slot: 0 });
   const promised = roomDetail(s, room.id)!.sellRefund;
   const before = s.player.coins;
   assert(execute(data, s, { type: 'SELL_ROOM', roomId: room.id }).ok, 'selling failed');

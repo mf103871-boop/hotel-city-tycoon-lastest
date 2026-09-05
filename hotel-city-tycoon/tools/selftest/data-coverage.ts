@@ -110,6 +110,13 @@ function appText(): string {
   return collect(['src'], (full) => full.startsWith(`src${path.sep}core${path.sep}`));
 }
 
+/**
+ * Containers keyed by an id rather than by a field name: their keys are data
+ * (a room id per catalogue), checked against rooms.json by the integrity
+ * validator, and the map itself is what the code reads.
+ */
+const KEYED_BY_ID = new Set(['catalogues']);
+
 /** Field names appearing anywhere in a JSON value, at any depth. */
 function fieldNames(value: unknown, out = new Set<string>()): Set<string> {
   if (Array.isArray(value)) {
@@ -117,6 +124,7 @@ function fieldNames(value: unknown, out = new Set<string>()): Set<string> {
   } else if (value && typeof value === 'object') {
     for (const [key, child] of Object.entries(value)) {
       out.add(key);
+      if (KEYED_BY_ID.has(key)) continue;
       fieldNames(child, out);
     }
   }

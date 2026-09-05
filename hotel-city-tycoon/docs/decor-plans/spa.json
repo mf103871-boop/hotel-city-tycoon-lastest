@@ -1,0 +1,83 @@
+{
+  "room": "spa",
+  "items": [
+    {
+      "id": "appliance_fogMachine",
+      "category": "appliance",
+      "slotType": "equipment",
+      "new": true,
+      "nameEn": "Fog Machine",
+      "nameAr": "آلة الضباب",
+      "artBrief": "A squat matte-black box on four stub feet with a chrome nozzle at its right end, a gold power lamp and a red carry handle on top; a pale-lilac fog plume rolls out of the nozzle and up to the right in two flat translucent puffs. At 40px it reads as a low black block with a cloud escaping from it — the only appliance in the game that is low, dark and venting, unlike the tall washers, treadmill and arcade cabinet."
+    },
+    {
+      "id": "wallpaper_animatedAurora",
+      "category": "wallpaper",
+      "slotType": "wall",
+      "new": false
+    },
+    {
+      "id": "lighting_laserRig",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "new": false
+    },
+    {
+      "id": "flooring_ledDanceFloor",
+      "category": "flooring",
+      "slotType": "floor",
+      "new": true,
+      "nameEn": "LED Dance Floor",
+      "nameAr": "أرضية رقص مضيئة",
+      "artBrief": "A flat band of square light-up tiles in a 5x2 grid glowing cyan, magenta and white, separated by thin bright-white gridlines and edged with a lit white rim — brighter and cooler than the room's own painted chequer. At 40px it reads as a glowing grid; unlike the obsidian's dark polish, the mosaic's tiny tesserae or the marble's veins, its cells are large, self-lit and neon."
+    },
+    {
+      "id": "lighting_mirrorBallCluster",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "new": true,
+      "nameEn": "Mirror Ball Cluster",
+      "nameAr": "كرات الديسكو",
+      "artBrief": "Three faceted mirror balls of different sizes hanging on short chains from one chrome ceiling plate, silver-grey chequer facets with a few pink and cyan glint squares and small four-point white sparkles beside them. At 40px it reads as a bunch of silver spheres; every other light in the game is a chandelier, a lamp, a pendant or the laser rig's truss, and none of them is a sphere."
+    },
+    {
+      "id": "flooring_obsidian",
+      "category": "flooring",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "luxury_goGoPodium",
+      "category": "luxury",
+      "slotType": "floor",
+      "new": true,
+      "nameEn": "Go-Go Podium",
+      "nameAr": "منصة الرقص",
+      "artBrief": "A waist-high frosted-white drum lit magenta from inside, wrapped by three cyan LED rings, with a mirror-tile top disc and a low chrome guard-rail arc behind it. At 40px it reads as a glowing barrel-shaped stage; unlike luxury_goldStatue's figure on a plinth, the cocktail cart's wheels and bottles or the fireplace's hearth, it is a single lit cylinder with nothing standing on it."
+    },
+    {
+      "id": "wallArt_ledVideoWall",
+      "category": "wallArt",
+      "slotType": "wall",
+      "new": true,
+      "nameEn": "LED Video Wall",
+      "nameAr": "جدار شاشات LED",
+      "artBrief": "A wide black-framed screen split into a 4x3 grid of dark tiles showing a coloured equaliser of cyan, magenta and gold bars of different heights on black, with thin white gridlines between the tiles. At 40px it reads as a black rectangle full of bright vertical bars; unlike the cinema's blank white projector screen or any framed poster, print or painting, it is dark, self-lit and holds no picture."
+    }
+  ],
+  "slots": [
+    { "kind": "ground",  "x": 12, "y": 12, "w": 5, "h": 7 },
+    { "kind": "wall",    "x": 13, "y": 7,  "w": 6, "h": 6 },
+    { "kind": "ceiling", "x": 19, "y": 2,  "w": 5, "h": 5 },
+    { "kind": "surface", "x": 24, "y": 12, "w": 5, "h": 7 },
+    { "kind": "ceiling", "x": 29, "y": 2,  "w": 5, "h": 5 },
+    { "kind": "surface", "x": 30, "y": 12, "w": 5, "h": 7 },
+    { "kind": "ground",  "x": 30, "y": 12, "w": 5, "h": 7 },
+    { "kind": "wall",    "x": 35, "y": 7,  "w": 6, "h": 6 }
+  ],
+  "extraFixtureSlots": [
+    { "kind": "ground", "x": 19, "y": 12, "w": 6, "h": 7, "fixture": "appliance_djBooth" }
+  ],
+  "requiredFixtures": ["appliance_djBooth"],
+  "designNotes": "The disco's floor is only free between the two painted speaker stacks (74-324px) and the mirror ball owns the centre of the wall, so the plan is symmetric about the ball: a wall panel hangs directly under each neon bar (x=13 and x=35, below the neon at 24-60px, above the chequer), and a light flanks the ball on each side (x=19 and x=29) where the wall and ceiling boxes never share an x-range. The centre floor under the ball gets only the flat LED dance floor so nothing tall covers the ball or its beams; the built-in DJ booth keeps its own slot under the laser rig (x=19), the low fog machine sits by the left speaker in front of the aurora panel where its plume rises without hiding it, and the go-go podium stands on the obsidian patch under the mirror-ball cluster (x=30), leaving the LED video wall unobstructed at x=35. All standing boxes keep 12-44px clear of each other and every piece draws at 40px or larger."
+}

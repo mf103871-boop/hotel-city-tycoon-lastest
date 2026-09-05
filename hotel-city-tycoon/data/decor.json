@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "tuningStatus": "original-model-3A",
+  "tuningStatus": "designed-per-room-catalogues",
   "assetKeyConvention": "decor.<category>.<name>  |  single sprite + optional _hi variant",
   "slotTypes": [
     "wall",
@@ -30,17 +30,17 @@
       "slotType": "wall",
       "nameKey": "decor.wallpaper_plain.name",
       "assetKey": "decor.wallpaper.plain",
-      "decorPoints": 30,
+      "decorPoints": 10,
       "cost": {
         "currency": "coins",
-        "amount": 120
+        "amount": 180
       },
       "unlockLevel": 1,
       "sellable": true,
       "giftable": true,
       "tier": 1,
       "roomScope": [
-        "any"
+        "housekeeping"
       ]
     },
     {
@@ -49,17 +49,17 @@
       "slotType": "wall",
       "nameKey": "decor.wallpaper_striped.name",
       "assetKey": "decor.wallpaper.striped",
-      "decorPoints": 55,
+      "decorPoints": 10,
       "cost": {
         "currency": "coins",
-        "amount": 420
+        "amount": 180
       },
-      "unlockLevel": 3,
+      "unlockLevel": 1,
       "sellable": true,
       "giftable": true,
       "tier": 2,
       "roomScope": [
-        "any"
+        "economy"
       ]
     },
     {
@@ -68,17 +68,17 @@
       "slotType": "wall",
       "nameKey": "decor.wallpaper_damask.name",
       "assetKey": "decor.wallpaper.damask",
-      "decorPoints": 95,
+      "decorPoints": 20,
       "cost": {
         "currency": "coins",
-        "amount": 1400
+        "amount": 530
       },
-      "unlockLevel": 7,
+      "unlockLevel": 2,
       "sellable": true,
       "giftable": true,
       "tier": 3,
       "roomScope": [
-        "any"
+        "standard"
       ]
     },
     {
@@ -87,17 +87,17 @@
       "slotType": "wall",
       "nameKey": "decor.wallpaper_velvet.name",
       "assetKey": "decor.wallpaper.velvet",
-      "decorPoints": 170,
+      "decorPoints": 25,
       "cost": {
         "currency": "coins",
-        "amount": 4200
+        "amount": 980
       },
-      "unlockLevel": 13,
+      "unlockLevel": 14,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 4,
       "roomScope": [
-        "any"
+        "double"
       ]
     },
     {
@@ -106,17 +106,17 @@
       "slotType": "wall",
       "nameKey": "decor.wallpaper_gilded.name",
       "assetKey": "decor.wallpaper.gilded",
-      "decorPoints": 285,
+      "decorPoints": 19,
       "cost": {
         "currency": "coins",
-        "amount": 12000
+        "amount": 220
       },
-      "unlockLevel": 21,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 5,
       "roomScope": [
-        "any"
+        "lobby"
       ]
     },
     {
@@ -125,17 +125,17 @@
       "slotType": "wall",
       "nameKey": "decor.wallpaper_mural.name",
       "assetKey": "decor.wallpaper.mural",
-      "decorPoints": 480,
+      "decorPoints": 60,
       "cost": {
         "currency": "coins",
-        "amount": 34000
+        "amount": 3050
       },
-      "unlockLevel": 31,
+      "unlockLevel": 32,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 6,
       "roomScope": [
-        "any"
+        "family"
       ]
     },
     {
@@ -144,7 +144,7 @@
       "slotType": "floor",
       "nameKey": "decor.flooring_concrete.name",
       "assetKey": "decor.flooring.concrete",
-      "decorPoints": 30,
+      "decorPoints": 5,
       "cost": {
         "currency": "coins",
         "amount": 120
@@ -154,7 +154,7 @@
       "giftable": true,
       "tier": 1,
       "roomScope": [
-        "any"
+        "housekeeping"
       ]
     },
     {
@@ -163,17 +163,17 @@
       "slotType": "floor",
       "nameKey": "decor.flooring_carpet.name",
       "assetKey": "decor.flooring.carpet",
-      "decorPoints": 55,
+      "decorPoints": 8,
       "cost": {
         "currency": "coins",
-        "amount": 450
+        "amount": 145
       },
-      "unlockLevel": 3,
+      "unlockLevel": 1,
       "sellable": true,
       "giftable": true,
       "tier": 2,
       "roomScope": [
-        "any"
+        "economy"
       ]
     },
     {
@@ -182,17 +182,17 @@
       "slotType": "floor",
       "nameKey": "decor.flooring_oak.name",
       "assetKey": "decor.flooring.oak",
-      "decorPoints": 100,
+      "decorPoints": 16,
       "cost": {
         "currency": "coins",
-        "amount": 1500
+        "amount": 430
       },
-      "unlockLevel": 7,
+      "unlockLevel": 2,
       "sellable": true,
       "giftable": true,
       "tier": 3,
       "roomScope": [
-        "any"
+        "standard"
       ]
     },
     {
@@ -201,17 +201,17 @@
       "slotType": "floor",
       "nameKey": "decor.flooring_marble.name",
       "assetKey": "decor.flooring.marble",
-      "decorPoints": 175,
+      "decorPoints": 12,
       "cost": {
         "currency": "coins",
-        "amount": 4500
+        "amount": 145
       },
-      "unlockLevel": 13,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 4,
       "roomScope": [
-        "any"
+        "lobby"
       ]
     },
     {
@@ -220,17 +220,17 @@
       "slotType": "floor",
       "nameKey": "decor.flooring_mosaic.name",
       "assetKey": "decor.flooring.mosaic",
-      "decorPoints": 295,
+      "decorPoints": 31,
       "cost": {
         "currency": "coins",
-        "amount": 13000
+        "amount": 1200
       },
-      "unlockLevel": 21,
+      "unlockLevel": 14,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 5,
       "roomScope": [
-        "any"
+        "double"
       ]
     },
     {
@@ -239,17 +239,17 @@
       "slotType": "floor",
       "nameKey": "decor.flooring_obsidian.name",
       "assetKey": "decor.flooring.obsidian",
-      "decorPoints": 495,
+      "decorPoints": 99,
       "cost": {
         "currency": "coins",
-        "amount": 36000
+        "amount": 2850
       },
-      "unlockLevel": 31,
+      "unlockLevel": 30,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 6,
       "roomScope": [
-        "any"
+        "spa"
       ]
     },
     {
@@ -269,7 +269,6 @@
       "tier": 1,
       "roomScope": [
         "economy",
-        "standard",
         "family"
       ]
     },
@@ -289,10 +288,9 @@
       "giftable": true,
       "tier": 2,
       "roomScope": [
-        "economy",
-        "standard",
         "double",
-        "family"
+        "family",
+        "standard"
       ]
     },
     {
@@ -311,9 +309,6 @@
       "giftable": false,
       "tier": 3,
       "roomScope": [
-        "standard",
-        "double",
-        "family",
         "deluxe"
       ]
     },
@@ -333,9 +328,6 @@
       "giftable": false,
       "tier": 4,
       "roomScope": [
-        "double",
-        "family",
-        "deluxe",
         "executive"
       ]
     },
@@ -355,9 +347,6 @@
       "giftable": false,
       "tier": 5,
       "roomScope": [
-        "family",
-        "deluxe",
-        "executive",
         "honeymoon"
       ]
     },
@@ -377,9 +366,6 @@
       "giftable": false,
       "tier": 6,
       "roomScope": [
-        "deluxe",
-        "executive",
-        "honeymoon",
         "luxurySuite"
       ]
     },
@@ -389,25 +375,17 @@
       "slotType": "floor",
       "nameKey": "decor.seating_stool.name",
       "assetKey": "decor.seating.stool",
-      "decorPoints": 35,
+      "decorPoints": 53,
       "cost": {
         "currency": "coins",
-        "amount": 180
+        "amount": 3750
       },
-      "unlockLevel": 2,
+      "unlockLevel": 20,
       "sellable": true,
       "giftable": true,
       "tier": 1,
       "roomScope": [
-        "lobby",
-        "staffRoom",
-        "housekeeping",
-        "maintenance",
-        "cafe",
-        "bar",
-        "gym",
-        "economy",
-        "standard"
+        "cafe"
       ]
     },
     {
@@ -416,22 +394,17 @@
       "slotType": "floor",
       "nameKey": "decor.seating_armchair.name",
       "assetKey": "decor.seating.armchair",
-      "decorPoints": 70,
+      "decorPoints": 24,
       "cost": {
         "currency": "coins",
-        "amount": 700
+        "amount": 6350
       },
-      "unlockLevel": 5,
+      "unlockLevel": 1,
       "sellable": true,
       "giftable": true,
       "tier": 2,
       "roomScope": [
-        "guest",
-        "lobby",
-        "staffRoom",
-        "cafe",
-        "cinema",
-        "business"
+        "deluxe"
       ]
     },
     {
@@ -440,19 +413,16 @@
       "slotType": "floor",
       "nameKey": "decor.seating_loveseat.name",
       "assetKey": "decor.seating.loveseat",
-      "decorPoints": 125,
+      "decorPoints": 86,
       "cost": {
         "currency": "coins",
-        "amount": 2300
+        "amount": 1300
       },
-      "unlockLevel": 10,
+      "unlockLevel": 9,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 3,
       "roomScope": [
-        "guest",
-        "lobby",
-        "cafe",
         "restaurant"
       ]
     },
@@ -462,23 +432,17 @@
       "slotType": "floor",
       "nameKey": "decor.seating_chaise.name",
       "assetKey": "decor.seating.chaise",
-      "decorPoints": 220,
+      "decorPoints": 27,
       "cost": {
         "currency": "coins",
-        "amount": 7000
+        "amount": 13800
       },
-      "unlockLevel": 16,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 4,
       "roomScope": [
-        "deluxe",
-        "executive",
-        "honeymoon",
-        "luxurySuite",
-        "presidential",
-        "spa",
-        "pool"
+        "executive"
       ]
     },
     {
@@ -487,20 +451,17 @@
       "slotType": "floor",
       "nameKey": "decor.seating_throne.name",
       "assetKey": "decor.seating.throne",
-      "decorPoints": 370,
+      "decorPoints": 39,
       "cost": {
         "currency": "coins",
-        "amount": 20000
+        "amount": 17400
       },
-      "unlockLevel": 25,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 5,
       "roomScope": [
-        "presidential",
-        "luxurySuite",
-        "restaurant",
-        "lobby"
+        "presidential"
       ]
     },
     {
@@ -509,20 +470,17 @@
       "slotType": "floor",
       "nameKey": "decor.table_sideTable.name",
       "assetKey": "decor.table.sideTable",
-      "decorPoints": 35,
+      "decorPoints": 122,
       "cost": {
         "currency": "coins",
-        "amount": 160
+        "amount": 2400
       },
-      "unlockLevel": 2,
+      "unlockLevel": 17,
       "sellable": true,
       "giftable": true,
       "tier": 1,
       "roomScope": [
-        "guest",
-        "lobby",
-        "staffRoom",
-        "cafe"
+        "cinema"
       ]
     },
     {
@@ -531,21 +489,16 @@
       "slotType": "floor",
       "nameKey": "decor.table_deskWood.name",
       "assetKey": "decor.table.deskWood",
-      "decorPoints": 65,
+      "decorPoints": 390,
       "cost": {
         "currency": "coins",
-        "amount": 640
+        "amount": 7800
       },
-      "unlockLevel": 5,
+      "unlockLevel": 52,
       "sellable": true,
       "giftable": true,
       "tier": 2,
       "roomScope": [
-        "business",
-        "executive",
-        "standard",
-        "double",
-        "staffRoom",
         "maintenance"
       ]
     },
@@ -555,20 +508,17 @@
       "slotType": "floor",
       "nameKey": "decor.table_glassTable.name",
       "assetKey": "decor.table.glassTable",
-      "decorPoints": 120,
+      "decorPoints": 30,
       "cost": {
         "currency": "coins",
-        "amount": 2100
+        "amount": 7900
       },
-      "unlockLevel": 10,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 3,
       "roomScope": [
-        "guest",
-        "cafe",
-        "lobby",
-        "bar"
+        "deluxe"
       ]
     },
     {
@@ -577,23 +527,17 @@
       "slotType": "floor",
       "nameKey": "decor.table_marbleTable.name",
       "assetKey": "decor.table.marbleTable",
-      "decorPoints": 210,
+      "decorPoints": 107,
       "cost": {
         "currency": "coins",
-        "amount": 6400
+        "amount": 1600
       },
-      "unlockLevel": 17,
+      "unlockLevel": 9,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 4,
       "roomScope": [
-        "deluxe",
-        "executive",
-        "honeymoon",
-        "luxurySuite",
-        "presidential",
-        "restaurant",
-        "spa"
+        "restaurant"
       ]
     },
     {
@@ -602,20 +546,17 @@
       "slotType": "floor",
       "nameKey": "decor.table_crystalTable.name",
       "assetKey": "decor.table.crystalTable",
-      "decorPoints": 350,
+      "decorPoints": 48,
       "cost": {
         "currency": "coins",
-        "amount": 18000
+        "amount": 21500
       },
-      "unlockLevel": 26,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 5,
       "roomScope": [
-        "luxurySuite",
-        "presidential",
-        "bar",
-        "restaurant"
+        "presidential"
       ]
     },
     {
@@ -624,17 +565,17 @@
       "slotType": "ceiling",
       "nameKey": "decor.lighting_bulb.name",
       "assetKey": "decor.lighting.bulb",
-      "decorPoints": 30,
+      "decorPoints": 15,
       "cost": {
         "currency": "coins",
-        "amount": 140
+        "amount": 340
       },
       "unlockLevel": 1,
       "sellable": true,
       "giftable": true,
       "tier": 1,
       "roomScope": [
-        "any"
+        "housekeeping"
       ]
     },
     {
@@ -643,17 +584,17 @@
       "slotType": "ceiling",
       "nameKey": "decor.lighting_lamp.name",
       "assetKey": "decor.lighting.lamp",
-      "decorPoints": 60,
+      "decorPoints": 12,
       "cost": {
         "currency": "coins",
-        "amount": 520
+        "amount": 220
       },
-      "unlockLevel": 4,
+      "unlockLevel": 1,
       "sellable": true,
       "giftable": true,
       "tier": 2,
       "roomScope": [
-        "any"
+        "economy"
       ]
     },
     {
@@ -662,17 +603,17 @@
       "slotType": "ceiling",
       "nameKey": "decor.lighting_pendant.name",
       "assetKey": "decor.lighting.pendant",
-      "decorPoints": 105,
+      "decorPoints": 30,
       "cost": {
         "currency": "coins",
-        "amount": 1700
+        "amount": 810
       },
-      "unlockLevel": 8,
+      "unlockLevel": 2,
       "sellable": true,
       "giftable": true,
       "tier": 3,
       "roomScope": [
-        "any"
+        "standard"
       ]
     },
     {
@@ -681,17 +622,17 @@
       "slotType": "ceiling",
       "nameKey": "decor.lighting_chandelier.name",
       "assetKey": "decor.lighting.chandelier",
-      "decorPoints": 185,
+      "decorPoints": 28,
       "cost": {
         "currency": "coins",
-        "amount": 5200
+        "amount": 340
       },
-      "unlockLevel": 14,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 4,
       "roomScope": [
-        "any"
+        "lobby"
       ]
     },
     {
@@ -700,17 +641,17 @@
       "slotType": "ceiling",
       "nameKey": "decor.lighting_crystalTiers.name",
       "assetKey": "decor.lighting.crystalTiers",
-      "decorPoints": 320,
+      "decorPoints": 38,
       "cost": {
         "currency": "coins",
-        "amount": 15000
+        "amount": 1500
       },
-      "unlockLevel": 22,
+      "unlockLevel": 14,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 5,
       "roomScope": [
-        "any"
+        "double"
       ]
     },
     {
@@ -719,17 +660,17 @@
       "slotType": "ceiling",
       "nameKey": "decor.lighting_starfield.name",
       "assetKey": "decor.lighting.starfield",
-      "decorPoints": 535,
+      "decorPoints": 91,
       "cost": {
         "currency": "coins",
-        "amount": 42000
+        "amount": 4650
       },
-      "unlockLevel": 33,
+      "unlockLevel": 32,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 6,
       "roomScope": [
-        "any"
+        "family"
       ]
     },
     {
@@ -738,17 +679,17 @@
       "slotType": "wall",
       "nameKey": "decor.wallArt_poster.name",
       "assetKey": "decor.wallArt.poster",
-      "decorPoints": 30,
+      "decorPoints": 7,
       "cost": {
         "currency": "coins",
-        "amount": 150
+        "amount": 120
       },
-      "unlockLevel": 2,
+      "unlockLevel": 1,
       "sellable": true,
       "giftable": true,
       "tier": 1,
       "roomScope": [
-        "any"
+        "economy"
       ]
     },
     {
@@ -757,17 +698,17 @@
       "slotType": "wall",
       "nameKey": "decor.wallArt_print.name",
       "assetKey": "decor.wallArt.print",
-      "decorPoints": 60,
+      "decorPoints": 13,
       "cost": {
         "currency": "coins",
-        "amount": 560
+        "amount": 350
       },
-      "unlockLevel": 5,
+      "unlockLevel": 2,
       "sellable": true,
       "giftable": true,
       "tier": 2,
       "roomScope": [
-        "any"
+        "standard"
       ]
     },
     {
@@ -776,17 +717,17 @@
       "slotType": "wall",
       "nameKey": "decor.wallArt_painting.name",
       "assetKey": "decor.wallArt.painting",
-      "decorPoints": 115,
+      "decorPoints": 49,
       "cost": {
         "currency": "coins",
-        "amount": 1900
+        "amount": 2500
       },
-      "unlockLevel": 9,
+      "unlockLevel": 32,
       "sellable": true,
       "giftable": true,
       "tier": 3,
       "roomScope": [
-        "any"
+        "family"
       ]
     },
     {
@@ -795,17 +736,17 @@
       "slotType": "wall",
       "nameKey": "decor.wallArt_sculptureWall.name",
       "assetKey": "decor.wallArt.sculptureWall",
-      "decorPoints": 195,
+      "decorPoints": 45,
       "cost": {
         "currency": "coins",
-        "amount": 5600
+        "amount": 710
       },
-      "unlockLevel": 15,
+      "unlockLevel": 12,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 4,
       "roomScope": [
-        "any"
+        "bar"
       ]
     },
     {
@@ -814,17 +755,17 @@
       "slotType": "wall",
       "nameKey": "decor.wallArt_masterpiece.name",
       "assetKey": "decor.wallArt.masterpiece",
-      "decorPoints": 330,
+      "decorPoints": 15,
       "cost": {
         "currency": "coins",
-        "amount": 16000
+        "amount": 180
       },
-      "unlockLevel": 24,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 5,
       "roomScope": [
-        "any"
+        "lobby"
       ]
     },
     {
@@ -833,17 +774,17 @@
       "slotType": "floor",
       "nameKey": "decor.plant_succulent.name",
       "assetKey": "decor.plant.succulent",
-      "decorPoints": 25,
+      "decorPoints": 45,
       "cost": {
         "currency": "coins",
-        "amount": 110
+        "amount": 940
       },
-      "unlockLevel": 1,
+      "unlockLevel": 52,
       "sellable": true,
       "giftable": true,
       "tier": 1,
       "roomScope": [
-        "any"
+        "laundry"
       ]
     },
     {
@@ -852,17 +793,17 @@
       "slotType": "floor",
       "nameKey": "decor.plant_fern.name",
       "assetKey": "decor.plant.fern",
-      "decorPoints": 50,
+      "decorPoints": 8,
       "cost": {
         "currency": "coins",
-        "amount": 400
+        "amount": 2200
       },
-      "unlockLevel": 3,
+      "unlockLevel": 1,
       "sellable": true,
       "giftable": true,
       "tier": 2,
       "roomScope": [
-        "any"
+        "deluxe"
       ]
     },
     {
@@ -871,17 +812,17 @@
       "slotType": "floor",
       "nameKey": "decor.plant_palm.name",
       "assetKey": "decor.plant.palm",
-      "decorPoints": 95,
+      "decorPoints": 42,
       "cost": {
         "currency": "coins",
-        "amount": 1300
+        "amount": 830
       },
-      "unlockLevel": 8,
+      "unlockLevel": 17,
       "sellable": true,
       "giftable": true,
       "tier": 3,
       "roomScope": [
-        "any"
+        "cinema"
       ]
     },
     {
@@ -890,17 +831,17 @@
       "slotType": "floor",
       "nameKey": "decor.plant_bonsai.name",
       "assetKey": "decor.plant.bonsai",
-      "decorPoints": 160,
+      "decorPoints": 10,
       "cost": {
         "currency": "coins",
-        "amount": 3900
+        "amount": 1100
       },
-      "unlockLevel": 14,
+      "unlockLevel": 52,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 4,
       "roomScope": [
-        "any"
+        "staffRoom"
       ]
     },
     {
@@ -909,17 +850,17 @@
       "slotType": "floor",
       "nameKey": "decor.plant_orchidWall.name",
       "assetKey": "decor.plant.orchidWall",
-      "decorPoints": 275,
+      "decorPoints": 13,
       "cost": {
         "currency": "coins",
-        "amount": 11000
+        "amount": 5650
       },
-      "unlockLevel": 22,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 5,
       "roomScope": [
-        "any"
+        "honeymoon"
       ]
     },
     {
@@ -928,17 +869,17 @@
       "slotType": "floor",
       "nameKey": "decor.rug_mat.name",
       "assetKey": "decor.rug.mat",
-      "decorPoints": 30,
+      "decorPoints": 5,
       "cost": {
         "currency": "coins",
-        "amount": 130
+        "amount": 95
       },
-      "unlockLevel": 2,
+      "unlockLevel": 1,
       "sellable": true,
       "giftable": true,
       "tier": 1,
       "roomScope": [
-        "any"
+        "housekeeping"
       ]
     },
     {
@@ -947,17 +888,17 @@
       "slotType": "floor",
       "nameKey": "decor.rug_woolRug.name",
       "assetKey": "decor.rug.woolRug",
-      "decorPoints": 55,
+      "decorPoints": 5,
       "cost": {
         "currency": "coins",
-        "amount": 480
+        "amount": 95
       },
-      "unlockLevel": 4,
+      "unlockLevel": 1,
       "sellable": true,
       "giftable": true,
       "tier": 2,
       "roomScope": [
-        "any"
+        "economy"
       ]
     },
     {
@@ -966,17 +907,17 @@
       "slotType": "floor",
       "nameKey": "decor.rug_persianRug.name",
       "assetKey": "decor.rug.persianRug",
-      "decorPoints": 105,
+      "decorPoints": 10,
       "cost": {
         "currency": "coins",
-        "amount": 1600
+        "amount": 280
       },
-      "unlockLevel": 9,
+      "unlockLevel": 2,
       "sellable": true,
       "giftable": true,
       "tier": 3,
       "roomScope": [
-        "any"
+        "standard"
       ]
     },
     {
@@ -985,17 +926,17 @@
       "slotType": "floor",
       "nameKey": "decor.rug_silkRug.name",
       "assetKey": "decor.rug.silkRug",
-      "decorPoints": 180,
+      "decorPoints": 20,
       "cost": {
         "currency": "coins",
-        "amount": 4800
+        "amount": 780
       },
-      "unlockLevel": 16,
+      "unlockLevel": 14,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 4,
       "roomScope": [
-        "any"
+        "double"
       ]
     },
     {
@@ -1004,17 +945,17 @@
       "slotType": "floor",
       "nameKey": "decor.rug_antiqueRug.name",
       "assetKey": "decor.rug.antiqueRug",
-      "decorPoints": 310,
+      "decorPoints": 39,
       "cost": {
         "currency": "coins",
-        "amount": 14000
+        "amount": 2000
       },
-      "unlockLevel": 25,
+      "unlockLevel": 32,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 5,
       "roomScope": [
-        "any"
+        "family"
       ]
     },
     {
@@ -1023,25 +964,17 @@
       "slotType": "floor",
       "nameKey": "decor.luxury_minibar.name",
       "assetKey": "decor.luxury.minibar",
-      "decorPoints": 135,
+      "decorPoints": 52,
       "cost": {
         "currency": "coins",
-        "amount": 2600
+        "amount": 26400
       },
-      "unlockLevel": 12,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 1,
       "roomScope": [
-        "double",
-        "family",
-        "deluxe",
-        "executive",
-        "honeymoon",
-        "luxurySuite",
-        "presidential",
-        "bar",
-        "staffRoom"
+        "executive"
       ]
     },
     {
@@ -1050,22 +983,17 @@
       "slotType": "floor",
       "nameKey": "decor.luxury_fireplace.name",
       "assetKey": "decor.luxury.fireplace",
-      "decorPoints": 230,
+      "decorPoints": 55,
       "cost": {
         "currency": "coins",
-        "amount": 7800
+        "amount": 36300
       },
-      "unlockLevel": 18,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 2,
       "roomScope": [
-        "deluxe",
-        "honeymoon",
-        "luxurySuite",
-        "presidential",
-        "lobby",
-        "bar"
+        "luxurySuite"
       ]
     },
     {
@@ -1074,21 +1002,17 @@
       "slotType": "floor",
       "nameKey": "decor.luxury_jacuzzi.name",
       "assetKey": "decor.luxury.jacuzzi",
-      "decorPoints": 395,
+      "decorPoints": 48,
       "cost": {
         "currency": "coins",
-        "amount": 23000
+        "amount": 20400
       },
-      "unlockLevel": 26,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 3,
       "roomScope": [
-        "honeymoon",
-        "luxurySuite",
-        "presidential",
-        "spa",
-        "pool"
+        "honeymoon"
       ]
     },
     {
@@ -1097,21 +1021,17 @@
       "slotType": "floor",
       "nameKey": "decor.luxury_piano.name",
       "assetKey": "decor.luxury.piano",
-      "decorPoints": 665,
+      "decorPoints": 74,
       "cost": {
         "currency": "coins",
-        "amount": 65000
+        "amount": 32900
       },
-      "unlockLevel": 36,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 4,
       "roomScope": [
-        "bar",
-        "restaurant",
-        "lobby",
-        "presidential",
-        "luxurySuite"
+        "presidential"
       ]
     },
     {
@@ -1120,22 +1040,17 @@
       "slotType": "floor",
       "nameKey": "decor.luxury_aquarium.name",
       "assetKey": "decor.luxury.aquarium",
-      "decorPoints": 1005,
+      "decorPoints": 35,
       "cost": {
         "currency": "coins",
-        "amount": 150000
+        "amount": 430
       },
-      "unlockLevel": 45,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 5,
       "roomScope": [
-        "lobby",
-        "restaurant",
-        "bar",
-        "presidential",
-        "luxurySuite",
-        "spa"
+        "lobby"
       ]
     },
     {
@@ -1144,17 +1059,17 @@
       "slotType": "wall",
       "nameKey": "decor.wallpaper_animatedAurora.name",
       "assetKey": "decor.wallpaper.animatedAurora",
-      "decorPoints": 380,
+      "decorPoints": 122,
       "cost": {
         "currency": "gems",
         "amount": 18
       },
-      "unlockLevel": 15,
+      "unlockLevel": 30,
       "sellable": false,
       "giftable": false,
       "tier": 99,
       "roomScope": [
-        "any"
+        "spa"
       ]
     },
     {
@@ -1163,17 +1078,17 @@
       "slotType": "ceiling",
       "nameKey": "decor.lighting_hologram.name",
       "assetKey": "decor.lighting.hologram",
-      "decorPoints": 400,
+      "decorPoints": 71,
       "cost": {
         "currency": "gems",
         "amount": 22
       },
-      "unlockLevel": 15,
+      "unlockLevel": 28,
       "sellable": false,
       "giftable": false,
       "tier": 99,
       "roomScope": [
-        "any"
+        "arcade"
       ]
     },
     {
@@ -1182,21 +1097,17 @@
       "slotType": "floor",
       "nameKey": "decor.luxury_goldStatue.name",
       "assetKey": "decor.luxury.goldStatue",
-      "decorPoints": 500,
+      "decorPoints": 93,
       "cost": {
         "currency": "gems",
         "amount": 30
       },
-      "unlockLevel": 15,
+      "unlockLevel": 1,
       "sellable": false,
       "giftable": false,
       "tier": 99,
       "roomScope": [
-        "lobby",
-        "presidential",
-        "luxurySuite",
-        "restaurant",
-        "spa"
+        "presidential"
       ]
     },
     {
@@ -1206,16 +1117,16 @@
       "category": "wallpaper",
       "slotType": "wall",
       "tier": 7,
-      "decorPoints": 720,
+      "decorPoints": 20,
       "cost": {
         "currency": "coins",
-        "amount": 81600
+        "amount": 8600
       },
-      "unlockLevel": 38,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "any"
+        "honeymoon"
       ]
     },
     {
@@ -1225,16 +1136,16 @@
       "category": "wallpaper",
       "slotType": "wall",
       "tier": 8,
-      "decorPoints": 1056,
+      "decorPoints": 20,
       "cost": {
         "currency": "coins",
-        "amount": 156400
+        "amount": 12500
       },
-      "unlockLevel": 46,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "any"
+        "luxurySuite"
       ]
     },
     {
@@ -1244,16 +1155,16 @@
       "category": "flooring",
       "slotType": "floor",
       "tier": 7,
-      "decorPoints": 742,
+      "decorPoints": 16,
       "cost": {
         "currency": "coins",
-        "amount": 86400
+        "amount": 4150
       },
-      "unlockLevel": 42,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "any"
+        "deluxe"
       ]
     },
     {
@@ -1263,16 +1174,16 @@
       "category": "flooring",
       "slotType": "floor",
       "tier": 8,
-      "decorPoints": 1089,
+      "decorPoints": 26,
       "cost": {
         "currency": "coins",
-        "amount": 165600
+        "amount": 11400
       },
-      "unlockLevel": 50,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "any"
+        "presidential"
       ]
     },
     {
@@ -1291,9 +1202,6 @@
       "sellable": true,
       "giftable": false,
       "roomScope": [
-        "executive",
-        "honeymoon",
-        "luxurySuite",
         "presidential"
       ]
     },
@@ -1304,18 +1212,16 @@
       "category": "bed",
       "slotType": "bed",
       "tier": 8,
-      "decorPoints": 1540,
+      "decorPoints": 45,
       "cost": {
         "currency": "coins",
-        "amount": 331200
+        "amount": 29000
       },
-      "unlockLevel": 46,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "honeymoon",
-        "luxurySuite",
-        "presidential"
+        "luxurySuite"
       ]
     },
     {
@@ -1325,19 +1231,16 @@
       "category": "seating",
       "slotType": "floor",
       "tier": 6,
-      "decorPoints": 555,
+      "decorPoints": 30,
       "cost": {
         "currency": "coins",
-        "amount": 48000
+        "amount": 13200
       },
-      "unlockLevel": 42,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "honeymoon",
-        "luxurySuite",
-        "presidential",
-        "spa"
+        "honeymoon"
       ]
     },
     {
@@ -1347,19 +1250,16 @@
       "category": "seating",
       "slotType": "floor",
       "tier": 7,
-      "decorPoints": 814,
+      "decorPoints": 37,
       "cost": {
         "currency": "coins",
-        "amount": 92000
+        "amount": 23400
       },
-      "unlockLevel": 50,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "luxurySuite",
-        "presidential",
-        "lobby",
-        "restaurant"
+        "luxurySuite"
       ]
     },
     {
@@ -1369,19 +1269,16 @@
       "category": "table",
       "slotType": "floor",
       "tier": 6,
-      "decorPoints": 525,
+      "decorPoints": 30,
       "cost": {
         "currency": "coins",
-        "amount": 43200
+        "amount": 18900
       },
-      "unlockLevel": 38,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "luxurySuite",
-        "presidential",
-        "honeymoon",
-        "lobby"
+        "luxurySuite"
       ]
     },
     {
@@ -1391,19 +1288,16 @@
       "category": "table",
       "slotType": "floor",
       "tier": 7,
-      "decorPoints": 770,
+      "decorPoints": 33,
       "cost": {
         "currency": "coins",
-        "amount": 82800
+        "amount": 17000
       },
-      "unlockLevel": 46,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "executive",
-        "business",
-        "presidential",
-        "luxurySuite"
+        "executive"
       ]
     },
     {
@@ -1413,16 +1307,16 @@
       "category": "lighting",
       "slotType": "ceiling",
       "tier": 7,
-      "decorPoints": 802,
+      "decorPoints": 24,
       "cost": {
         "currency": "coins",
-        "amount": 100800
+        "amount": 15300
       },
-      "unlockLevel": 42,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "any"
+        "luxurySuite"
       ]
     },
     {
@@ -1432,16 +1326,16 @@
       "category": "lighting",
       "slotType": "ceiling",
       "tier": 8,
-      "decorPoints": 1177,
+      "decorPoints": 32,
       "cost": {
         "currency": "coins",
-        "amount": 193200
+        "amount": 14200
       },
-      "unlockLevel": 50,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "any"
+        "presidential"
       ]
     },
     {
@@ -1451,16 +1345,16 @@
       "category": "wallArt",
       "slotType": "wall",
       "tier": 6,
-      "decorPoints": 495,
+      "decorPoints": 13,
       "cost": {
         "currency": "coins",
-        "amount": 38400
+        "amount": 3400
       },
-      "unlockLevel": 38,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "any"
+        "deluxe"
       ]
     },
     {
@@ -1470,16 +1364,16 @@
       "category": "wallArt",
       "slotType": "wall",
       "tier": 7,
-      "decorPoints": 726,
+      "decorPoints": 16,
       "cost": {
         "currency": "coins",
-        "amount": 73600
+        "amount": 7050
       },
-      "unlockLevel": 46,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "any"
+        "honeymoon"
       ]
     },
     {
@@ -1489,16 +1383,16 @@
       "category": "plant",
       "slotType": "floor",
       "tier": 6,
-      "decorPoints": 412,
+      "decorPoints": 12,
       "cost": {
         "currency": "coins",
-        "amount": 26400
+        "amount": 5850
       },
-      "unlockLevel": 42,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "any"
+        "executive"
       ]
     },
     {
@@ -1508,16 +1402,16 @@
       "category": "plant",
       "slotType": "floor",
       "tier": 7,
-      "decorPoints": 605,
+      "decorPoints": 16,
       "cost": {
         "currency": "coins",
-        "amount": 50600
+        "amount": 10100
       },
-      "unlockLevel": 50,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "any"
+        "luxurySuite"
       ]
     },
     {
@@ -1527,16 +1421,16 @@
       "category": "rug",
       "slotType": "floor",
       "tier": 6,
-      "decorPoints": 465,
+      "decorPoints": 10,
       "cost": {
         "currency": "coins",
-        "amount": 33600
+        "amount": 2750
       },
-      "unlockLevel": 38,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "any"
+        "deluxe"
       ]
     },
     {
@@ -1546,16 +1440,16 @@
       "category": "rug",
       "slotType": "floor",
       "tier": 7,
-      "decorPoints": 682,
+      "decorPoints": 14,
       "cost": {
         "currency": "coins",
-        "amount": 64400
+        "amount": 7300
       },
-      "unlockLevel": 46,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "any"
+        "executive"
       ]
     },
     {
@@ -1565,17 +1459,15 @@
       "category": "luxury",
       "slotType": "floor",
       "tier": 6,
-      "decorPoints": 1508,
+      "decorPoints": 129,
       "cost": {
         "currency": "coins",
-        "amount": 360000
+        "amount": 2050
       },
-      "unlockLevel": 42,
+      "unlockLevel": 12,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "presidential",
-        "luxurySuite",
         "bar"
       ]
     },
@@ -1586,19 +1478,16 @@
       "category": "luxury",
       "slotType": "floor",
       "tier": 7,
-      "decorPoints": 2211,
+      "decorPoints": 94,
       "cost": {
         "currency": "coins",
-        "amount": 690000
+        "amount": 10600
       },
-      "unlockLevel": 50,
+      "unlockLevel": 52,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "roomScope": [
-        "presidential",
-        "luxurySuite",
-        "lobby",
-        "restaurant"
+        "business"
       ]
     },
     {
@@ -1607,18 +1496,17 @@
       "slotType": "equipment",
       "nameKey": "decor.appliance_ironingBoard.name",
       "assetKey": "decor.appliance.ironingBoard",
-      "decorPoints": 40,
+      "decorPoints": 135,
       "cost": {
         "currency": "coins",
-        "amount": 900
+        "amount": 2750
       },
-      "unlockLevel": 4,
+      "unlockLevel": 52,
       "sellable": true,
       "giftable": true,
       "tier": 1,
       "roomScope": [
-        "laundry",
-        "housekeeping"
+        "laundry"
       ]
     },
     {
@@ -1684,12 +1572,12 @@
       "slotType": "equipment",
       "nameKey": "decor.appliance_weightRack.name",
       "assetKey": "decor.appliance.weightRack",
-      "decorPoints": 110,
+      "decorPoints": 94,
       "cost": {
         "currency": "coins",
-        "amount": 4200
+        "amount": 710
       },
-      "unlockLevel": 16,
+      "unlockLevel": 3,
       "sellable": true,
       "giftable": true,
       "tier": 3,
@@ -1703,19 +1591,17 @@
       "slotType": "equipment",
       "nameKey": "decor.appliance_espressoBar.name",
       "assetKey": "decor.appliance.espressoBar",
-      "decorPoints": 140,
+      "decorPoints": 84,
       "cost": {
         "currency": "coins",
-        "amount": 6500
+        "amount": 5800
       },
       "unlockLevel": 20,
       "sellable": true,
       "giftable": true,
       "tier": 3,
       "roomScope": [
-        "cafe",
-        "staffRoom",
-        "lobby"
+        "cafe"
       ]
     },
     {
@@ -1724,18 +1610,17 @@
       "slotType": "equipment",
       "nameKey": "decor.appliance_prepStation.name",
       "assetKey": "decor.appliance.prepStation",
-      "decorPoints": 170,
+      "decorPoints": 132,
       "cost": {
         "currency": "coins",
-        "amount": 9000
+        "amount": 2000
       },
-      "unlockLevel": 24,
+      "unlockLevel": 9,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 4,
       "roomScope": [
-        "restaurant",
-        "cafe"
+        "restaurant"
       ]
     },
     {
@@ -1763,18 +1648,17 @@
       "slotType": "equipment",
       "nameKey": "decor.storage_linenShelf.name",
       "assetKey": "decor.storage.linenShelf",
-      "decorPoints": 35,
+      "decorPoints": 5,
       "cost": {
         "currency": "coins",
-        "amount": 400
+        "amount": 145
       },
-      "unlockLevel": 2,
+      "unlockLevel": 1,
       "sellable": true,
       "giftable": true,
       "tier": 1,
       "roomScope": [
-        "housekeeping",
-        "laundry"
+        "housekeeping"
       ]
     },
     {
@@ -1793,8 +1677,7 @@
       "giftable": true,
       "tier": 1,
       "roomScope": [
-        "housekeeping",
-        "maintenance"
+        "housekeeping"
       ]
     },
     {
@@ -1803,18 +1686,17 @@
       "slotType": "equipment",
       "nameKey": "decor.storage_luggageRack.name",
       "assetKey": "decor.storage.luggageRack",
-      "decorPoints": 55,
+      "decorPoints": 8,
       "cost": {
         "currency": "coins",
-        "amount": 1200
+        "amount": 95
       },
-      "unlockLevel": 9,
+      "unlockLevel": 1,
       "sellable": true,
       "giftable": true,
       "tier": 2,
       "roomScope": [
-        "lobby",
-        "business"
+        "lobby"
       ]
     },
     {
@@ -1833,10 +1715,7 @@
       "giftable": true,
       "tier": 2,
       "roomScope": [
-        "staffRoom",
-        "gym",
-        "business",
-        "pool"
+        "staffRoom"
       ]
     },
     {
@@ -1864,20 +1743,17 @@
       "slotType": "equipment",
       "nameKey": "decor.storage_miniFridge.name",
       "assetKey": "decor.storage.miniFridge",
-      "decorPoints": 100,
+      "decorPoints": 16,
       "cost": {
         "currency": "coins",
-        "amount": 3800
+        "amount": 1700
       },
-      "unlockLevel": 18,
+      "unlockLevel": 52,
       "sellable": true,
       "giftable": true,
       "tier": 3,
       "roomScope": [
-        "staffRoom",
-        "bar",
-        "cafe",
-        "business"
+        "staffRoom"
       ]
     },
     {
@@ -1886,19 +1762,17 @@
       "slotType": "equipment",
       "nameKey": "decor.storage_safeCabinet.name",
       "assetKey": "decor.storage.safeCabinet",
-      "decorPoints": 190,
+      "decorPoints": 165,
       "cost": {
         "currency": "coins",
-        "amount": 11000
+        "amount": 3300
       },
-      "unlockLevel": 26,
+      "unlockLevel": 52,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 4,
       "roomScope": [
-        "business",
-        "maintenance",
-        "lobby"
+        "maintenance"
       ]
     },
     {
@@ -1907,20 +1781,17 @@
       "slotType": "equipment",
       "nameKey": "decor.storage_displayCase.name",
       "assetKey": "decor.storage.displayCase",
-      "decorPoints": 260,
+      "decorPoints": 58,
       "cost": {
         "currency": "gems",
         "amount": 45
       },
-      "unlockLevel": 34,
+      "unlockLevel": 28,
       "sellable": true,
       "giftable": false,
       "tier": 5,
       "roomScope": [
-        "lobby",
-        "arcade",
-        "restaurant",
-        "cafe"
+        "arcade"
       ]
     },
     {
@@ -1958,8 +1829,7 @@
       "giftable": true,
       "tier": 2,
       "roomScope": [
-        "lobby",
-        "business"
+        "lobby"
       ]
     },
     {
@@ -1968,17 +1838,16 @@
       "slotType": "floor",
       "nameKey": "decor.plant_lobbyFicus.name",
       "assetKey": "decor.plant.lobbyFicus",
-      "decorPoints": 85,
+      "decorPoints": 21,
       "cost": {
         "currency": "coins",
-        "amount": 1100
+        "amount": 2350
       },
-      "unlockLevel": 6,
+      "unlockLevel": 52,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 2,
       "roomScope": [
-        "lobby",
         "business"
       ]
     },
@@ -1988,18 +1857,17 @@
       "slotType": "wall",
       "nameKey": "decor.wallArt_cityMap.name",
       "assetKey": "decor.wallArt.cityMap",
-      "decorPoints": 80,
+      "decorPoints": 10,
       "cost": {
         "currency": "coins",
-        "amount": 900
+        "amount": 120
       },
-      "unlockLevel": 6,
+      "unlockLevel": 1,
       "sellable": true,
       "giftable": true,
       "tier": 2,
       "roomScope": [
-        "lobby",
-        "business"
+        "lobby"
       ]
     },
     {
@@ -2008,18 +1876,17 @@
       "slotType": "ceiling",
       "nameKey": "decor.lighting_lobbyLantern.name",
       "assetKey": "decor.lighting.lobbyLantern",
-      "decorPoints": 150,
+      "decorPoints": 23,
       "cost": {
         "currency": "coins",
-        "amount": 4000
+        "amount": 270
       },
-      "unlockLevel": 12,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 3,
       "roomScope": [
-        "lobby",
-        "restaurant"
+        "lobby"
       ]
     },
     {
@@ -2038,7 +1905,6 @@
       "giftable": true,
       "tier": 1,
       "roomScope": [
-        "laundry",
         "housekeeping"
       ]
     },
@@ -2048,14 +1914,14 @@
       "slotType": "equipment",
       "nameKey": "decor.appliance_vacuum.name",
       "assetKey": "decor.appliance.vacuum",
-      "decorPoints": 55,
+      "decorPoints": 20,
       "cost": {
         "currency": "coins",
-        "amount": 1000
+        "amount": 430
       },
-      "unlockLevel": 6,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 2,
       "roomScope": [
         "housekeeping"
@@ -2067,18 +1933,17 @@
       "slotType": "equipment",
       "nameKey": "decor.storage_amenityShelf.name",
       "assetKey": "decor.storage.amenityShelf",
-      "decorPoints": 70,
+      "decorPoints": 10,
       "cost": {
         "currency": "coins",
-        "amount": 1600
+        "amount": 220
       },
-      "unlockLevel": 9,
+      "unlockLevel": 1,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 2,
       "roomScope": [
-        "housekeeping",
-        "laundry"
+        "housekeeping"
       ]
     },
     {
@@ -2087,18 +1952,17 @@
       "slotType": "equipment",
       "nameKey": "decor.appliance_foldingTable.name",
       "assetKey": "decor.appliance.foldingTable",
-      "decorPoints": 70,
+      "decorPoints": 170,
       "cost": {
         "currency": "coins",
-        "amount": 2000
+        "amount": 3400
       },
-      "unlockLevel": 10,
+      "unlockLevel": 52,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 2,
       "roomScope": [
-        "laundry",
-        "housekeeping"
+        "laundry"
       ]
     },
     {
@@ -2117,8 +1981,7 @@
       "giftable": true,
       "tier": 1,
       "roomScope": [
-        "maintenance",
-        "housekeeping"
+        "maintenance"
       ]
     },
     {
@@ -2137,9 +2000,7 @@
       "giftable": false,
       "tier": 2,
       "roomScope": [
-        "staffRoom",
-        "business",
-        "lobby"
+        "staffRoom"
       ]
     },
     {
@@ -2148,14 +2009,14 @@
       "slotType": "equipment",
       "nameKey": "decor.storage_partsBin.name",
       "assetKey": "decor.storage.partsBin",
-      "decorPoints": 75,
+      "decorPoints": 110,
       "cost": {
         "currency": "coins",
-        "amount": 2200
+        "amount": 2150
       },
-      "unlockLevel": 12,
+      "unlockLevel": 52,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 2,
       "roomScope": [
         "maintenance"
@@ -2167,14 +2028,14 @@
       "slotType": "floor",
       "nameKey": "decor.seating_staffSofa.name",
       "assetKey": "decor.seating.staffSofa",
-      "decorPoints": 130,
+      "decorPoints": 38,
       "cost": {
         "currency": "coins",
-        "amount": 3400
+        "amount": 3950
       },
-      "unlockLevel": 14,
+      "unlockLevel": 52,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 3,
       "roomScope": [
         "staffRoom"
@@ -2205,18 +2066,17 @@
       "slotType": "wall",
       "nameKey": "decor.wallArt_projectorScreen.name",
       "assetKey": "decor.wallArt.projectorScreen",
-      "decorPoints": 170,
+      "decorPoints": 26,
       "cost": {
         "currency": "coins",
-        "amount": 5000
+        "amount": 2950
       },
-      "unlockLevel": 16,
+      "unlockLevel": 52,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 3,
       "roomScope": [
-        "business",
-        "cinema"
+        "business"
       ]
     },
     {
@@ -2225,18 +2085,17 @@
       "slotType": "floor",
       "nameKey": "decor.table_meetingTable.name",
       "assetKey": "decor.table.meetingTable",
-      "decorPoints": 200,
+      "decorPoints": 61,
       "cost": {
         "currency": "coins",
-        "amount": 6800
+        "amount": 6850
       },
-      "unlockLevel": 20,
+      "unlockLevel": 52,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 4,
       "roomScope": [
-        "business",
-        "executive"
+        "business"
       ]
     },
     {
@@ -2245,18 +2104,17 @@
       "slotType": "floor",
       "nameKey": "decor.rug_yogaMat.name",
       "assetKey": "decor.rug.yogaMat",
-      "decorPoints": 45,
+      "decorPoints": 21,
       "cost": {
         "currency": "coins",
-        "amount": 500
+        "amount": 155
       },
-      "unlockLevel": 5,
+      "unlockLevel": 3,
       "sellable": true,
       "giftable": true,
       "tier": 1,
       "roomScope": [
-        "gym",
-        "spa"
+        "gym"
       ]
     },
     {
@@ -2265,14 +2123,14 @@
       "slotType": "equipment",
       "nameKey": "decor.appliance_spinBike.name",
       "assetKey": "decor.appliance.spinBike",
-      "decorPoints": 80,
+      "decorPoints": 49,
       "cost": {
         "currency": "coins",
-        "amount": 2600
+        "amount": 370
       },
-      "unlockLevel": 9,
+      "unlockLevel": 3,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 2,
       "roomScope": [
         "gym"
@@ -2303,14 +2161,14 @@
       "slotType": "equipment",
       "nameKey": "decor.appliance_rowingMachine.name",
       "assetKey": "decor.appliance.rowingMachine",
-      "decorPoints": 120,
+      "decorPoints": 76,
       "cost": {
         "currency": "coins",
-        "amount": 4600
+        "amount": 570
       },
-      "unlockLevel": 14,
+      "unlockLevel": 3,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 3,
       "roomScope": [
         "gym"
@@ -2322,14 +2180,14 @@
       "slotType": "equipment",
       "nameKey": "decor.appliance_punchBag.name",
       "assetKey": "decor.appliance.punchBag",
-      "decorPoints": 145,
+      "decorPoints": 61,
       "cost": {
         "currency": "coins",
-        "amount": 6200
+        "amount": 460
       },
-      "unlockLevel": 18,
+      "unlockLevel": 3,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 3,
       "roomScope": [
         "gym"
@@ -2360,18 +2218,17 @@
       "slotType": "equipment",
       "nameKey": "decor.storage_wineRack.name",
       "assetKey": "decor.storage.wineRack",
-      "decorPoints": 165,
+      "decorPoints": 37,
       "cost": {
         "currency": "coins",
-        "amount": 5400
+        "amount": 550
       },
-      "unlockLevel": 16,
+      "unlockLevel": 9,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 3,
       "roomScope": [
-        "restaurant",
-        "bar"
+        "restaurant"
       ]
     },
     {
@@ -2410,8 +2267,7 @@
       "giftable": false,
       "tier": 2,
       "roomScope": [
-        "cafe",
-        "restaurant"
+        "cafe"
       ]
     },
     {
@@ -2420,14 +2276,14 @@
       "slotType": "equipment",
       "nameKey": "decor.appliance_cakeDisplay.name",
       "assetKey": "decor.appliance.cakeDisplay",
-      "decorPoints": 160,
+      "decorPoints": 66,
       "cost": {
         "currency": "coins",
-        "amount": 7200
+        "amount": 4650
       },
-      "unlockLevel": 22,
+      "unlockLevel": 20,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 3,
       "roomScope": [
         "cafe"
@@ -2439,19 +2295,17 @@
       "slotType": "ceiling",
       "nameKey": "decor.lighting_candelabra.name",
       "assetKey": "decor.lighting.candelabra",
-      "decorPoints": 260,
+      "decorPoints": 70,
       "cost": {
         "currency": "coins",
-        "amount": 12000
+        "amount": 1050
       },
-      "unlockLevel": 22,
+      "unlockLevel": 9,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 4,
       "roomScope": [
-        "restaurant",
-        "presidential",
-        "luxurySuite"
+        "restaurant"
       ]
     },
     {
@@ -2470,8 +2324,7 @@
       "giftable": false,
       "tier": 2,
       "roomScope": [
-        "bar",
-        "cafe"
+        "bar"
       ]
     },
     {
@@ -2480,14 +2333,14 @@
       "slotType": "equipment",
       "nameKey": "decor.appliance_beerTap.name",
       "assetKey": "decor.appliance.beerTap",
-      "decorPoints": 175,
+      "decorPoints": 104,
       "cost": {
         "currency": "coins",
-        "amount": 6000
+        "amount": 1650
       },
-      "unlockLevel": 18,
+      "unlockLevel": 12,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 3,
       "roomScope": [
         "bar"
@@ -2499,19 +2352,17 @@
       "slotType": "floor",
       "nameKey": "decor.luxury_cocktailCart.name",
       "assetKey": "decor.luxury.cocktailCart",
-      "decorPoints": 300,
+      "decorPoints": 165,
       "cost": {
         "currency": "coins",
-        "amount": 17000
+        "amount": 2500
       },
-      "unlockLevel": 26,
+      "unlockLevel": 9,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 4,
       "roomScope": [
-        "bar",
-        "restaurant",
-        "spa"
+        "restaurant"
       ]
     },
     {
@@ -2539,18 +2390,17 @@
       "slotType": "equipment",
       "nameKey": "decor.appliance_popcornCart.name",
       "assetKey": "decor.appliance.popcornCart",
-      "decorPoints": 200,
+      "decorPoints": 189,
       "cost": {
         "currency": "coins",
-        "amount": 8000
+        "amount": 3750
       },
-      "unlockLevel": 20,
+      "unlockLevel": 17,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 3,
       "roomScope": [
-        "cinema",
-        "arcade"
+        "cinema"
       ]
     },
     {
@@ -2559,18 +2409,16 @@
       "slotType": "equipment",
       "nameKey": "decor.storage_towelStack.name",
       "assetKey": "decor.storage.towelStack",
-      "decorPoints": 120,
+      "decorPoints": 26,
       "cost": {
         "currency": "coins",
-        "amount": 4000
+        "amount": 195
       },
-      "unlockLevel": 24,
+      "unlockLevel": 3,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 2,
       "roomScope": [
-        "pool",
-        "spa",
         "gym"
       ]
     },
@@ -2618,18 +2466,17 @@
       "slotType": "floor",
       "nameKey": "decor.plant_poolPalm.name",
       "assetKey": "decor.plant.poolPalm",
-      "decorPoints": 210,
+      "decorPoints": 73,
       "cost": {
         "currency": "coins",
-        "amount": 9000
+        "amount": 1700
       },
-      "unlockLevel": 26,
+      "unlockLevel": 24,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 3,
       "roomScope": [
-        "pool",
-        "spa"
+        "pool"
       ]
     },
     {
@@ -2638,14 +2485,14 @@
       "slotType": "floor",
       "nameKey": "decor.luxury_divingBoard.name",
       "assetKey": "decor.luxury.divingBoard",
-      "decorPoints": 320,
+      "decorPoints": 330,
       "cost": {
         "currency": "coins",
-        "amount": 22000
+        "amount": 7700
       },
-      "unlockLevel": 30,
+      "unlockLevel": 24,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 4,
       "roomScope": [
         "pool"
@@ -2657,14 +2504,14 @@
       "slotType": "equipment",
       "nameKey": "decor.appliance_pinballTable.name",
       "assetKey": "decor.appliance.pinballTable",
-      "decorPoints": 230,
+      "decorPoints": 88,
       "cost": {
         "currency": "coins",
-        "amount": 15000
+        "amount": 1300
       },
       "unlockLevel": 28,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 3,
       "roomScope": [
         "arcade"
@@ -2676,14 +2523,14 @@
       "slotType": "equipment",
       "nameKey": "decor.appliance_clawMachine.name",
       "assetKey": "decor.appliance.clawMachine",
-      "decorPoints": 280,
+      "decorPoints": 138,
       "cost": {
         "currency": "coins",
-        "amount": 21000
+        "amount": 2050
       },
-      "unlockLevel": 32,
+      "unlockLevel": 28,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 4,
       "roomScope": [
         "arcade"
@@ -2695,14 +2542,14 @@
       "slotType": "equipment",
       "nameKey": "decor.appliance_airHockey.name",
       "assetKey": "decor.appliance.airHockey",
-      "decorPoints": 340,
+      "decorPoints": 109,
       "cost": {
         "currency": "coins",
-        "amount": 30000
+        "amount": 1650
       },
-      "unlockLevel": 36,
+      "unlockLevel": 28,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 4,
       "roomScope": [
         "arcade"
@@ -2714,18 +2561,17 @@
       "slotType": "floor",
       "nameKey": "decor.seating_loungeBooth.name",
       "assetKey": "decor.seating.loungeBooth",
-      "decorPoints": 280,
+      "decorPoints": 151,
       "cost": {
         "currency": "coins",
-        "amount": 16000
+        "amount": 3000
       },
-      "unlockLevel": 30,
+      "unlockLevel": 17,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
       "tier": 3,
       "roomScope": [
-        "spa",
-        "bar"
+        "cinema"
       ]
     },
     {
@@ -2753,20 +2599,1714 @@
       "slotType": "ceiling",
       "nameKey": "decor.lighting_laserRig.name",
       "assetKey": "decor.lighting.laserRig",
-      "decorPoints": 360,
+      "decorPoints": 151,
       "cost": {
         "currency": "coins",
-        "amount": 27000
+        "amount": 4300
+      },
+      "unlockLevel": 30,
+      "sellable": true,
+      "giftable": true,
+      "tier": 4,
+      "roomScope": [
+        "spa"
+      ]
+    },
+    {
+      "id": "wallArt_roomStatusBoard",
+      "category": "wallArt",
+      "slotType": "wall",
+      "nameKey": "decor.wallArt_roomStatusBoard.name",
+      "assetKey": "decor.wallArt.roomStatusBoard",
+      "decorPoints": 15,
+      "cost": {
+        "currency": "coins",
+        "amount": 270
+      },
+      "unlockLevel": 1,
+      "sellable": true,
+      "giftable": true,
+      "tier": 6,
+      "roomScope": [
+        "housekeeping"
+      ]
+    },
+    {
+      "id": "appliance_commercialWasher",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_commercialWasher.name",
+      "assetKey": "decor.appliance.commercialWasher",
+      "decorPoints": 215,
+      "cost": {
+        "currency": "coins",
+        "amount": 4250
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 8,
+      "roomScope": [
+        "laundry"
+      ]
+    },
+    {
+      "id": "flooring_drainTile",
+      "category": "flooring",
+      "slotType": "floor",
+      "nameKey": "decor.flooring_drainTile.name",
+      "assetKey": "decor.flooring.drainTile",
+      "decorPoints": 60,
+      "cost": {
+        "currency": "coins",
+        "amount": 1200
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 2,
+      "roomScope": [
+        "laundry"
+      ]
+    },
+    {
+      "id": "wallArt_lostSockBoard",
+      "category": "wallArt",
+      "slotType": "wall",
+      "nameKey": "decor.wallArt_lostSockBoard.name",
+      "assetKey": "decor.wallArt.lostSockBoard",
+      "decorPoints": 75,
+      "cost": {
+        "currency": "coins",
+        "amount": 1450
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 3,
+      "roomScope": [
+        "laundry"
+      ]
+    },
+    {
+      "id": "wallpaper_utilityTile",
+      "category": "wallpaper",
+      "slotType": "wall",
+      "nameKey": "decor.wallpaper_utilityTile.name",
+      "assetKey": "decor.wallpaper.utilityTile",
+      "decorPoints": 90,
+      "cost": {
+        "currency": "coins",
+        "amount": 1800
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 4,
+      "roomScope": [
+        "laundry"
+      ]
+    },
+    {
+      "id": "lighting_laundryBatten",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_laundryBatten.name",
+      "assetKey": "decor.lighting.laundryBatten",
+      "decorPoints": 110,
+      "cost": {
+        "currency": "coins",
+        "amount": 2200
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 5,
+      "roomScope": [
+        "laundry"
+      ]
+    },
+    {
+      "id": "appliance_snackVending",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_snackVending.name",
+      "assetKey": "decor.appliance.snackVending",
+      "decorPoints": 48,
+      "cost": {
+        "currency": "coins",
+        "amount": 4950
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 8,
+      "roomScope": [
+        "staffRoom"
+      ]
+    },
+    {
+      "id": "rug_kitchenMat",
+      "category": "rug",
+      "slotType": "floor",
+      "nameKey": "decor.rug_kitchenMat.name",
+      "assetKey": "decor.rug.kitchenMat",
+      "decorPoints": 13,
+      "cost": {
+        "currency": "coins",
+        "amount": 1400
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 2,
+      "roomScope": [
+        "staffRoom"
+      ]
+    },
+    {
+      "id": "flooring_scuffedLino",
+      "category": "flooring",
+      "slotType": "floor",
+      "nameKey": "decor.flooring_scuffedLino.name",
+      "assetKey": "decor.flooring.scuffedLino",
+      "decorPoints": 20,
+      "cost": {
+        "currency": "coins",
+        "amount": 2100
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 4,
+      "roomScope": [
+        "staffRoom"
+      ]
+    },
+    {
+      "id": "wallArt_starEmployee",
+      "category": "wallArt",
+      "slotType": "wall",
+      "nameKey": "decor.wallArt_starEmployee.name",
+      "assetKey": "decor.wallArt.starEmployee",
+      "decorPoints": 25,
+      "cost": {
+        "currency": "coins",
+        "amount": 2600
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 5,
+      "roomScope": [
+        "staffRoom"
+      ]
+    },
+    {
+      "id": "lighting_stringBulbs",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_stringBulbs.name",
+      "assetKey": "decor.lighting.stringBulbs",
+      "decorPoints": 30,
+      "cost": {
+        "currency": "coins",
+        "amount": 3200
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 6,
+      "roomScope": [
+        "staffRoom"
+      ]
+    },
+    {
+      "id": "flooring_checkerPlate",
+      "category": "flooring",
+      "slotType": "floor",
+      "nameKey": "decor.flooring_checkerPlate.name",
+      "assetKey": "decor.flooring.checkerPlate",
+      "decorPoints": 135,
+      "cost": {
+        "currency": "coins",
+        "amount": 2700
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 3,
+      "roomScope": [
+        "maintenance"
+      ]
+    },
+    {
+      "id": "rug_antiFatigueMat",
+      "category": "rug",
+      "slotType": "floor",
+      "nameKey": "decor.rug_antiFatigueMat.name",
+      "assetKey": "decor.rug.antiFatigueMat",
+      "decorPoints": 85,
+      "cost": {
+        "currency": "coins",
+        "amount": 1750
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 1,
+      "roomScope": [
+        "maintenance"
+      ]
+    },
+    {
+      "id": "wallArt_breakerPanel",
+      "category": "wallArt",
+      "slotType": "wall",
+      "nameKey": "decor.wallArt_breakerPanel.name",
+      "assetKey": "decor.wallArt.breakerPanel",
+      "decorPoints": 205,
+      "cost": {
+        "currency": "coins",
+        "amount": 4050
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 5,
+      "roomScope": [
+        "maintenance"
+      ]
+    },
+    {
+      "id": "wallpaper_breezeBlock",
+      "category": "wallpaper",
+      "slotType": "wall",
+      "nameKey": "decor.wallpaper_breezeBlock.name",
+      "assetKey": "decor.wallpaper.breezeBlock",
+      "decorPoints": 250,
+      "cost": {
+        "currency": "coins",
+        "amount": 5000
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 6,
+      "roomScope": [
+        "maintenance"
+      ]
+    },
+    {
+      "id": "lighting_cageLamp",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_cageLamp.name",
+      "assetKey": "decor.lighting.cageLamp",
+      "decorPoints": 310,
+      "cost": {
+        "currency": "coins",
+        "amount": 6250
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 7,
+      "roomScope": [
+        "maintenance"
+      ]
+    },
+    {
+      "id": "appliance_paperShredder",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_paperShredder.name",
+      "assetKey": "decor.appliance.paperShredder",
+      "decorPoints": 76,
+      "cost": {
+        "currency": "coins",
+        "amount": 8500
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 7,
+      "roomScope": [
+        "business"
+      ]
+    },
+    {
+      "id": "flooring_officeCarpet",
+      "category": "flooring",
+      "slotType": "floor",
+      "nameKey": "decor.flooring_officeCarpet.name",
+      "assetKey": "decor.flooring.officeCarpet",
+      "decorPoints": 33,
+      "cost": {
+        "currency": "coins",
+        "amount": 3650
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 3,
+      "roomScope": [
+        "business"
+      ]
+    },
+    {
+      "id": "lighting_officePanel",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_officePanel.name",
+      "assetKey": "decor.lighting.officePanel",
+      "decorPoints": 49,
+      "cost": {
+        "currency": "coins",
+        "amount": 5550
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 5,
+      "roomScope": [
+        "business"
+      ]
+    },
+    {
+      "id": "wallpaper_officePartition",
+      "category": "wallpaper",
+      "slotType": "wall",
+      "nameKey": "decor.wallpaper_officePartition.name",
+      "assetKey": "decor.wallpaper.officePartition",
+      "decorPoints": 40,
+      "cost": {
+        "currency": "coins",
+        "amount": 4500
+      },
+      "unlockLevel": 52,
+      "sellable": true,
+      "giftable": true,
+      "tier": 4,
+      "roomScope": [
+        "business"
+      ]
+    },
+    {
+      "id": "bed_metalFrame",
+      "category": "bed",
+      "slotType": "bed",
+      "nameKey": "decor.bed_metalFrame.name",
+      "assetKey": "decor.bed.metalFrame",
+      "decorPoints": 24,
+      "cost": {
+        "currency": "coins",
+        "amount": 430
+      },
+      "unlockLevel": 1,
+      "sellable": true,
+      "giftable": true,
+      "tier": 8,
+      "roomScope": [
+        "economy"
+      ]
+    },
+    {
+      "id": "table_crateNightstand",
+      "category": "table",
+      "slotType": "floor",
+      "nameKey": "decor.table_crateNightstand.name",
+      "assetKey": "decor.table.crateNightstand",
+      "decorPoints": 19,
+      "cost": {
+        "currency": "coins",
+        "amount": 340
+      },
+      "unlockLevel": 1,
+      "sellable": true,
+      "giftable": true,
+      "tier": 7,
+      "roomScope": [
+        "economy"
+      ]
+    },
+    {
+      "id": "lighting_ceilingFan",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_ceilingFan.name",
+      "assetKey": "decor.lighting.ceilingFan",
+      "decorPoints": 15,
+      "cost": {
+        "currency": "coins",
+        "amount": 270
+      },
+      "unlockLevel": 1,
+      "sellable": true,
+      "giftable": true,
+      "tier": 6,
+      "roomScope": [
+        "economy"
+      ]
+    },
+    {
+      "id": "bed_paintedSpindle",
+      "category": "bed",
+      "slotType": "bed",
+      "nameKey": "decor.bed_paintedSpindle.name",
+      "assetKey": "decor.bed.paintedSpindle",
+      "decorPoints": 48,
+      "cost": {
+        "currency": "coins",
+        "amount": 1250
+      },
+      "unlockLevel": 2,
+      "sellable": true,
+      "giftable": true,
+      "tier": 8,
+      "roomScope": [
+        "standard"
+      ]
+    },
+    {
+      "id": "wallArt_bedsideSconce",
+      "category": "wallArt",
+      "slotType": "wall",
+      "nameKey": "decor.wallArt_bedsideSconce.name",
+      "assetKey": "decor.wallArt.bedsideSconce",
+      "decorPoints": 25,
+      "cost": {
+        "currency": "coins",
+        "amount": 650
+      },
+      "unlockLevel": 2,
+      "sellable": true,
+      "giftable": true,
+      "tier": 5,
+      "roomScope": [
+        "standard"
+      ]
+    },
+    {
+      "id": "lighting_paperLantern",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_paperLantern.name",
+      "assetKey": "decor.lighting.paperLantern",
+      "decorPoints": 38,
+      "cost": {
+        "currency": "coins",
+        "amount": 1000
+      },
+      "unlockLevel": 2,
+      "sellable": true,
+      "giftable": true,
+      "tier": 7,
+      "roomScope": [
+        "standard"
+      ]
+    },
+    {
+      "id": "bed_twinBrass",
+      "category": "bed",
+      "slotType": "bed",
+      "nameKey": "decor.bed_twinBrass.name",
+      "assetKey": "decor.bed.twinBrass",
+      "decorPoints": 58,
+      "cost": {
+        "currency": "coins",
+        "amount": 2250
+      },
+      "unlockLevel": 14,
+      "sellable": true,
+      "giftable": true,
+      "tier": 6,
+      "roomScope": [
+        "double"
+      ]
+    },
+    {
+      "id": "bed_twinOak",
+      "category": "bed",
+      "slotType": "bed",
+      "nameKey": "decor.bed_twinOak.name",
+      "assetKey": "decor.bed.twinOak",
+      "decorPoints": 72,
+      "cost": {
+        "currency": "coins",
+        "amount": 2800
+      },
+      "unlockLevel": 14,
+      "sellable": true,
+      "giftable": true,
+      "tier": 7,
+      "roomScope": [
+        "double"
+      ]
+    },
+    {
+      "id": "table_twinNightstand",
+      "category": "table",
+      "slotType": "floor",
+      "nameKey": "decor.table_twinNightstand.name",
+      "assetKey": "decor.table.twinNightstand",
+      "decorPoints": 47,
+      "cost": {
+        "currency": "coins",
+        "amount": 1850
+      },
+      "unlockLevel": 14,
+      "sellable": true,
+      "giftable": true,
+      "tier": 5,
+      "roomScope": [
+        "double"
+      ]
+    },
+    {
+      "id": "luxury_chevalMirror",
+      "category": "luxury",
+      "slotType": "floor",
+      "nameKey": "decor.luxury_chevalMirror.name",
+      "assetKey": "decor.luxury.chevalMirror",
+      "decorPoints": 89,
+      "cost": {
+        "currency": "coins",
+        "amount": 3500
+      },
+      "unlockLevel": 14,
+      "sellable": true,
+      "giftable": true,
+      "tier": 8,
+      "roomScope": [
+        "double"
+      ]
+    },
+    {
+      "id": "bed_trundleBed",
+      "category": "bed",
+      "slotType": "bed",
+      "nameKey": "decor.bed_trundleBed.name",
+      "assetKey": "decor.bed.trundleBed",
+      "decorPoints": 143,
+      "cost": {
+        "currency": "coins",
+        "amount": 7200
       },
       "unlockLevel": 32,
       "sellable": true,
-      "giftable": false,
+      "giftable": true,
+      "tier": 8,
+      "roomScope": [
+        "family"
+      ]
+    },
+    {
+      "id": "seating_rockingHorse",
+      "category": "seating",
+      "slotType": "floor",
+      "nameKey": "decor.seating_rockingHorse.name",
+      "assetKey": "decor.seating.rockingHorse",
+      "decorPoints": 113,
+      "cost": {
+        "currency": "coins",
+        "amount": 5800
+      },
+      "unlockLevel": 32,
+      "sellable": true,
+      "giftable": true,
+      "tier": 7,
+      "roomScope": [
+        "family"
+      ]
+    },
+    {
+      "id": "rug_roadPlaymat",
+      "category": "rug",
+      "slotType": "floor",
+      "nameKey": "decor.rug_roadPlaymat.name",
+      "assetKey": "decor.rug.roadPlaymat",
+      "decorPoints": 31,
+      "cost": {
+        "currency": "coins",
+        "amount": 1600
+      },
+      "unlockLevel": 32,
+      "sellable": true,
+      "giftable": true,
+      "tier": 1,
+      "roomScope": [
+        "family"
+      ]
+    },
+    {
+      "id": "lighting_balloonLantern",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_balloonLantern.name",
+      "assetKey": "decor.lighting.balloonLantern",
+      "decorPoints": 74,
+      "cost": {
+        "currency": "coins",
+        "amount": 3750
+      },
+      "unlockLevel": 32,
+      "sellable": true,
+      "giftable": true,
+      "tier": 5,
+      "roomScope": [
+        "family"
+      ]
+    },
+    {
+      "id": "bed_loftSleigh",
+      "category": "bed",
+      "slotType": "bed",
+      "nameKey": "decor.bed_loftSleigh.name",
+      "assetKey": "decor.bed.loftSleigh",
+      "decorPoints": 39,
+      "cost": {
+        "currency": "coins",
+        "amount": 9850
+      },
+      "unlockLevel": 1,
+      "sellable": true,
+      "giftable": true,
+      "tier": 8,
+      "roomScope": [
+        "deluxe"
+      ]
+    },
+    {
+      "id": "lighting_loftRattan",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_loftRattan.name",
+      "assetKey": "decor.lighting.loftRattan",
+      "decorPoints": 20,
+      "cost": {
+        "currency": "coins",
+        "amount": 5150
+      },
+      "unlockLevel": 1,
+      "sellable": true,
+      "giftable": true,
+      "tier": 5,
+      "roomScope": [
+        "deluxe"
+      ]
+    },
+    {
+      "id": "bed_leatherWingback",
+      "category": "bed",
+      "slotType": "bed",
+      "nameKey": "decor.bed_leatherWingback.name",
+      "assetKey": "decor.bed.leatherWingback",
+      "decorPoints": 42,
+      "cost": {
+        "currency": "coins",
+        "amount": 21100
+      },
+      "unlockLevel": 1,
+      "sellable": true,
+      "giftable": true,
+      "tier": 7,
+      "roomScope": [
+        "executive"
+      ]
+    },
+    {
+      "id": "lighting_bankersPendant",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_bankersPendant.name",
+      "assetKey": "decor.lighting.bankersPendant",
+      "decorPoints": 22,
+      "cost": {
+        "currency": "coins",
+        "amount": 11100
+      },
+      "unlockLevel": 1,
+      "sellable": true,
+      "giftable": true,
       "tier": 4,
       "roomScope": [
-        "spa",
+        "executive"
+      ]
+    },
+    {
+      "id": "wallArt_worldClocks",
+      "category": "wallArt",
+      "slotType": "wall",
+      "nameKey": "decor.wallArt_worldClocks.name",
+      "assetKey": "decor.wallArt.worldClocks",
+      "decorPoints": 18,
+      "cost": {
+        "currency": "coins",
+        "amount": 9100
+      },
+      "unlockLevel": 1,
+      "sellable": true,
+      "giftable": true,
+      "tier": 3,
+      "roomScope": [
+        "executive"
+      ]
+    },
+    {
+      "id": "bed_petalCanopy",
+      "category": "bed",
+      "slotType": "bed",
+      "nameKey": "decor.bed_petalCanopy.name",
+      "assetKey": "decor.bed.petalCanopy",
+      "decorPoints": 38,
+      "cost": {
+        "currency": "coins",
+        "amount": 16300
+      },
+      "unlockLevel": 1,
+      "sellable": true,
+      "giftable": true,
+      "tier": 7,
+      "roomScope": [
+        "honeymoon"
+      ]
+    },
+    {
+      "id": "rug_roseGarland",
+      "category": "rug",
+      "slotType": "floor",
+      "nameKey": "decor.rug_roseGarland.name",
+      "assetKey": "decor.rug.roseGarland",
+      "decorPoints": 10,
+      "cost": {
+        "currency": "coins",
+        "amount": 4550
+      },
+      "unlockLevel": 1,
+      "sellable": true,
+      "giftable": true,
+      "tier": 1,
+      "roomScope": [
+        "honeymoon"
+      ]
+    },
+    {
+      "id": "lighting_roseChandelier",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_roseChandelier.name",
+      "assetKey": "decor.lighting.roseChandelier",
+      "decorPoints": 25,
+      "cost": {
+        "currency": "coins",
+        "amount": 10700
+      },
+      "unlockLevel": 1,
+      "sellable": true,
+      "giftable": true,
+      "tier": 5,
+      "roomScope": [
+        "honeymoon"
+      ]
+    },
+    {
+      "id": "rug_ermineHearth",
+      "category": "rug",
+      "slotType": "floor",
+      "nameKey": "decor.rug_ermineHearth.name",
+      "assetKey": "decor.rug.ermineHearth",
+      "decorPoints": 13,
+      "cost": {
+        "currency": "coins",
+        "amount": 8050
+      },
+      "unlockLevel": 1,
+      "sellable": true,
+      "giftable": true,
+      "tier": 1,
+      "roomScope": [
+        "luxurySuite"
+      ]
+    },
+    {
+      "id": "bed_stateBed",
+      "category": "bed",
+      "slotType": "bed",
+      "nameKey": "decor.bed_stateBed.name",
+      "assetKey": "decor.bed.stateBed",
+      "decorPoints": 60,
+      "cost": {
+        "currency": "coins",
+        "amount": 26500
+      },
+      "unlockLevel": 1,
+      "sellable": true,
+      "giftable": true,
+      "tier": 6,
+      "roomScope": [
+        "presidential"
+      ]
+    },
+    {
+      "id": "wallArt_crossedStandards",
+      "category": "wallArt",
+      "slotType": "wall",
+      "nameKey": "decor.wallArt_crossedStandards.name",
+      "assetKey": "decor.wallArt.crossedStandards",
+      "decorPoints": 21,
+      "cost": {
+        "currency": "coins",
+        "amount": 9150
+      },
+      "unlockLevel": 1,
+      "sellable": true,
+      "giftable": true,
+      "tier": 1,
+      "roomScope": [
+        "presidential"
+      ]
+    },
+    {
+      "id": "rug_latteRug",
+      "category": "rug",
+      "slotType": "floor",
+      "nameKey": "decor.rug_latteRug.name",
+      "assetKey": "decor.rug.latteRug",
+      "decorPoints": 18,
+      "cost": {
+        "currency": "coins",
+        "amount": 1300
+      },
+      "unlockLevel": 20,
+      "sellable": true,
+      "giftable": true,
+      "tier": 1,
+      "roomScope": [
+        "cafe"
+      ]
+    },
+    {
+      "id": "flooring_macaronTiles",
+      "category": "flooring",
+      "slotType": "floor",
+      "nameKey": "decor.flooring_macaronTiles.name",
+      "assetKey": "decor.flooring.macaronTiles",
+      "decorPoints": 23,
+      "cost": {
+        "currency": "coins",
+        "amount": 1600
+      },
+      "unlockLevel": 20,
+      "sellable": true,
+      "giftable": true,
+      "tier": 2,
+      "roomScope": [
+        "cafe"
+      ]
+    },
+    {
+      "id": "wallArt_cupcakeBunting",
+      "category": "wallArt",
+      "slotType": "wall",
+      "nameKey": "decor.wallArt_cupcakeBunting.name",
+      "assetKey": "decor.wallArt.cupcakeBunting",
+      "decorPoints": 28,
+      "cost": {
+        "currency": "coins",
+        "amount": 2000
+      },
+      "unlockLevel": 20,
+      "sellable": true,
+      "giftable": true,
+      "tier": 3,
+      "roomScope": [
+        "cafe"
+      ]
+    },
+    {
+      "id": "lighting_cupcakePendant",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_cupcakePendant.name",
+      "assetKey": "decor.lighting.cupcakePendant",
+      "decorPoints": 43,
+      "cost": {
+        "currency": "coins",
+        "amount": 3050
+      },
+      "unlockLevel": 20,
+      "sellable": true,
+      "giftable": true,
+      "tier": 5,
+      "roomScope": [
+        "cafe"
+      ]
+    },
+    {
+      "id": "wallpaper_sprinkleWall",
+      "category": "wallpaper",
+      "slotType": "wall",
+      "nameKey": "decor.wallpaper_sprinkleWall.name",
+      "assetKey": "decor.wallpaper.sprinkleWall",
+      "decorPoints": 35,
+      "cost": {
+        "currency": "coins",
+        "amount": 2450
+      },
+      "unlockLevel": 20,
+      "sellable": true,
+      "giftable": true,
+      "tier": 4,
+      "roomScope": [
+        "cafe"
+      ]
+    },
+    {
+      "id": "wallArt_intervalTimer",
+      "category": "wallArt",
+      "slotType": "wall",
+      "nameKey": "decor.wallArt_intervalTimer.name",
+      "assetKey": "decor.wallArt.intervalTimer",
+      "decorPoints": 33,
+      "cost": {
+        "currency": "coins",
+        "amount": 240
+      },
+      "unlockLevel": 3,
+      "sellable": true,
+      "giftable": true,
+      "tier": 3,
+      "roomScope": [
+        "gym"
+      ]
+    },
+    {
+      "id": "lighting_gymHighBay",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_gymHighBay.name",
+      "assetKey": "decor.lighting.gymHighBay",
+      "decorPoints": 40,
+      "cost": {
+        "currency": "coins",
+        "amount": 300
+      },
+      "unlockLevel": 3,
+      "sellable": true,
+      "giftable": true,
+      "tier": 4,
+      "roomScope": [
+        "gym"
+      ]
+    },
+    {
+      "id": "flooring_bistroCheck",
+      "category": "flooring",
+      "slotType": "floor",
+      "nameKey": "decor.flooring_bistroCheck.name",
+      "assetKey": "decor.flooring.bistroCheck",
+      "decorPoints": 46,
+      "cost": {
+        "currency": "coins",
+        "amount": 690
+      },
+      "unlockLevel": 9,
+      "sellable": true,
+      "giftable": true,
+      "tier": 2,
+      "roomScope": [
+        "restaurant"
+      ]
+    },
+    {
+      "id": "wallArt_brasserieMirror",
+      "category": "wallArt",
+      "slotType": "wall",
+      "nameKey": "decor.wallArt_brasserieMirror.name",
+      "assetKey": "decor.wallArt.brasserieMirror",
+      "decorPoints": 57,
+      "cost": {
+        "currency": "coins",
+        "amount": 850
+      },
+      "unlockLevel": 9,
+      "sellable": true,
+      "giftable": true,
+      "tier": 3,
+      "roomScope": [
+        "restaurant"
+      ]
+    },
+    {
+      "id": "wallpaper_bottleGreen",
+      "category": "wallpaper",
+      "slotType": "wall",
+      "nameKey": "decor.wallpaper_bottleGreen.name",
+      "assetKey": "decor.wallpaper.bottleGreen",
+      "decorPoints": 55,
+      "cost": {
+        "currency": "coins",
+        "amount": 870
+      },
+      "unlockLevel": 12,
+      "sellable": true,
+      "giftable": true,
+      "tier": 4,
+      "roomScope": [
+        "bar"
+      ]
+    },
+    {
+      "id": "lighting_neonCocktail",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_neonCocktail.name",
+      "assetKey": "decor.lighting.neonCocktail",
+      "decorPoints": 68,
+      "cost": {
+        "currency": "coins",
+        "amount": 1050
+      },
+      "unlockLevel": 12,
+      "sellable": true,
+      "giftable": true,
+      "tier": 5,
+      "roomScope": [
+        "bar"
+      ]
+    },
+    {
+      "id": "lighting_pubLantern",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_pubLantern.name",
+      "assetKey": "decor.lighting.pubLantern",
+      "decorPoints": 84,
+      "cost": {
+        "currency": "coins",
+        "amount": 1300
+      },
+      "unlockLevel": 12,
+      "sellable": true,
+      "giftable": true,
+      "tier": 6,
+      "roomScope": [
+        "bar"
+      ]
+    },
+    {
+      "id": "flooring_pubBoards",
+      "category": "flooring",
+      "slotType": "floor",
+      "nameKey": "decor.flooring_pubBoards.name",
+      "assetKey": "decor.flooring.pubBoards",
+      "decorPoints": 36,
+      "cost": {
+        "currency": "coins",
+        "amount": 570
+      },
+      "unlockLevel": 12,
+      "sellable": true,
+      "giftable": true,
+      "tier": 2,
+      "roomScope": [
+        "bar"
+      ]
+    },
+    {
+      "id": "rug_barMat",
+      "category": "rug",
+      "slotType": "floor",
+      "nameKey": "decor.rug_barMat.name",
+      "assetKey": "decor.rug.barMat",
+      "decorPoints": 29,
+      "cost": {
+        "currency": "coins",
+        "amount": 460
+      },
+      "unlockLevel": 12,
+      "sellable": true,
+      "giftable": true,
+      "tier": 1,
+      "roomScope": [
+        "bar"
+      ]
+    },
+    {
+      "id": "flooring_galaxyCarpet",
+      "category": "flooring",
+      "slotType": "floor",
+      "nameKey": "decor.flooring_galaxyCarpet.name",
+      "assetKey": "decor.flooring.galaxyCarpet",
+      "decorPoints": 38,
+      "cost": {
+        "currency": "coins",
+        "amount": 570
+      },
+      "unlockLevel": 28,
+      "sellable": true,
+      "giftable": true,
+      "tier": 2,
+      "roomScope": [
         "arcade"
+      ]
+    },
+    {
+      "id": "rug_danceGameMat",
+      "category": "rug",
+      "slotType": "floor",
+      "nameKey": "decor.rug_danceGameMat.name",
+      "assetKey": "decor.rug.danceGameMat",
+      "decorPoints": 30,
+      "cost": {
+        "currency": "coins",
+        "amount": 460
+      },
+      "unlockLevel": 28,
+      "sellable": true,
+      "giftable": true,
+      "tier": 1,
+      "roomScope": [
+        "arcade"
+      ]
+    },
+    {
+      "id": "wallArt_hiScoreBoard",
+      "category": "wallArt",
+      "slotType": "wall",
+      "nameKey": "decor.wallArt_hiScoreBoard.name",
+      "assetKey": "decor.wallArt.hiScoreBoard",
+      "decorPoints": 47,
+      "cost": {
+        "currency": "coins",
+        "amount": 710
+      },
+      "unlockLevel": 28,
+      "sellable": true,
+      "giftable": true,
+      "tier": 3,
+      "roomScope": [
+        "arcade"
+      ]
+    },
+    {
+      "id": "wallArt_nowShowingBoard",
+      "category": "wallArt",
+      "slotType": "wall",
+      "nameKey": "decor.wallArt_nowShowingBoard.name",
+      "assetKey": "decor.wallArt.nowShowingBoard",
+      "decorPoints": 80,
+      "cost": {
+        "currency": "coins",
+        "amount": 1600
+      },
+      "unlockLevel": 17,
+      "sellable": true,
+      "giftable": true,
+      "tier": 4,
+      "roomScope": [
+        "cinema"
+      ]
+    },
+    {
+      "id": "lighting_exitSign",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_exitSign.name",
+      "assetKey": "decor.lighting.exitSign",
+      "decorPoints": 99,
+      "cost": {
+        "currency": "coins",
+        "amount": 1950
+      },
+      "unlockLevel": 17,
+      "sellable": true,
+      "giftable": true,
+      "tier": 5,
+      "roomScope": [
+        "cinema"
+      ]
+    },
+    {
+      "id": "rug_multiplexCarpet",
+      "category": "rug",
+      "slotType": "floor",
+      "nameKey": "decor.rug_multiplexCarpet.name",
+      "assetKey": "decor.rug.multiplexCarpet",
+      "decorPoints": 52,
+      "cost": {
+        "currency": "coins",
+        "amount": 1050
+      },
+      "unlockLevel": 17,
+      "sellable": true,
+      "giftable": true,
+      "tier": 2,
+      "roomScope": [
+        "cinema"
+      ]
+    },
+    {
+      "id": "flooring_aisleLights",
+      "category": "flooring",
+      "slotType": "floor",
+      "nameKey": "decor.flooring_aisleLights.name",
+      "assetKey": "decor.flooring.aisleLights",
+      "decorPoints": 65,
+      "cost": {
+        "currency": "coins",
+        "amount": 1300
+      },
+      "unlockLevel": 17,
+      "sellable": true,
+      "giftable": true,
+      "tier": 3,
+      "roomScope": [
+        "cinema"
+      ]
+    },
+    {
+      "id": "appliance_fogMachine",
+      "category": "appliance",
+      "slotType": "equipment",
+      "nameKey": "decor.appliance_fogMachine.name",
+      "assetKey": "decor.appliance.fogMachine",
+      "decorPoints": 231,
+      "cost": {
+        "currency": "coins",
+        "amount": 6600
+      },
+      "unlockLevel": 30,
+      "sellable": true,
+      "giftable": true,
+      "tier": 7,
+      "roomScope": [
+        "spa"
+      ]
+    },
+    {
+      "id": "flooring_ledDanceFloor",
+      "category": "flooring",
+      "slotType": "floor",
+      "nameKey": "decor.flooring_ledDanceFloor.name",
+      "assetKey": "decor.flooring.ledDanceFloor",
+      "decorPoints": 64,
+      "cost": {
+        "currency": "coins",
+        "amount": 1850
+      },
+      "unlockLevel": 30,
+      "sellable": true,
+      "giftable": true,
+      "tier": 1,
+      "roomScope": [
+        "spa"
+      ]
+    },
+    {
+      "id": "lighting_mirrorBallCluster",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_mirrorBallCluster.name",
+      "assetKey": "decor.lighting.mirrorBallCluster",
+      "decorPoints": 186,
+      "cost": {
+        "currency": "coins",
+        "amount": 5300
+      },
+      "unlockLevel": 30,
+      "sellable": true,
+      "giftable": true,
+      "tier": 6,
+      "roomScope": [
+        "spa"
+      ]
+    },
+    {
+      "id": "luxury_goGoPodium",
+      "category": "luxury",
+      "slotType": "floor",
+      "nameKey": "decor.luxury_goGoPodium.name",
+      "assetKey": "decor.luxury.goGoPodium",
+      "decorPoints": 289,
+      "cost": {
+        "currency": "coins",
+        "amount": 8200
+      },
+      "unlockLevel": 30,
+      "sellable": true,
+      "giftable": true,
+      "tier": 8,
+      "roomScope": [
+        "spa"
+      ]
+    },
+    {
+      "id": "wallArt_ledVideoWall",
+      "category": "wallArt",
+      "slotType": "wall",
+      "nameKey": "decor.wallArt_ledVideoWall.name",
+      "assetKey": "decor.wallArt.ledVideoWall",
+      "decorPoints": 80,
+      "cost": {
+        "currency": "coins",
+        "amount": 2300
+      },
+      "unlockLevel": 30,
+      "sellable": true,
+      "giftable": true,
+      "tier": 2,
+      "roomScope": [
+        "spa"
+      ]
+    },
+    {
+      "id": "flooring_deckTiles",
+      "category": "flooring",
+      "slotType": "floor",
+      "nameKey": "decor.flooring_deckTiles.name",
+      "assetKey": "decor.flooring.deckTiles",
+      "decorPoints": 114,
+      "cost": {
+        "currency": "coins",
+        "amount": 2650
+      },
+      "unlockLevel": 24,
+      "sellable": true,
+      "giftable": true,
+      "tier": 3,
+      "roomScope": [
+        "pool"
+      ]
+    },
+    {
+      "id": "rug_swimTowel",
+      "category": "rug",
+      "slotType": "floor",
+      "nameKey": "decor.rug_swimTowel.name",
+      "assetKey": "decor.rug.swimTowel",
+      "decorPoints": 92,
+      "cost": {
+        "currency": "coins",
+        "amount": 2150
+      },
+      "unlockLevel": 24,
+      "sellable": true,
+      "giftable": true,
+      "tier": 2,
+      "roomScope": [
+        "pool"
+      ]
+    },
+    {
+      "id": "wallpaper_poolMosaic",
+      "category": "wallpaper",
+      "slotType": "wall",
+      "nameKey": "decor.wallpaper_poolMosaic.name",
+      "assetKey": "decor.wallpaper.poolMosaic",
+      "decorPoints": 173,
+      "cost": {
+        "currency": "coins",
+        "amount": 4050
+      },
+      "unlockLevel": 24,
+      "sellable": true,
+      "giftable": true,
+      "tier": 5,
+      "roomScope": [
+        "pool"
+      ]
+    },
+    {
+      "id": "wallArt_lifeguardBoard",
+      "category": "wallArt",
+      "slotType": "wall",
+      "nameKey": "decor.wallArt_lifeguardBoard.name",
+      "assetKey": "decor.wallArt.lifeguardBoard",
+      "decorPoints": 140,
+      "cost": {
+        "currency": "coins",
+        "amount": 3250
+      },
+      "unlockLevel": 24,
+      "sellable": true,
+      "giftable": true,
+      "tier": 4,
+      "roomScope": [
+        "pool"
+      ]
+    },
+    {
+      "id": "lighting_poolFloodlight",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_poolFloodlight.name",
+      "assetKey": "decor.lighting.poolFloodlight",
+      "decorPoints": 265,
+      "cost": {
+        "currency": "coins",
+        "amount": 6200
+      },
+      "unlockLevel": 24,
+      "sellable": true,
+      "giftable": true,
+      "tier": 7,
+      "roomScope": [
+        "pool"
+      ]
+    },
+    {
+      "id": "lighting_heatLamp",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "nameKey": "decor.lighting_heatLamp.name",
+      "assetKey": "decor.lighting.heatLamp",
+      "decorPoints": 213,
+      "cost": {
+        "currency": "coins",
+        "amount": 5000
+      },
+      "unlockLevel": 24,
+      "sellable": true,
+      "giftable": true,
+      "tier": 6,
+      "roomScope": [
+        "pool"
       ]
     }
   ],
-  "note": " Two tiers were added to every category reaching levels 38 and 50: the catalogue stopped around level 25 while the progression curve now runs to 60, leaving a player past their first month with one item left to want in the whole game.  Room scope (HC-P1-S5): every piece now names the rooms it belongs in, and 43 pieces were added for the rooms that had nothing of their own — the gym had a treadmill and a weight rack against eight slots, the pool and the cinema had nothing at all, and the back of house shared one cleaning trolley."
+  "note": "Every room sells exactly eight pieces of its own (`catalogues`, one list per room, in slot order — the position of a piece is the numbered place it stands in, see roomAnchors.ts). A piece is sold in one room only and a room holds each of its pieces once, so the meter is exactly full when the set is in: a room's decorTarget is the sum of its coin pieces. Prices scale with the room — about 60% of the room's own price spread over the eight, dearer for higher-rated guest rooms, gem rooms converted at 10,000 coins a gem. Pieces in no catalogue are built-ins: drawn by the rooms they furnish, never sold. Older catalogue notes:  Two tiers were added to every category reaching levels 38 and 50: the catalogue stopped around level 25 while the progression curve now runs to 60, leaving a player past their first month with one item left to want in the whole game.  Room scope (HC-P1-S5): every piece now names the rooms it belongs in, and 43 pieces were added for the rooms that had nothing of their own — the gym had a treadmill and a weight rack against eight slots, the pool and the cinema had nothing at all, and the back of house shared one cleaning trolley.",
+  "catalogues": {
+    "lobby": [
+      "storage_luggageRack",
+      "luxury_aquarium",
+      "wallArt_cityMap",
+      "wallArt_masterpiece",
+      "wallpaper_gilded",
+      "lighting_lobbyLantern",
+      "lighting_chandelier",
+      "flooring_marble"
+    ],
+    "housekeeping": [
+      "storage_linenShelf",
+      "storage_amenityShelf",
+      "appliance_vacuum",
+      "flooring_concrete",
+      "rug_mat",
+      "wallArt_roomStatusBoard",
+      "wallpaper_plain",
+      "lighting_bulb"
+    ],
+    "laundry": [
+      "appliance_commercialWasher",
+      "appliance_foldingTable",
+      "plant_succulent",
+      "appliance_ironingBoard",
+      "flooring_drainTile",
+      "wallArt_lostSockBoard",
+      "wallpaper_utilityTile",
+      "lighting_laundryBatten"
+    ],
+    "staffRoom": [
+      "storage_miniFridge",
+      "appliance_snackVending",
+      "seating_staffSofa",
+      "plant_bonsai",
+      "rug_kitchenMat",
+      "flooring_scuffedLino",
+      "wallArt_starEmployee",
+      "lighting_stringBulbs"
+    ],
+    "maintenance": [
+      "storage_partsBin",
+      "table_deskWood",
+      "storage_safeCabinet",
+      "flooring_checkerPlate",
+      "rug_antiFatigueMat",
+      "wallArt_breakerPanel",
+      "wallpaper_breezeBlock",
+      "lighting_cageLamp"
+    ],
+    "business": [
+      "appliance_paperShredder",
+      "table_meetingTable",
+      "flooring_officeCarpet",
+      "wallArt_projectorScreen",
+      "plant_lobbyFicus",
+      "lighting_officePanel",
+      "wallpaper_officePartition",
+      "luxury_gallerypiece"
+    ],
+    "economy": [
+      "bed_metalFrame",
+      "table_crateNightstand",
+      "flooring_carpet",
+      "rug_woolRug",
+      "wallpaper_striped",
+      "wallArt_poster",
+      "lighting_ceilingFan",
+      "lighting_lamp"
+    ],
+    "standard": [
+      "bed_paintedSpindle",
+      "flooring_oak",
+      "rug_persianRug",
+      "wallArt_bedsideSconce",
+      "wallArt_print",
+      "wallpaper_damask",
+      "lighting_pendant",
+      "lighting_paperLantern"
+    ],
+    "double": [
+      "bed_twinBrass",
+      "bed_twinOak",
+      "table_twinNightstand",
+      "luxury_chevalMirror",
+      "rug_silkRug",
+      "flooring_mosaic",
+      "wallpaper_velvet",
+      "lighting_crystalTiers"
+    ],
+    "family": [
+      "bed_trundleBed",
+      "seating_rockingHorse",
+      "rug_antiqueRug",
+      "rug_roadPlaymat",
+      "wallpaper_mural",
+      "wallArt_painting",
+      "lighting_starfield",
+      "lighting_balloonLantern"
+    ],
+    "deluxe": [
+      "bed_loftSleigh",
+      "seating_armchair",
+      "rug_silkrunner",
+      "table_glassTable",
+      "flooring_inlaidparquet",
+      "wallArt_commissionedportrait",
+      "lighting_loftRattan",
+      "plant_fern"
+    ],
+    "executive": [
+      "seating_chaise",
+      "rug_antiquecarpet",
+      "bed_leatherWingback",
+      "luxury_minibar",
+      "table_writingdesk",
+      "lighting_bankersPendant",
+      "plant_indoorolivetree",
+      "wallArt_worldClocks"
+    ],
+    "honeymoon": [
+      "bed_petalCanopy",
+      "seating_velvetchaise",
+      "plant_orchidWall",
+      "luxury_jacuzzi",
+      "rug_roseGarland",
+      "wallpaper_handpaintedsilk",
+      "wallArt_originallandscape",
+      "lighting_roseChandelier"
+    ],
+    "luxurySuite": [
+      "plant_wintergarden",
+      "bed_emperorbed",
+      "wallpaper_gildedpanelling",
+      "lighting_crystalchandelier",
+      "table_marbleconsole",
+      "seating_salonset",
+      "rug_ermineHearth",
+      "luxury_fireplace"
+    ],
+    "presidential": [
+      "bed_stateBed",
+      "seating_throne",
+      "table_crystalTable",
+      "luxury_piano",
+      "luxury_goldStatue",
+      "flooring_onyxfloor",
+      "wallArt_crossedStandards",
+      "lighting_constellationlights"
+    ],
+    "cafe": [
+      "appliance_espressoBar",
+      "seating_stool",
+      "appliance_cakeDisplay",
+      "rug_latteRug",
+      "flooring_macaronTiles",
+      "wallArt_cupcakeBunting",
+      "lighting_cupcakePendant",
+      "wallpaper_sprinkleWall"
+    ],
+    "gym": [
+      "appliance_rowingMachine",
+      "appliance_weightRack",
+      "appliance_spinBike",
+      "appliance_punchBag",
+      "storage_towelStack",
+      "rug_yogaMat",
+      "wallArt_intervalTimer",
+      "lighting_gymHighBay"
+    ],
+    "restaurant": [
+      "table_marbleTable",
+      "seating_loveseat",
+      "luxury_cocktailCart",
+      "storage_wineRack",
+      "appliance_prepStation",
+      "flooring_bistroCheck",
+      "wallArt_brasserieMirror",
+      "lighting_candelabra"
+    ],
+    "bar": [
+      "appliance_beerTap",
+      "luxury_privatebar",
+      "wallpaper_bottleGreen",
+      "wallArt_sculptureWall",
+      "lighting_neonCocktail",
+      "lighting_pubLantern",
+      "flooring_pubBoards",
+      "rug_barMat"
+    ],
+    "arcade": [
+      "appliance_pinballTable",
+      "appliance_clawMachine",
+      "appliance_airHockey",
+      "storage_displayCase",
+      "flooring_galaxyCarpet",
+      "rug_danceGameMat",
+      "wallArt_hiScoreBoard",
+      "lighting_hologram"
+    ],
+    "cinema": [
+      "seating_loungeBooth",
+      "appliance_popcornCart",
+      "plant_palm",
+      "table_sideTable",
+      "wallArt_nowShowingBoard",
+      "lighting_exitSign",
+      "rug_multiplexCarpet",
+      "flooring_aisleLights"
+    ],
+    "spa": [
+      "appliance_fogMachine",
+      "wallpaper_animatedAurora",
+      "lighting_laserRig",
+      "flooring_ledDanceFloor",
+      "lighting_mirrorBallCluster",
+      "flooring_obsidian",
+      "luxury_goGoPodium",
+      "wallArt_ledVideoWall"
+    ],
+    "pool": [
+      "luxury_divingBoard",
+      "plant_poolPalm",
+      "flooring_deckTiles",
+      "rug_swimTowel",
+      "wallpaper_poolMosaic",
+      "wallArt_lifeguardBoard",
+      "lighting_poolFloodlight",
+      "lighting_heatLamp"
+    ]
+  }
 }

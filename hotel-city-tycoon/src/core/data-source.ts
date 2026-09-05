@@ -65,6 +65,18 @@ export interface DecorDef {
   roomScope: string[];
 }
 
+/**
+ * Which pieces each kind of room sells, in slot order — `decor.json`'s
+ * `catalogues`.
+ *
+ * Every room has a catalogue of its own: eight pieces sold nowhere else, and
+ * the position of a piece in the list is the numbered place it stands in
+ * (`roomAnchors.ts` designs one slot per position). A piece missing from every
+ * catalogue is a built-in the room comes furnished with; it is drawn, and it
+ * cannot be bought.
+ */
+export type DecorCatalogues = Record<string, string[]>;
+
 export interface StaffRoleDef {
   id: string; roomTypes: string[]; wagePerHour: number; tempWagePerHour: number; hireCost: number; unlockLevel: number;
 }
@@ -230,6 +242,7 @@ export interface SimData {
   economy: EconomyDef;
   rooms: RoomDef[];
   decor: DecorDef[];
+  decorCatalogues: DecorCatalogues;
   staffRoles: StaffRoleDef[];
   staffGrades: StaffGradeDef[];
   guestTypes: GuestTypeDef[];
@@ -298,6 +311,20 @@ export function decorDef(data: SimData, id: string): DecorDef {
   const def = data.decor.find((d) => d.id === id);
   if (!def) throw new Error(`Unknown decor definition "${id}"`);
   return def;
+}
+
+/** The pieces a room of this kind sells, in slot order. Empty for a room nobody catalogued. */
+export function catalogueFor(data: SimData, roomDefId: string): readonly string[] {
+  return data.decorCatalogues[roomDefId] ?? [];
+}
+
+/**
+ * The numbered place in the room a piece belongs in, or -1 when the room does
+ * not sell it. The index IS the slot: `PlacedDecor.slot` for a catalogue piece
+ * is always its position in the room's list.
+ */
+export function catalogueIndex(data: SimData, roomDefId: string, defId: string): number {
+  return catalogueFor(data, roomDefId).indexOf(defId);
 }
 
 export function shiftDef(data: SimData, id: string): ShiftDef {

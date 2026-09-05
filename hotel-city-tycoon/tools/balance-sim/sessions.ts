@@ -22,6 +22,7 @@ import { nextTier } from '../../src/core/systems/upgrades.ts';
 import { isOpen, totalShiftCost } from '../../src/core/systems/economy.ts';
 import type { GameState } from '../../src/core/state/types.ts';
 import type { SimData } from '../../src/core/data-source.ts';
+import { catalogueFor, catalogueIndex } from '../../src/core/data-source.ts';
 
 const data = loadSimData();
 const TPS = data.economy.simulation.ticksPerSecond;
@@ -128,12 +129,16 @@ function playSession(s: GameState, epochMs: number): void {
       const def = data.rooms.find((x) => x.id === r.defId);
       return def ? r.decor.length < def.decorSlots && def.decorSlots > 0 : false;
     });
-    const item = room ? [...data.decor]
+    const item = room ? catalogueFor(data, room.defId)
+      .map((id) => data.decor.find((x) => x.id === id)!)
       .filter((x) => x.unlockLevel <= s.player.level && x.cost.currency === 'coins'
-        && x.cost.amount <= s.player.coins * 0.25)
+        && x.cost.amount <= s.player.coins * 0.25
+        && !room.decor.some((p) => p.defId === x.id))
       .sort((a, b) => b.decorPoints - a.decorPoints)[0] : undefined;
     if (room && item) {
-      execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: item.id, slot: room.decor.length });
+      execute(data, s, {
+        type: 'PLACE_DECOR', roomId: room.id, defId: item.id, slot: catalogueIndex(data, room.defId, item.id),
+      });
       continue;
     }
     break;

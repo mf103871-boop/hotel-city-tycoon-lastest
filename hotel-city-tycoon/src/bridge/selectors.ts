@@ -11,6 +11,7 @@
  */
 import type { GameState, RoomInstance, SimEvent } from '../core/state/types.ts';
 import type { RoomDef, SimData } from '../core/data-source.ts';
+import { catalogueFor, catalogueIndex } from '../core/data-source.ts';
 import { decorFill } from '../core/systems/decor.ts';
 import { tierFor } from '../core/systems/stars.ts';
 import { owned as ownedCount, sellValue } from '../core/systems/inventory.ts';
@@ -395,7 +396,7 @@ export function buildableRooms(state: GameState) {
 // one layer nothing headless could reach.
 
 /** Why an action is unavailable. The UI turns this into one short sentence. */
-export type Blocker = 'locked' | 'cannotAfford' | 'noSpace' | 'alreadyExists' | null;
+export type Blocker = 'locked' | 'cannotAfford' | 'noSpace' | 'alreadyExists' | 'placed' | null;
 
 export interface BuildOption {
   defId: string;
@@ -466,76 +467,87 @@ export interface DecorOption {
   blocker: Blocker;
   /** How much of this room's meter one of these fills, 0..1. */
   meterShare: number;
+  /** The numbered place this piece stands in — its position in the room's list. */
+  slot: number;
+  /** True when this piece is already standing in the room. */
+  placed: boolean;
 }
 
-/** Decor the player could put in this room right now. */
+/**
+ * The room's own shop: its eight pieces, in slot order.
+ *
+ * Every room sells exactly eight pieces, sold nowhere else, and each has one
+ * designed place in the room — so the list is always the same eight rows,
+ * and what changes is their state: bought and standing, affordable, or not
+ * yet unlocked. A piece already in the room is shown as installed rather than
+ * hidden, so the player can see the whole set and what is left to buy.
+ */
 export function decorCatalog(state: GameState, roomId: string): DecorOption[] {
   const room = state.hotel.rooms.find((r) => r.id === roomId);
   const def = room ? roomDefOf(room.defId) : undefined;
   if (!room || !def) return [];
 
-  return D().decor
-    .filter((item) => item.unlockLevel <= state.player.level + 10)
-    // The room's own catalogue. Every bed used to be listed for the gym,
-    // greyed out with "No room on your plot" — a reason that was not the
-    // reason, on eight rows the player could never buy. A room now shows what
-    // belongs in it and nothing else.
-    .filter((item) => slotAllowed(D(), def, item.id) && decorFitsRoom(D(), def, item.id))
-    .map((item) => {
-      /*
-       * Ownership is checked before money.
-       *
-       * A player who took a piece down and had no coins left was told they
-       * could not afford the thing they already owned, and the row was
-       * disabled. `PLACE_DECOR` would have accepted it — the core consumes an
-       * owned copy before it charges — so the catalog was refusing something
-       * the simulation allowed.
-       */
-      const held = ownedCount(state, item.id);
-      let blocker: Blocker = null;
-      if (item.unlockLevel > state.player.level) blocker = 'locked';
-      else if (held === 0 && (item.cost.currency === 'coins'
-        ? state.player.coins < item.cost.amount
-        : state.player.gems < item.cost.amount)) blocker = 'cannotAfford';
-      else if (slotsFor(state, roomId, item.slotType, item.id).length === 0) blocker = 'noSpace';
-      return {
-        defId: item.id,
-        nameKey: item.nameKey,
-        category: item.category,
-        slotType: item.slotType,
-        decorPoints: item.decorPoints,
-        cost: item.cost,
-        /** Unplaced copies in hand. Above zero, placing costs nothing. */
-        owned: held,
-        unlockLevel: item.unlockLevel,
-        blocker,
-        meterShare: def.decorTarget > 0 ? Math.min(1, item.decorPoints / def.decorTarget) : 0,
-      };
-    })
-    .sort((a, b) => a.unlockLevel - b.unlockLevel || b.decorPoints - a.decorPoints);
+  const out: DecorOption[] = [];
+  catalogueFor(D(), room.defId).forEach((defId, slot) => {
+    const item = D().decor.find((d) => d.id === defId);
+    if (!item) return;
+    const placed = room.decor.some((p) => p.defId === defId);
+    /*
+     * Ownership is checked before money.
+     *
+     * A player who took a piece down and had no coins left was told they
+     * could not afford the thing they already owned, and the row was
+     * disabled. `PLACE_DECOR` would have accepted it — the core consumes an
+     * owned copy before it charges — so the catalog was refusing something
+     * the simulation allowed.
+     */
+    const held = ownedCount(state, defId);
+    let blocker: Blocker = null;
+    if (placed) blocker = 'placed';
+    else if (item.unlockLevel > state.player.level) blocker = 'locked';
+    else if (held === 0 && (item.cost.currency === 'coins'
+      ? state.player.coins < item.cost.amount
+      : state.player.gems < item.cost.amount)) blocker = 'cannotAfford';
+    else if (room.decor.some((p) => p.slot === slot)) blocker = 'noSpace';
+    out.push({
+      defId,
+      nameKey: item.nameKey,
+      category: item.category,
+      slotType: item.slotType,
+      decorPoints: item.decorPoints,
+      cost: item.cost,
+      /** Unplaced copies in hand. Above zero, placing costs nothing. */
+      owned: held,
+      unlockLevel: item.unlockLevel,
+      blocker,
+      meterShare: def.decorTarget > 0 ? Math.min(1, item.decorPoints / def.decorTarget) : 0,
+      slot,
+      placed,
+    });
+  });
+  return out;
 }
 
 /**
- * Free slots that will actually accept this kind of piece.
+ * The one place this piece may take in this room, as a list — empty when the
+ * room does not sell it or the place is already taken.
  *
- * Picking the first empty index regardless of type meant offering a bed a slot
- * the compatibility rule then refused, so the row looked available and the
- * command said no. The catalog now asks the same question the core asks.
+ * A piece's place is its position in the room's catalogue, so the answer no
+ * longer depends on the slot type or on what else is in the room. `slotType`
+ * is kept in the signature for callers that still pass it; without `defId`
+ * there is no piece to ask about, and every free numbered place is returned.
  */
-export function slotsFor(state: GameState, roomId: string, slotType: string,
+export function slotsFor(state: GameState, roomId: string, _slotType: string,
                          defId?: string): number[] {
   const room = state.hotel.rooms.find((r) => r.id === roomId);
   const def = room ? roomDefOf(room.defId) : undefined;
   if (!room || !def) return [];
-  // The piece the player actually tapped when the caller knows it. Asking
-  // about the first catalogue entry of the same slotType was right only while
-  // every rule was a rule about slot types; a room scope is per item, so the
-  // proxy answered for the wrong piece.
-  const item = defId
-    ? D().decor.find((d) => d.id === defId)
-    : D().decor.find((d) => d.slotType === slotType);
-  if (item && !(slotAllowed(D(), def, item.id) && decorFitsRoom(D(), def, item.id))) return [];
-  return freeSlots(state, roomId);
+  if (defId === undefined) return freeSlots(state, roomId);
+  const index = catalogueIndex(D(), room.defId, defId);
+  if (index < 0 || index >= def.decorSlots) return [];
+  if (!(slotAllowed(D(), def, defId) && decorFitsRoom(D(), def, defId))) return [];
+  if (room.decor.some((p) => p.defId === defId || p.slot === index)) return [];
+  return [index];
 }
 
 /** Slot indices in this room that nothing occupies. */

@@ -58,14 +58,34 @@ export function msUntilShopRefresh(data: SimData, epochMs: number): number {
  * not an offer.
  */
 /**
- * May this piece be handed out without knowing which room it is for?
+ * The pieces this player has somewhere to put.
  *
- * The shop and the weekly gift both give a player an item before they choose
- * where it goes, so both may only offer pieces that go anywhere. A piece
- * scoped to one room would otherwise sit in the store unplaceable.
+ * Every piece belongs to one room's catalogue, so the shop and the weekly
+ * gift can only usefully offer what one of the player's own rooms sells — a
+ * discount on the gym's rowing machine is an offer only to a player who has a
+ * gym, and to everyone else it is a slot of the week's five spent on something
+ * they cannot install. Rooms in storage count: they come back furnished.
+ *
+ * Empty only for a save with no rooms at all, which `createInitialState`
+ * never produces; callers fall back to the whole catalogue rather than an
+ * empty shelf.
  */
-function goesAnywhere(item: { roomScope: string[] }): boolean {
-  return item.roomScope.length === 0 || item.roomScope.includes('any');
+export function placeableDecor(data: SimData, state: GameState): Set<string> {
+  const out = new Set<string>();
+  const roomDefs = new Set<string>();
+  for (const room of state.hotel.rooms) roomDefs.add(room.defId);
+  for (const room of state.storedRooms) roomDefs.add(room.defId);
+  for (const defId of roomDefs) {
+    for (const id of data.decorCatalogues[defId] ?? []) out.add(id);
+  }
+  return out;
+}
+
+/** Every piece some room sells — the widest shelf there is. */
+function soldAnywhere(data: SimData): Set<string> {
+  const out = new Set<string>();
+  for (const list of Object.values(data.decorCatalogues)) for (const id of list) out.add(id);
+  return out;
 }
 
 export function shopOffers(data: SimData, state: GameState, epochMs: number): ShopOffer[] {
@@ -74,16 +94,18 @@ export function shopOffers(data: SimData, state: GameState, epochMs: number): Sh
     guestSpawn: 0, guestType: 0, guestDesire: 0, roomPick: 0, events: 0, staffGrade: 0, poke: 0,
   });
 
-  // Room-scoped pieces stay off the shelf. A discount on the gym's rowing
-  // machine is only an offer to a player who has a gym, and to everyone else
-  // it is a slot of the week's five spent on something they cannot install.
+  // Only what the player's own rooms sell (`placeableDecor`); built-ins and
+  // the catalogues of rooms they do not have stay off the shelf. A hotel that
+  // somehow has no rooms is shown every room's catalogue rather than nothing.
   //
   // `giftable` is deliberately NOT consulted here. It marks what may be given
   // away free, and the shop sells: gating the shelf on it would have hidden
   // every expensive piece in the game from the shop, which is most of what a
   // discount is worth having on.
+  const mine = placeableDecor(data, state);
+  const shelf = mine.size > 0 ? mine : soldAnywhere(data);
   const eligible = data.decor.filter((item) => item.unlockLevel <= state.player.level
-    && goesAnywhere(item));
+    && shelf.has(item.id));
   if (eligible.length === 0) return [];
 
   const season = activeSeason(data, epochMs);
@@ -229,7 +251,7 @@ export function giftState(data: SimData, state: GameState, epochMs: number): Gif
     bagCoins: tierFor(data, state.hotel.stars).dailyBonusCoins,
     available,
     msUntilNext: available ? 0 : nextDayStart - epochMs,
-    itemDefId: weeklyGiftItem(data, epochMs),
+    itemDefId: weeklyGiftItem(data, state, epochMs),
     itemIsNew: weekIndexOf(data, epochMs) > state.gift.lastItemWeek,
   };
 }
@@ -240,16 +262,25 @@ export function weekIndexOf(data: SimData, epochMs: number): number {
 }
 
 /**
- * This week's free catalogue item — decision 15a. Deterministic in the week
- * alone, so every hotel sees the same shelf, as the original's weekly
- * catalogue rotated for everyone at once. The pool is every coin decor piece
- * at or under gifts.maxItemCost, so the gift is always placeable early.
+ * This week's free catalogue item — decision 15a.
+ *
+ * Deterministic in the week and the player's rooms, so a reload never rerolls
+ * it and two hotels with the same rooms see the same shelf. The pool is every
+ * coin piece at or under gifts.maxItemCost that one of the player's own rooms
+ * sells, so the gift is always placeable the day it arrives; a hotel with no
+ * such piece (none, in practice — the lobby alone sells cheap ones) is given
+ * one from the whole catalogue instead.
  */
-export function weeklyGiftItem(data: SimData, epochMs: number): string {
-  const pool = data.decor
-    .filter((d) => d.cost.currency === 'coins' && d.cost.amount <= data.gifts.maxItemCost
-      && d.giftable && goesAnywhere(d))
-    .sort((a, b) => a.id.localeCompare(b.id));
+export function weeklyGiftItem(data: SimData, state: GameState, epochMs: number): string {
+  const cheap = (d: SimData['decor'][number]): boolean =>
+    d.cost.currency === 'coins' && d.cost.amount <= data.gifts.maxItemCost && d.giftable;
+  const mine = placeableDecor(data, state);
+  let pool = data.decor.filter((d) => cheap(d) && mine.has(d.id));
+  if (pool.length === 0) {
+    const sold = soldAnywhere(data);
+    pool = data.decor.filter((d) => cheap(d) && sold.has(d.id));
+  }
+  pool.sort((a, b) => a.id.localeCompare(b.id));
   const week = weekIndexOf(data, epochMs);
   const roll = mulberry32(Math.imul(week + 1, 0x9e3779b9) >>> 0);
   return pool[Math.min(pool.length - 1, Math.floor(roll * pool.length))]!.id;

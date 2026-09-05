@@ -165,327 +165,279 @@ export function floorLineFor(roomDefId: string, blocksH: number): number {
  */
 const LAYOUTS: Layout = {
   lobby: [
-    s('ground', 7, 14, 4, 7, 'seating_lobbyBench'),
-    s('ground', 11, 14, 4, 7),
-    s('ground', 15, 14, 4, 7),
-    s('ground', 29, 14, 4, 7),
-    s('surface', 11, 14, 6, 7, 'rug_entranceRunner'),
-    s('surface', 29, 14, 6, 7),
-    s('wall', 8, 8, 5, 6),
-    s('wall', 15, 8, 5, 6),
-    s('wall', 29, 8, 5, 6),
-    s('ceiling', 9, 2, 4, 5),
-    s('ceiling', 17, 2, 4, 5),
+    // The eight pieces lobby sells, in catalogue order.
+    s('ground', 15, 14, 5, 7), // 0: storage_luggageRack
+    s('ground', 29, 14, 5, 7), // 1: luxury_aquarium
+    s('wall', 15, 8, 5, 5), // 2: wallArt_cityMap
+    s('wall', 8, 8, 6, 6), // 3: wallArt_masterpiece
+    s('wall', 29, 8, 6, 6), // 4: wallpaper_gilded
+    s('ceiling', 17, 0, 4, 5), // 5: lighting_lobbyLantern
+    s('ceiling', 10, 0, 5, 5), // 6: lighting_chandelier
+    s('surface', 29, 14, 5, 7), // 7: flooring_marble
+    // What the room comes furnished with.
+    s('ground', 8, 14, 5, 7, 'seating_lobbyBench'),
+    s('surface', 8, 14, 5, 7, 'rug_entranceRunner'),
   ],
   housekeeping: [
-    s('ground', 3, 14, 5, 7, 'storage_supplyCart'),
-    s('ground', 8, 14, 5, 7, 'storage_laundryBasket'),
-    s('ground', 13, 14, 5, 7),
-    s('surface', 8, 14, 6, 7),
-    s('wall', 4, 11, 7, 6),
-    s('wall', 12, 11, 7, 6),
-    s('ceiling', 12, 2, 5, 5),
+    // The eight pieces housekeeping sells, in catalogue order.
+    s('ground', 3, 14, 5, 7, 'storage_supplyCart'), // 0: storage_linenShelf
+    s('ground', 9, 14, 4, 7, 'storage_laundryBasket'), // 1: storage_amenityShelf
+    s('ground', 14, 14, 4, 7), // 2: appliance_vacuum
+    s('surface', 4, 14, 6, 7), // 3: flooring_concrete
+    s('surface', 12, 14, 5, 7), // 4: rug_mat
+    s('wall', 12, 7, 6, 5), // 5: wallArt_roomStatusBoard
+    s('wall', 11, 12, 7, 4), // 6: wallpaper_plain
+    s('ceiling', 12, 0, 5, 4), // 7: lighting_bulb
   ],
   laundry: [
-    // On the bays, not merely near them: the machine bays are painted at px
-    // 12-58, 90-137 and 169-215, whose centres are units 4, 14 and 24.
-    s('ground', 4, 14, 6, 7, 'appliance_washer'),
-    s('ground', 14, 14, 6, 7, 'appliance_washer'),
-    s('ground', 24, 14, 6, 7, 'appliance_dryer'),
-    s('surface', 16, 14, 6, 7),
-    s('wall', 9, 8, 3, 6),
-    s('wall', 29, 8, 3, 6),
-    s('ceiling', 16, 2, 5, 5),
+    // The eight pieces laundry sells, in catalogue order.
+    s('ground', 4, 14, 5, 7, 'appliance_washer'), // 0: appliance_commercialWasher
+    s('ground', 24, 14, 5, 7, 'appliance_washer'), // 1: appliance_foldingTable
+    s('ground', 19, 14, 3, 7), // 2: plant_succulent
+    s('ground', 30, 14, 4, 7), // 3: appliance_ironingBoard
+    s('surface', 9, 14, 5, 7), // 4: flooring_drainTile
+    s('wall', 9, 4, 6, 6), // 5: wallArt_lostSockBoard
+    s('wall', 23, 4, 6, 6), // 6: wallpaper_utilityTile
+    s('ceiling', 17, 0, 5, 4), // 7: lighting_laundryBatten
+    // What the room comes furnished with.
+    s('ground', 14, 14, 5, 7, 'appliance_dryer'),
   ],
   staffRoom: [
-    s('ground', 14, 14, 5, 7, 'storage_lockers'),
-    s('ground', 19, 14, 5, 7, 'appliance_coffeeMachine'),
-    s('ground', 24, 14, 5, 7),
-    s('ground', 29, 14, 5, 7),
-    s('surface', 16, 14, 6, 7),
-    s('surface', 27, 14, 6, 7),
-    s('wall', 16, 11, 7, 6),
-    s('wall', 27, 11, 7, 6),
-    s('ceiling', 12, 2, 3, 5),
-    s('ceiling', 25, 2, 3, 5),
+    // The eight pieces staffRoom sells, in catalogue order.
+    s('ground', 14, 14, 5, 7, 'storage_lockers'), // 0: storage_miniFridge
+    s('ground', 30, 14, 4, 7, 'appliance_coffeeMachine'), // 1: appliance_snackVending
+    s('ground', 20, 14, 5, 7), // 2: seating_staffSofa
+    s('ground', 25, 14, 3, 7), // 3: plant_bonsai
+    s('surface', 14, 14, 5, 7), // 4: rug_kitchenMat
+    s('surface', 28, 14, 6, 7), // 5: flooring_scuffedLino
+    s('wall', 13, 5, 7, 6), // 6: wallArt_starEmployee
+    s('ceiling', 25, 0, 3, 5), // 7: lighting_stringBulbs
   ],
   maintenance: [
-    s('ground', 15, 14, 5, 7, 'storage_toolRack'),
-    s('ground', 20, 14, 5, 7, 'storage_stepLadder'),
-    s('ground', 25, 14, 5, 7),
-    s('surface', 20, 14, 6, 7),
-    s('wall', 17, 8, 7, 6),
-    s('wall', 27, 8, 7, 6),
-    s('ceiling', 21, 2, 5, 5),
+    // The eight pieces maintenance sells, in catalogue order.
+    s('ground', 14, 14, 4, 7, 'storage_toolRack'), // 0: storage_partsBin
+    s('ground', 19, 14, 4, 7), // 1: table_deskWood
+    s('ground', 25, 14, 5, 7, 'storage_stepLadder'), // 2: storage_safeCabinet
+    s('surface', 25, 14, 5, 7), // 3: flooring_checkerPlate
+    s('surface', 19, 14, 5, 7), // 4: rug_antiFatigueMat
+    s('wall', 14, 6, 6, 6), // 5: wallArt_breakerPanel
+    s('wall', 28, 6, 7, 7), // 6: wallpaper_breezeBlock
+    s('ceiling', 20, 2, 5, 5), // 7: lighting_cageLamp
   ],
   business: [
-    s('ground', 3, 14, 5, 7, 'appliance_printer'),
-    s('ground', 8, 14, 5, 7),
-    s('ground', 14, 14, 5, 7),
-    s('ground', 28, 14, 5, 7),
-    s('ground', 44, 14, 5, 7),
-    s('surface', 8, 14, 6, 7),
-    s('surface', 44, 14, 6, 7),
-    s('wall', 11, 8, 7, 6),
-    s('wall', 28, 8, 7, 6),
-    s('wall', 44, 8, 7, 6),
-    s('ceiling', 11, 2, 5, 5),
-    s('ceiling', 36, 2, 5, 5),
+    // The eight pieces business sells, in catalogue order.
+    s('ground', 3, 14, 6, 7, 'appliance_printer'), // 0: appliance_paperShredder
+    s('ground', 11, 14, 8, 7), // 1: table_meetingTable
+    s('surface', 11, 14, 8, 7), // 2: flooring_officeCarpet
+    s('wall', 11, 8, 7, 7), // 3: wallArt_projectorScreen
+    s('ground', 28, 14, 6, 7), // 4: plant_lobbyFicus
+    s('ceiling', 36, 2, 6, 5), // 5: lighting_officePanel
+    s('wall', 44, 8, 7, 7), // 6: wallpaper_officePartition
+    s('ground', 44, 14, 7, 7), // 7: luxury_gallerypiece
   ],
   economy: [
-    s('bed', 6, 14, 8, 6, 'bed_cot'),
-    s('surface', 6, 14, 6, 7),
-    s('wall', 3, 11, 5, 6),
-    s('wall', 8, 11, 5, 6),
-    s('ceiling', 11, 2, 5, 5),
+    // The eight pieces economy sells, in catalogue order.
+    s('bed', 3, 14, 6, 6, 'bed_cot'), // 0: bed_metalFrame
+    s('ground', 9, 14, 4, 7), // 1: table_crateNightstand
+    s('surface', 3, 14, 6, 7), // 2: flooring_carpet
+    s('surface', 9, 14, 4, 7), // 3: rug_woolRug
+    s('wall', 3, 11, 6, 6), // 4: wallpaper_striped
+    s('wall', 9, 7, 4, 5), // 5: wallArt_poster
+    s('ceiling', 9, 0, 4, 4), // 6: lighting_ceilingFan
+    s('ceiling', 14, 0, 4, 5), // 7: lighting_lamp
   ],
   standard: [
-    s('bed', 5, 14, 8, 6, 'bed_single'),
-    s('surface', 5, 14, 6, 7),
-    s('wall', 9, 8, 2, 6),
-    s('wall', 15, 8, 2, 6),
-    s('ceiling', 9, 1, 4, 5),
-    s('ceiling', 14, 1, 4, 5),
+    // The eight pieces standard sells, in catalogue order.
+    s('bed', 4, 14, 8, 6, 'bed_single'), // 0: bed_paintedSpindle
+    s('surface', 2, 14, 4, 7), // 1: flooring_oak
+    s('surface', 8, 14, 4, 7), // 2: rug_persianRug
+    s('wall', 2, 11, 4, 5), // 3: wallArt_bedsideSconce
+    s('wall', 7, 11, 4, 5), // 4: wallArt_print
+    s('wall', 9, 3, 4, 6), // 5: wallpaper_damask
+    s('ceiling', 4, 0, 5, 3), // 6: lighting_pendant
+    s('ceiling', 14, 0, 4, 5), // 7: lighting_paperLantern
   ],
   double: [
-    s('bed', 6, 14, 8, 6, 'bed_single'),
-    s('bed', 18, 14, 8, 6, 'bed_single'),
-    s('ground', 12, 14, 4, 7),
-    s('surface', 6, 14, 6, 7),
-    s('surface', 18, 14, 6, 7),
-    s('wall', 11, 8, 2, 6),
-    s('wall', 22, 8, 2, 6),
-    s('wall', 30, 8, 2, 6),
-    s('ceiling', 22, 2, 3, 5),
-    s('ceiling', 30, 2, 3, 5),
+    // The eight pieces double sells, in catalogue order.
+    s('bed', 5, 14, 8, 6, 'bed_single'), // 0: bed_twinBrass
+    s('bed', 15, 14, 8, 6, 'bed_single'), // 1: bed_twinOak
+    s('ground', 22, 14, 4, 7), // 2: table_twinNightstand
+    s('ground', 30, 14, 3, 7), // 3: luxury_chevalMirror
+    s('surface', 5, 14, 6, 7), // 4: rug_silkRug
+    s('surface', 15, 14, 6, 7), // 5: flooring_mosaic
+    s('wall', 22, 8, 5, 6), // 6: wallpaper_velvet
+    s('ceiling', 22, 0, 4, 4), // 7: lighting_crystalTiers
   ],
   family: [
-    s('bed', 7, 14, 8, 6, 'bed_single'),
+    // The eight pieces family sells, in catalogue order.
+    s('bed', 5, 14, 7, 6, 'bed_single'), // 0: bed_trundleBed
+    s('ground', 12, 14, 5, 7), // 1: seating_rockingHorse
+    s('surface', 5, 14, 7, 7), // 2: rug_antiqueRug
+    s('surface', 20, 14, 8, 7), // 3: rug_roadPlaymat
+    s('wall', 20, 3, 8, 4), // 4: wallpaper_mural
+    s('wall', 28, 2, 4, 4), // 5: wallArt_painting
+    s('ceiling', 4, 0, 5, 4), // 6: lighting_starfield
+    s('ceiling', 12, 0, 5, 4), // 7: lighting_balloonLantern
+    // What the room comes furnished with.
     s('bed', 20, 14, 8, 6, 'bed_cot'),
     s('bed', 20, 10, 8, 4, 'bed_cot'),
-    s('surface', 7, 14, 6, 7),
-    s('surface', 20, 14, 6, 7),
-    s('wall', 1, 8, 2, 6),
-    s('wall', 13, 8, 2, 6),
-    s('ceiling', 1, 2, 2, 5),
-    s('ceiling', 13, 2, 2, 5),
   ],
   deluxe: [
-    s('bed', 12, 14, 8, 6, 'bed_queen'),
-    s('ground', 4, 14, 4, 7),
-    s('ground', 20, 14, 4, 7),
-    s('ground', 30, 14, 4, 7),
-    s('surface', 4, 14, 6, 7),
-    s('surface', 12, 14, 6, 7),
-    s('surface', 20, 14, 6, 7),
-    s('wall', 2, 8, 2, 6),
-    s('wall', 10, 8, 2, 6),
-    s('wall', 20, 8, 2, 6),
-    s('wall', 30, 8, 2, 6),
-    s('ceiling', 2, 2, 2, 5),
-    s('ceiling', 10, 2, 2, 5),
-    s('ceiling', 30, 2, 2, 5),
+    // The eight pieces deluxe sells, in catalogue order.
+    s('bed', 12, 14, 8, 6, 'bed_queen'), // 0: bed_loftSleigh
+    s('ground', 3, 14, 5, 7), // 1: seating_armchair
+    s('surface', 12, 14, 6, 7), // 2: rug_silkrunner
+    s('ground', 20, 14, 5, 7), // 3: table_glassTable
+    s('surface', 20, 14, 6, 7), // 4: flooring_inlaidparquet
+    s('wall', 20, 8, 6, 6), // 5: wallArt_commissionedportrait
+    s('ceiling', 26, 0, 6, 4), // 6: lighting_loftRattan
+    s('ground', 30, 14, 4, 7), // 7: plant_fern
   ],
   executive: [
-    s('bed', 28, 14, 8, 6, 'bed_king'),
-    s('ground', 17, 14, 5, 7),
-    s('ground', 35, 14, 5, 7),
-    s('ground', 40, 14, 5, 7),
-    s('surface', 19, 14, 6, 7),
-    s('surface', 28, 14, 6, 7),
-    s('surface', 38, 14, 6, 7),
-    s('wall', 15, 8, 2, 6),
-    s('wall', 24, 8, 2, 6),
-    s('wall', 34, 8, 2, 6),
-    s('ceiling', 15, 2, 2, 5),
-    s('ceiling', 24, 2, 2, 5),
-    s('ceiling', 34, 2, 2, 5),
+    // The eight pieces executive sells, in catalogue order.
+    s('ground', 16, 14, 4, 7), // 0: seating_chaise
+    s('surface', 17, 14, 6, 7), // 1: rug_antiquecarpet
+    s('bed', 23, 14, 8, 6, 'bed_king'), // 2: bed_leatherWingback
+    s('ground', 30, 14, 4, 7), // 3: luxury_minibar
+    s('ground', 35, 14, 4, 7), // 4: table_writingdesk
+    s('ceiling', 34, 2, 3, 5), // 5: lighting_bankersPendant
+    s('ground', 40, 14, 4, 7), // 6: plant_indoorolivetree
+    s('wall', 45, 2, 6, 4), // 7: wallArt_worldClocks
   ],
   honeymoon: [
-    s('bed', 15, 14, 8, 6, 'bed_canopy'),
-    s('ground', 3, 14, 5, 7),
-    s('ground', 8, 14, 5, 7),
-    s('ground', 26, 14, 5, 7),
-    s('surface', 5, 14, 6, 7),
-    s('surface', 15, 14, 6, 7),
-    s('surface', 24, 14, 6, 7),
-    s('wall', 1, 8, 2, 6),
-    s('wall', 3, 8, 2, 6),
-    s('wall', 11, 8, 2, 6),
-    s('wall', 21, 8, 2, 6),
-    s('wall', 26, 8, 2, 6),
-    s('ceiling', 2, 2, 2, 5),
-    s('ceiling', 11, 2, 2, 5),
-    s('ceiling', 21, 2, 2, 5),
-    s('ceiling', 27, 2, 2, 5),
+    // The eight pieces honeymoon sells, in catalogue order.
+    s('bed', 15, 14, 8, 6, 'bed_canopy'), // 0: bed_petalCanopy
+    s('ground', 5, 14, 5, 7), // 1: seating_velvetchaise
+    s('ground', 22, 14, 4, 7), // 2: plant_orchidWall
+    s('ground', 27, 14, 4, 7), // 3: luxury_jacuzzi
+    s('surface', 15, 14, 6, 7), // 4: rug_roseGarland
+    s('wall', 22, 8, 5, 6), // 5: wallpaper_handpaintedsilk
+    s('wall', 2, 8, 4, 6), // 6: wallArt_originallandscape
+    s('ceiling', 21, 0, 3, 4), // 7: lighting_roseChandelier
   ],
   luxurySuite: [
-    s('bed', 13, 14, 8, 6, 'bed_floating'),
-    s('bed', 39, 14, 8, 6, 'bed_floating'),
-    s('ground', 2, 14, 4, 7),
-    s('ground', 7, 14, 4, 7),
-    s('ground', 19, 14, 4, 7),
-    s('ground', 24, 14, 4, 7),
-    s('ground', 28, 14, 4, 7),
-    s('ground', 33, 14, 4, 7),
-    s('ground', 45, 14, 4, 7),
-    s('ground', 50, 14, 4, 7),
-    s('surface', 7, 14, 6, 7),
-    s('surface', 20, 14, 6, 7),
-    s('surface', 33, 14, 6, 7),
-    s('surface', 46, 14, 6, 7),
-    s('wall', 2, 8, 3, 6),
-    s('wall', 12, 8, 3, 6),
-    s('wall', 16, 8, 3, 6),
-    s('wall', 19, 8, 3, 6),
-    s('wall', 45, 8, 3, 6),
-    s('wall', 50, 8, 3, 6),
-    s('ceiling', 2, 2, 2, 5),
-    s('ceiling', 18, 2, 2, 5),
-    s('ceiling', 45, 2, 2, 5),
-    s('ceiling', 63, 2, 2, 5),
+    // The eight pieces luxurySuite sells, in catalogue order.
+    s('ground', 4, 14, 5, 7), // 0: plant_wintergarden
+    s('bed', 14, 14, 8, 6, 'bed_floating'), // 1: bed_emperorbed
+    s('wall', 14, 8, 7, 6), // 2: wallpaper_gildedpanelling
+    s('ceiling', 18, 0, 5, 5), // 3: lighting_crystalchandelier
+    s('ground', 23, 14, 5, 7), // 4: table_marbleconsole
+    s('ground', 41, 14, 5, 7), // 5: seating_salonset
+    s('surface', 45, 14, 6, 7), // 6: rug_ermineHearth
+    s('ground', 49, 14, 5, 7), // 7: luxury_fireplace
+    // What the room comes furnished with.
+    s('bed', 32, 14, 8, 6, 'bed_floating'),
   ],
   presidential: [
-    s('bed', 18, 30, 8, 6, 'bed_fourposter'),
-    s('bed', 27, 30, 8, 6, 'bed_fourposter'),
-    s('ground', 46, 30, 4, 7),
-    s('ground', 6, 16, 5, 6),
-    s('ground', 12, 16, 5, 6),
-    s('ground', 18, 16, 5, 6),
-    s('ground', 24, 16, 5, 6),
-    s('surface', 17, 30, 6, 7),
-    s('surface', 28, 30, 6, 7),
-    s('surface', 15, 16, 6, 6),
-    s('wall', 1, 8, 2, 6),
-    s('wall', 4, 8, 2, 6),
-    s('wall', 13, 8, 2, 6),
-    s('wall', 16, 8, 2, 6),
-    s('wall', 27, 8, 2, 6),
-    s('wall', 33, 8, 2, 6),
-    s('wall', 46, 8, 2, 6),
-    s('ceiling', 3, 2, 4, 5),
-    s('ceiling', 15, 2, 4, 5),
-    s('ceiling', 27, 2, 4, 5),
-    s('ceiling', 33, 2, 4, 5),
-    s('ceiling', 46, 2, 4, 5),
+    // The eight pieces presidential sells, in catalogue order.
+    s('bed', 26, 30, 8, 6, 'bed_fourposter'), // 0: bed_stateBed
+    s('ground', 15, 16, 5, 7), // 1: seating_throne
+    s('ground', 24, 16, 5, 7), // 2: table_crystalTable
+    s('ground', 17, 30, 5, 7), // 3: luxury_piano
+    s('ground', 46, 30, 4, 7), // 4: luxury_goldStatue
+    s('surface', 17, 30, 6, 7), // 5: flooring_onyxfloor
+    s('wall', 30, 7, 7, 7), // 6: wallArt_crossedStandards
+    s('ceiling', 15, 2, 5, 5), // 7: lighting_constellationlights
+    // What the room comes furnished with.
+    s('bed', 6, 16, 8, 6, 'bed_fourposter'),
   ],
   cafe: [
-    s('ground', 18, 14, 4, 7, 'table_cafeTable'),
-    s('ground', 22, 14, 4, 7, 'seating_cafeChair'),
-    s('ground', 26, 14, 4, 7),
-    s('ground', 30, 14, 4, 7),
-    s('surface', 20, 14, 6, 7),
-    s('surface', 28, 14, 6, 7),
-    s('wall', 1, 5, 2, 6),
-    s('wall', 17, 5, 2, 6),
-    s('wall', 31, 5, 2, 6),
-    s('ceiling', 1, 2, 2, 5),
-    s('ceiling', 17, 2, 2, 5),
+    // The eight pieces cafe sells, in catalogue order.
+    s('ground', 18, 14, 4, 7, 'table_cafeTable'), // 0: appliance_espressoBar
+    s('ground', 23, 14, 4, 7, 'seating_cafeChair'), // 1: seating_stool
+    s('ground', 29, 14, 5, 7), // 2: appliance_cakeDisplay
+    s('surface', 23, 14, 5, 7), // 3: rug_latteRug
+    s('surface', 29, 14, 5, 7), // 4: flooring_macaronTiles
+    s('wall', 4, 2, 5, 4), // 5: wallArt_cupcakeBunting
+    s('ceiling', 10, 0, 5, 4), // 6: lighting_cupcakePendant
+    s('wall', 17, 4, 4, 8), // 7: wallpaper_sprinkleWall
   ],
   gym: [
-    s('ground', 3, 14, 6, 7, 'appliance_treadmill'),
-    s('ground', 10, 14, 6, 7, 'storage_dumbbellRack'),
-    s('ground', 16, 14, 6, 7),
-    s('ground', 22, 14, 6, 7),
-    s('ground', 29, 14, 6, 7),
-    s('surface', 8, 14, 6, 7),
-    s('surface', 24, 14, 6, 7),
-    s('wall', 17, 10, 2, 6),
-    s('wall', 28, 10, 2, 6),
-    s('wall', 31, 10, 2, 6),
-    s('ceiling', 17, 2, 3, 5),
+    // The eight pieces gym sells, in catalogue order.
+    s('ground', 3, 14, 5, 7, 'appliance_treadmill'), // 0: appliance_rowingMachine
+    s('ground', 9, 14, 5, 7, 'storage_dumbbellRack'), // 1: appliance_weightRack
+    s('ground', 15, 14, 5, 7), // 2: appliance_spinBike
+    s('ground', 21, 14, 5, 7), // 3: appliance_punchBag
+    s('ground', 27, 14, 5, 7), // 4: storage_towelStack
+    s('surface', 22, 14, 6, 7), // 5: rug_yogaMat
+    s('wall', 30, 2, 4, 4), // 6: wallArt_intervalTimer
+    s('ceiling', 17, 2, 3, 5), // 7: lighting_gymHighBay
   ],
   restaurant: [
-    s('ground', 19, 14, 4, 7, 'table_diningTable'),
-    s('ground', 23, 14, 4, 7, 'seating_cafeChair'),
-    s('ground', 28, 14, 4, 7),
-    s('ground', 32, 14, 4, 7),
-    s('ground', 37, 14, 4, 7),
-    s('ground', 41, 14, 4, 7),
-    s('ground', 46, 14, 4, 7),
-    s('surface', 22, 14, 6, 7),
-    s('surface', 32, 14, 6, 7),
-    s('surface', 43, 14, 6, 7),
-    s('wall', 18, 8, 2, 6),
-    s('wall', 23, 8, 2, 6),
-    s('wall', 27, 8, 2, 6),
-    s('wall', 47, 8, 2, 6),
-    s('ceiling', 5, 2, 5, 5),
-    s('ceiling', 15, 2, 5, 5),
-    s('ceiling', 24, 2, 5, 5),
+    // The eight pieces restaurant sells, in catalogue order.
+    s('ground', 19, 14, 5, 7, 'table_diningTable'), // 0: table_marbleTable
+    s('ground', 26, 14, 5, 7, 'seating_cafeChair'), // 1: seating_loveseat
+    s('ground', 32, 14, 5, 7), // 2: luxury_cocktailCart
+    s('ground', 38, 14, 5, 7), // 3: storage_wineRack
+    s('ground', 44, 14, 5, 7), // 4: appliance_prepStation
+    s('surface', 32, 14, 5, 7), // 5: flooring_bistroCheck
+    s('wall', 12, 4, 6, 5), // 6: wallArt_brasserieMirror
+    s('ceiling', 22, 2, 5, 5), // 7: lighting_candelabra
   ],
   bar: [
-    s('ground', 24, 14, 5, 7, 'seating_barStool'),
-    s('ground', 29, 14, 5, 7, 'seating_barStool'),
-    s('surface', 27, 14, 6, 7),
-    s('wall', 23, 8, 3, 6),
-    s('wall', 27, 8, 3, 6),
-    s('wall', 30, 8, 3, 6),
-    s('ceiling', 1, 2, 2, 5),
-    s('ceiling', 21, 2, 2, 5),
+    // The eight pieces bar sells, in catalogue order.
+    s('ground', 24, 14, 4, 7, 'seating_barStool'), // 0: appliance_beerTap
+    s('ground', 30, 14, 4, 7, 'seating_barStool'), // 1: luxury_privatebar
+    s('wall', 24, 8, 4, 6), // 2: wallpaper_bottleGreen
+    s('wall', 30, 8, 4, 6), // 3: wallArt_sculptureWall
+    s('ceiling', 21, 0, 3, 5), // 4: lighting_neonCocktail
+    s('ceiling', 1, 0, 2, 4), // 5: lighting_pubLantern
+    s('surface', 28, 14, 5, 7), // 6: flooring_pubBoards
+    s('surface', 23, 14, 2, 7), // 7: rug_barMat
   ],
   arcade: [
-    s('ground', 3, 14, 6, 7, 'appliance_arcadeCabinet'),
-    s('ground', 10, 14, 6, 7),
-    s('ground', 16, 14, 6, 7),
-    s('ground', 22, 14, 6, 7),
-    s('ground', 29, 14, 6, 7),
-    s('surface', 8, 14, 6, 7),
-    s('surface', 24, 14, 6, 7),
-    s('wall', 3, 8, 4, 6),
-    s('wall', 13, 8, 4, 6),
-    s('wall', 17, 8, 4, 6),
-    s('ceiling', 3, 2, 5, 5),
-    s('ceiling', 15, 2, 5, 5),
+    // The eight pieces arcade sells, in catalogue order.
+    s('ground', 9, 14, 5, 7), // 0: appliance_pinballTable
+    s('ground', 15, 14, 5, 7), // 1: appliance_clawMachine
+    s('ground', 22, 14, 6, 7), // 2: appliance_airHockey
+    s('ground', 29, 14, 5, 7), // 3: storage_displayCase
+    s('surface', 12, 14, 6, 7), // 4: flooring_galaxyCarpet
+    s('surface', 25, 14, 5, 7), // 5: rug_danceGameMat
+    s('wall', 15, 7, 7, 6), // 6: wallArt_hiScoreBoard
+    s('ceiling', 3, 2, 5, 5), // 7: lighting_hologram
+    // What the room comes furnished with.
+    s('ground', 3, 14, 5, 7, 'appliance_arcadeCabinet'),
   ],
   cinema: [
-    s('ground', 2, 14, 4, 7, 'seating_cinemaSeats'),
-    s('ground', 13, 14, 5, 7, 'seating_cinemaSeats'),
+    // The eight pieces cinema sells, in catalogue order.
+    s('ground', 28, 14, 5, 7, 'seating_cinemaSeats'), // 0: seating_loungeBooth
+    s('ground', 36, 14, 5, 7), // 1: appliance_popcornCart
+    s('ground', 3, 14, 4, 7), // 2: plant_palm
+    s('ground', 45, 14, 4, 7), // 3: table_sideTable
+    s('wall', 45, 4, 4, 5), // 4: wallArt_nowShowingBoard
+    s('ceiling', 2, 0, 4, 3), // 5: lighting_exitSign
+    s('surface', 16, 14, 5, 7), // 6: rug_multiplexCarpet
+    s('surface', 32, 14, 5, 7), // 7: flooring_aisleLights
+    // What the room comes furnished with.
+    s('ground', 12, 14, 5, 7, 'seating_cinemaSeats'),
     s('ground', 20, 14, 5, 7, 'seating_cinemaSeats'),
-    s('ground', 28, 14, 5, 7),
-    s('ground', 35, 14, 5, 7),
-    s('ground', 46, 14, 4, 7),
-    s('surface', 17, 14, 6, 7),
-    s('surface', 31, 14, 6, 7),
-    s('wall', 1, 10, 2, 6),
-    s('wall', 4, 10, 2, 6),
-    s('wall', 46, 10, 2, 6),
-    s('ceiling', 44, 2, 2, 5),
-    s('ceiling', 47, 2, 2, 5),
   ],
   spa: [
-    s('ground', 12, 12, 4, 7, 'appliance_djBooth'),
-    s('ground', 16, 12, 4, 7),
-    s('ground', 20, 12, 4, 7),
-    s('ground', 25, 12, 4, 7),
-    s('ground', 29, 12, 4, 7),
-    s('ground', 34, 12, 4, 7),
-    s('ground', 38, 12, 4, 7),
-    s('surface', 14, 12, 6, 7),
-    s('surface', 25, 12, 6, 7),
-    s('surface', 35, 12, 6, 7),
-    s('wall', 13, 11, 7, 6),
-    s('wall', 21, 11, 7, 6),
-    s('wall', 29, 11, 7, 6),
-    s('wall', 37, 11, 7, 6),
-    s('ceiling', 16, 2, 5, 5),
-    s('ceiling', 29, 2, 5, 5),
-    s('ceiling', 37, 2, 5, 5),
+    // The eight pieces spa sells, in catalogue order.
+    s('ground', 12, 12, 5, 7), // 0: appliance_fogMachine
+    s('wall', 13, 7, 6, 6), // 1: wallpaper_animatedAurora
+    s('ceiling', 19, 2, 5, 5), // 2: lighting_laserRig
+    s('surface', 24, 12, 5, 7), // 3: flooring_ledDanceFloor
+    s('ceiling', 29, 2, 5, 5), // 4: lighting_mirrorBallCluster
+    s('surface', 30, 12, 5, 7), // 5: flooring_obsidian
+    s('ground', 30, 12, 5, 7), // 6: luxury_goGoPodium
+    s('wall', 35, 7, 6, 6), // 7: wallArt_ledVideoWall
+    // What the room comes furnished with.
+    s('ground', 19, 12, 6, 7, 'appliance_djBooth'),
   ],
   pool: [
-    s('ground', 2, 10, 4, 7, 'seating_sunLounger'),
-    s('ground', 6, 10, 4, 7, 'luxury_parasol'),
-    s('ground', 58, 10, 4, 7),
-    s('ground', 62, 10, 4, 7),
-    s('surface', 4, 10, 6, 7),
-    s('surface', 60, 10, 6, 7),
-    s('wall', 18, 5, 7, 6),
-    s('wall', 26, 5, 7, 6),
-    s('wall', 38, 5, 7, 6),
-    s('wall', 46, 5, 7, 6),
-    s('ceiling', 3, 2, 5, 5),
-    s('ceiling', 22, 2, 5, 5),
-    s('ceiling', 42, 2, 5, 5),
+    // The eight pieces pool sells, in catalogue order.
+    s('ground', 62, 10, 4, 7), // 0: luxury_divingBoard
+    s('ground', 57, 10, 3, 7), // 1: plant_poolPalm
+    s('surface', 4, 10, 6, 7), // 2: flooring_deckTiles
+    s('surface', 60, 10, 6, 7), // 3: rug_swimTowel
+    s('wall', 22, 5, 5, 6), // 4: wallpaper_poolMosaic
+    s('wall', 40, 5, 5, 6), // 5: wallArt_lifeguardBoard
+    s('ceiling', 16, 0, 4, 4), // 6: lighting_poolFloodlight
+    s('ceiling', 46, 0, 4, 4), // 7: lighting_heatLamp
+    // What the room comes furnished with.
+    s('ground', 2, 10, 3, 7, 'seating_sunLounger'),
+    s('ground', 6, 10, 3, 7, 'luxury_parasol'),
   ],
 };
 
@@ -745,18 +697,23 @@ export function anchorFor(
 }
 
 /**
- * One numbered place in a room's plan, when the caller has a particular one in
- * mind — the player tapping "upgrade" on the built-in the room came with.
+ * The place a room keeps for the piece it sells at this position.
  *
- * Returns null for an index nobody designed, or for a place that does not take
- * this kind of piece: a lamp cannot be hung where a bed goes.
+ * A room's catalogue (`decor.json` `catalogues`, `catalogueIndex`) lists
+ * eight pieces in slot order, and the first eight entries of its plan above
+ * are those eight places, in the same order — so the position of a piece in
+ * the room's list is the whole of where it goes. That is what makes every
+ * piece land in the same designed spot every time, far from the others: no
+ * scan, no "first free place of the right kind", no dependence on what was
+ * bought before it.
+ *
+ * Null for an index the plan does not have, which is only ever a room added
+ * to `rooms.json` without a plan of its own.
  */
-export function plannedSlot(roomDefId: string, blocksW: number, blocksH: number,
-                            index: number, kind: SpotKind): Slot | null {
-  const layout = layoutFor(roomDefId, blocksW, blocksH);
-  const slot = layout[index];
-  if (!slot || !accepts(slot, kind)) return null;
-  return slot;
+export function catalogueSlot(roomDefId: string, blocksW: number, blocksH: number,
+                              index: number): Slot | null {
+  if (!Number.isInteger(index) || index < 0) return null;
+  return layoutFor(roomDefId, blocksW, blocksH)[index] ?? null;
 }
 
 /** May a piece of this kind stand in this place? */

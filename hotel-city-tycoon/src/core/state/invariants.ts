@@ -14,7 +14,7 @@
  * Pure and read-only: it never touches the state it is given.
  */
 import type { SimData } from '../data-source.ts';
-import { roomById, isFunctionalRoom } from '../data-source.ts';
+import { roomById, isFunctionalRoom, catalogueIndex } from '../data-source.ts';
 import { slotAllowed } from '../systems/quality.ts';
 import type { GameState } from '../state/types.ts';
 import { footprintOf, overlaps, contains, plotBounds } from './grid.ts';
@@ -152,6 +152,9 @@ function check(data: SimData, state: GameState): Violation[] {
       if (!slotAllowed(data, sdef, piece.defId)) {
         fail('decor fits the room', `${piece.defId} does not belong in a ${stored.defId}`);
       }
+      if (catalogueIndex(data, stored.defId, piece.defId) < 0) {
+        fail('a room holds only what it sells', `stored ${stored.id} (${stored.defId}) holds ${piece.defId}`);
+      }
       if (!Number.isInteger(piece.slot) || piece.slot < 0) {
         fail('integer slots', `${stored.id} has a piece in slot ${String(piece.slot)}`);
       } else if (piece.slot >= sdef.decorSlots) {
@@ -198,10 +201,20 @@ function check(data: SimData, state: GameState): Violation[] {
       }
     }
     const slots = new Set<number>();
+    const defIds = new Set<string>();
     for (const piece of room.decor) {
       if (!Number.isInteger(piece.slot)) fail('integer slots', `${room.id} has a piece in slot ${piece.slot}`);
       if (slots.has(piece.slot)) fail('one piece per slot', `${room.id} has two pieces in slot ${piece.slot}`);
       slots.add(piece.slot);
+      // A room holds each of its own pieces once, in the place its catalogue
+      // gives it. Save version 20 re-sorted every older room under this rule.
+      if (defIds.has(piece.defId)) fail('one of each piece per room', `${room.id} holds ${piece.defId} twice`);
+      defIds.add(piece.defId);
+      const index = catalogueIndex(data, room.defId, piece.defId);
+      if (index < 0) fail('a room holds only what it sells', `${room.id} (${room.defId}) holds ${piece.defId}`);
+      else if (index !== piece.slot) {
+        fail('a piece stands in its own place', `${room.id} holds ${piece.defId} in slot ${piece.slot}, not ${index}`);
+      }
       registerDecorId(piece.id, `placed room ${room.id} slot ${String(piece.slot)}`);
       noteSuffix(piece.id);
     }

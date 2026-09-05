@@ -1,0 +1,134 @@
+{
+  "room": "lobby",
+  "items": [
+    {
+      "id": "storage_luggageRack",
+      "category": "storage",
+      "slotType": "equipment",
+      "new": false
+    },
+    {
+      "id": "luxury_aquarium",
+      "category": "luxury",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "wallArt_cityMap",
+      "category": "wallArt",
+      "slotType": "wall",
+      "new": false
+    },
+    {
+      "id": "wallArt_masterpiece",
+      "category": "wallArt",
+      "slotType": "wall",
+      "new": false
+    },
+    {
+      "id": "wallpaper_gilded",
+      "category": "wallpaper",
+      "slotType": "wall",
+      "new": false
+    },
+    {
+      "id": "lighting_lobbyLantern",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "new": false
+    },
+    {
+      "id": "lighting_chandelier",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "new": false
+    },
+    {
+      "id": "flooring_marble",
+      "category": "flooring",
+      "slotType": "floor",
+      "new": false
+    }
+  ],
+  "slots": [
+    {
+      "kind": "ground",
+      "x": 15,
+      "y": 14,
+      "w": 5,
+      "h": 7
+    },
+    {
+      "kind": "ground",
+      "x": 29,
+      "y": 14,
+      "w": 5,
+      "h": 7
+    },
+    {
+      "kind": "wall",
+      "x": 15,
+      "y": 8,
+      "w": 5,
+      "h": 5
+    },
+    {
+      "kind": "wall",
+      "x": 8,
+      "y": 8,
+      "w": 6,
+      "h": 6
+    },
+    {
+      "kind": "wall",
+      "x": 29,
+      "y": 8,
+      "w": 6,
+      "h": 6
+    },
+    {
+      "kind": "ceiling",
+      "x": 17,
+      "y": 0,
+      "w": 4,
+      "h": 5
+    },
+    {
+      "kind": "ceiling",
+      "x": 10,
+      "y": 0,
+      "w": 5,
+      "h": 5
+    },
+    {
+      "kind": "surface",
+      "x": 29,
+      "y": 14,
+      "w": 5,
+      "h": 7
+    }
+  ],
+  "extraFixtureSlots": [
+    {
+      "kind": "ground",
+      "x": 8,
+      "y": 14,
+      "w": 5,
+      "h": 7,
+      "fixture": "seating_lobbyBench"
+    },
+    {
+      "kind": "surface",
+      "x": 8,
+      "y": 14,
+      "w": 5,
+      "h": 7,
+      "fixture": "rug_entranceRunner"
+    }
+  ],
+  "requiredFixtures": [
+    "seating_lobbyBench",
+    "rug_entranceRunner"
+  ],
+  "designNotes": "The lobby's floor is split by its own furniture into two spans: 40-142 px between the entrance doors and the reception desk, and 207-256 px right of the desk. The built-in bench (with the entrance runner under it) stays by the doors at 44-84 px, the luggage rack is parked against the desk's left end at 100-140 px where a bellhop would leave it, and the aquarium takes the right-hand span on a marble pad, so the three standing pieces sit at 64, 120 and 232 px with 16+ px between them. The sconces at 14-27.5 px cap how high anything can hang, so the two lamps hang from the ceiling line (0-30 px) and the three wall pieces share the 30-66 px band below them: the masterpiece over the low bench (only ~1 px of frame behind the bench back), the city map beside the desk over the rack, and the gilded wallpaper panel on the blank stretch right of the key wall, where it shows above and around the aquarium. The chandelier hangs at full size over the lobby's central walkway (60-100 px, just clear of the left sconce) and the lobby lantern in the only other free ceiling gap, between the left sconce and the key wall. No catalogue slot is shared with a fixture: the bench and runner keep their own slots, so buying the rack or the marble never removes them."
+}

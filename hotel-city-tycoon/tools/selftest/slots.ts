@@ -22,6 +22,7 @@ import {
 } from '../../src/core/systems/roomAnchors.ts';
 import type { Slot, SpotKind } from '../../src/core/systems/roomAnchors.ts';
 import { slotAllowed, decorFitsRoom } from '../../src/core/systems/quality.ts';
+import { catalogueFor, decorDef } from '../../src/core/data-source.ts';
 import { BLOCK_W, BLOCK_H, ANCHOR_PX_X, ANCHOR_PX_Y } from '../../src/render/layout.ts';
 import { decorArtSpec, fitDecorSize } from '../../src/render/decorArt.ts';
 import { loadSimData } from '../balance-sim/load-data.ts';
@@ -100,6 +101,101 @@ check('every room has a plan, and every plan is whole numbers', () => {
       assert(slot.x >= 0 && slot.y >= 0, `${room.id} has a negative anchor`);
       assert(slot.w >= 2 && slot.h >= 2, `${room.id} has a slot too small to draw in`);
     }
+  }
+});
+
+check('the first eight places of every plan are the room\'s own eight pieces, in order', () => {
+  // The per-room design in one sentence: a room sells eight pieces of its
+  // own, the position of a piece in that list is the numbered place it stands
+  // in, and the place is the right kind for the piece. PLACE_DECOR reads the
+  // plan by index, so a plan out of step with its catalogue would stand a
+  // lamp on the floor.
+  for (const room of simData.rooms) {
+    const list = catalogueFor(simData, room.id);
+    eq(list.length, 8, `${room.id} sells ${list.length} pieces`);
+    const layout = layoutFor(room.id, room.blocks.w, room.blocks.h);
+    assert(layout.length >= 8, `${room.id} plans ${layout.length} places for its eight pieces`);
+    list.forEach((id, i) => {
+      const def = decorDef(simData, id);
+      eq(layout[i]!.kind, spotKindFor(def.category, def.slotType),
+        `${room.id}'s place ${i} is a ${layout[i]!.kind} slot but sells ${id}`);
+      assert(slotAllowed(simData, room, id) && decorFitsRoom(simData, room, id),
+        `${room.id} sells ${id}, which its own rules refuse`);
+      // A built-in standing in a catalogue place is what that piece replaces,
+      // so it has to be the same kind of thing.
+      const fx = layout[i]!.fixture;
+      if (fx) {
+        const built = decorDef(simData, fx);
+        eq(spotKindFor(built.category, built.slotType), layout[i]!.kind,
+          `${room.id}'s built-in ${fx} does not match the place ${id} takes`);
+      }
+    });
+  }
+});
+
+check('the eight pieces stand apart from each other and from the built-ins', () => {
+  // "Far from each other" is the brief, stated as a number: a clear unit
+  // (8 px) between any two standing pieces on the same floor line, and
+  // between any two pieces of the same kind on the wall or the ceiling. A rug
+  // is meant to lie under a chair, so surfaces are only measured against
+  // surfaces. Lamps also keep clear of pictures — a chandelier drawn through a
+  // painting was the commonest of the old collisions.
+  const GAP = 8;
+  let pairs = 0;
+  for (const room of simData.rooms) {
+    const layout = layoutFor(room.id, room.blocks.w, room.blocks.h);
+    for (let i = 0; i < layout.length; i++) {
+      for (let j = i + 1; j < layout.length; j++) {
+        const a = layout[i]!;
+        const b = layout[j]!;
+        const ba = boxOf(a);
+        const bb = boxOf(b);
+        const apart = (gap: number): boolean =>
+          ba.x0 >= bb.x1 + gap - 0.001 || bb.x0 >= ba.x1 + gap - 0.001
+          || ba.y0 >= bb.y1 - 0.001 || bb.y0 >= ba.y1 - 0.001;
+        const standing = (s: Slot): boolean => s.kind === 'ground' || s.kind === 'bed';
+        if (standing(a) && standing(b) && a.y === b.y) {
+          pairs++;
+          assert(ba.x0 >= bb.x1 + GAP - 0.001 || bb.x0 >= ba.x1 + GAP - 0.001,
+            `${room.id} stands ${a.kind}@${a.x} within ${GAP}px of ${b.kind}@${b.x}`);
+        } else if (a.kind === b.kind && !standing(a)) {
+          pairs++;
+          assert(apart(GAP), `${room.id} puts two ${a.kind} pieces within ${GAP}px: @(${a.x},${a.y}) and @(${b.x},${b.y})`);
+        } else if ((a.kind === 'wall' && b.kind === 'ceiling') || (a.kind === 'ceiling' && b.kind === 'wall')) {
+          pairs++;
+          assert(apart(0), `${room.id} hangs a lamp through a picture: @(${a.x},${a.y}) and @(${b.x},${b.y})`);
+        }
+      }
+    }
+  }
+  console.log(`      ${pairs} pairs of places measured`);
+});
+
+check('every piece a room sells is drawn inside the room, in its own place', () => {
+  for (const room of simData.rooms) {
+    const roomW = room.blocks.w * BLOCK_W;
+    const roomH = room.blocks.h * BLOCK_H;
+    const layout = layoutFor(room.id, room.blocks.w, room.blocks.h);
+    catalogueFor(simData, room.id).forEach((id, i) => {
+      const def = decorDef(simData, id);
+      const slot = layout[i]!;
+      const entry = declared.get(def.assetKey);
+      assert(entry, `no manifest entry for ${def.assetKey}`);
+      const spec = decorArtSpec(def.category, def.slotType);
+      const size = fitDecorSize(entry.width, entry.height, { w: slot.w * ANCHOR_PX_X, h: slot.h * ANCHOR_PX_Y });
+      const left = slot.x * ANCHOR_PX_X - size.w * spec.anchorX;
+      const top = slot.y * ANCHOR_PX_Y - size.h * spec.anchorY;
+      assert(left >= -0.001 && left + size.w <= roomW + 0.001, `${room.id}'s ${id} is drawn past the wall`);
+      assert(top >= -0.001 && top + size.h <= roomH + 0.001, `${room.id}'s ${id} is drawn past the ceiling or the floor`);
+      // And at a size worth buying: a piece squeezed below two fifths of its
+      // natural size is a place the room should not have sold. Two fifths
+      // rather than half because the bar and the budget room are mostly
+      // counter and door, and their last places are a bar mat and a lantern
+      // that are small things anyway.
+      const natural = fitDecorSize(entry.width, entry.height, null);
+      assert(size.w >= natural.w * 0.4 - 0.001,
+        `${room.id}'s ${id} is drawn at ${Math.round(size.w / natural.w * 100)}% of its size`);
+    });
   }
 });
 

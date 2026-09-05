@@ -1,0 +1,30 @@
+{
+  "room": "restaurant",
+  "items": [
+    {"id": "table_marbleTable", "category": "table", "slotType": "floor", "new": false},
+    {"id": "seating_loveseat", "category": "seating", "slotType": "floor", "new": false},
+    {"id": "luxury_cocktailCart", "category": "luxury", "slotType": "floor", "new": false},
+    {"id": "storage_wineRack", "category": "storage", "slotType": "equipment", "new": false},
+    {"id": "appliance_prepStation", "category": "appliance", "slotType": "equipment", "new": false},
+    {"id": "flooring_bistroCheck", "category": "flooring", "slotType": "floor", "new": true,
+     "nameEn": "Bistro Checkerboard", "nameAr": "أرضية شطرنجية",
+     "artBrief": "A floor patch of alternating black and cream marble squares in a strict straight-laid checkerboard, three rows deep, with a thin gold trim strip along its front edge. At 40px it reads as a crisp two-tone chess grid, unlike flooring_marble (one white veined slab), flooring_mosaic (small multicolour tesserae), flooring_checkerPlate (grey metal diamond tread) and flooring_macaronTiles (pastel squares)."},
+    {"id": "wallArt_brasserieMirror", "category": "wallArt", "slotType": "wall", "new": true,
+     "nameEn": "Brasserie Mirror", "nameAr": "مرآة مذهّبة",
+     "artBrief": "A wide landscape mirror in a beaded gold frame: pale silver-blue glass with one diagonal white highlight streak, a cursive gold 'Menu du Jour' line across the top and two short chalk-white price lines beneath it. At 40px it reads as a gold rectangle full of cool reflected light, unlike every painting or print (a coloured picture on paper or canvas), the chalk and status boards (dark slate), and the sculpture wall (a relief)."},
+    {"id": "lighting_candelabra", "category": "lighting", "slotType": "ceiling", "new": false}
+  ],
+  "slots": [
+    {"kind": "ground", "x": 19, "y": 14, "w": 5, "h": 7, "fixture": "table_diningTable"},
+    {"kind": "ground", "x": 26, "y": 14, "w": 5, "h": 7, "fixture": "seating_cafeChair"},
+    {"kind": "ground", "x": 32, "y": 14, "w": 5, "h": 7},
+    {"kind": "ground", "x": 38, "y": 14, "w": 5, "h": 7},
+    {"kind": "ground", "x": 44, "y": 14, "w": 5, "h": 7},
+    {"kind": "surface", "x": 32, "y": 14, "w": 5, "h": 7},
+    {"kind": "wall", "x": 12, "y": 4, "w": 6, "h": 5},
+    {"kind": "ceiling", "x": 22, "y": 2, "w": 5, "h": 5}
+  ],
+  "extraFixtureSlots": [],
+  "requiredFixtures": ["table_diningTable", "seating_cafeChair"],
+  "designNotes": "placeholder"
+}

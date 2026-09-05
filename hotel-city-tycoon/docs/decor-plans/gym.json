@@ -1,0 +1,30 @@
+{
+  "room": "gym",
+  "items": [
+    {"id": "appliance_rowingMachine", "category": "appliance", "slotType": "equipment", "new": false},
+    {"id": "appliance_weightRack", "category": "appliance", "slotType": "equipment", "new": false},
+    {"id": "appliance_spinBike", "category": "appliance", "slotType": "equipment", "new": false},
+    {"id": "appliance_punchBag", "category": "appliance", "slotType": "equipment", "new": false},
+    {"id": "storage_towelStack", "category": "storage", "slotType": "equipment", "new": false},
+    {"id": "rug_yogaMat", "category": "rug", "slotType": "floor", "new": false},
+    {"id": "wallArt_intervalTimer", "category": "wallArt", "slotType": "wall", "new": true,
+     "nameEn": "Interval Timer", "nameAr": "مؤقت التمارين",
+     "artBrief": "PLACEHOLDER"},
+    {"id": "lighting_gymHighBay", "category": "lighting", "slotType": "ceiling", "new": true,
+     "nameEn": "High Bay Light", "nameAr": "مصباح صناعي",
+     "artBrief": "PLACEHOLDER"}
+  ],
+  "slots": [
+    {"kind": "ground", "x": 3, "y": 14, "w": 5, "h": 7, "fixture": "appliance_treadmill"},
+    {"kind": "ground", "x": 9, "y": 14, "w": 5, "h": 7, "fixture": "storage_dumbbellRack"},
+    {"kind": "ground", "x": 15, "y": 14, "w": 5, "h": 7},
+    {"kind": "ground", "x": 21, "y": 14, "w": 5, "h": 7},
+    {"kind": "ground", "x": 27, "y": 14, "w": 5, "h": 7},
+    {"kind": "surface", "x": 22, "y": 14, "w": 6, "h": 7},
+    {"kind": "wall", "x": 30, "y": 2, "w": 4, "h": 4},
+    {"kind": "ceiling", "x": 17, "y": 2, "w": 3, "h": 5}
+  ],
+  "extraFixtureSlots": [],
+  "requiredFixtures": ["appliance_treadmill", "storage_dumbbellRack"],
+  "designNotes": "PLACEHOLDER"
+}

@@ -48,7 +48,7 @@
       "required": false,
       "staffRole": "cleaner",
       "staffSlots": 1,
-      "decorSlots": 4,
+      "decorSlots": 8,
       "decorTarget": 0,
       "function": {
         "kind": "cleaning",
@@ -74,7 +74,7 @@
       "required": false,
       "staffRole": null,
       "staffSlots": 0,
-      "decorSlots": 5,
+      "decorSlots": 8,
       "decorTarget": 0,
       "function": {
         "kind": "cleaningBoost",
@@ -101,7 +101,7 @@
       "required": false,
       "staffRole": null,
       "staffSlots": 0,
-      "decorSlots": 6,
+      "decorSlots": 8,
       "decorTarget": 200,
       "function": {
         "kind": "wageDiscount",
@@ -128,7 +128,7 @@
       "required": false,
       "staffRole": null,
       "staffSlots": 0,
-      "decorSlots": 5,
+      "decorSlots": 8,
       "decorTarget": 0,
       "function": {
         "kind": "hazardReduction",
@@ -183,7 +183,7 @@
       "incomePerGuest": 1,
       "xpPerGuest": 1,
       "stayDurationSec": 120,
-      "decorSlots": 4,
+      "decorSlots": 8,
       "decorTarget": 100
     },
     {
@@ -206,7 +206,7 @@
       "incomePerGuest": 3,
       "xpPerGuest": 3,
       "stayDurationSec": 180,
-      "decorSlots": 6,
+      "decorSlots": 8,
       "decorTarget": 200
     },
     {
@@ -252,7 +252,7 @@
       "incomePerGuest": 10,
       "xpPerGuest": 10,
       "stayDurationSec": 240,
-      "decorSlots": 10,
+      "decorSlots": 8,
       "decorTarget": 600
     },
     {
@@ -275,7 +275,7 @@
       "incomePerGuest": 12,
       "xpPerGuest": 12,
       "stayDurationSec": 300,
-      "decorSlots": 12,
+      "decorSlots": 8,
       "decorTarget": 160
     },
     {
@@ -298,7 +298,7 @@
       "incomePerGuest": 24,
       "xpPerGuest": 24,
       "stayDurationSec": 360,
-      "decorSlots": 14,
+      "decorSlots": 8,
       "decorTarget": 220
     },
     {
@@ -321,7 +321,7 @@
       "incomePerGuest": 24,
       "xpPerGuest": 24,
       "stayDurationSec": 360,
-      "decorSlots": 16,
+      "decorSlots": 8,
       "decorTarget": 200
     },
     {
@@ -344,7 +344,7 @@
       "incomePerGuest": 42,
       "xpPerGuest": 42,
       "stayDurationSec": 360,
-      "decorSlots": 18,
+      "decorSlots": 8,
       "decorTarget": 240
     },
     {
@@ -367,7 +367,7 @@
       "incomePerGuest": 32,
       "xpPerGuest": 32,
       "stayDurationSec": 360,
-      "decorSlots": 22,
+      "decorSlots": 8,
       "decorTarget": 300
     },
     {
@@ -442,7 +442,7 @@
       "staffRole": "chef",
       "staffSlots": 1,
       "desireTag": "food",
-      "decorSlots": 12,
+      "decorSlots": 8,
       "decorTarget": 700
     },
     {
@@ -467,7 +467,7 @@
       "staffRole": "bartender",
       "staffSlots": 1,
       "desireTag": "nightlife",
-      "decorSlots": 10,
+      "decorSlots": 8,
       "decorTarget": 550
     },
     {
@@ -517,7 +517,7 @@
       "staffRole": "usher",
       "staffSlots": 1,
       "desireTag": "entertainment",
-      "decorSlots": 10,
+      "decorSlots": 8,
       "decorTarget": 800
     },
     {
@@ -542,7 +542,7 @@
       "staffRole": null,
       "staffSlots": 0,
       "desireTag": "nightlife",
-      "decorSlots": 12,
+      "decorSlots": 8,
       "decorTarget": 1100
     },
     {
@@ -567,9 +567,9 @@
       "staffRole": "lifeguard",
       "staffSlots": 1,
       "desireTag": "fitness",
-      "decorSlots": 12,
+      "decorSlots": 8,
       "decorTarget": 1400
     }
   ],
-  "note": "3B: the original catalogue. Guest rooms carry the April-2010 coin table (3,000/8,500/23,000/45,500 at L1/2/14/32, income=XP=1/3/7/10, stays 2-4 min) on the existing ids — the ID is internal, the display name is i18n, so economy IS the Budget Room and art and saves survive. The five premium rooms are gem-priced (6/12/15/20/22) with the original coin payouts (12/24/24/42/32; the non-monotone Large-vs-Presidential pair is faithful). Amenities carry table A.2; `spa` is the Disco by display name (id kept for saves/art; the redraw belongs to the art phase). 4B: cafe, arcade and the disco run WITHOUT staff, exactly as the original listed them; every other slot is covered by the temp model (see staff.json). laundry/staffRoom/maintenance/business are PARKED at level 53 (decision 11a): schema-valid, beyond the 52-level game, exempt from the level table by validator convention."
+  "note": "3B: the original catalogue. Guest rooms carry the April-2010 coin table (3,000/8,500/23,000/45,500 at L1/2/14/32, income=XP=1/3/7/10, stays 2-4 min) on the existing ids — the ID is internal, the display name is i18n, so economy IS the Budget Room and art and saves survive. The five premium rooms are gem-priced (6/12/15/20/22) with the original coin payouts (12/24/24/42/32; the non-monotone Large-vs-Presidential pair is faithful). Amenities carry table A.2; `spa` is the Disco by display name (id kept for saves/art; the redraw belongs to the art phase). 4B: cafe, arcade and the disco run WITHOUT staff, exactly as the original listed them; every other slot is covered by the temp model (see staff.json). laundry/staffRoom/maintenance/business are PARKED at level 53 (decision 11a): schema-valid, beyond the 52-level game, exempt from the level table by validator convention. Per-room decor: decorSlots is 8 everywhere (one place per catalogue piece) and decorTarget is the sum of the room's coin pieces."
 }
