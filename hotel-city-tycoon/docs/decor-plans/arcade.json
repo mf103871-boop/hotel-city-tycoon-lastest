@@ -1,0 +1,43 @@
+{
+  "room": "arcade",
+  "items": [
+    {"id": "appliance_pinballTable", "category": "appliance", "slotType": "equipment", "new": false},
+    {"id": "appliance_clawMachine", "category": "appliance", "slotType": "equipment", "new": false},
+    {"id": "appliance_airHockey", "category": "appliance", "slotType": "equipment", "new": false},
+    {"id": "storage_displayCase", "category": "storage", "slotType": "equipment", "new": false},
+    {
+      "id": "flooring_galaxyCarpet", "category": "flooring", "slotType": "floor", "new": true,
+      "nameEn": "Galaxy Carpet",
+      "nameAr": "سجاد المجرة",
+      "artBrief": "A low flat band of near-black navy carpet strewn with tiny magenta, cyan and yellow confetti squiggles, two small ringed planets and a few pin-stars: the blacklight carpet every arcade has. At 40px it reads as a dark strip freckled with bright colour; every other flooring is one plain material (obsidian and onyx are glossy black with no colour in them, the carpets are plain-toned), so the neon speckle on black is what marks it."
+    },
+    {
+      "id": "rug_danceGameMat", "category": "rug", "slotType": "floor", "new": true,
+      "nameEn": "Dance Game Mat",
+      "nameAr": "بساط لعبة الرقص",
+      "artBrief": "A small square mat lying flat on the floor: dark charcoal with a thin silver rim, and four chunky chevron arrows in a cross around a blank centre (up magenta, down cyan, left and right yellow), like the pad of a rhythm game. At 40px it reads as a dark pad with four bright arrows; the arrows and the silver rim keep it apart from the coir doormat, the striped wool rug, the patterned Persian and silk rugs, the curled yoga mat and the black-with-yellow-bevel anti-fatigue mat, and it is a small square, not a wide band or a grid of lit tiles."
+    },
+    {
+      "id": "wallArt_hiScoreBoard", "category": "wallArt", "slotType": "wall", "new": true,
+      "nameEn": "Hi-Score Board",
+      "nameAr": "لوحة أعلى النتائج",
+      "artBrief": "A wide black panel with a thick magenta neon border; inside, three rows of chunky block-glyphs, a short cyan name bar and a longer yellow score bar per row, with a small gold star beside the top row, all glowing on the black. At 40px it reads as a lit dark scoreboard; unlike every other wall piece it is a black neon panel with no frame, mount, paper or picture (the poster, print, painting, masterpiece and landscapes are framed scenes, the status and lost-sock boards are pale cork and whiteboard, the projector screen is white, the breaker panel is grey metal)."
+    },
+    {"id": "lighting_hologram", "category": "lighting", "slotType": "ceiling", "new": false}
+  ],
+  "slots": [
+    {"kind": "ground", "x": 9, "y": 14, "w": 5, "h": 7},
+    {"kind": "ground", "x": 15, "y": 14, "w": 5, "h": 7},
+    {"kind": "ground", "x": 22, "y": 14, "w": 6, "h": 7},
+    {"kind": "ground", "x": 29, "y": 14, "w": 5, "h": 7},
+    {"kind": "surface", "x": 12, "y": 14, "w": 6, "h": 7},
+    {"kind": "surface", "x": 25, "y": 14, "w": 5, "h": 7},
+    {"kind": "wall", "x": 15, "y": 7, "w": 7, "h": 6},
+    {"kind": "ceiling", "x": 3, "y": 2, "w": 5, "h": 5}
+  ],
+  "extraFixtureSlots": [
+    {"kind": "ground", "x": 3, "y": 14, "w": 5, "h": 7, "fixture": "appliance_arcadeCabinet"}
+  ],
+  "requiredFixtures": ["appliance_arcadeCabinet"],
+  "designNotes": "The arcade's floor is the only fully clear floor in the building (no standing painted fixture), so the five machines line up across the whole 256px with 8-12px gaps: the built-in cabinet keeps the left bay under the hologram, then pinball under the neon star, the claw machine under the hi-score board in the middle, and the low air-hockey table and the prize vitrine in front of the painted prize wall, where a display case of prizes belongs. The walls and ceiling only have two blank zones (x 0-48 left of the star and x 84-152 between star and prize wall), and at house heights a lamp and a picture cannot stack in one zone, so the hologram takes the left ceiling and the hi-score board the wider middle wall at w=7 (near natural size), and the third new piece is a floor surface rather than a second lamp. The galaxy carpet lies under the pinball/claw gap in the left-centre and the dance mat in the visible floor gap between the air-hockey table and the display case on the right, so every one of the eight places has its own stretch of the room. All boxes keep the art at 76-100% of natural size and nothing hangs over the star or the prize wall."
+}
