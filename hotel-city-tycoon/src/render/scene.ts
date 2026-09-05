@@ -15,6 +15,7 @@ import { RoomView } from './roomView.ts';
 import type { RoomViewData } from './roomView.ts';
 import { CharacterView } from './characterView.ts';
 import type { CharacterViewData } from './characterView.ts';
+import { DecorView } from './decorView.ts';
 import { KeyedPool } from './pool.ts';
 import { cull } from './culling.ts';
 import { plotWorldBounds, roomWorldRect, worldToBlock, BLOCK_W, BLOCK_H } from './layout.ts';
@@ -81,6 +82,9 @@ export class HotelScene {
   private visibleCount = 0;
   /** How many people were drawn last frame, of everyone in the hotel. */
   private visibleCharacters = 0;
+  private readonly frontDecor: KeyedPool<DecorView>;
+  /** Reused across frames: the keys the furniture pool should hold this tick. */
+  private readonly frontKeys: string[] = [];
   /** One box, reused every frame: the render loop allocates nothing. */
   private readonly cullBox = { x: 0, y: 0, width: 0, height: 0 };
 
@@ -133,6 +137,27 @@ export class HotelScene {
      * makes Pixi honour it.
      */
     handle.layers.characters.sortableChildren = true;
+
+    /*
+     * The room's standing furniture lives in the same layer as the people.
+     *
+     * `decorArt.ts` has always said a `front` piece "has to sort against the
+     * guests walking past it", and it never could: the pieces were children of
+     * their RoomView down in `roomShell` and every character was up here. A
+     * sofa cannot be both in front of one guest and behind another while it is
+     * in a layer below both. So the pieces are siblings of the characters now,
+     * each carrying the same `bandDepth`, and Pixi's sort interleaves them.
+     */
+    this.frontDecor = new KeyedPool<DecorView>({
+      create: () => {
+        const v = new DecorView();
+        handle.layers.characters.addChild(v);
+        return v;
+      },
+      activate: (v) => { v.reset(); },
+      reset: (v) => { v.visible = false; },
+      prewarm: 32,
+    });
 
     handle.layers.street.addChild(this.grid);
     this.backdrop = new Backdrop(handle.layers);
@@ -238,6 +263,14 @@ export class HotelScene {
       if (inside) { onScreen++; view.tickAnimation(deltaMs); } else { view.settle(); }
     }
     this.visibleCharacters = onScreen;
+
+    // The furniture is culled against the same box. It does not animate, so
+    // there is nothing to settle — only a `renderable` flag to clear, which is
+    // what keeps a hundred sofas off screen out of the sort.
+    for (const [, piece] of this.frontDecor.entries()) {
+      piece.renderable = piece.x >= this.cullBox.x && piece.x <= this.cullBox.x + this.cullBox.width
+        && piece.y >= this.cullBox.y && piece.y <= this.cullBox.y + this.cullBox.height;
+    }
   }
 
   /**
@@ -310,6 +343,27 @@ export class HotelScene {
     for (const person of this.snapshot.characters) {
       const view = this.characters.get(person.id);
       if (view) view.update({ ...person, night }, this.snapshot.gridH);
+    }
+
+    /*
+     * The furniture the rooms just measured, drawn among the people.
+     *
+     * Read after every room has updated, because `RoomView.update` is what
+     * fills `front` — and it is dirty-key guarded, so on a still hotel this
+     * loop reads the same arrays it read last frame and the pool's `sync`
+     * finds nothing to do.
+     */
+    this.frontKeys.length = 0;
+    for (const room of this.snapshot.rooms) {
+      const view = this.rooms.get(room.id);
+      if (!view) continue;
+      for (const piece of view.front) this.frontKeys.push(piece.key);
+    }
+    this.frontDecor.sync(this.frontKeys);
+    for (const room of this.snapshot.rooms) {
+      const view = this.rooms.get(room.id);
+      if (!view) continue;
+      for (const piece of view.front) this.frontDecor.get(piece.key)?.update(piece);
     }
   }
 

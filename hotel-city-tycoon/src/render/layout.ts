@@ -75,3 +75,35 @@ export const LAYER = {
 } as const;
 
 export type LayerName = keyof typeof LAYER;
+
+/**
+ * The sorted band: one draw order shared by everything standing on the floor.
+ *
+ * `decorArt.ts` has always said that a piece in the `front` band "has to sort
+ * against the guests walking past it — footY sorted". It did not: the pieces
+ * were drawn inside their RoomView, in the `roomShell` layer, and the people
+ * were in `characters` above it. Two fixed layers, so nobody could ever walk
+ * behind a sofa. These give both the same number, in one formula, so they
+ * interleave by the foot they stand on.
+ *
+ * `DEPTH_ROW` has to be larger than the widest the world can ever be in
+ * pixels, or a piece far to the right sorts into the row below it. The largest
+ * plot `data/plots.json` sells is 15 blocks wide — 1920px — and
+ * `tools/selftest/render.ts` holds that under this number.
+ */
+export const DEPTH_ROW = 4096;
+
+/**
+ * A tie on the foot line goes to the person.
+ *
+ * A guest standing exactly on a rug's own foot line is standing *on* the rug,
+ * and the same guest at a bed's foot line is in front of it. Decor keeps the
+ * fractional part below this so it never wins that tie, while `depth` still
+ * separates the rug from the bed standing on it.
+ */
+export const DEPTH_CHARACTER_BIAS = 0.5;
+
+/** Where one thing sorts in the band: its foot, then its column, then its bias. */
+export function bandDepth(worldX: number, footY: number, bias = 0): number {
+  return footY * DEPTH_ROW + worldX + bias;
+}

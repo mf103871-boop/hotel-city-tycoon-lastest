@@ -17,6 +17,7 @@ import { cull, intersects, expand } from '../../src/render/culling.ts';
 import { Pool, KeyedPool } from '../../src/render/pool.ts';
 import {
   blockToWorld, worldToBlock, roomWorldRect, plotWorldBounds, anchorToLocalPx,
+  bandDepth, DEPTH_ROW, DEPTH_CHARACTER_BIAS,
   BLOCK_W, BLOCK_H, ANCHOR_UNITS_PER_BLOCK,
 } from '../../src/render/layout.ts';
 import {
@@ -819,6 +820,102 @@ check('the five guest desires read apart without their hue', () => {
         `${colours[i]![0]} and ${colours[j]![0]} are ${ratio.toFixed(2)}:1 in greyscale — hue is all that separates them`);
     }
   }
+});
+
+// ------------------------------------------------ the band (BL-035)
+//
+// `decorArt.ts` said from the start that a `front` piece "has to sort against
+// the guests walking past it, footY sorted". Two fixed layers meant it never
+// did — a guest walked in front of the bed they were about to sleep in. These
+// hold the one formula that replaced them.
+
+check('a person and the furniture beside them sort by the foot they stand on', () => {
+  // Same column, different rows: whoever is further down the screen is nearer.
+  const backRow = bandDepth(500, 300, DEPTH_CHARACTER_BIAS);
+  const frontSofa = bandDepth(500, 400, 0.1);
+  assert(frontSofa > backRow, 'a sofa in front of a guest sorted behind them');
+  const frontRow = bandDepth(500, 500, DEPTH_CHARACTER_BIAS);
+  assert(frontRow > frontSofa, 'a guest in front of a sofa sorted behind it');
+});
+
+check('a rug draws under the bed standing on it, and both under the guest', () => {
+  // One foot line, three things: the order comes from `depth`, and the person
+  // wins the tie because standing on a rug means standing on it.
+  const foot = 400;
+  const rug = bandDepth(500, foot, 0 * 0.1);
+  const bed = bandDepth(500, foot, 1 * 0.1);
+  const guest = bandDepth(500, foot, DEPTH_CHARACTER_BIAS);
+  assert(rug < bed, 'the rug drew over the bed on it');
+  assert(bed < guest, 'the bed drew over the guest standing at its foot');
+});
+
+check('the row multiplier is wider than the world can ever be', () => {
+  // `bandDepth` packs a row and a column into one number. If the world can be
+  // wider in pixels than the multiplier, a piece at the right-hand edge sorts
+  // into the row below it and the whole band is silently wrong.
+  const plots = JSON.parse(fs.readFileSync('data/plots.json', 'utf8')) as
+    { expansions: Array<{ grid: { w: number; h: number } }> };
+  const widest = Math.max(...plots.expansions.map((p) => p.grid.w));
+  const worldPx = widest * BLOCK_W;
+  assert(worldPx < DEPTH_ROW,
+    `the largest plot is ${widest} blocks (${worldPx}px) and the row multiplier is only ${DEPTH_ROW}`);
+  // And the proof that it matters: one pixel past it and rows collide.
+  assert(bandDepth(DEPTH_ROW, 1) === bandDepth(0, 2),
+    'the multiplier does not behave like a row stride');
+  console.log(`      widest plot ${worldPx}px, row stride ${DEPTH_ROW}`);
+});
+
+check('the front band is handed to the scene, not drawn inside the room', () => {
+  // The whole of BL-035 in one grep: if RoomView ever draws a front piece into
+  // its own decorLayer again, the band silently splits back into two layers
+  // and nobody can walk behind a sofa.
+  const roomView = fs.readFileSync('src/render/roomView.ts', 'utf8');
+  assert(/if \(spec\.band === 'front'\)/.test(roomView),
+    'RoomView no longer separates the front band');
+  const decorBlock = /if \(spec\.band === 'front'\)[\s\S]*?continue;/.exec(roomView);
+  assert(decorBlock, 'the front band is separated but never leaves the room');
+  assert(/this\.front\.push\(/.test(decorBlock[0]), 'a front piece is dropped rather than handed over');
+
+  const scene = fs.readFileSync('src/render/scene.ts', 'utf8');
+  assert(/new DecorView\(\)[\s\S]{0,200}layers\.characters\.addChild/.test(scene)
+    || /layers\.characters\.addChild\(v\)[\s\S]{0,200}DecorView/.test(scene)
+    || /frontDecor[\s\S]{0,400}layers\.characters\.addChild/.test(scene),
+    'the furniture is not parented into the layer the characters sort in');
+  assert(/layers\.characters\.sortableChildren = true/.test(scene),
+    'the shared layer does not sort its children');
+});
+
+check('the widest band the game permits still sorts inside a frame', () => {
+  // The risk this change carried: the band went from "the people" to "the
+  // people and every piece of furniture in the hotel". Worst case the rules
+  // allow is 60 rooms at the per-room cap of 24 (data/economy.json), all of it
+  // in the front band, plus the 40 people the perf budget names.
+  const band: number[] = [];
+  for (let i = 0; i < 60 * 24; i++) band.push(bandDepth((i * 37) % 1900, (i * 53) % 900, (i % 4) * 0.1));
+  for (let i = 0; i < 40; i++) band.push(bandDepth((i * 91) % 1900, (i * 71) % 900, DEPTH_CHARACTER_BIAS));
+  const runs: number[] = [];
+  for (let r = 0; r < 21; r++) {
+    const copy = band.slice();
+    const t0 = performance.now();
+    copy.sort((a, b) => a - b);
+    runs.push(performance.now() - t0);
+  }
+  runs.sort((a, b) => a - b);
+  const median = runs[10]!;
+  // Pixi re-sorts whenever a zIndex changed, and a walking character changes
+  // one every frame, so this runs at the display's rate. A frame at 60fps is
+  // 16.7ms; four of them for the sort alone would be a different design.
+  assert(median < 4, `sorting ${band.length} children takes ${median.toFixed(2)}ms, which is a fifth of a frame`);
+  console.log(`      ${band.length} children sort in ${median.toFixed(3)}ms`);
+});
+
+check('the furniture is culled with the same box as the people, and allocates nothing', () => {
+  const scene = fs.readFileSync('src/render/scene.ts', 'utf8');
+  const loop = /for \(const \[, piece\] of this\.frontDecor\.entries\(\)\) \{[\s\S]*?\n {4}\}/.exec(scene);
+  assert(loop, 'the furniture is never culled');
+  assert(/this\.cullBox/.test(loop[0]), 'the furniture is culled against a different box than the people');
+  assert(!/new |\.map\(|\.filter\(/.test(loop[0]),
+    'the furniture cull allocates, and it runs once per piece per frame');
 });
 
 console.log(line);
