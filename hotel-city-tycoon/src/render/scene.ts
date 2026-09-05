@@ -79,6 +79,10 @@ export class HotelScene {
 
   /** Last frame's culling result, for the on-screen verification badge. */
   private visibleCount = 0;
+  /** How many people were drawn last frame, of everyone in the hotel. */
+  private visibleCharacters = 0;
+  /** One box, reused every frame: the render loop allocates nothing. */
+  private readonly cullBox = { x: 0, y: 0, width: 0, height: 0 };
 
   private readonly gestures = new GestureTracker();
   /** Detaches every DOM listener this scene adds to the canvas. */
@@ -118,6 +122,17 @@ export class HotelScene {
       reset: (v) => { v.visible = false; },
       prewarm: 16,
     });
+    /*
+     * People are drawn in the order their feet are in, not the order the pool
+     * happened to hand them out in.
+     *
+     * The bridge has always sorted its list back to front, and the sort has
+     * never reached Pixi: `KeyedPool.sync` recycles views without reordering
+     * children, so two guests passing each other overlapped by luck. Each view
+     * sets its own `zIndex` from its foot position every frame; this is what
+     * makes Pixi honour it.
+     */
+    handle.layers.characters.sortableChildren = true;
 
     handle.layers.street.addChild(this.grid);
     this.backdrop = new Backdrop(handle.layers);
@@ -136,8 +151,15 @@ export class HotelScene {
     this.reconcile();
   }
 
-  /** Hand the scene the current state. Called whenever the simulation changes. */
-  setSnapshot(snapshot: SceneSnapshot): void {
+  /**
+   * Hand the scene the current state, and anything the people in it should
+   * react to. Called whenever the simulation changes.
+   *
+   * Reactions are one-shots — a cheer, a flinch — resolved by the bridge from
+   * the tick's events. They are presentation and nothing else: a reaction
+   * missed because the character was off screen is simply not played.
+   */
+  setSnapshot(snapshot: SceneSnapshot, reactions: ReadonlyArray<{ id: string; clip: string }> = []): void {
     const resized = snapshot.gridW !== this.snapshot.gridW || snapshot.gridH !== this.snapshot.gridH;
     const duskChanged = snapshot.night !== this.snapshot.night;
     this.snapshot = snapshot;
@@ -166,6 +188,7 @@ export class HotelScene {
     this.backdrop.update(this.world, snapshot.gridH, snapshot.rooms.map((r) => r.rect),
       snapshot.stars, snapshot.night);
     this.reconcile();
+    for (const { id, clip } of reactions) this.characters.get(id)?.react(clip);
   }
 
   /** Per-frame work. Cheap by design: culling, a camera transform, and strides. */
@@ -189,10 +212,32 @@ export class HotelScene {
     }
     this.visibleCount = shown.length;
 
-    // Only what is on screen animates.
+    /*
+     * Only what is on screen animates.
+     *
+     * Characters were never culled — `renderable` was set true once and never
+     * cleared — so every person in the hotel paid for a frame whether or not
+     * anyone could see them. Now each is measured against the visible
+     * rectangle (padded, so nobody pops in at the edge) with one reused box
+     * and no allocation, because this runs once per character per frame.
+     *
+     * A culled view is settled onto its target rather than left behind: it
+     * must be in the right place the moment it is drawn again, not slide in
+     * from where the camera left it.
+     */
+    const margin = BLOCK_W;
+    this.cullBox.x = visible.x - margin;
+    this.cullBox.y = visible.y - margin;
+    this.cullBox.width = visible.width + margin * 2;
+    this.cullBox.height = visible.height + margin * 2;
+    let onScreen = 0;
     for (const [, view] of this.characters.entries()) {
-      if (view.renderable) view.tickAnimation(deltaMs);
+      const inside = view.x >= this.cullBox.x && view.x <= this.cullBox.x + this.cullBox.width
+        && view.y >= this.cullBox.y && view.y <= this.cullBox.y + this.cullBox.height;
+      view.renderable = inside;
+      if (inside) { onScreen++; view.tickAnimation(deltaMs); } else { view.settle(); }
     }
+    this.visibleCharacters = onScreen;
   }
 
   /**
@@ -211,13 +256,37 @@ export class HotelScene {
   }
 
   /** Snapshot of what the renderer is doing right now. */
-  stats(): { rooms: number; visibleRooms: number; characters: number; zoom: number } {
+  stats(): { rooms: number; visibleRooms: number; characters: number; visibleCharacters: number; zoom: number } {
     return {
       rooms: this.snapshot.rooms.length,
       visibleRooms: this.visibleCount,
       characters: this.snapshot.characters.length,
+      visibleCharacters: this.visibleCharacters,
       zoom: this.camera.zoom,
     };
+  }
+
+  /**
+   * What each person on screen is doing, for a look at a real device.
+   *
+   * The canvas cannot be asserted on in CI (DEC-009), so the way to check
+   * that the animation is actually running is to ask it. Exposed through
+   * `window.hct.characters()`.
+   */
+  characterDiagnostics(): Array<{ id: string; clip: string; x: number; y: number; visible: boolean }> {
+    const out: Array<{ id: string; clip: string; x: number; y: number; visible: boolean }> = [];
+    for (const person of this.snapshot.characters) {
+      const view = this.characters.get(person.id);
+      if (!view) continue;
+      out.push({
+        id: person.id,
+        clip: person.clip,
+        x: Math.round(view.x),
+        y: Math.round(view.y),
+        visible: view.renderable,
+      });
+    }
+    return out;
   }
 
   /** A measured report against the document's budgets. */

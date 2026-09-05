@@ -39,7 +39,7 @@ export function App() {
     setLocale(next);
   }, []);
   const { ready, saveProblem, saves } = useGame();
-  const [stats, setStats] = useState<RenderStats>({ backend: null, fps: 0, rooms: 0, visibleRooms: 0, characters: 0, zoom: 1, fpsP95Low: 0, memoryMB: null });
+  const [stats, setStats] = useState<RenderStats>({ backend: null, fps: 0, rooms: 0, visibleRooms: 0, characters: 0, visibleCharacters: 0, zoom: 1, fpsP95Low: 0, memoryMB: null });
   const onStats = useCallback((s: Omit<RenderStats, 'backend'> & { backend: 'webgpu' | 'webgl' }) => setStats(s), []);
   const [panel, setPanel] = useState<'none' | 'build' | 'shift' | 'settings' | 'upgrades' | 'shop' | 'city' | 'manage'>('none');
   /*

@@ -15,6 +15,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadSimData } from '../balance-sim/load-data.ts';
+import { createMotion, resetMotion, step, snapTo } from '../../src/render/anim/motion.ts';
+import { createPlayer, advance } from '../../src/render/anim/clipPlayer.ts';
+import { createScheduler, tick } from '../../src/render/anim/scheduler.ts';
 
 let passed = 0;
 const failures: string[] = [];
@@ -157,6 +160,90 @@ check('the simulation never reads the animation data', () => {
     }
     eq(hits, 0, `${file} reads the animation data`);
   }
+});
+
+// ---------------------------------------------------------------- the motion
+// The three pure modules the renderer's 60fps behaviour is made of. Vitest
+// covers them in depth (tests/unit/animation.test.ts); these are the load-
+// bearing properties, restated so a cold checkout with nothing installed can
+// still prove them.
+check('the drawn position moves every frame, never in 10Hz steps', () => {
+  const m = createMotion();
+  const walking = { x: 0, y: 0, vx: 1, vy: 0, toX: 10, toY: 0, segment: 'w' };
+  step(m, walking, 16.7);
+  let previous = m.x;
+  for (let i = 0; i < 8; i++) {
+    step(m, walking, 16.7);
+    assert(m.x > previous, `frame ${i} did not move (${m.x} after ${previous})`);
+    previous = m.x;
+  }
+});
+
+check('the drawn position never passes the end of a leg', () => {
+  const m = createMotion();
+  snapTo(m, { x: 0.9, y: 0, vx: 1, vy: 0, toX: 1, toY: 0, segment: 'w' });
+  for (let i = 0; i < 50; i++) step(m, { x: 1, y: 0, vx: 1, vy: 0, toX: 1, toY: 0, segment: 'w' }, 100);
+  assert(m.x <= 1 + 1e-9, `overshot to ${m.x}`);
+});
+
+check('a clip steps at its own rate, not the display\'s', () => {
+  const clips: Record<string, { frames: number; fps: number; loop: boolean }> = {
+    walk: { frames: 8, fps: 10, loop: true },
+  };
+  const p = createPlayer('walk');
+  const seen: number[] = [];
+  for (let i = 0; i < 60; i++) seen.push(advance(p, 1000 / 60, (n) => clips[n] ?? null).frame);
+  const changes = seen.filter((f, i) => i > 0 && f !== seen[i - 1]!).length;
+  // A second of frames at 10fps changes about ten times, not sixty.
+  assert(changes >= 8 && changes <= 12, `${changes} frame changes in one second at 10fps`);
+});
+
+check('two characters never blink in unison, and each is the same after a reload', () => {
+  const config = {
+    blinkEveryMs: [2500, 5000] as [number, number],
+    fidgetEveryMs: [3000, 8000] as [number, number],
+    fidgets: ['shiftWeight' as const, 'glance' as const],
+  };
+  const run = (seed: number): number[] => {
+    const s = createScheduler(seed);
+    const at: number[] = [];
+    for (let t = 0; t < 30_000; t += 16.7) {
+      if (tick(s, 16.7, config, true).play === 'blink') at.push(Math.round(t));
+    }
+    return at;
+  };
+  const a = run(11);
+  const b = run(22);
+  assert(a.length > 3, 'nobody blinked in thirty seconds');
+  assert(JSON.stringify(a) !== JSON.stringify(b), 'two characters blink on the same timetable');
+  eq(JSON.stringify(run(11)), JSON.stringify(a), 'the same character blinked differently the second time');
+});
+
+check('reduced motion holds the frame but keeps the character moving', () => {
+  const clips: Record<string, { frames: number; fps: number; loop: boolean }> = {
+    walk: { frames: 8, fps: 10, loop: true },
+  };
+  const p = createPlayer('walk');
+  for (let i = 0; i < 20; i++) {
+    eq(advance(p, 50, (n) => clips[n] ?? null, true).frame, 0, 'a frame cycled under reduced motion');
+  }
+  // The position is a separate concern and must keep moving: a guest frozen
+  // mid-street loses the information that somebody is arriving.
+  const m = createMotion();
+  const s = { x: 0, y: 0, vx: 1, vy: 0, toX: 5, toY: 0, segment: 'w' };
+  step(m, s, 16.7);
+  const before = m.x;
+  step(m, s, 16.7);
+  assert(m.x > before, 'reduced motion stopped the character travelling');
+});
+
+check('a pooled view keeps nothing from the character before it', () => {
+  const m = createMotion();
+  snapTo(m, { x: 40, y: 9, vx: 0, vy: 0, toX: 40, toY: 9, segment: 'old' });
+  resetMotion(m);
+  step(m, { x: 2, y: 1, vx: 0, vy: 0, toX: 2, toY: 1, segment: 'new' }, 16.7);
+  eq(m.x, 2, 'a recycled view slid in from the last character\'s position');
+  eq(m.y, 1, 'a recycled view slid in from the last character\'s row');
 });
 
 console.log(line);

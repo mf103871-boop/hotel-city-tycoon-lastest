@@ -12,6 +12,15 @@
 import { Container, Graphics, Sprite } from 'pixi.js';
 import { texture, assetGeneration } from './assets.ts';
 import { framesFor, animOf, clipOf } from './anim/sheet.ts';
+import {
+  createMotion, resetMotion, step, snapTo, fadeAlpha,
+} from './anim/motion.ts';
+import type { MotionSample } from './anim/motion.ts';
+import {
+  createPlayer, resetPlayer, setBase, playOnce, advance,
+} from './anim/clipPlayer.ts';
+import { createScheduler, resetScheduler, tick } from './anim/scheduler.ts';
+import type { SchedulerConfig, Fidget } from './anim/scheduler.ts';
 import { BLOCK_W, BLOCK_H, blockToWorld } from './layout.ts';
 import { INK, NIGHT_TINT, nightfall } from './backdrop.ts';
 
@@ -36,6 +45,32 @@ const FALLBACK_FRAME = { w: 48, h: 72 };
  * the decor meter along the room's top edge.
  */
 const CHARACTER_ART_SCALE = 0.82;
+
+/**
+ * How often a character blinks and fidgets when their own file says nothing.
+ *
+ * The rates the animation files carry are the real ones; this is what a
+ * character falls back to before their sheet has loaded, inside ART-0 §11's
+ * "every 2.5–5 s, varied timing".
+ */
+const DEFAULT_SCHEDULE: SchedulerConfig = {
+  blinkEveryMs: [2500, 5000],
+  fidgetEveryMs: [3500, 8000],
+  fidgets: ['shiftWeight', 'glance'],
+};
+
+/**
+ * What this character's sheet lets them do while idle.
+ *
+ * Read from the manifest rather than passed down from the bridge: whether a
+ * blink is possible is a fact about the sheet, and the sheet is the manifest's
+ * to describe. A character with no blink row still shifts their weight.
+ */
+function scheduleFor(assetKey: string): SchedulerConfig {
+  const fidgets: Fidget[] = ['shiftWeight', 'glance'];
+  if (clipOf(assetKey, 'blink')) fidgets.push('blink');
+  return { ...DEFAULT_SCHEDULE, fidgets };
+}
 
 /**
  * Whether the player has asked for less motion.
@@ -159,11 +194,20 @@ export class CharacterView extends Container {
   private readonly fallback = new Graphics();
   private readonly bubble = new Graphics();
   private readonly grabRing = new Graphics();
+  /** Appearance, at snapshot rate. Position is deliberately not in this key. */
   private lastKey = '';
-  private clipElapsed = 0;
-  private clipFrame = -1;
-  private clip = 'idle';
-  private cycling = false;
+  private readonly motion = createMotion();
+  private readonly player = createPlayer();
+  private readonly scheduler = createScheduler(0);
+  private schedule: SchedulerConfig = DEFAULT_SCHEDULE;
+  /** The last snapshot, kept so every frame can move towards it. */
+  private sample: MotionSample = { x: 0, y: 0, vx: 0, vy: 0, toX: 0, toY: 0, segment: '' };
+  private plotHeight = 1;
+  private baseAlpha = 1;
+  private baseFacing: 1 | -1 = 1;
+  private frame = FALLBACK_FRAME;
+  private drawn = '';
+  private impatient = false;
   private lastAssetKey = '';
 
   constructor() {
@@ -174,35 +218,42 @@ export class CharacterView extends Container {
   }
 
   update(data: CharacterViewData, plotHeight: number): void {
+    // Position is carried every frame in tickAnimation, so it is stored here
+    // and left out of the dirty key: a walking character would otherwise
+    // re-tessellate their bubble and grab ring ten times a second.
     this.lastAssetKey = data.assetKey;
-    const key = `${assetGeneration()},${data.assetKey},${data.x.toFixed(2)},${data.y},` +
-      `${data.facing},${data.desire ?? ''},${data.draggable},${data.opacity.toFixed(2)},` +
-      `${data.night ? 'n' : 'd'},${data.clip}`;
+    this.plotHeight = plotHeight;
+    this.baseAlpha = data.opacity;
+    this.impatient = data.mood === 'impatient';
+    this.sample.x = data.x;
+    this.sample.y = data.y;
+    this.sample.vx = data.vx;
+    this.sample.vy = data.vy;
+    this.sample.toX = data.toX;
+    this.sample.toY = data.toY;
+    this.sample.segment = data.segment;
+    if (this.scheduler.seed !== data.seed) resetScheduler(this.scheduler, data.seed);
+    this.schedule = scheduleFor(data.assetKey);
+    setBase(this.player, data.clip);
+
+    const key = `${assetGeneration()},${data.assetKey},${data.facing},${data.desire ?? ''},` +
+      `${data.draggable},${data.opacity.toFixed(2)},${data.night ? 'n' : 'd'},${data.clip}`;
     if (key === this.lastKey) return;
     this.lastKey = key;
 
-    // Feet on the floor of whichever block they occupy.
-    const base = blockToWorld(0, data.y, plotHeight);
-    this.position.set(data.x * BLOCK_W, base.y + BLOCK_H);
-    this.alpha = data.opacity;
-
-    // The clip the bridge asked for, whatever it is: a sleeping guest shows
-    // the sleep row, a working member of staff the work row. Rows with more
-    // than one frame cycle; a single-frame row simply holds.
-    if (data.clip !== this.clip) { this.clip = data.clip; this.clipElapsed = 0; this.clipFrame = -1; }
-    const row = clipOf(data.assetKey, this.clip);
-    this.cycling = (row?.frames ?? 1) > 1;
-
+    this.baseFacing = data.facing === 'left' ? -1 : 1;
     const spec = animOf(data.assetKey);
-    const frame = spec?.frame ?? FALLBACK_FRAME;
-    const art = framesFor(data.assetKey, this.clip)?.[0]
+    this.frame = spec?.frame ?? FALLBACK_FRAME;
+    const frame = this.frame;
+    const art = framesFor(data.assetKey, data.clip)?.[0]
       ?? framesFor(data.assetKey, 'idle')?.[0]
       ?? texture(data.assetKey);
     if (art) {
+      this.drawn = '';
       this.sprite.texture = art;
       this.sprite.width = frame.w * CHARACTER_ART_SCALE;
       this.sprite.height = frame.h * CHARACTER_ART_SCALE;
-      this.sprite.scale.x = Math.abs(this.sprite.scale.x) * (data.facing === 'left' ? -1 : 1);
+      this.sprite.scale.x = Math.abs(this.sprite.scale.x) * this.baseFacing;
       this.sprite.tint = data.night ? NIGHT_TINT : 0xffffff;
       this.sprite.visible = true;
       this.fallback.clear();
@@ -241,41 +292,96 @@ export class CharacterView extends Container {
   }
 
   /**
-   * Advance the current clip.
+   * One frame: carry the position towards the simulation's, advance the clip
+   * at its own rate, and let the character blink or shift their weight.
    *
    * Driven by wall-clock rather than simulation ticks on purpose: this is
    * presentation, and tying it to the tick would make characters march at
    * 10Hz. The simulation stays deterministic; the legs do not need to be.
    *
-   * The rate is the clip's own — 8 to 12 drawn frames a second, per ART-0 §11
-   * — read from the manifest, while this method itself is called at the
-   * display's rate. Two clocks, deliberately different.
+   * Two clocks live here, deliberately apart (ART-0 §11): the position moves
+   * at the display's rate, so nothing steps; the drawn frames step at the
+   * clip's own 8 to 12 a second, read from the manifest.
    */
   tickAnimation(deltaMs: number): void {
-    if (!this.cycling) return;
-    // Characters still move across the street; their legs simply stop cycling.
-    // Freezing them in place instead would lose the information that somebody
-    // is arriving.
-    if (prefersReducedMotion()) return;
-    const row = clipOf(this.lastAssetKey, this.clip);
-    const frames = framesFor(this.lastAssetKey, this.clip);
-    if (!row || !frames || frames.length === 0) return;
+    const reduced = prefersReducedMotion();
 
-    const cycleMs = (row.frames / row.fps) * 1000;
-    this.clipElapsed = (this.clipElapsed + deltaMs) % cycleMs;
-    const index = Math.floor((this.clipElapsed / cycleMs) * row.frames) % row.frames;
-    if (index === this.clipFrame) return;
-    this.clipFrame = index;
-    this.sprite.texture = frames[index]!;
-    this.sprite.visible = true;
+    // Position, every frame. Characters still travel under reduced motion —
+    // freezing them would lose the information that somebody is arriving.
+    step(this.motion, this.sample, deltaMs);
+    const base = blockToWorld(0, this.motion.y, this.plotHeight);
+    const x = this.motion.x * BLOCK_W;
+    const y = base.y + BLOCK_H;
+    this.position.set(x, y);
+    this.alpha = this.baseAlpha * fadeAlpha(this.motion);
+    // Draw order by the foot the character stands on, so two people passing
+    // each other overlap the way the room does. The pool never reorders its
+    // children, so without this the order was whatever recycling produced.
+    this.zIndex = y * 4096 + x;
+
+    // The small human things, while they are standing about doing nothing.
+    const settled = this.sample.vx === 0 && this.sample.vy === 0;
+    const busy = this.player.base === 'sleep' || this.player.base === 'walk';
+    const beat = tick(this.scheduler, deltaMs, this.schedule,
+      !reduced && settled && !busy, this.impatient);
+    if (beat.play && clipOf(this.lastAssetKey, beat.play)) playOnce(this.player, beat.play);
+
+    // A glance is a look over the shoulder: the one fidget that is a flip
+    // rather than a frame, so it costs nothing to draw and reads at any size.
+    const facing = beat.holding === 'glance' ? -this.baseFacing : this.baseFacing;
+
+    const { clip, frame } = advance(this.player, deltaMs,
+      (name) => clipOf(this.lastAssetKey, name), reduced);
+    const key = `${clip}:${frame}`;
+    if (key !== this.drawn) {
+      const frames = framesFor(this.lastAssetKey, clip);
+      const art = frames?.[frame] ?? frames?.[0];
+      if (art) {
+        this.drawn = key;
+        this.sprite.texture = art;
+        this.sprite.width = this.frame.w * CHARACTER_ART_SCALE;
+        this.sprite.height = this.frame.h * CHARACTER_ART_SCALE;
+        this.sprite.visible = true;
+      }
+    }
+    this.sprite.scale.x = Math.abs(this.sprite.scale.x) * facing;
+  }
+
+  /**
+   * Play a one-shot in answer to something that happened — a check-in, a
+   * fire, a guest leaving happy. Ignored when this character's sheet has no
+   * such row, which is how a reaction stays optional per character.
+   */
+  react(clip: string): void {
+    if (!clipOf(this.lastAssetKey, clip)) return;
+    playOnce(this.player, clip);
+  }
+
+  /**
+   * Put the view where the simulation says, with no easing.
+   *
+   * For a character who was off screen: they must be in the right place the
+   * moment they are drawn again, not slide in from wherever the camera left
+   * them.
+   */
+  settle(): void {
+    snapTo(this.motion, this.sample);
   }
 
   reset(): void {
     this.lastKey = '';
-    this.clipElapsed = 0;
-    this.clipFrame = -1;
-    this.clip = 'idle';
-    this.cycling = false;
+    this.drawn = '';
+    this.impatient = false;
+    this.baseAlpha = 1;
+    this.baseFacing = 1;
+    this.frame = FALLBACK_FRAME;
+    // Pools hand one view to many characters in turn. Anything remembered
+    // here would follow a departed guest into the next arrival — the position
+    // most visibly of all, as a slide across the plot.
+    resetMotion(this.motion);
+    resetPlayer(this.player);
+    resetScheduler(this.scheduler, 0);
+    this.schedule = DEFAULT_SCHEDULE;
     this.alpha = 1;
     this.visible = true;
     this.renderable = true;
