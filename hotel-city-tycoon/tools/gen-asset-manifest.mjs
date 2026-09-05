@@ -22,9 +22,6 @@ const BLOCK_H = 96;
 
 /** Variants each kind of subject needs. */
 const ROOM_VARIANTS = ['base', 'night', 'dirty', 'pest', 'thumb'];
-const CHARACTER_VARIANTS = ['idle', 'walk', 'thumb'];
-const STAFF_EXTRA = ['work'];
-const GUEST_EXTRA = ['sleep'];
 
 const entries = [];
 const add = (e) => entries.push(e);
@@ -74,42 +71,54 @@ for (const item of decor) {
 }
 
 // ---- characters -----------------------------------------------------------
-const CHAR_W = 48;
-const CHAR_H = 72;
-const WALK_FRAMES = 6;
-for (const role of staff) {
-  for (const variant of [...CHARACTER_VARIANTS, ...STAFF_EXTRA]) {
+//
+// One sheet per character, laid out by that character's own animation file
+// (HC-P2-S1, DEC-012): a row per clip, a column per frame. The clip table is
+// copied into the entry as `anim`, which is what the renderer slices from —
+// ART-0 §17 asks for exactly that, sizes and rates from the manifest rather
+// than from constants in `characterView.ts`.
+const CHARACTER_VARIANTS = ['sheet', 'thumb'];
+const animationOf = (kind, id) =>
+  JSON.parse(fs.readFileSync(`data/animations/${kind}_${id}.json`, 'utf8'));
+
+function characterEntries(kind, id) {
+  const anim = animationOf(kind, id);
+  const names = Object.keys(anim.clips);
+  const cols = Math.max(...names.map((n) => anim.clips[n].frames));
+  const rows = names.length;
+  const frame = anim.frame;
+  for (const variant of CHARACTER_VARIANTS) {
+    const sheet = variant === 'sheet';
     add({
-      key: `staff.${role.id}.${variant}`,
+      key: `${kind}.${id}.${variant}`,
       bundle: 'characters',
-      file: `characters/staff_${role.id}_${variant}.png`,
-      // A walk sheet is six frames laid out horizontally, so its declared
-      // width is the whole strip. Declaring one frame's width made the
-      // manifest disagree with its own note.
-      width: variant === 'thumb' ? 64 : variant === 'walk' ? CHAR_W * WALK_FRAMES : CHAR_W,
-      height: variant === 'thumb' ? 64 : CHAR_H,
-      required: variant === 'idle',
-      note: variant === 'walk'
-        ? `Sprite sheet, ${WALK_FRAMES} frames horizontal (${CHAR_W * WALK_FRAMES}x${CHAR_H} total)`
+      file: `characters/${kind}_${id}_${variant}.png`,
+      width: sheet ? frame.w * cols : 64,
+      height: sheet ? frame.h * rows : 64,
+      // The sheet carries every state this character can be in, so it is the
+      // one file that must exist for them to appear at all.
+      required: sheet,
+      note: sheet
+        ? `Sheet: ${rows} clips x up to ${cols} frames of ${frame.w}x${frame.h}, pivot (${frame.pivot.x}, ${frame.pivot.y})`
         : 'Single frame, transparent',
+      ...(sheet
+        ? {
+          anim: {
+            frame: { w: frame.w, h: frame.h, pivotX: frame.pivot.x, pivotY: frame.pivot.y },
+            clips: Object.fromEntries(names.map((name, row) => [name, {
+              row,
+              frames: anim.clips[name].frames,
+              fps: anim.clips[name].fps,
+              loop: anim.clips[name].loop,
+            }])),
+          },
+        }
+        : {}),
     });
   }
 }
-for (const guest of guests) {
-  for (const variant of [...CHARACTER_VARIANTS, ...GUEST_EXTRA]) {
-    add({
-      key: `guest.${guest.id}.${variant}`,
-      bundle: 'characters',
-      file: `characters/guest_${guest.id}_${variant}.png`,
-      width: variant === 'thumb' ? 64 : variant === 'walk' ? CHAR_W * WALK_FRAMES : CHAR_W,
-      height: variant === 'thumb' ? 64 : CHAR_H,
-      required: variant === 'idle',
-      note: variant === 'walk'
-        ? `Sprite sheet, ${WALK_FRAMES} frames horizontal (${CHAR_W * WALK_FRAMES}x${CHAR_H} total)`
-        : 'Single frame, transparent',
-    });
-  }
-}
+for (const role of staff) characterEntries('staff', role.id);
+for (const guest of guests) characterEntries('guest', guest.id);
 
 // ---- events ---------------------------------------------------------------
 for (const event of events) {

@@ -48,7 +48,7 @@ export type Mood = 'neutral' | 'impatient' | 'happy' | 'angry';
 export interface CharacterView {
   id: string;
   kind: 'guest' | 'staff';
-  /** Asset key for the sprite, e.g. guest.vip.idle */
+  /** The character's sheet, e.g. `guest.standard.sheet`; `clip` picks the row. */
   assetKey: string;
   /** Block coordinates, fractional — where the person is at this tick. */
   x: number;
@@ -563,7 +563,7 @@ export function characterViews(state: GameState): CharacterView[] {
     views.push({
       id: staff.id,
       kind: 'staff',
-      assetKey: `staff.${staff.roleId}.idle`,
+      assetKey: `staff.${staff.roleId}.sheet`,
       ...pose,
       seed: personSeed(staff.id, state.seed),
       desire: null,
@@ -579,7 +579,7 @@ export function characterViews(state: GameState): CharacterView[] {
     views.push({
       id: guest.id,
       kind: 'guest',
-      assetKey: `guest.${guest.typeId}.idle`,
+      assetKey: `guest.${guest.typeId}.sheet`,
       ...pose,
       seed: personSeed(guest.id, state.seed),
       // A desire only matters while they can still act on it.

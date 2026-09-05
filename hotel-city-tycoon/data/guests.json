@@ -1,7 +1,7 @@
 {
   "version": 1,
   "tuningStatus": "original-model-3B",
-  "assetKeyConvention": "guest.<id>.<variant>  |  variants: idle, walk, sleep, happy, angry, thumb",
+  "assetKeyConvention": "guest.<id>.<variant>  |  variants: sheet, thumb. The sheet holds one row per clip; data/animations/guest_<id>.json names the clips and the manifest carries the layout.",
   "desireTags": [
     "food",
     "fitness",
@@ -12,7 +12,7 @@
     {
       "id": "standard",
       "nameKey": "guest.standard.name",
-      "assetKey": "guest.standard.idle",
+      "assetKey": "guest.standard.sheet",
       "spawnWeight": 100,
       "payMultiplier": 1.0,
       "stayMultiplier": 1.0,
@@ -25,7 +25,7 @@
     {
       "id": "inspector",
       "nameKey": "guest.inspector.name",
-      "assetKey": "guest.inspector.idle",
+      "assetKey": "guest.inspector.sheet",
       "spawnWeight": 3,
       "payMultiplier": 1.0,
       "stayMultiplier": 1.0,

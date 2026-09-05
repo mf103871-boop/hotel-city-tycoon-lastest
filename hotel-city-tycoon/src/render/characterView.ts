@@ -9,17 +9,22 @@
  * what to build in the original game, so it is drawn here rather than left to
  * the HUD: it has to point at the person who wants it.
  */
-import { Container, Graphics, Rectangle, Sprite, Texture } from 'pixi.js';
+import { Container, Graphics, Sprite } from 'pixi.js';
 import { texture, assetGeneration } from './assets.ts';
+import { framesFor, animOf, clipOf } from './anim/sheet.ts';
 import { BLOCK_W, BLOCK_H, blockToWorld } from './layout.ts';
 import { INK, NIGHT_TINT, nightfall } from './backdrop.ts';
 
 /** The desire bubble's card. Warm white, from ART-0 §7. */
 const BUBBLE = 0xdde2df;
 
-const CHAR_W = 48;
-const CHAR_H = 72;
-const WALK_FRAMES = 6;
+/**
+ * The frame the placeholder is drawn against when no sheet has loaded.
+ *
+ * Real sizes come from the manifest's `anim` block, per character (ART-0
+ * §17); these are only what the capsule falls back to before any art exists.
+ */
+const FALLBACK_FRAME = { w: 48, h: 72 };
 /**
  * How big a character is drawn, as a fraction of its 48x72 frame.
  *
@@ -31,8 +36,6 @@ const WALK_FRAMES = 6;
  * the decor meter along the room's top edge.
  */
 const CHARACTER_ART_SCALE = 0.82;
-/** A full stride cycle. Slower reads as a stroll, faster as a scurry. */
-const WALK_CYCLE_MS = 620;
 
 /**
  * Whether the player has asked for less motion.
@@ -57,41 +60,6 @@ export function prefersReducedMotion(): boolean {
 /** Test hook. */
 export function setReducedMotionForTests(value: boolean | null): void {
   reducedMotion = value;
-}
-
-/**
- * Sliced walk sheets, cached by key.
- *
- * Slicing allocates six textures per character type, so it happens once and
- * never inside the render loop.
- */
-const walkFrames = new Map<string, Texture[] | null>();
-/** The asset generation the null entries above were recorded under. */
-let walkFramesGeneration = -1;
-
-function framesFor(assetKey: string): Texture[] | null {
-  // A null entry means "no sheet yet", and the sheet can still arrive: drop
-  // the nulls whenever a bundle lands and keep the frames already sliced.
-  const generation = assetGeneration();
-  if (generation !== walkFramesGeneration) {
-    walkFramesGeneration = generation;
-    for (const [key, frames] of walkFrames) if (frames === null) walkFrames.delete(key);
-  }
-  const cached = walkFrames.get(assetKey);
-  if (cached !== undefined) return cached;
-
-  const sheet = texture(assetKey.replace(/\.(idle|walk)$/, '.walk'));
-  if (!sheet) { walkFrames.set(assetKey, null); return null; }
-
-  const frames: Texture[] = [];
-  for (let i = 0; i < WALK_FRAMES; i++) {
-    frames.push(new Texture({
-      source: sheet.source,
-      frame: new Rectangle(i * CHAR_W, 0, CHAR_W, CHAR_H),
-    }));
-  }
-  walkFrames.set(assetKey, frames);
-  return frames;
 }
 
 /**
@@ -192,9 +160,10 @@ export class CharacterView extends Container {
   private readonly bubble = new Graphics();
   private readonly grabRing = new Graphics();
   private lastKey = '';
-  private walkElapsed = 0;
-  private walkFrame = -1;
-  private walking = false;
+  private clipElapsed = 0;
+  private clipFrame = -1;
+  private clip = 'idle';
+  private cycling = false;
   private lastAssetKey = '';
 
   constructor() {
@@ -208,7 +177,7 @@ export class CharacterView extends Container {
     this.lastAssetKey = data.assetKey;
     const key = `${assetGeneration()},${data.assetKey},${data.x.toFixed(2)},${data.y},` +
       `${data.facing},${data.desire ?? ''},${data.draggable},${data.opacity.toFixed(2)},` +
-      `${data.night ? 'n' : 'd'}`;
+      `${data.night ? 'n' : 'd'},${data.clip}`;
     if (key === this.lastKey) return;
     this.lastKey = key;
 
@@ -217,17 +186,22 @@ export class CharacterView extends Container {
     this.position.set(data.x * BLOCK_W, base.y + BLOCK_H);
     this.alpha = data.opacity;
 
-    // Walking characters animate; everyone else holds their idle frame.
-    this.walking = data.activity === 'walking' || data.activity === 'leaving';
-    if (!this.walking) this.walkFrame = -1;
+    // The clip the bridge asked for, whatever it is: a sleeping guest shows
+    // the sleep row, a working member of staff the work row. Rows with more
+    // than one frame cycle; a single-frame row simply holds.
+    if (data.clip !== this.clip) { this.clip = data.clip; this.clipElapsed = 0; this.clipFrame = -1; }
+    const row = clipOf(data.assetKey, this.clip);
+    this.cycling = (row?.frames ?? 1) > 1;
 
-    const art = this.walking
-      ? (framesFor(data.assetKey)?.[0] ?? texture(data.assetKey))
-      : texture(data.assetKey);
+    const spec = animOf(data.assetKey);
+    const frame = spec?.frame ?? FALLBACK_FRAME;
+    const art = framesFor(data.assetKey, this.clip)?.[0]
+      ?? framesFor(data.assetKey, 'idle')?.[0]
+      ?? texture(data.assetKey);
     if (art) {
       this.sprite.texture = art;
-      this.sprite.width = CHAR_W * CHARACTER_ART_SCALE;
-      this.sprite.height = CHAR_H * CHARACTER_ART_SCALE;
+      this.sprite.width = frame.w * CHARACTER_ART_SCALE;
+      this.sprite.height = frame.h * CHARACTER_ART_SCALE;
       this.sprite.scale.x = Math.abs(this.sprite.scale.x) * (data.facing === 'left' ? -1 : 1);
       this.sprite.tint = data.night ? NIGHT_TINT : 0xffffff;
       this.sprite.visible = true;
@@ -267,34 +241,41 @@ export class CharacterView extends Container {
   }
 
   /**
-   * Advance the stride.
+   * Advance the current clip.
    *
    * Driven by wall-clock rather than simulation ticks on purpose: this is
    * presentation, and tying it to the tick would make characters march at
    * 10Hz. The simulation stays deterministic; the legs do not need to be.
+   *
+   * The rate is the clip's own — 8 to 12 drawn frames a second, per ART-0 §11
+   * — read from the manifest, while this method itself is called at the
+   * display's rate. Two clocks, deliberately different.
    */
   tickAnimation(deltaMs: number): void {
-    if (!this.walking) return;
+    if (!this.cycling) return;
     // Characters still move across the street; their legs simply stop cycling.
     // Freezing them in place instead would lose the information that somebody
     // is arriving.
     if (prefersReducedMotion()) return;
-    const frames = framesFor(this.lastAssetKey);
-    if (!frames) return;
+    const row = clipOf(this.lastAssetKey, this.clip);
+    const frames = framesFor(this.lastAssetKey, this.clip);
+    if (!row || !frames || frames.length === 0) return;
 
-    this.walkElapsed = (this.walkElapsed + deltaMs) % WALK_CYCLE_MS;
-    const index = Math.floor((this.walkElapsed / WALK_CYCLE_MS) * WALK_FRAMES) % WALK_FRAMES;
-    if (index === this.walkFrame) return;
-    this.walkFrame = index;
+    const cycleMs = (row.frames / row.fps) * 1000;
+    this.clipElapsed = (this.clipElapsed + deltaMs) % cycleMs;
+    const index = Math.floor((this.clipElapsed / cycleMs) * row.frames) % row.frames;
+    if (index === this.clipFrame) return;
+    this.clipFrame = index;
     this.sprite.texture = frames[index]!;
     this.sprite.visible = true;
   }
 
   reset(): void {
     this.lastKey = '';
-    this.walkElapsed = 0;
-    this.walkFrame = -1;
-    this.walking = false;
+    this.clipElapsed = 0;
+    this.clipFrame = -1;
+    this.clip = 'idle';
+    this.cycling = false;
     this.alpha = 1;
     this.visible = true;
     this.renderable = true;

@@ -147,18 +147,24 @@ def sheet_cast(zoom: int = 3) -> None:
     # row's head.
     cell_w = CHAR_W * zoom + 8
     cell = CHAR_H * zoom + 8
-    cols = 9
+    # Every clip of every character, straight from the animation files — so the
+    # sheet shows what the game will actually play, not a fixed list that
+    # quietly falls behind the data.
+    plans = [(kind, cid, gen_chars.animation(kind, cid)["clips"]) for kind, cid in people]
+    cols = max(sum(c["frames"] for c in clips.values()) for _, _, clips in plans)
     sheet = Image.new("RGBA", (cols * cell_w + 20, len(people) * (cell + 20) + 20), SHEET_BG)
-    for row, (kind, cid) in enumerate(people):
+    for row, (kind, cid, clips) in enumerate(plans):
         member = characters.CAST[f"{kind}.{cid}"]
         y = 10 + row * (cell + 20)
-        _label(sheet, f"{kind}.{cid}", 12, y + cell + 4)
-        poses = [("idle", 0), ("work" if kind == "staff" else "sleep", 0)]
-        poses += [("walk", i) for i in range(6)]
-        for col, (pose, phase) in enumerate(poses):
-            img = gen_chars.frame(member, 2, pose, phase).image()
-            img = img.resize((img.width * zoom // 2, img.height * zoom // 2), Image.LANCZOS)
-            sheet.alpha_composite(img, (10 + col * cell_w + (cell_w - img.width) // 2, y))
+        _label(sheet, f"{kind}.{cid}  " + " ".join(f"{n}x{c['frames']}" for n, c in clips.items()),
+               12, y + cell + 4)
+        col = 0
+        for name, clip in clips.items():
+            for phase in range(clip["frames"]):
+                img = gen_chars.frame(member, 2, name, phase, clip["frames"]).image()
+                img = img.resize((img.width * zoom // 2, img.height * zoom // 2), Image.LANCZOS)
+                sheet.alpha_composite(img, (10 + col * cell_w + (cell_w - img.width) // 2, y))
+                col += 1
     _write(sheet, "cast")
 
 

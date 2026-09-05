@@ -98,6 +98,8 @@ loader resolve it:
 | UI | `ui.<group>.<name>` | `ui.currency.coins` |
 
 Room variants: `base`, `night`, `dirty`, `pest`, `thumb`.
-Character variants: `idle`, `walk`, `work`/`sleep`, `happy`, `angry`, `thumb`.
+Character variants: `sheet`, `thumb` — one sheet per character holding a row
+per animation clip, laid out by `data/animations/<kind>_<id>.json` and
+described in the manifest's `anim` block, which is what the renderer slices.
 
 The validator rejects any malformed key, so the loader can trust every key it reads.

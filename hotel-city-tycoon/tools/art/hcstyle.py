@@ -674,24 +674,55 @@ _BOB = {
 }
 
 
+def cycle(table, phase: int, frames: int = 0) -> float:
+    """
+    Sample a looping motion table at frame `phase` of `frames`.
+
+    The tables above were written at one length each, and the animation files
+    may ask for another — ART-0 §11 wants eight walk frames where the first
+    sheets held six. Resampling the ring rather than re-authoring it keeps two
+    promises at once: the shape of the motion is the same curve whatever its
+    length, and the first and last frames of a loop still meet, because both
+    are read from the same closed ring.
+
+    Asking for a length the table already has returns the table's own value,
+    so a sheet regenerated at its original frame count is unchanged to the
+    pixel.
+    """
+    n = len(table)
+    if n == 0:
+        return 0.0
+    if frames <= 0 or frames == n:
+        return table[phase % n]
+    at = (phase % frames) / frames * n
+    lo = int(at) % n
+    hi = (lo + 1) % n
+    t = at - int(at)
+    return table[lo] * (1 - t) + table[hi] * t
+
+
 def draw_person(c: Canvas, who: Person, ox: float, oy: float = 0.0,
                 pose: str = "idle", phase: int = 0, expression: str = "smile",
-                prop: str | None = None, facing: int = 1) -> None:
+                prop: str | None = None, facing: int = 1, frames: int = 0) -> None:
     """
     Draw one character with their feet at `(ox, FOOT_Y + oy)`.
 
     `pose` is the activity the simulation is in — idle, walk, work, sit, sleep
-    — and `phase` the frame within it. Only limbs and a sub-pixel bob change
-    between frames: the head, the face and the clothes are re-read from `who`
-    every time, so a walk cycle physically cannot change who somebody is.
+    — and `phase` the frame within it, out of `frames`. Only limbs and a
+    sub-pixel bob change between frames: the head, the face and the clothes are
+    re-read from `who` every time, so a walk cycle physically cannot change who
+    somebody is.
+
+    `frames` is what the character's animation file asks for; leaving it at 0
+    uses each motion table's own length, which is what every caller before
+    HC-P2-S1 did.
     """
     if pose == "sleep":
         _draw_sleeper(c, who, ox, oy, expression)
         return
 
     g = _figure(who)
-    bob = _BOB.get(pose, (0.0,))[phase % len(_BOB.get(pose, (0.0,)))]
-    oy += bob
+    oy += cycle(_BOB.get(pose, (0.0,)), phase, frames)
 
     head_cy = g["head_cy"] + oy
     body_top = g["body_top"] + oy
@@ -706,7 +737,7 @@ def draw_person(c: Canvas, who: Person, ox: float, oy: float = 0.0,
     # --- legs: short, thick, and always ending in a shoe -------------------
     swing = 0.0
     if pose == "walk":
-        swing = (3.8, 2.0, -2.0, -3.8, -2.0, 2.0)[phase % 6] * facing
+        swing = cycle((3.8, 2.0, -2.0, -3.8, -2.0, 2.0), phase, frames) * facing
     seat = pose == "sit"
     for side in (-1, 1):
         hx = ox + side * shoulder * 0.26
@@ -745,7 +776,7 @@ def draw_person(c: Canvas, who: Person, ox: float, oy: float = 0.0,
         elif pose == "work":
             end = (ax + side * 1.6, arm_y + arm_len * 0.90)
         elif pose == "walk":
-            sw = (-3.0, -1.5, 1.5, 3.0, 1.5, -1.5)[phase % 6] * -side * facing
+            sw = cycle((-3.0, -1.5, 1.5, 3.0, 1.5, -1.5), phase, frames) * -side * facing
             end = (ax + sw * 0.8, arm_y + arm_len)
         elif pose == "sit":
             end = (ax + side * 2.2, arm_y + arm_len * 0.68)
@@ -999,7 +1030,7 @@ __all__ = [
     "SS", "BLOCK_W", "BLOCK_H", "ASSET_ROOT", "P", "RoomSpec",
     "LW_FRAME", "LW_PROP", "LW_DETAIL", "LW_FACE",
     "CHAR_W", "CHAR_H", "FOOT_Y",
-    "Canvas", "Person", "rgb", "mix", "shade", "tint", "alpha",
+    "Canvas", "Person", "cycle", "rgb", "mix", "shade", "tint", "alpha",
     "save_png", "both_tiers", "soften", "math",
     "room_shell", "room_frame", "window", "door", "wall_lamp", "pendant",
     "rug_strip", "plant_pot", "counter", "draw_person",
