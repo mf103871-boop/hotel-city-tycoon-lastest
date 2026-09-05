@@ -1,0 +1,75 @@
+{
+  "room": "standard",
+  "items": [
+    {
+      "id": "bed_paintedSpindle",
+      "category": "bed",
+      "slotType": "bed",
+      "new": true,
+      "nameEn": "Painted Spindle Bed",
+      "nameAr": "سرير خشبي مطلي",
+      "artBrief": "A compact single bed with a pale sage-green painted wooden frame: a rounded head rail on the left held up by four slim turned spindles, a lower matching foot rail on the right, and a patchwork quilt of small coral, lavender and mint squares over a cream sheet with one white pillow at the head. At 40px it reads as a little green-railed bed with a chequered quilt; every other bed is plank (single), padded (queen), buttoned (king), posted (canopy, four-poster), scrolled walnut (loft sleigh), winged leather (wingback), gilded (emperor) or legless (floating), and none has spindles or patchwork."
+    },
+    {
+      "id": "flooring_oak",
+      "category": "flooring",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "rug_persianRug",
+      "category": "rug",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "wallArt_bedsideSconce",
+      "category": "wallArt",
+      "slotType": "wall",
+      "new": true,
+      "nameEn": "Bedside Sconce",
+      "nameAr": "مصباح جانب السرير",
+      "artBrief": "A wall-mounted reading lamp, not a picture: a round brass backplate in the upper half of the canvas with a short jointed brass swing-arm reaching up and out to a small pleated cream drum shade tilted down toward the pillow, and a soft warm fan of light painted on the wall under the shade. At 40px it reads as a cream thimble on a gold elbow with a yellow glow beneath, with no frame at all, unlike every other wall-art piece (framed prints, paintings, posters, portraits, the map, the sunburst sculpture, the projector screen, the clock plaque and the pinboards)."
+    },
+    {
+      "id": "wallArt_print",
+      "category": "wallArt",
+      "slotType": "wall",
+      "new": false
+    },
+    {
+      "id": "wallpaper_damask",
+      "category": "wallpaper",
+      "slotType": "wall",
+      "new": false
+    },
+    {
+      "id": "lighting_pendant",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "new": false
+    },
+    {
+      "id": "lighting_paperLantern",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "new": true,
+      "nameEn": "Paper Lantern",
+      "nameAr": "فانوس ورقي",
+      "artBrief": "One big round cream rice-paper globe nearly as wide as the canvas, with faint horizontal rib lines and a warmer translucent centre where the bulb sits, hung on a short black cord from a small white ceiling cup, with a soft yellow pool of glow below it. At 40px it reads as a single pale ball on a thread; the bulb is a bare glass drop, the lamp a linen cone, the pendant a coral half-dome on brass, the lobby lantern a glazed brass box, the rattan shade a brown basket, the banker's pendant a flat green lens, and every chandelier is branched crystal or candles."
+    }
+  ],
+  "slots": [
+    { "kind": "bed",     "x": 4,  "y": 14, "w": 8, "h": 6, "fixture": "bed_single" },
+    { "kind": "surface", "x": 2,  "y": 14, "w": 4, "h": 7 },
+    { "kind": "surface", "x": 8,  "y": 14, "w": 4, "h": 7 },
+    { "kind": "wall",    "x": 2,  "y": 11, "w": 4, "h": 5 },
+    { "kind": "wall",    "x": 7,  "y": 11, "w": 4, "h": 5 },
+    { "kind": "wall",    "x": 9,  "y": 3,  "w": 4, "h": 6 },
+    { "kind": "ceiling", "x": 4,  "y": 0,  "w": 5, "h": 3 },
+    { "kind": "ceiling", "x": 14, "y": 0,  "w": 4, "h": 5 }
+  ],
+  "extraFixtureSlots": [],
+  "requiredFixtures": ["bed_single"],
+  "designNotes": "The painted door (px 82-112) leaves an 82px run of floor on the left and a 16px sliver on the right, so the room can stand exactly one piece: the Painted Spindle Bed takes the built-in single bed's slot at px 0-64 under the window and is the only new floor item; the other two new pieces had to be wall and ceiling. The Oak Flooring lies under the bed head (px 0-32) and the Persian Rug under its foot and out into the bedside gap (48-80), 16px apart and both drawn at 32px, with the rug in the visible spot where a guest steps out. The wall under the cill (y 51-84) is the only eye-level wall wide enough for two pieces: the Bedside Sconce hangs at px 0-32 directly over the pillow, which is how this room delivers the bedside lamp its description promises without a nightstand it has no floor for, and the Print hangs at 40-72 between the window and the door, just clear of the number plaque. The blank upper band right of the window (x 54-128, y 0-38) is split into a wall box for the Damask panel at px 56-88 running up to the ceiling, where a wallpaper panel naturally goes, and a ceiling box for the Paper Lantern at 96-128 over the door; the Pendant hangs in the 18px strip over the window head at px 12-52, above the bed. Nothing hangs over the window or the door, every wall box is 8px or more from its neighbours, and the pieces run from the left frame to the right frame."
+}
