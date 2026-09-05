@@ -147,16 +147,35 @@ function drawDesireMark(g: Graphics, mark: DesireMark, cx: number, cy: number,
 
 export interface CharacterViewData {
   assetKey: string;
-  /** Fractional block coordinates. */
+  /** Fractional block coordinates — where the person is at the snapshot's tick. */
   x: number;
   y: number;
+  /**
+   * Blocks per second along the current leg of their route, and where that
+   * leg ends. The bridge derives them (HC-P2-S1); the renderer carries the
+   * sprite forward at this speed between two ten-hertz snapshots so motion
+   * is continuous at the display's own rate.
+   */
+  vx: number;
+  vy: number;
+  toX: number;
+  toY: number;
+  /** Changes when a new leg begins. Within a leg the view eases; across a jump it snaps. */
+  segment: string;
   facing: 'left' | 'right';
   desire: string | null;
   draggable: boolean;
+  /** A tap on them does something (a resting guest may be the inspector). */
+  tappable: boolean;
   opacity: number;
   kind: 'guest' | 'staff';
   /** What the character is doing. Drives whether the walk cycle runs. */
-  activity: 'walking' | 'waiting' | 'resting' | 'working' | 'leaving';
+  activity: 'walking' | 'waiting' | 'resting' | 'sitting' | 'working' | 'leaving' | 'lift';
+  /** The sheet row the bridge asks for. */
+  clip: 'idle' | 'walk' | 'work' | 'sleep' | 'sit' | 'happy' | 'angry' | 'scared';
+  mood: 'neutral' | 'impatient' | 'happy' | 'angry';
+  /** This person's own seed, for blinks and fidgets that are theirs alone. */
+  seed: number;
   /**
    * The hotel is shut, so everyone is standing in a room drawn after dark.
    *

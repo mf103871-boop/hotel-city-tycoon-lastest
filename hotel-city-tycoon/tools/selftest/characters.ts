@@ -13,13 +13,20 @@ import { isCommercialRoom } from '../../src/core/data-source.ts';
 import { createInitialState } from '../../src/core/state/init.ts';
 import { advance } from '../../src/core/sim/tick.ts';
 import { execute } from '../../src/core/commands/index.ts';
-import type { GameState } from '../../src/core/state/types.ts';
+import type { GameState, GuestInstance } from '../../src/core/state/types.ts';
+
+import { toBlock, waypoint } from '../../src/core/systems/roomWaypoints.ts';
+import { cleaningOrder } from '../../src/core/systems/cleaning.ts';
+import { buildStressState } from '../../src/bridge/stress.ts';
+import { measure, describe } from './measure.ts';
 
 const data = loadSimData();
 const { initSelectors } = await import('../../src/bridge/selectors.ts');
 initSelectors(data);
-const { characterViews, guestPosition, guestNear, unmetDesires } =
+const { characterViews, guestPosition, guestPose, guestNear, unmetDesires, cleanerTarget } =
   await import('../../src/bridge/characters.ts');
+const { PAVEMENT_Y, EXIT_BEYOND } = await import('../../src/bridge/paths.ts');
+const { reactionsFor } = await import('../../src/bridge/reactions.ts');
 
 let passed = 0;
 const failures: string[] = [];
@@ -97,19 +104,26 @@ await check('positions are deterministic for a given tick', () => {
   eq(JSON.stringify(a), JSON.stringify(b), 'the same state produced two different frames');
 });
 
-await check('a guest inside a room is drawn inside that room', () => {
+await check('a guest inside a room is drawn inside that room, in bed, feet on the floor', () => {
   const s = busy();
   const staying = s.guests.filter((g) => g.state === 'staying');
   assert(staying.length > 0, 'nobody checked in');
+  let inBed = 0;
   for (const guest of staying) {
     const room = s.hotel.rooms.find((r) => r.id === guest.roomId)!;
-    const pos = guestPosition(s, guest);
+    const pose = guestPose(s, guest);
+    // On the way up from the desk they are somewhere between; once there,
+    // they are in the room, on its painted floor, in the bed or beside it.
+    if (pose.activity === 'walking' || pose.activity === 'lift') continue;
     const def = data.rooms.find((r) => r.id === room.defId)!;
-    assert(pos.x >= room.x && pos.x <= room.x + def.blocks.w,
-      `guest drawn at x=${pos.x} but their room spans ${room.x}..${room.x + def.blocks.w}`);
-    eq(pos.y, room.y, 'guest drawn on the wrong floor');
-    eq(pos.activity, 'resting', 'a guest in bed is not resting');
+    assert(pose.x >= room.x && pose.x <= room.x + def.blocks.w,
+      `guest drawn at x=${pose.x} but their room spans ${room.x}..${room.x + def.blocks.w}`);
+    const bed = waypoint(room.defId, def.blocks.w, def.blocks.h, 'guestSleep0')!;
+    eq(pose.y, toBlock(room, def.blocks.h, bed).y, 'guest drawn off the floor line');
+    assert(pose.activity === 'resting' || pose.activity === 'waiting', `a guest in their room is ${pose.activity}`);
+    if (pose.activity === 'resting') { eq(pose.clip, 'sleep', 'a guest in bed is not asleep'); inBed++; }
   }
+  assert(inBed > 0, 'nobody is in bed after 400 seconds');
 });
 
 await check('two guests in one room do not stand on each other', () => {
@@ -258,6 +272,174 @@ await check('every character asks for an asset the manifest provides', async () 
   for (const view of characterViews(busy())) {
     assert(keys.has(view.assetKey), `"${view.assetKey}" has no art`);
   }
+});
+
+// ---------------------------------------------------------------- motion (HC-P2-S1)
+await check('every clip the bridge asks for is one the character\'s sheet carries', () => {
+  for (const s of [busy(), busy(99), opened()]) {
+    for (const view of characterViews(s)) {
+      const anim = data.animations.find((a) => a.id === view.assetKey.replace(/\.[a-z]+$/, ''));
+      assert(anim, `no animation file for ${view.assetKey}`);
+      assert(anim.clips[view.clip], `${view.id} asks for "${view.clip}", which ${anim.id} does not carry`);
+    }
+  }
+});
+
+await check('a walk is continuous: one tick moves a person no further than their speed allows', () => {
+  const s = busy();
+  let walkers = 0;
+  for (const guest of s.guests) {
+    const before = guestPose(s, guest);
+    const later = JSON.parse(JSON.stringify(s)) as GameState;
+    later.tick += 1;
+    const after = guestPose(later, guest);
+    if (before.segment !== after.segment || before.activity === 'lift') continue;
+    const moved = Math.hypot(after.x - before.x, after.y - before.y);
+    const allowed = Math.hypot(before.vx, before.vy) / TPS + 1e-6;
+    assert(moved <= allowed, `${guest.id} jumped ${moved.toFixed(3)} blocks in one tick (speed allows ${allowed.toFixed(3)})`);
+    if (moved > 0) walkers++;
+  }
+  console.log(`      ${walkers} guests in motion, none of them jumping`);
+});
+
+await check('feet are on the pavement, not in the road, while waiting outside', () => {
+  const s = fresh();
+  s.guests.push(testGuest({ id: 'gp', state: 'arriving', stateSinceTick: s.tick - 10_000 }));
+  const pose = guestPose(s, s.guests[s.guests.length - 1]!);
+  eq(pose.y, PAVEMENT_Y, 'a guest waiting outside stands off the pavement');
+  eq(pose.activity, 'waiting', 'a guest who has arrived is still walking');
+});
+
+await check('a guest checking in reaches the desk before reception is done with them', () => {
+  const s = opened();
+  const ticks = Math.round(data.economy.guests.checkInSec * TPS);
+  s.guests.push(testGuest({ id: 'gc', state: 'checkingIn', stateSinceTick: s.tick, finishesAtTick: s.tick + ticks, waitedTicks: 0 }));
+  const guest = s.guests[s.guests.length - 1]!;
+  const start = guestPose(s, guest);
+  eq(start.activity, 'walking', 'the walk to the desk never starts');
+  s.tick += ticks - 1;
+  const end = guestPose(s, guest);
+  eq(end.activity, 'waiting', 'still walking when reception finished');
+  const lobby = s.hotel.rooms.find((r) => r.defId === 'lobby')!;
+  const desk = toBlock(lobby, 1, waypoint('lobby', 2, 1, 'deskFront')!);
+  assert(Math.abs(end.x - desk.x) < 1e-6 && Math.abs(end.y - desk.y) < 1e-6, `stopped at (${end.x}, ${end.y}), not the desk (${desk.x}, ${desk.y})`);
+  eq(end.facing, 'right', 'not facing the receptionist');
+});
+
+await check('the tappable flag matches what TAP_GUEST allows', () => {
+  const s = busy();
+  let tappable = 0;
+  for (const view of characterViews(s)) {
+    if (view.kind !== 'guest') continue;
+    const probe = JSON.parse(JSON.stringify(s)) as GameState;
+    const result = execute(data, probe, { type: 'TAP_GUEST', guestId: view.id });
+    eq(result.ok, view.tappable,
+      `"${view.id}" tappable=${view.tappable} but the command ${result.ok ? 'accepted' : 'refused'} it`);
+    if (view.tappable) tappable++;
+  }
+  assert(tappable > 0, 'nobody in a busy hotel can be tapped');
+});
+
+await check('the receptionist works exactly while somebody is checking in', () => {
+  const s = opened();
+  const desk = () => characterViews(s).find((v) => v.kind === 'staff' && v.assetKey.startsWith('staff.receptionist'));
+  assert(desk(), 'no receptionist on screen');
+  eq(desk()!.clip, 'idle', 'the receptionist works at an empty desk');
+  s.guests.push(testGuest({ id: 'gr', state: 'checkingIn', stateSinceTick: s.tick, finishesAtTick: s.tick + 60 }));
+  eq(desk()!.clip, 'work', 'the receptionist ignores a guest at the desk');
+  eq(desk()!.activity, 'working', 'working without the working activity');
+});
+
+await check('the cleaner goes to a room below the income gate, and stays put in a clean hotel', () => {
+  const s = busy();
+  const clean = cleanerTarget(s, 0);
+  const later = JSON.parse(JSON.stringify(s)) as GameState;
+  later.tick += 100;
+  eq(cleanerTarget(later, 0)?.id, clean?.id, 'the cleaner changed rooms within one round');
+  const gate = data.economy.cleanliness.incomeGateThreshold;
+  const filthy = s.hotel.rooms.find((r) => data.rooms.find((d) => d.id === r.defId)!.category === 'guest')!;
+  filthy.cleanliness = gate / 2;
+  const target = cleanerTarget(s, 0);
+  assert(target, 'nothing to clean with a filthy room in the hotel');
+  eq(target.id, cleaningOrder(data, s)[0]!.id, 'the cleaner is not in the room the simulation cleans first');
+  // And she is seen there, working, once she has walked over.
+  for (let t = 0; t < 200; t += 10) {
+    const probe = JSON.parse(JSON.stringify(s)) as GameState;
+    probe.tick = Math.floor(s.tick / 200) * 200 + 100;
+    const her = characterViews(probe).find((v) => v.assetKey.startsWith('staff.cleaner'));
+    assert(her, 'no cleaner on screen');
+    eq(her.clip, 'work', `at tick +100 into her round the cleaner is ${her.clip}, not working`);
+    break;
+  }
+});
+
+await check('every sleeper wakes on their own timetable, and the same one every time', () => {
+  const s = busy();
+  const staying = s.guests.filter((g) => g.state === 'staying');
+  assert(staying.length >= 2, 'need two sleepers');
+  const schedule = (guest: GuestInstance, state: GameState): string => {
+    const out: string[] = [];
+    for (let t = 0; t < 2400; t += 20) {
+      const probe = JSON.parse(JSON.stringify(state)) as GameState;
+      probe.tick = guest.stateSinceTick + 400 + t;
+      out.push(guestPose(probe, guest).clip);
+    }
+    return out.join('');
+  };
+  const a = schedule(staying[0]!, s);
+  const b = schedule(staying[1]!, s);
+  assert(a !== b, 'two different guests wake and sleep in lockstep');
+  eq(schedule(staying[0]!, s), a, 'the same guest had a different night the second time');
+  assert(a.includes('sleep') && a.includes('idle'), 'a guest never wakes, or never sleeps');
+});
+
+await check('a leaving guest starts at the door and reaches the edge exactly when the simulation drops them', () => {
+  const s = opened();
+  s.guests.push(testGuest({ id: 'gl', state: 'leaving', stateSinceTick: s.tick, everCheckedIn: true, leaveReason: 'checkedOut', satisfaction: 90 }));
+  const guest = s.guests[s.guests.length - 1]!;
+  const lobby = s.hotel.rooms.find((r) => r.defId === 'lobby')!;
+  const door = toBlock(lobby, 1, waypoint('lobby', 2, 1, 'door')!);
+  const start = guestPose(s, guest);
+  assert(Math.abs(start.x - door.x) < 1e-6, `left from x=${start.x}, not the door at ${door.x}`);
+  eq(start.mood, 'happy', 'a well-satisfied guest does not leave happy');
+  s.tick += Math.round(data.economy.guests.walkAwaySec * TPS);
+  const end = guestPose(s, guest);
+  // Leg lengths are whole ticks (`walk()` rounds up), so the last stride lands
+  // within one tick of the moment the simulation drops them — which is what
+  // "walks off exactly as they disappear" can mean on a ten-hertz clock.
+  const stride = Math.hypot(end.vx, end.vy) / TPS;
+  assert(Math.abs(end.x - (-EXIT_BEYOND)) <= stride + 1e-6,
+    `at walkAwaySec the guest is at x=${end.x}, more than one stride (${stride.toFixed(3)}) from the edge`);
+  eq(end.y, PAVEMENT_Y, 'walked off somewhere other than the pavement');
+  s.tick += 1;
+  assert(Math.abs(guestPose(s, guest).x - (-EXIT_BEYOND)) < 1e-6, 'the guest never reaches the edge at all');
+});
+
+await check('a guest turned away leaves angry; one who never got a room starts from the street', () => {
+  const s = opened();
+  s.guests.push(testGuest({ id: 'ga', state: 'leaving', stateSinceTick: s.tick, leaveReason: 'noRoom' }));
+  const pose = guestPose(s, s.guests[s.guests.length - 1]!);
+  eq(pose.mood, 'angry', 'turned away and not angry');
+  eq(pose.y, PAVEMENT_Y, 'a guest who never came in leaves from inside');
+});
+
+await check('a reaction goes to the person it is about, and to nobody without the clip', () => {
+  const s = busy();
+  const guest = s.guests.find((g) => g.state === 'staying')!;
+  const hits = reactionsFor(s, [{ type: 'guestCheckedIn', guestId: guest.id, roomId: guest.roomId! }]);
+  // Until the sheets carry one-shots (M6) no reaction resolves; once they do,
+  // the guest and the receptionist are the only two it may reach.
+  for (const r of hits) assert(r.id === guest.id || s.staff.some((x) => x.id === r.id), `reaction reached "${r.id}"`);
+  const anim = data.animations.find((a) => a.id === `guest.${guest.typeId}`)!;
+  const expects = anim.reactions['guestCheckedIn'];
+  eq(hits.some((r) => r.id === guest.id), !!expects && !!anim.clips[expects], 'the guest\'s own reaction did not follow the file');
+});
+
+await check('deriving every view of a full hotel is cheap', () => {
+  const stress = buildStressState(data, { rooms: 60, seconds: 900, epochMs: 0 });
+  const timing = measure(() => stress, (state) => { characterViews(state); }, 9);
+  console.log(`      ${characterViews(stress).length} people: ${describe(timing)}`);
+  assert(timing.median < 2, `characterViews takes ${timing.median.toFixed(1)}ms median for the stress hotel`);
 });
 
 })();
