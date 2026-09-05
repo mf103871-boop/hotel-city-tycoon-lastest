@@ -31,7 +31,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from PIL import Image  # noqa: E402
 
 from hcstyle import (  # noqa: E402
-    BLOCK_W, BLOCK_H, CHAR_W, CHAR_H, Canvas, P, room_shell, draw_person, tint,
+    BLOCK_W, BLOCK_H, CHAR_W, CHAR_H, FOOT_Y, Canvas, P, room_shell, draw_person, tint,
 )
 
 OUT_DIR = "docs/art-preview"
@@ -213,6 +213,29 @@ def _anchor_source():
         return spread
 
 
+def _waypoint_source():
+    """
+    Where a person stands in a room, from the game's own table — the same
+    arrangement as `_anchor_source`, for `src/core/systems/roomWaypoints.ts`.
+    """
+    import subprocess
+    try:
+        out = subprocess.run(
+            ["node", "--experimental-strip-types", "tools/art/dump-waypoints.ts"],
+            capture_output=True, text=True, check=True).stdout
+        table = json.loads(out)
+        return lambda room_id: table.get(room_id, {})
+    except Exception as exc:  # noqa: BLE001 - the fallback is the point
+        print(f"  (no waypoint dump: {exc}; standing people at the room's left instead)")
+        return lambda room_id: {}
+
+
+def _rooms_staff() -> dict:
+    """Which role works each room, from `data/rooms.json`."""
+    with open("data/rooms.json", encoding="utf8") as fh:
+        return {r["id"]: r.get("staffRole") for r in json.load(fh)["rooms"] if r.get("staffRole")}
+
+
 def sheet_compose(room_id: str, zoom: int = 3) -> None:
     """
     One room as the game draws it: art, then decor at its anchors, then people.
@@ -252,15 +275,35 @@ def sheet_compose(room_id: str, zoom: int = 3) -> None:
         py = int(ay * (BLOCK_H / 16) * tier - dh * anchor_y)
         room.alpha_composite(art, (px, py))
 
-    for i, key in enumerate(("guest.standard", "staff.receptionist")):
+    # People at the room's own movement points (HC-P2-S1): a guest in the bed
+    # or at the first seat, the room's member of staff at their work point.
+    # Feet on the standing line, pivot (24, 70), the way the renderer does it.
+    points = _waypoint_source()(room_id)
+    who = []
+    guest_spot = points.get("guestSleep0") or points.get("guestUse0")
+    if guest_spot:
+        who.append(("guest.standard", guest_spot))
+    staff_role = _rooms_staff().get(room_id)
+    if staff_role and points.get("staffWork"):
+        who.append((f"staff.{staff_role}", points["staffWork"]))
+    if not who:
+        who.append(("guest.standard", points.get("standLeft", {"x": 3, "y": 14, "facing": "right", "pose": "stand"})))
+    for key, spot in who:
         member = characters.CAST[key]
+        pose = "sleep" if spot["pose"] == "sleep" else ("work" if key.startswith("staff.") else "idle")
         pc = Canvas(CHAR_W, CHAR_H, tier=tier)
-        draw_person(pc, member.person, CHAR_W / 2, pose="idle", prop=member.prop)
+        draw_person(pc, member.person, CHAR_W / 2, pose=pose,
+                    expression="sleep" if pose == "sleep" else member.expression,
+                    prop=member.prop_work if pose == "work" else member.prop)
         art = pc.image()
         cw = int(CHAR_W * CHARACTER_ART_SCALE * tier)
         ch = int(CHAR_H * CHARACTER_ART_SCALE * tier)
         art = art.resize((cw, ch), Image.LANCZOS)
-        room.alpha_composite(art, (int((0.3 + i * 0.4) * room.width) - cw // 2, room.height - ch))
+        if spot["facing"] == "left":
+            art = art.transpose(Image.FLIP_LEFT_RIGHT)
+        fx = int(spot["x"] * (BLOCK_W / 16) * tier - cw / 2)
+        fy = int(spot["y"] * (BLOCK_H / 16) * tier - ch * (FOOT_Y / CHAR_H))
+        room.alpha_composite(art, (fx, fy))
 
     big = room.resize((room.width * zoom // 2, room.height * zoom // 2), Image.LANCZOS)
     sheet = Image.new("RGBA", (big.width + 40, big.height + 40), SHEET_BG)
