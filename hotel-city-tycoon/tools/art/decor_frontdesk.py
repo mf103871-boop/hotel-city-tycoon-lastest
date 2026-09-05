@@ -3,8 +3,9 @@ The staff room, maintenance and the business centre.
 
 Three working rooms behind the guest floors, and the first time each has had a
 catalogue of its own. The staff room is a break room: a vending machine, a
-rubber mat by the kettle, lino on the floor, the employee-of-the-month frame
-and the exit sign over the door. Maintenance is a workshop: checker plate on
+rubber mat and a striped cotton runner by the kettle, lino on the floor, the
+employee-of-the-month frame, the exit sign over the door and a string of
+party bulbs nobody took down. Maintenance is a workshop: checker plate on
 the floor, a breaker panel on the wall, painted breeze block behind it and a
 caged lamp on the pipe run. The business centre is an office: a shredder,
 carpet tiles, a flat LED panel overhead and a frosted glass partition.
@@ -15,9 +16,10 @@ the lights are a sign, a work lamp and a ceiling tile rather than a chandelier,
 and the floor coverings are institutional. So the silhouette does the telling:
 the vending machine is the only appliance that is a dark cabinet with a lit
 grid inside it, the shredder the only one that is a narrow upright column, the
-exit sign the only light that is a sign, the breaker panel the only wall art
-with no picture frame around it, and the checker plate the only floor that is
-studded metal.
+exit sign the only light that is a sign, the string bulbs the only light hung
+from two points with a sag between them, the kitchenette mat the only rug that
+is pale and stained, the breaker panel the only wall art with no picture frame
+around it, and the checker plate the only floor that is studded metal.
 
 Sizes come from `gen_decor.SLOT_SIZE`: 96x72 for the equipment slot and for
 wall pieces, 72x72 for the floor coverings, 72x48 for a hanging light. Nothing
@@ -33,7 +35,7 @@ from hcstyle import (
 
 from decor_props import _stand
 from decor_surfaces import (
-    _band, _panel, _art_frame, _cord, _ceiling_plate, _glow, _star, GOLD,
+    _band, _fringe, _panel, _art_frame, _cord, _ceiling_plate, _glow, _star, GOLD,
 )
 
 
@@ -235,6 +237,82 @@ def lighting_exitSign(c: Canvas) -> None:
     ax = cx + sw * 0.16
     c.line([(ax, fy), (ax + 9.0, fy)], white, 2.2)
     c.poly([(ax + 8.0, fy - 4.2), (ax + 13.5, fy), (ax + 8.0, fy + 4.2)], fill=white)
+
+
+def rug_kitchenMat(c: Canvas) -> None:
+    """
+    A cotton runner by the kettle: cream, three stripes, a tea ring, fringe.
+
+    The only rug that is pale, and smaller than every woven one: the coir
+    doormat is brown and has no fringe, the rubber mat is black, the guest-room
+    runners are red or grape and span the whole slot. The stripes run the
+    length of the strip because that is what makes a piece of cotton a runner
+    rather than a doormat, and the tea ring near one end is the one mark that
+    says staff room — it is drawn over the stripes, which is what stains do.
+    """
+    ground = mix(P["creamHi"], P["white"], 0.40)
+    x, y, w, h = _band(c, 17.0, ground, r=2.0, w=58.0)
+    _fringe(c, x, y, w, h, mix(P["cream"], P["wood"], 0.35))
+    # Coral either side of mint. Never thinner than 1.4: at 55% a one-pixel
+    # stripe on cream is a scratch, not a stripe.
+    for k, colour in enumerate((P["coral"], P["mint"], P["coral"])):
+        sy = y + h * (0.32 + 0.18 * k)
+        c.line([(x + 3.0, sy), (x + w - 3.0, sy)], colour, 1.4)
+    # The ring a mug's foot leaves: open, so it stays a stain and does not
+    # turn into a coaster.
+    stain = mix(ground, P["woodDk"], 0.48)
+    c.arc(x + w - 11.0, y + h * 0.52, 4.2, 2.6, 20, 340, stain, 1.3)
+
+
+def lighting_stringBulbs(c: Canvas) -> None:
+    """
+    Five party bulbs on a wire slung between two ceiling hooks.
+
+    The one light in the game hung from two points rather than one: every
+    lamp, bulb, pendant and chandelier is a drop, and this is a sag. The wire
+    is a real parabola drawn as a polyline so the bulbs sit on a curve rather
+    than on a bent stick, and each bulb is a coloured disc with its own small
+    glow, because at 40px the wire is gone and a sagging row of coloured dots
+    is all that is left — which is the read.
+    """
+    cx = c.w / 2
+    half = min(c.w * 0.40, 29.0)
+    hook_y, sag = 5.4, 9.0
+    hues = (P["coral"], P["mint"], GOLD, P["sky"], P["creamHi"])
+    n = len(hues)
+    step = half * 2 * 0.76 / (n - 1)
+
+    def wire_y(px: float) -> float:
+        t = (px - cx) / half
+        return hook_y + sag * (1.0 - t * t)
+
+    def bulb_x(i: int) -> float:
+        return cx + (i - (n - 1) / 2) * step
+
+    socket_h, bulb_ry = 3.8, 4.8
+    # The glows first, under everything, one per bulb in the bulb's own hue.
+    for i, colour in enumerate(hues):
+        bx = bulb_x(i)
+        _glow(c, bx, wire_y(bx) + socket_h + bulb_ry, 8.5, colour=colour, steps=2)
+    # Two hooks: a small steel plate on the ceiling, a stub and a ring.
+    for hx in (cx - half, cx + half):
+        _ceiling_plate(c, hx, 7.0, colour=P["metalDk"])
+        c.line([(hx, 3.0), (hx, hook_y - 1.4)], P["metalDk"], 1.4)
+        c.circle(hx, hook_y - 0.2, 1.5, ink=P["ink"], lw=LW_FACE)
+    # The wire, sampled finely enough that the curve has no corners.
+    samples = 24
+    pts = [(cx - half + k * (half * 2) / samples, 0.0) for k in range(samples + 1)]
+    c.line([(px, wire_y(px)) for px, _ in pts], P["ink2"], LW_DETAIL)
+    # The bulbs: a black socket on the wire, a pear of colour under it, and
+    # one highlight so each is a glass globe rather than a flat spot.
+    for i, colour in enumerate(hues):
+        bx = bulb_x(i)
+        wy = wire_y(bx)
+        c.rrect(bx - 1.8, wy - 0.4, 3.6, socket_h, r=0.9, fill=P["black"],
+                ink=P["ink"], lw=LW_FACE)
+        by = wy + socket_h + bulb_ry
+        c.ellipse(bx, by, 4.2, bulb_ry, fill=colour, ink=P["ink"], lw=LW_DETAIL)
+        c.circle(bx - 1.5, by - 1.8, 1.3, fill=tint(colour, 0.55))
 
 
 # ------------------------------------------------------------- maintenance
@@ -516,6 +594,8 @@ PIECES = {
     "flooring_scuffedLino": flooring_scuffedLino,
     "wallArt_starEmployee": wallArt_starEmployee,
     "lighting_exitSign": lighting_exitSign,
+    "rug_kitchenMat": rug_kitchenMat,
+    "lighting_stringBulbs": lighting_stringBulbs,
 
     "flooring_checkerPlate": flooring_checkerPlate,
     "wallArt_breakerPanel": wallArt_breakerPanel,
