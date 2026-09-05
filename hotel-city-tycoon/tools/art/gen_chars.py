@@ -51,9 +51,12 @@ CLIP_POSE = {
     "work": ("work", None),
     "sleep": ("sleep", "sleep"),
     "sit": ("sit", None),
-    "happy": ("idle", "happy"),
-    "angry": ("idle", "cross"),
-    "scared": ("idle", "scared"),
+    # The reactions are poses of their own, not faces pasted on a standing
+    # figure: at the size a character is seen the body carries the reading and
+    # the face confirms it (ART-0 §5).
+    "happy": ("happy", "happy"),
+    "angry": ("angry", "cross"),
+    "scared": ("scared", "scared"),
 }
 
 #: Files the older per-variant layout wrote, cleared when a sheet replaces them.

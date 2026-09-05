@@ -125,9 +125,10 @@ npm run build            # validate → tsc → vite → ختم إصدار SW �
 ## الميزانيات
 
 ```
-initial art       258KB /  3072KB
+js (gzip)         334KB /   350KB
+initial art       253KB /  3072KB
 audio             118KB /   400KB
-all assets       4677KB /  8192KB     # بدقتي 1× و2× معًا
+all assets       7907KB / 12288KB     # بدقتي 1× و2× معًا
 ```
 
 ## قواعد العمل

@@ -405,8 +405,10 @@ await check('no local import claims a .js extension that does not exist', () => 
 // ── AUDIT: `ObjectivesSchema` was used in src/data/index.ts and never
 //    imported, because a string replace matched nothing and nobody checked.
 //    Same shape as the pixi.ts corruption: an edit that silently did nothing.
+//    The parsing moved to src/data/validate.ts in HC-P2-S1 — it is development
+//    only now — but a schema used and not imported is the same silent hole.
 await check('every schema used to parse data is actually imported', () => {
-  const source = fs.readFileSync('src/data/index.ts', 'utf8');
+  const source = fs.readFileSync('src/data/validate.ts', 'utf8');
   const imported = new Set(
     [...source.matchAll(/import\s*\{([^}]+)\}\s*from/g)]
       .flatMap((m) => m[1]!.split(',').map((x) => x.trim().split(/\s+as\s+/)[0]!.trim()))
@@ -416,6 +418,51 @@ await check('every schema used to parse data is actually imported', () => {
   const missing = [...new Set(used)].filter((name) => !imported.has(name));
   assert(missing.length === 0, `used but never imported: ${missing.join(', ')}`);
   assert(used.length > 0, 'no schema is used to parse anything');
+});
+
+// ── AUDIT: HC-P2-S1 stopped parsing the bundled data in the browser, which is
+//    only sound while the schemas stay pure checks. A `.default()` or a
+//    `.transform()` would make the parsed object differ from the raw JSON, and
+//    the game — which now reads the raw JSON — would quietly get the other one.
+await check('no schema transforms the data it validates', () => {
+  const impure = /\.(default|transform|catch|preprocess|pipe)\(|z\.coerce/;
+  for (const name of fs.readdirSync('src/data/schemas')) {
+    if (!name.endsWith('.ts')) continue;
+    const text = fs.readFileSync(`src/data/schemas/${name}`, 'utf8');
+    const hit = impure.exec(text);
+    assert(!hit, `src/data/schemas/${name} uses ${hit?.[0]} — the browser reads the raw JSON, `
+      + 'so a schema that changes its input would hand the game different data than the build checked');
+  }
+});
+
+// ── AUDIT: the same decision, from the other side. Zod is ~20KB gzipped and is
+//    kept out of the bundle by one thing only: nothing reaches the schemas
+//    except through a dynamic import inside an `import.meta.env.DEV` branch.
+//    A plain top-level import anywhere in src/ puts it all back.
+await check('the shipped bundle never reaches the schemas', () => {
+  const offenders: string[] = [];
+  const walk = (dir: string): void => {
+    for (const name of fs.readdirSync(dir)) {
+      const full = `${dir}/${name}`;
+      if (fs.statSync(full).isDirectory()) { walk(full); continue; }
+      if (!/\.tsx?$/.test(name)) continue;
+      if (full.startsWith('src/data/schemas/') || full === 'src/data/validate.ts') continue;
+      // Type-only imports are erased before the bundler sees them, and they
+      // span several lines here, so they are removed whole rather than matched
+      // line by line.
+      const text = fs.readFileSync(full, 'utf8').replace(/^import type\b[\s\S]*?;$/gm, '');
+      for (const m of text.matchAll(/\bfrom '([^']*(?:schemas\/index|data\/validate|^zod$)[^']*)'/g)) {
+        offenders.push(`${full} imports ${m[1]} as a value`);
+      }
+      if (/\bfrom 'zod'/.test(text)) offenders.push(`${full} imports zod as a value`);
+    }
+  };
+  walk('src');
+  assert(offenders.length === 0,
+    `Zod would ship to the player again:\n      ${offenders.join('\n      ')}`);
+  const index = fs.readFileSync('src/data/index.ts', 'utf8');
+  assert(/if \(import\.meta\.env\.DEV\) \{[\s\S]*?import\('\.\/validate\.ts'\)/.test(index),
+    'src/data/index.ts no longer validates the data in development');
 });
 
 await check('every data file is parsed through a schema', () => {
@@ -434,7 +481,8 @@ await check('every data file is parsed through a schema', () => {
   // The animation files are a directory, read whole and parsed through one
   // schema (HC-P2-S1). A file added there is checked without anyone listing it.
   assert(fs.existsSync('data/animations'), 'data/animations is missing');
-  assert(/AnimationSchema\.parse\(/.test(source), 'src/data never parses the animation files');
+  assert(/AnimationSchema\.parse\(/.test(fs.readFileSync('src/data/validate.ts', 'utf8')),
+    'src/data never parses the animation files');
   assert(/readDir\('animations'\)/.test(loader), 'tools/balance-sim/load-data.ts does not read data/animations');
 });
 

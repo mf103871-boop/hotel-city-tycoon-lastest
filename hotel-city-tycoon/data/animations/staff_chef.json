@@ -1,7 +1,7 @@
 {
   "version": 1,
   "tuningStatus": "designed-presentation",
-  "note": "Senior, heavy, unhurried: the slowest of the staff, with a long dwell at the pass and a short one at the tables. Presentation only: nothing here moves a coin, and the simulation never reads this file (HC-P2-S1, DEC-012). Frame counts are what tools/art/gen_chars.py draws; the manifest copies the clip table from here.",
+  "note": "Senior, heavy, unhurried: the slowest of the staff, with a long dwell at the pass and a short one at the tables. Presentation only: nothing here moves a coin, and the simulation never reads this file (HC-P2-S1, DEC-012). Frame counts follow ART-0 §11 and are what tools/art/gen_chars.py draws; the manifest copies the clip table from here.",
   "id": "staff.chef",
   "frame": {
     "w": 48,
@@ -14,19 +14,39 @@
   },
   "clips": {
     "idle": {
-      "frames": 1,
-      "fps": 3,
+      "frames": 4,
+      "fps": 6,
       "loop": true
     },
+    "blink": {
+      "frames": 1,
+      "fps": 8,
+      "loop": false
+    },
     "walk": {
-      "frames": 6,
-      "fps": 10,
+      "frames": 8,
+      "fps": 11,
       "loop": true
     },
     "work": {
-      "frames": 1,
-      "fps": 8,
+      "frames": 6,
+      "fps": 9,
       "loop": true
+    },
+    "happy": {
+      "frames": 4,
+      "fps": 6,
+      "loop": false
+    },
+    "angry": {
+      "frames": 4,
+      "fps": 6,
+      "loop": false
+    },
+    "scared": {
+      "frames": 2,
+      "fps": 4,
+      "loop": false
     }
   },
   "motion": {
@@ -60,5 +80,11 @@
       ]
     }
   },
-  "reactions": {}
+  "reactions": {
+    "guestCheckedIn": "happy",
+    "hazardCleared": "happy",
+    "fireStarted": "scared",
+    "pestAppeared": "scared",
+    "ghostAppeared": "scared"
+  }
 }

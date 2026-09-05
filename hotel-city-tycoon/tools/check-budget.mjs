@@ -19,7 +19,14 @@ const BUDGETS = {
   cssGzipKB: 60,
   initialAssetsKB: 3072,  // room art, effects and ui — what loads at boot
   audioKB: 400,
-  totalAssetsKB: 8192,
+  // 2026-09-05, HC-P2-S1 (ART-3), owner's explicit approval as ART-0 line 485
+  // requires: 8192 -> 12288. The nine animation sheets brought the cast from
+  // 4 poses to 8-9 clips each, and the tree measured 7866KB after — 326KB of
+  // headroom left under the old number, which is not enough to land ART-4
+  // (the remaining decor and the effect sprites) without another rise mid-step.
+  // The characters bundle is lazily loaded, so this is download weight for a
+  // running game, not boot weight; initialAssetsKB is deliberately unchanged.
+  totalAssetsKB: 12288,
 };
 
 const line = '─'.repeat(62);

@@ -1993,10 +1993,10 @@
       "key": "guest.inspector.sheet",
       "bundle": "characters",
       "file": "characters/guest_inspector_sheet.png",
-      "width": 288,
-      "height": 216,
+      "width": 384,
+      "height": 576,
       "required": true,
-      "note": "Sheet: 3 clips x up to 6 frames of 48x72, pivot (24, 70)",
+      "note": "Sheet: 8 clips x up to 8 frames of 48x72, pivot (24, 70)",
       "anim": {
         "frame": {
           "w": 48,
@@ -2007,21 +2007,51 @@
         "clips": {
           "idle": {
             "row": 0,
-            "frames": 1,
-            "fps": 3,
+            "frames": 4,
+            "fps": 6,
             "loop": true
           },
-          "walk": {
+          "blink": {
             "row": 1,
-            "frames": 6,
-            "fps": 10,
+            "frames": 1,
+            "fps": 8,
+            "loop": false
+          },
+          "walk": {
+            "row": 2,
+            "frames": 8,
+            "fps": 11,
             "loop": true
           },
           "sleep": {
-            "row": 2,
-            "frames": 1,
+            "row": 3,
+            "frames": 3,
             "fps": 2,
             "loop": true
+          },
+          "sit": {
+            "row": 4,
+            "frames": 2,
+            "fps": 2,
+            "loop": true
+          },
+          "happy": {
+            "row": 5,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "angry": {
+            "row": 6,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "scared": {
+            "row": 7,
+            "frames": 2,
+            "fps": 4,
+            "loop": false
           }
         }
       }
@@ -2039,10 +2069,10 @@
       "key": "guest.standard.sheet",
       "bundle": "characters",
       "file": "characters/guest_standard_sheet.png",
-      "width": 288,
-      "height": 216,
+      "width": 384,
+      "height": 576,
       "required": true,
-      "note": "Sheet: 3 clips x up to 6 frames of 48x72, pivot (24, 70)",
+      "note": "Sheet: 8 clips x up to 8 frames of 48x72, pivot (24, 70)",
       "anim": {
         "frame": {
           "w": 48,
@@ -2053,21 +2083,51 @@
         "clips": {
           "idle": {
             "row": 0,
-            "frames": 1,
-            "fps": 3,
+            "frames": 4,
+            "fps": 6,
             "loop": true
           },
-          "walk": {
+          "blink": {
             "row": 1,
-            "frames": 6,
-            "fps": 10,
+            "frames": 1,
+            "fps": 8,
+            "loop": false
+          },
+          "walk": {
+            "row": 2,
+            "frames": 8,
+            "fps": 11,
             "loop": true
           },
           "sleep": {
-            "row": 2,
-            "frames": 1,
+            "row": 3,
+            "frames": 3,
             "fps": 2,
             "loop": true
+          },
+          "sit": {
+            "row": 4,
+            "frames": 2,
+            "fps": 2,
+            "loop": true
+          },
+          "happy": {
+            "row": 5,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "angry": {
+            "row": 6,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "scared": {
+            "row": 7,
+            "frames": 2,
+            "fps": 4,
+            "loop": false
           }
         }
       }
@@ -3120,10 +3180,10 @@
       "key": "staff.bartender.sheet",
       "bundle": "characters",
       "file": "characters/staff_bartender_sheet.png",
-      "width": 288,
-      "height": 216,
+      "width": 384,
+      "height": 504,
       "required": true,
-      "note": "Sheet: 3 clips x up to 6 frames of 48x72, pivot (24, 70)",
+      "note": "Sheet: 7 clips x up to 8 frames of 48x72, pivot (24, 70)",
       "anim": {
         "frame": {
           "w": 48,
@@ -3134,21 +3194,45 @@
         "clips": {
           "idle": {
             "row": 0,
-            "frames": 1,
-            "fps": 3,
+            "frames": 4,
+            "fps": 6,
             "loop": true
           },
-          "walk": {
+          "blink": {
             "row": 1,
-            "frames": 6,
-            "fps": 10,
+            "frames": 1,
+            "fps": 8,
+            "loop": false
+          },
+          "walk": {
+            "row": 2,
+            "frames": 8,
+            "fps": 11,
             "loop": true
           },
           "work": {
-            "row": 2,
-            "frames": 1,
-            "fps": 8,
+            "row": 3,
+            "frames": 6,
+            "fps": 9,
             "loop": true
+          },
+          "happy": {
+            "row": 4,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "angry": {
+            "row": 5,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "scared": {
+            "row": 6,
+            "frames": 2,
+            "fps": 4,
+            "loop": false
           }
         }
       }
@@ -3166,10 +3250,10 @@
       "key": "staff.chef.sheet",
       "bundle": "characters",
       "file": "characters/staff_chef_sheet.png",
-      "width": 288,
-      "height": 216,
+      "width": 384,
+      "height": 504,
       "required": true,
-      "note": "Sheet: 3 clips x up to 6 frames of 48x72, pivot (24, 70)",
+      "note": "Sheet: 7 clips x up to 8 frames of 48x72, pivot (24, 70)",
       "anim": {
         "frame": {
           "w": 48,
@@ -3180,21 +3264,45 @@
         "clips": {
           "idle": {
             "row": 0,
-            "frames": 1,
-            "fps": 3,
+            "frames": 4,
+            "fps": 6,
             "loop": true
           },
-          "walk": {
+          "blink": {
             "row": 1,
-            "frames": 6,
-            "fps": 10,
+            "frames": 1,
+            "fps": 8,
+            "loop": false
+          },
+          "walk": {
+            "row": 2,
+            "frames": 8,
+            "fps": 11,
             "loop": true
           },
           "work": {
-            "row": 2,
-            "frames": 1,
-            "fps": 8,
+            "row": 3,
+            "frames": 6,
+            "fps": 9,
             "loop": true
+          },
+          "happy": {
+            "row": 4,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "angry": {
+            "row": 5,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "scared": {
+            "row": 6,
+            "frames": 2,
+            "fps": 4,
+            "loop": false
           }
         }
       }
@@ -3212,10 +3320,10 @@
       "key": "staff.cleaner.sheet",
       "bundle": "characters",
       "file": "characters/staff_cleaner_sheet.png",
-      "width": 288,
-      "height": 216,
+      "width": 384,
+      "height": 504,
       "required": true,
-      "note": "Sheet: 3 clips x up to 6 frames of 48x72, pivot (24, 70)",
+      "note": "Sheet: 7 clips x up to 8 frames of 48x72, pivot (24, 70)",
       "anim": {
         "frame": {
           "w": 48,
@@ -3226,21 +3334,45 @@
         "clips": {
           "idle": {
             "row": 0,
-            "frames": 1,
-            "fps": 3,
+            "frames": 4,
+            "fps": 6,
             "loop": true
           },
-          "walk": {
+          "blink": {
             "row": 1,
-            "frames": 6,
-            "fps": 10,
+            "frames": 1,
+            "fps": 8,
+            "loop": false
+          },
+          "walk": {
+            "row": 2,
+            "frames": 8,
+            "fps": 11,
             "loop": true
           },
           "work": {
-            "row": 2,
-            "frames": 1,
-            "fps": 8,
+            "row": 3,
+            "frames": 6,
+            "fps": 9,
             "loop": true
+          },
+          "happy": {
+            "row": 4,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "angry": {
+            "row": 5,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "scared": {
+            "row": 6,
+            "frames": 2,
+            "fps": 4,
+            "loop": false
           }
         }
       }
@@ -3258,10 +3390,10 @@
       "key": "staff.lifeguard.sheet",
       "bundle": "characters",
       "file": "characters/staff_lifeguard_sheet.png",
-      "width": 288,
-      "height": 216,
+      "width": 384,
+      "height": 504,
       "required": true,
-      "note": "Sheet: 3 clips x up to 6 frames of 48x72, pivot (24, 70)",
+      "note": "Sheet: 7 clips x up to 8 frames of 48x72, pivot (24, 70)",
       "anim": {
         "frame": {
           "w": 48,
@@ -3272,21 +3404,45 @@
         "clips": {
           "idle": {
             "row": 0,
-            "frames": 1,
-            "fps": 3,
+            "frames": 4,
+            "fps": 6,
             "loop": true
           },
-          "walk": {
+          "blink": {
             "row": 1,
-            "frames": 6,
-            "fps": 10,
+            "frames": 1,
+            "fps": 8,
+            "loop": false
+          },
+          "walk": {
+            "row": 2,
+            "frames": 8,
+            "fps": 11,
             "loop": true
           },
           "work": {
-            "row": 2,
-            "frames": 1,
-            "fps": 8,
+            "row": 3,
+            "frames": 6,
+            "fps": 9,
             "loop": true
+          },
+          "happy": {
+            "row": 4,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "angry": {
+            "row": 5,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "scared": {
+            "row": 6,
+            "frames": 2,
+            "fps": 4,
+            "loop": false
           }
         }
       }
@@ -3304,10 +3460,10 @@
       "key": "staff.receptionist.sheet",
       "bundle": "characters",
       "file": "characters/staff_receptionist_sheet.png",
-      "width": 288,
-      "height": 216,
+      "width": 384,
+      "height": 504,
       "required": true,
-      "note": "Sheet: 3 clips x up to 6 frames of 48x72, pivot (24, 70)",
+      "note": "Sheet: 7 clips x up to 8 frames of 48x72, pivot (24, 70)",
       "anim": {
         "frame": {
           "w": 48,
@@ -3318,21 +3474,45 @@
         "clips": {
           "idle": {
             "row": 0,
-            "frames": 1,
-            "fps": 3,
+            "frames": 4,
+            "fps": 6,
             "loop": true
           },
-          "walk": {
+          "blink": {
             "row": 1,
-            "frames": 6,
-            "fps": 10,
+            "frames": 1,
+            "fps": 8,
+            "loop": false
+          },
+          "walk": {
+            "row": 2,
+            "frames": 8,
+            "fps": 11,
             "loop": true
           },
           "work": {
-            "row": 2,
-            "frames": 1,
-            "fps": 8,
+            "row": 3,
+            "frames": 6,
+            "fps": 9,
             "loop": true
+          },
+          "happy": {
+            "row": 4,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "angry": {
+            "row": 5,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "scared": {
+            "row": 6,
+            "frames": 2,
+            "fps": 4,
+            "loop": false
           }
         }
       }
@@ -3350,10 +3530,10 @@
       "key": "staff.trainer.sheet",
       "bundle": "characters",
       "file": "characters/staff_trainer_sheet.png",
-      "width": 288,
-      "height": 216,
+      "width": 384,
+      "height": 504,
       "required": true,
-      "note": "Sheet: 3 clips x up to 6 frames of 48x72, pivot (24, 70)",
+      "note": "Sheet: 7 clips x up to 8 frames of 48x72, pivot (24, 70)",
       "anim": {
         "frame": {
           "w": 48,
@@ -3364,21 +3544,45 @@
         "clips": {
           "idle": {
             "row": 0,
-            "frames": 1,
-            "fps": 3,
+            "frames": 4,
+            "fps": 6,
             "loop": true
           },
-          "walk": {
+          "blink": {
             "row": 1,
-            "frames": 6,
-            "fps": 10,
+            "frames": 1,
+            "fps": 8,
+            "loop": false
+          },
+          "walk": {
+            "row": 2,
+            "frames": 8,
+            "fps": 11,
             "loop": true
           },
           "work": {
-            "row": 2,
-            "frames": 1,
-            "fps": 8,
+            "row": 3,
+            "frames": 6,
+            "fps": 9,
             "loop": true
+          },
+          "happy": {
+            "row": 4,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "angry": {
+            "row": 5,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "scared": {
+            "row": 6,
+            "frames": 2,
+            "fps": 4,
+            "loop": false
           }
         }
       }
@@ -3396,10 +3600,10 @@
       "key": "staff.usher.sheet",
       "bundle": "characters",
       "file": "characters/staff_usher_sheet.png",
-      "width": 288,
-      "height": 216,
+      "width": 384,
+      "height": 504,
       "required": true,
-      "note": "Sheet: 3 clips x up to 6 frames of 48x72, pivot (24, 70)",
+      "note": "Sheet: 7 clips x up to 8 frames of 48x72, pivot (24, 70)",
       "anim": {
         "frame": {
           "w": 48,
@@ -3410,21 +3614,45 @@
         "clips": {
           "idle": {
             "row": 0,
-            "frames": 1,
-            "fps": 3,
+            "frames": 4,
+            "fps": 6,
             "loop": true
           },
-          "walk": {
+          "blink": {
             "row": 1,
-            "frames": 6,
-            "fps": 10,
+            "frames": 1,
+            "fps": 8,
+            "loop": false
+          },
+          "walk": {
+            "row": 2,
+            "frames": 8,
+            "fps": 11,
             "loop": true
           },
           "work": {
-            "row": 2,
-            "frames": 1,
-            "fps": 8,
+            "row": 3,
+            "frames": 6,
+            "fps": 9,
             "loop": true
+          },
+          "happy": {
+            "row": 4,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "angry": {
+            "row": 5,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "scared": {
+            "row": 6,
+            "frames": 2,
+            "fps": 4,
+            "loop": false
           }
         }
       }

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "tuningStatus": "designed-presentation",
-  "note": "Everybody who checks in. Average pace with the widest spread between individuals, so two of them in a queue never move in step; loses patience past 60% of the wait. Presentation only: nothing here moves a coin, and the simulation never reads this file (HC-P2-S1, DEC-012). Frame counts are what tools/art/gen_chars.py draws; the manifest copies the clip table from here.",
+  "note": "Everybody who checks in. Average pace with the widest spread between individuals, so two of them in a queue never move in step; loses patience past 60% of the wait. Presentation only: nothing here moves a coin, and the simulation never reads this file (HC-P2-S1, DEC-012). Frame counts follow ART-0 §11 and are what tools/art/gen_chars.py draws; the manifest copies the clip table from here.",
   "id": "guest.standard",
   "frame": {
     "w": 48,
@@ -14,19 +14,44 @@
   },
   "clips": {
     "idle": {
-      "frames": 1,
-      "fps": 3,
+      "frames": 4,
+      "fps": 6,
       "loop": true
     },
+    "blink": {
+      "frames": 1,
+      "fps": 8,
+      "loop": false
+    },
     "walk": {
-      "frames": 6,
-      "fps": 10,
+      "frames": 8,
+      "fps": 11,
       "loop": true
     },
     "sleep": {
-      "frames": 1,
+      "frames": 3,
       "fps": 2,
       "loop": true
+    },
+    "sit": {
+      "frames": 2,
+      "fps": 2,
+      "loop": true
+    },
+    "happy": {
+      "frames": 4,
+      "fps": 6,
+      "loop": false
+    },
+    "angry": {
+      "frames": 4,
+      "fps": 6,
+      "loop": false
+    },
+    "scared": {
+      "frames": 2,
+      "fps": 4,
+      "loop": false
     }
   },
   "motion": {
@@ -58,5 +83,15 @@
     },
     "angryBelow": 40
   },
-  "reactions": {}
+  "reactions": {
+    "guestCheckedOut": "happy",
+    "guestLeftAngry": "angry",
+    "guestPoked": "scared",
+    "fireStarted": "scared",
+    "pestAppeared": "scared",
+    "ghostAppeared": "scared",
+    "hazardCleared": "happy",
+    "inspectorFound": "happy",
+    "desireUnmet": "angry"
+  }
 }

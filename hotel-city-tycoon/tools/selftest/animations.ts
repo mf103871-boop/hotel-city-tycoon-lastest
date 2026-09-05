@@ -18,6 +18,7 @@ import { loadSimData } from '../balance-sim/load-data.ts';
 import { createMotion, resetMotion, step, snapTo } from '../../src/render/anim/motion.ts';
 import { createPlayer, advance } from '../../src/render/anim/clipPlayer.ts';
 import { createScheduler, tick } from '../../src/render/anim/scheduler.ts';
+import { readPng } from './png.ts';
 
 let passed = 0;
 const failures: string[] = [];
@@ -143,6 +144,218 @@ check('the cast is nine different people, not one person copied', () => {
     assert(a.motion.speedJitter > 0, `${a.id} has no per-individual speed jitter`);
     const [lo, hi] = a.behaviour.blinkEveryMs;
     assert(hi > lo, `${a.id} blinks on a fixed timer — ART-0 §11 asks for varied timing`);
+  }
+});
+
+// ------------------------------------------------------------- the drawn frames
+// Everything above reads the contract. These read the pixels the contract
+// produced, because the rules ART-0 §11 sets for a frame — the figure does not
+// change height, the identity does not change, nothing is cut off by the cell —
+// are properties of the image and cannot be checked any other way.
+
+/** A frame of a sheet, addressable by (clip, frame) and pixel. */
+interface Sheet {
+  key: string; tier: number; fw: number; fh: number; pivotY: number;
+  clips: Record<string, { row: number; frames: number; fps: number; loop: boolean }>;
+  alpha: (col: number, row: number, x: number, y: number) => number;
+  colour: (col: number, row: number, x: number, y: number) => number;
+}
+
+/** Every character sheet on disk, at both resolutions. */
+function sheets(): Sheet[] {
+  const manifest = JSON.parse(fs.readFileSync('public/assets/manifest.json', 'utf8'));
+  const out: Sheet[] = [];
+  for (const entry of manifest.entries as { key: string; file: string; anim?: Sheet['clips'] & object }[]) {
+    const anim = (entry as unknown as { anim?: { frame: { w: number; h: number; pivotY: number }; clips: Sheet['clips'] } }).anim;
+    if (!anim) continue;
+    for (const [dir, tier] of [['public/assets', 1], ['public/assets/@2x', 2]] as const) {
+      const file = `${dir}/${entry.file}`;
+      if (!fs.existsSync(file)) continue;
+      const png = readPng(file);
+      const fw = anim.frame.w * tier;
+      const fh = anim.frame.h * tier;
+      const at = (col: number, row: number, x: number, y: number) =>
+        (((row * fh + y) * png.width) + col * fw + x) * png.channels;
+      out.push({
+        key: entry.key, tier, fw, fh, pivotY: anim.frame.pivotY * tier, clips: anim.clips,
+        alpha: (c, r, x, y) => (png.channels === 4 ? png.data[at(c, r, x, y) + 3]! : 255),
+        colour: (c, r, x, y) => {
+          const o = at(c, r, x, y);
+          return (png.data[o]! << 16) | (png.data[o + 1]! << 8) | png.data[o + 2]!;
+        },
+      });
+    }
+  }
+  return out;
+}
+
+/** Anything the eye reads as drawn, rather than an anti-aliased tail. */
+const SOLID = 128;
+const sheetsOnDisk = sheets();
+
+check('the pivot never moves: every frame of a clip stands on the same line', () => {
+  // ART-0 line 479 and the master reference §5A: the figure may not change
+  // height between frames. Measured at the feet, because that is the edge the
+  // renderer pins to the floor — a bottom that drifts one pixel is a character
+  // who sinks into the carpet on frame three.
+  let worst = 0;
+  for (const s of sheetsOnDisk) {
+    for (const [name, clip] of Object.entries(s.clips)) {
+      const bottoms: number[] = [];
+      for (let i = 0; i < clip.frames; i++) {
+        let bottom = -1;
+        for (let y = s.fh - 1; y >= 0 && bottom < 0; y--) {
+          for (let x = 0; x < s.fw; x++) if (s.alpha(i, clip.row, x, y) > 8) { bottom = y; break; }
+        }
+        assert(bottom >= 0, `${s.key} @${s.tier}x ${name} frame ${i} is empty`);
+        bottoms.push(bottom);
+      }
+      const spread = Math.max(...bottoms) - Math.min(...bottoms);
+      assert(spread <= 1, `${s.key} @${s.tier}x ${name} feet move ${spread}px across the clip (${bottoms.join(', ')})`);
+      worst = Math.max(worst, spread);
+    }
+  }
+  console.log(`      ${sheetsOnDisk.length} sheets, worst drift ${worst}px`);
+});
+
+check('a loop wraps no harder than it steps', () => {
+  // "First and last frame agree" cannot mean "are the same picture" — the last
+  // frame of a stride is one step before the first, not equal to it. What has
+  // to hold is that the step from the last frame back to the first is no bigger
+  // than the steps inside the cycle, which is exactly what stops a walk from
+  // hitching once per revolution.
+  let worst = 0; let worstAt = '';
+  for (const s of sheetsOnDisk) {
+    for (const [name, clip] of Object.entries(s.clips)) {
+      if (!clip.loop || clip.frames < 3) continue;
+      const distance = (a: number, b: number) => {
+        let sum = 0;
+        for (let y = 0; y < s.fh; y++) for (let x = 0; x < s.fw; x++) {
+          sum += Math.abs(s.alpha(a, clip.row, x, y) - s.alpha(b, clip.row, x, y));
+        }
+        return sum / (s.fw * s.fh);
+      };
+      let biggest = 0;
+      for (let i = 0; i + 1 < clip.frames; i++) biggest = Math.max(biggest, distance(i, i + 1));
+      const wrap = distance(clip.frames - 1, 0);
+      const ratio = biggest === 0 ? 0 : wrap / biggest;
+      assert(ratio <= 1.5, `${s.key} @${s.tier}x ${name} jumps ${ratio.toFixed(2)}x its own step size when it loops`);
+      if (ratio > worst) { worst = ratio; worstAt = `${s.key} ${name}`; }
+    }
+  }
+  console.log(`      worst wrap ${worst.toFixed(2)}x the largest interior step (${worstAt})`);
+});
+
+check('the character is the same person in every frame of every clip', () => {
+  // ART-0 §11: the identity, the height and the clothes do not change between
+  // frames. The generator guarantees it structurally — every frame is drawn
+  // from one `Person` — and this is the proof at the pixels: each colour that
+  // makes up 3% or more of the idle frame is still somewhere in every other
+  // frame the character has, sleeping and cheering included.
+  //
+  // Colours are compared four bits to a channel. At an exact match the two
+  // tiers disagree about nothing but their anti-aliasing, and a skin tone
+  // sampled at @2x is a hundred neighbouring values rather than one.
+  const bucket = (c: number) => (((c >> 20) & 0xf) << 8) | (((c >> 12) & 0xf) << 4) | ((c >> 4) & 0xf);
+  let marksChecked = 0;
+  for (const s of sheetsOnDisk) {
+    const idle = s.clips.idle;
+    assert(idle, `${s.key} has no idle row to take an identity from`);
+    const tally = (col: number, row: number): Set<number> => {
+      const m = new Set<number>();
+      for (let y = 0; y < s.fh; y++) for (let x = 0; x < s.fw; x++) {
+        if (s.alpha(col, row, x, y) < 250) continue;
+        m.add(bucket(s.colour(col, row, x, y)));
+      }
+      return m;
+    };
+    const counts = new Map<number, number>();
+    let total = 0;
+    for (let y = 0; y < s.fh; y++) for (let x = 0; x < s.fw; x++) {
+      if (s.alpha(0, idle.row, x, y) < 250) continue;
+      const k = bucket(s.colour(0, idle.row, x, y));
+      counts.set(k, (counts.get(k) ?? 0) + 1);
+      total++;
+    }
+    const marks = [...counts.entries()].filter(([, n]) => n / total >= 0.03).map(([k]) => k);
+    assert(marks.length >= 4, `${s.key} @${s.tier}x has only ${marks.length} colours to be recognised by`);
+    for (const [name, clip] of Object.entries(s.clips)) {
+      for (let i = 0; i < clip.frames; i++) {
+        const t = tally(i, clip.row);
+        for (const k of marks) {
+          assert(t.has(k), `${s.key} @${s.tier}x loses colour ${k.toString(16)} in ${name} frame ${i}`);
+        }
+        marksChecked += marks.length;
+      }
+    }
+  }
+  console.log(`      ${marksChecked} colour-in-frame checks across ${sheetsOnDisk.length} sheets`);
+});
+
+check('no character is cut off by the edge of its own cell', () => {
+  // A figure that touches the left, right or top of its 48x72 cell has been
+  // shaved by it — the chef's hat and the sleeper's pillow both were, before
+  // this test existed. The bottom row is exempt and deliberately so: the pivot
+  // is at y=70 of 72 and the contact shadow is what fills the last two rows.
+  let sides = 0;
+  for (const s of sheetsOnDisk) {
+    for (const [name, clip] of Object.entries(s.clips)) {
+      for (let i = 0; i < clip.frames; i++) {
+        for (let y = 0; y < s.fh; y++) {
+          assert(s.alpha(i, clip.row, 0, y) < SOLID, `${s.key} @${s.tier}x ${name} frame ${i} is cut off at the left edge (row ${y})`);
+          assert(s.alpha(i, clip.row, s.fw - 1, y) < SOLID, `${s.key} @${s.tier}x ${name} frame ${i} is cut off at the right edge (row ${y})`);
+        }
+        for (let x = 0; x < s.fw; x++) {
+          assert(s.alpha(i, clip.row, x, 0) < SOLID, `${s.key} @${s.tier}x ${name} frame ${i} is cut off at the top edge (column ${x})`);
+        }
+        sides += 3;
+      }
+    }
+  }
+  console.log(`      ${sides} frame edges clear`);
+});
+
+check('a standing character has something on the floor line in every frame', () => {
+  // The renderer pins pivotY to the floor. If the row at the pivot is empty
+  // the character is drawn hovering, which is the failure the old fixed-frame
+  // renderer hid because nothing ever moved.
+  let frames = 0;
+  for (const s of sheetsOnDisk) {
+    for (const [name, clip] of Object.entries(s.clips)) {
+      // A sleeper is lying on a bed the room draws; its own feet row is quilt.
+      if (name === 'sleep') continue;
+      for (let i = 0; i < clip.frames; i++) {
+        let hit = false;
+        for (let x = 0; x < s.fw && !hit; x++) if (s.alpha(i, clip.row, x, s.pivotY) > 8) hit = true;
+        assert(hit, `${s.key} @${s.tier}x ${name} frame ${i} has nothing at the pivot row — the character floats`);
+        frames++;
+      }
+    }
+  }
+  console.log(`      ${frames} standing frames touch their own floor line`);
+});
+
+check('no clip is the same picture repeated', () => {
+  // A two-frame clip whose frames are identical is a still image wearing an
+  // animation's frame count, and it costs a sheet column to say nothing. The
+  // sit clip was exactly this until its breath was drawn.
+  for (const s of sheetsOnDisk) {
+    for (const [name, clip] of Object.entries(s.clips)) {
+      if (clip.frames < 2) continue;
+      const digest = (i: number) => {
+        let h = 2166136261;
+        for (let y = 0; y < s.fh; y++) for (let x = 0; x < s.fw; x++) {
+          h = Math.imul(h ^ s.alpha(i, clip.row, x, y), 16777619);
+          h = Math.imul(h ^ s.colour(i, clip.row, x, y), 16777619);
+        }
+        return h >>> 0;
+      };
+      const seen = new Set<number>();
+      for (let i = 0; i < clip.frames; i++) seen.add(digest(i));
+      // A cycle that goes out and comes back repeats a frame on the way home;
+      // what is forbidden is a clip that never draws a second picture at all.
+      assert(seen.size >= 2, `${s.key} @${s.tier}x ${name} draws one picture ${clip.frames} times`);
+    }
   }
 });
 
