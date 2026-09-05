@@ -258,10 +258,12 @@ def rug_kitchenMat(c: Canvas) -> None:
     for k, colour in enumerate((P["coral"], P["mint"], P["coral"])):
         sy = y + h * (0.32 + 0.18 * k)
         c.line([(x + 3.0, sy), (x + w - 3.0, sy)], colour, 1.4)
-    # The ring a mug's foot leaves: open, so it stays a stain and does not
-    # turn into a coaster.
-    stain = mix(ground, P["woodDk"], 0.48)
-    c.arc(x + w - 11.0, y + h * 0.52, 4.2, 2.6, 20, 340, stain, 1.3)
+    # The ring a mug's foot leaves: tea-brown, wide enough to have a hole in
+    # it at 55%, and open, so it stays a stain and does not turn into a
+    # coaster. Its first draft was smaller and cream-and-coral, and read as a
+    # fourth stripe.
+    stain = mix(P["woodDk"], ground, 0.28)
+    c.arc(x + w - 11.0, y + h * 0.50, 5.6, 3.6, 25, 335, stain, 1.3)
 
 
 def lighting_stringBulbs(c: Canvas) -> None:

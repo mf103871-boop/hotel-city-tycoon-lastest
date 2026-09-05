@@ -1,30 +1,56 @@
 """
-The pieces only the gem suites sell — here, the executive suite's club look.
+The pieces only the gem suites sell: the honeymoon suite, the executive, the
+luxury suite and the presidential.
 
-The executive is a boardroom that happens to have a bed in it: charcoal
-leather, dark walnut, brass, white linen and one navy accent, against the sand
-wall it is built on. Nothing in it is gilt or crystal — that is the
-presidential's register — and nothing is timber-and-rattan, which is the
-deluxe's. What has to survive the 55% composite is the outline, because that
-is all a bed, a lamp or a plaque has left at 40px:
+Each suite is a register of its own. The honeymoon is blush and white — pink
+drapes, roses, petals on white bedding — and nothing in it is dark. The
+executive is a boardroom that happens to have a bed in it: charcoal leather,
+dark walnut, brass, white linen and one navy accent, against the sand wall it
+is built on, and nothing in it is gilt or crystal. The luxury suite is the
+emperor bed's room, white fur and gold braid. The presidential is crimson,
+navy and a great deal of gold, and it is allowed to be too much. What has to
+survive the 55% composite in every one of them is the outline, because that
+is all a bed, a lamp, a rug or a plaque has left at 40px:
 
+*   `bed_petalCanopy` is the one bed whose roof *sags*: two pink festoons
+    slung between white posts, a scalloped hem following the sag and a tail
+    of fabric down each end post. The built-in canopy's roof is a flat rose
+    rectangle with a straight valance; the four-poster is bare posts.
 *   `bed_leatherWingback` is the one bed whose headboard has *ears*: a tall
     dark board with the two top corners flared out like a club chair. The
     king's board is a cream buttoned grid, the queen's a plain pad, the
-    canopy and the four-poster have posts, the floating bed has no legs, the
-    sleigh has curls at both ends and the emperor is an arch in gold.
+    floating bed has no legs, the sleigh has curls at both ends and the
+    emperor is an arch in gold.
+*   `bed_stateBed` is the one bed with a *crown* over it: a gold corona at
+    the top centre, two navy drapes sweeping out from under it in a Λ behind
+    the bed, and a two-step gilt plinth under everything. No other bed has a
+    crown, drapes falling from one point, or a stepped base.
+*   `rug_roseGarland` and `rug_ermineHearth` are the two rugs that are not
+    straight-edged strips. The garland is an *oval* whose edge is a chain of
+    pink blooms; the hearth rug is a white *cloud* with black dashes on it.
+    Every other rug is a woven rectangle or runner with a fringe, in red,
+    lavender, green, brown or coir, and the latte rug is a plain brown disc.
+*   `lighting_roseChandelier` is the branched fitting whose arms end in pink
+    *balls* rather than candle sticks: three glass roses on gold arms under
+    a short chain. The crystal chandeliers are tiers of drops, the
+    candelabra an iron ring, and the pendants are single shades.
 *   `lighting_bankersPendant` is the one lamp that is a flat *lens* on a
     stick: a wide shallow green shade on a brass rod. The lamp is a cream
     cone, the pendant a coral half-dome, the bulb a bare globe, the lantern a
     box on a chain, the rattan a bell, and every chandelier is branched.
 *   `wallArt_worldClocks` is the one wall piece with no picture in it: a
-    dark plaque wider than it is tall carrying three brass rings. Every
-    other wallArt is a framed scene, an oval portrait, a spiky sunburst, a
-    map or a white screen.
+    dark plaque wider than it is tall carrying three brass rings.
+*   `wallArt_crossedStandards` is the one wall piece that is an *X*: two
+    dark poles crossed under a gold medallion, a crimson and a navy banner
+    hanging from the upper arms. It has no frame, like the sunburst, but
+    the sunburst is a star of rays and this is a diagonal cross carrying two
+    flags. Every other wallArt is a framed scene, an oval portrait, a map, a
+    white screen or a string of pennants.
 
-Anchors as everywhere: the bed stands on the bottom edge with a contact
-shadow, the pendant starts its rod at y = 0, the plaque is centred through
-`_art_frame`. Sizes come from `c.w` / `c.h`.
+Anchors as everywhere: beds and rugs stand on the bottom edge (the beds
+with a contact shadow), the fittings start their rod or chain at y = 0, the
+plaque is centred through `_art_frame` and the standards are centred where
+`_art_frame` would put a picture. Sizes come from `c.w` / `c.h`.
 """
 from __future__ import annotations
 
@@ -32,8 +58,11 @@ from hcstyle import (
     P, Canvas, LW_PROP, LW_DETAIL, LW_FACE,
     shade, tint, mix, math,
 )
-from decor_props import _stand, _legs, _bed_body, _pillow
-from decor_surfaces import _art_frame, _cord, _ceiling_plate, _glow, GOLD, GOLD_DK
+from decor_props import _stand, _legs, _bed_body, _pillow, _blade
+from decor_surfaces import (
+    _art_frame, _cord, _chain, _ceiling_plate, _glow, _star,
+    GOLD, GOLD_DK, GOLD_HI, BAND_CY,
+)
 
 #: Dark walnut. The palette's darkest wood is `woodDk`, an orange oak; pulled
 #: toward the navy of `ink2` from the brown of `hairBrown` it goes the
@@ -52,6 +81,24 @@ NAVY = shade(P["wallNavy"], 0.15)
 #: Bottle green for the shade: the plant green pulled toward navy, which is
 #: how glass that colour looks with a bulb behind it rather than a lawn.
 BOTTLE = mix(P["greenDk"], P["ink2"], 0.30)
+
+#: Blush. The honeymoon wall is `wallRose`, and a drape the same pink as the
+#: wall it hangs in front of is invisible; pulled a third of the way toward
+#: `hairPink` it is a pink that white posts and white bedding separate from.
+BLUSH = mix(P["wallRose"], P["hairPink"], 0.30)
+
+#: Rose-pink for blooms and petals: `hairPink` warmed toward coral, so a
+#: three-pixel bloom on a cream rug is a dot of colour rather than a smudge.
+ROSE = mix(P["hairPink"], P["coral"], 0.35)
+
+#: Whitewashed timber for the petal bed's frame: `woodPale` most of the way to
+#: white, which reads as painted wood where plain `white` read as plaster.
+WHITEWASH = mix(P["woodPale"], P["white"], 0.55)
+
+#: Crimson. `carpet` is a rose red and `wallRed` a tomato; between the two,
+#: shaded a step, is the velvet a state bed is quilted in and a standard is
+#: sewn from.
+CRIMSON = shade(mix(P["wallRed"], P["carpet"], 0.45), 0.08)
 
 
 # ------------------------------------------------------------------ the bed
