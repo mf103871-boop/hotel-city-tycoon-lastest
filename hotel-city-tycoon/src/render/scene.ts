@@ -8,7 +8,7 @@
  * That keeps the renderer a pure function of state, which is what makes it
  * possible to replace the placeholder graphics in P3b without touching logic.
  */
-import { Graphics } from 'pixi.js';
+import { Graphics, Sprite } from 'pixi.js';
 import type { RendererHandle } from './app.ts';
 import { applyCamera } from './app.ts';
 import { RoomView } from './roomView.ts';
@@ -23,7 +23,8 @@ import {
   fitCamera, clampCamera, pan, zoomAt, visibleRect, screenToWorld, worldToScreen,
 } from './camera.ts';
 import { GestureTracker } from './gestures.ts';
-import { Backdrop, INK, NIGHT, SKY, nightfall } from './backdrop.ts';
+import { Backdrop, INK, NIGHT, NIGHT_TINT, SKY, nightfall } from './backdrop.ts';
+import { texture, hasTexture } from './assets.ts';
 import { FrameSampler, report } from './perf.ts';
 import type { CameraState, Viewport, WorldBounds, Insets } from './camera.ts';
 
@@ -85,6 +86,9 @@ export class HotelScene {
   private readonly frontDecor: KeyedPool<DecorView>;
   /** Reused across frames: the keys the furniture pool should hold this tick. */
   private readonly frontKeys: string[] = [];
+  private readonly roomFronts: KeyedPool<Sprite>;
+  /** Reused across frames: which rooms actually have a front layer this tick. */
+  private readonly frontRoomIds: string[] = [];
   /** One box, reused every frame: the render loop allocates nothing. */
   private readonly cullBox = { x: 0, y: 0, width: 0, height: 0 };
 
@@ -157,6 +161,25 @@ export class HotelScene {
       activate: (v) => { v.reset(); },
       reset: (v) => { v.visible = false; },
       prewarm: 32,
+    });
+
+    /*
+     * The counters people stand behind.
+     *
+     * A reception desk is not part of the sorted band: nobody in the room is
+     * ever in front of it, which is what makes it the front of the room. So it
+     * is one sprite per room in its own layer above the band, rather than a
+     * piece competing for a place in it.
+     */
+    this.roomFronts = new KeyedPool<Sprite>({
+      create: () => {
+        const s = new Sprite();
+        handle.layers.roomFront.addChild(s);
+        return s;
+      },
+      activate: (s) => { s.visible = true; s.renderable = true; },
+      reset: (s) => { s.visible = false; },
+      prewarm: 4,
     });
 
     handle.layers.street.addChild(this.grid);
@@ -364,6 +387,29 @@ export class HotelScene {
       const view = this.rooms.get(room.id);
       if (!view) continue;
       for (const piece of view.front) this.frontDecor.get(piece.key)?.update(piece);
+    }
+
+    // Only the rooms that drew a front layer get a sprite. A room whose art is
+    // still loading has no texture yet and is left out until it arrives, which
+    // is the same thing that happens to the room's own picture.
+    this.frontRoomIds.length = 0;
+    for (const room of this.snapshot.rooms) {
+      if (room.frontKey && hasTexture(room.frontKey)) this.frontRoomIds.push(room.id);
+    }
+    this.roomFronts.sync(this.frontRoomIds);
+    for (const room of this.snapshot.rooms) {
+      const sprite = this.roomFronts.get(room.id);
+      if (!sprite || !room.frontKey) continue;
+      const art = texture(room.frontKey);
+      if (!art) continue;
+      const world = roomWorldRect(room.rect, this.snapshot.gridH);
+      sprite.texture = art;
+      sprite.position.set(world.x, world.y);
+      sprite.width = room.rect.w * BLOCK_W;
+      sprite.height = room.rect.h * BLOCK_H;
+      // The room's own picture is a night picture when the hotel is shut; this
+      // one is drawn once and washed here, the way decor is.
+      sprite.tint = night ? NIGHT_TINT : 0xffffff;
     }
   }
 

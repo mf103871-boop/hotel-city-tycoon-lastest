@@ -109,6 +109,13 @@ export interface RoomViewData {
    */
   artIsNight?: boolean;
   /**
+   * The room's own furniture that stands in front of the people — a reception
+   * desk, a bar counter. Drawn by the scene in `LAYER.roomFront`, not here:
+   * inside the RoomView it would be under every character, which is the whole
+   * reason it was split out of the room's one picture.
+   */
+  frontKey?: string;
+  /**
    * Transparent roach layer, stretched over the room's own art. Empty when the
    * room is clean. It is a separate picture rather than a fifth room variant
    * so a room can be dirty and infested at the same time without a combination

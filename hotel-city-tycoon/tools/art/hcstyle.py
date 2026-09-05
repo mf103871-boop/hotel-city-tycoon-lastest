@@ -452,11 +452,24 @@ class RoomSpec:
     in shows each one twice as soon as the player buys it.
     """
 
-    def __init__(self, wall, floor=None, draw=None, floor_h=None):
+    def __init__(self, wall, floor=None, draw=None, floor_h=None, front=None):
         self.wall = wall
         self.floor = floor
         self.draw = draw or (lambda c, fy: None)
         self.floor_h = floor_h
+        #: What the room paints *in front of* the people standing in it.
+        #:
+        #: A reception desk is not scenery a character walks past — it is a
+        #: thing they stand behind. Baked into the room's one picture, the
+        #: receptionist could only ever stand at the end of their own desk,
+        #: because every character is drawn over the whole room image. So a
+        #: room may supply a second routine, drawn onto its own transparent
+        #: canvas and composited above the band the people sort in.
+        #:
+        #: Draw as little as possible here: everything on this layer hides
+        #: whatever walks behind it, so it is for the counter, its top and the
+        #: things resting on it — never a wall, never a floor.
+        self.front = front
 
 
 # ------------------------------------------------------------- room furniture
@@ -590,11 +603,18 @@ def plant_pot(c: Canvas, cx, floor_y, scale=1.0) -> None:
         c.circle(cx + dx * s, floor_y + dy * s, r * s, fill=P["leaf"], ink=P["ink"], lw=LW_DETAIL)
 
 
-def counter(c: Canvas, x, floor_y, w, h, body=None, top=None) -> None:
-    """A service counter: bar, reception desk, cafe front."""
+def counter(c: Canvas, x, floor_y, w, h, body=None, top=None, skirt: float = 0.0) -> None:
+    """
+    A service counter: bar, reception desk, cafe front.
+
+    `skirt` extends the body below the floor line. Zero for a counter painted
+    into the room itself, `FOOT_OVERHANG` (or more) for one on a front layer,
+    where whoever stands behind it must be hidden completely rather than to
+    within a couple of pixels of shoe.
+    """
     body = body or P["wood"]
     top = top or P["woodPale"]
-    c.rrect(x, floor_y - h, w, h, r=1.8, fill=body, ink=P["ink"], lw=LW_PROP)
+    c.rrect(x, floor_y - h, w, h + skirt, r=1.8, fill=body, ink=P["ink"], lw=LW_PROP)
     c.rrect(x - 1.2, floor_y - h - 2.2, w + 2.4, 3.0, r=1.2, fill=top, ink=P["ink"], lw=LW_PROP)
 
 
@@ -609,6 +629,16 @@ CHAR_W = 48
 CHAR_H = 72
 #: Feet sit here; the pivot the renderer anchors to is (CHAR_W/2, FOOT_Y).
 FOOT_Y = 70.0
+
+#: How far a character is drawn below the floor line they stand on.
+#:
+#: `draw_person` puts the pivot at `FOOT_Y` but the shoes and the contact
+#: shadow run to the bottom of the cell, so two logical pixels of every
+#: character sit below their own floor line. On open floor that is what makes
+#: them look planted; behind a counter it is two pixels of shoe sticking out
+#: from under a solid desk. Anything drawn on a room's front layer has to
+#: cover it.
+FOOT_OVERHANG = CHAR_H - FOOT_Y
 
 
 class Person:
@@ -1103,6 +1133,7 @@ __all__ = [
     "LW_FRAME", "LW_PROP", "LW_DETAIL", "LW_FACE",
     "CHAR_W", "CHAR_H", "FOOT_Y",
     "Canvas", "Person", "cycle", "rgb", "mix", "shade", "tint", "alpha",
+    "FOOT_OVERHANG",
     "save_png", "both_tiers", "soften", "math",
     "room_shell", "room_frame", "window", "door", "wall_lamp", "pendant",
     "rug_strip", "plant_pot", "counter", "draw_person",

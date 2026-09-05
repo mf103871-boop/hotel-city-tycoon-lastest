@@ -2205,6 +2205,15 @@
       "note": "Same room with grime, litter, unmade bed."
     },
     {
+      "key": "room.bar.front",
+      "bundle": "rooms",
+      "file": "rooms/bar_front.png",
+      "width": 256,
+      "height": 96,
+      "required": false,
+      "note": "The furniture people stand behind — a counter, a desk. Transparent everywhere else, and drawn above the band the characters sort in."
+    },
+    {
       "key": "room.bar.night",
       "bundle": "rooms",
       "file": "rooms/bar_night.png",
@@ -2788,6 +2797,15 @@
       "height": 96,
       "required": false,
       "note": "Same room with grime, litter, unmade bed."
+    },
+    {
+      "key": "room.lobby.front",
+      "bundle": "rooms",
+      "file": "rooms/lobby_front.png",
+      "width": 256,
+      "height": 96,
+      "required": false,
+      "note": "The furniture people stand behind — a counter, a desk. Transparent everywhere else, and drawn above the band the characters sort in."
     },
     {
       "key": "room.lobby.night",

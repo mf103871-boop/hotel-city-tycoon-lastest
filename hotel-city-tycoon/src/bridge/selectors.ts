@@ -127,6 +127,8 @@ export interface RoomSummary {
    * washes it instead of the art pipeline shipping 46 more files.
    */
   artIsNight: boolean;
+  /** Art drawn above the characters — a counter people stand behind. */
+  frontKey: string;
   /**
    * The picture this room is showing right now — base, night or dirty. The
    * renderer falls back to a drawn shell if the file is absent.
@@ -282,6 +284,10 @@ export function summariseRoom(room: RoomInstance, open = true): RoomSummary {
     nameKey: def?.nameKey ?? `room.${room.defId}.name`,
     artIsNight: variant === 'night',
     assetKey: `room.${room.defId}.${variant}`,
+    // The furniture the room paints over the people standing in it. Only some
+    // rooms have one; the renderer draws nothing when the texture is absent,
+    // which is also what happens while the bundle is still loading.
+    frontKey: `room.${room.defId}.front`,
     // The infestation is a separate transparent layer, so it composites over
     // whichever variant is showing rather than needing one of its own.
     pestKey: room.hasPest ? `room.${room.defId}.pest` : '',

@@ -69,6 +69,17 @@ export const LAYER = {
   roomFloor: 40,
   decor: 50,
   characters: 60,
+  /**
+   * The furniture people stand *behind* — a reception desk, a bar counter.
+   *
+   * Not part of the sorted band, and deliberately: a desk is not something one
+   * guest passes in front of and another behind. Everyone in the room is
+   * behind it, which is what makes it the front of the room. It is painted
+   * into `rooms/<id>_front.png` rather than the room's one picture, because
+   * baked into that picture every character was drawn over it and the
+   * receptionist could only stand at the end of their own desk.
+   */
+  roomFront: 65,
   hazards: 70,
   overlays: 80,
   indicators: 90,
