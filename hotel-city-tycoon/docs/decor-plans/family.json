@@ -1,0 +1,81 @@
+{
+  "room": "family",
+  "items": [
+    {
+      "id": "bed_trundleBed",
+      "category": "bed",
+      "slotType": "bed",
+      "new": true,
+      "nameEn": "Trundle Bed",
+      "nameAr": "سرير سحّاب",
+      "artBrief": "A pale-wood single bed with a rounded mint headboard and a red-blue-yellow patchwork quilt, plus a low second mattress on a drawer that slides out from under the foot end with its own small pillow, so the silhouette is a two-step staircase of bedding. At 40 px the stepped double mattress is the read; no other bed in the game has a second, lower mattress (single is plain, loft sleigh curls, metal frame is bars, painted spindle is a spindle headboard)."
+    },
+    {
+      "id": "seating_rockingHorse",
+      "category": "seating",
+      "slotType": "floor",
+      "new": true,
+      "nameEn": "Rocking Horse",
+      "nameAr": "حصان هزّاز",
+      "artBrief": "A dapple-grey wooden horse side-on, head to the left, with a red saddle and yellow mane, standing on two curved bow rockers joined by a footrest bar. At 40 px it reads as a horse on a crescent; it is the only seat in the game with an animal silhouette and curved rockers instead of legs."
+    },
+    {
+      "id": "rug_antiqueRug",
+      "category": "rug",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "rug_roadPlaymat",
+      "category": "rug",
+      "slotType": "floor",
+      "new": true,
+      "nameEn": "Road Play Mat",
+      "nameAr": "بساط الطرق",
+      "artBrief": "A grass-green rectangular play mat printed with a grey looping road with white dashes, a blue pond, two tiny houses and a round tree, and two little toy cars parked on the road. At 40 px the grey loop on green is the read; every other rug is a woven pattern of fringe, medallion or stripes, while this one is a picture map."
+    },
+    {
+      "id": "wallpaper_mural",
+      "category": "wallpaper",
+      "slotType": "wall",
+      "new": false
+    },
+    {
+      "id": "wallArt_painting",
+      "category": "wallArt",
+      "slotType": "wall",
+      "new": false
+    },
+    {
+      "id": "lighting_starfield",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "new": false
+    },
+    {
+      "id": "lighting_balloonLantern",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "new": true,
+      "nameEn": "Balloon Night Light",
+      "nameAr": "مصباح المنطاد",
+      "artBrief": "A pendant shaped like a hot-air balloon: a fat red-and-cream striped balloon on a short cord with a soft warm glow around it, and a tiny wicker basket hung beneath on four strings. At 40 px the striped teardrop over a small basket is unmistakable; no other lamp is a balloon - the pendants are cones, the chandeliers are tiers, the paper lantern is a plain white sphere and the starfield is a projector."
+    }
+  ],
+  "slots": [
+    { "kind": "bed", "x": 5, "y": 14, "w": 7, "h": 6, "fixture": "bed_single" },
+    { "kind": "ground", "x": 12, "y": 14, "w": 5, "h": 7 },
+    { "kind": "surface", "x": 5, "y": 14, "w": 7, "h": 7 },
+    { "kind": "surface", "x": 20, "y": 14, "w": 8, "h": 7 },
+    { "kind": "wall", "x": 20, "y": 3, "w": 8, "h": 4 },
+    { "kind": "wall", "x": 28, "y": 2, "w": 4, "h": 4 },
+    { "kind": "ceiling", "x": 4, "y": 0, "w": 5, "h": 4 },
+    { "kind": "ceiling", "x": 12, "y": 0, "w": 5, "h": 4 }
+  ],
+  "extraFixtureSlots": [
+    { "kind": "bed", "x": 20, "y": 14, "w": 8, "h": 6, "fixture": "bed_cot" },
+    { "kind": "bed", "x": 20, "y": 10, "w": 8, "h": 4, "fixture": "bed_cot" }
+  ],
+  "requiredFixtures": ["bed_single", "bed_cot", "bed_cot"],
+  "designNotes": "The floor is split by the painted alcove and door, so the parents' bed (upgraded by the trundle bed) keeps the window half with the antique rug under it, the rocking horse stands in the 40 px play corner between the bed and the alcove, and the two cots stay stacked in the alcove with the road play mat on the floor in front of them; the door end stays clear. The only wall spans wide enough for pieces at a decent size are the friezes above the alcove and the door, so the mural hangs as a wide panel over the children's berth just under the picture rail and the painting hangs as an overdoor above the door. The two ceiling pieces share the top band on the left: the starfield projector over the parents' bed and the balloon night light over the play corner, 24 px apart and clear of both pictures. Every standing piece keeps at least 8 px from its neighbours and nothing crosses the window, alcove or door."
+}
