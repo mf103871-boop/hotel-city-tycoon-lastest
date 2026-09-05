@@ -33,7 +33,7 @@ are the same strip of material at the same y.
 from __future__ import annotations
 
 from hcstyle import (
-    P, Canvas, LW_PROP, LW_DETAIL, LW_FACE,
+    P, Canvas, LW_DETAIL, LW_FACE,
     alpha, shade, tint, mix,
 )
 
