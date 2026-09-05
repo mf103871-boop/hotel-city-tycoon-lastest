@@ -24,23 +24,47 @@ surface in `decor_surfaces` has. That is what keeps them apart by outline:
     inside a scalloped rim, where plain, striped, damask and gilded are each
     a rhythm or a grid.
 
+The second half of the module is the restaurant and the bar, and the same
+argument holds: a brasserie on oak boards is a bedroom with tables in it.
+Their surfaces are a brasserie's and a pub's — not food this time but the
+materials those rooms are built from — and each is kept apart by the one
+thing no surface already had:
+
+*   the bistro floor is the only chequer: hard black and cream squares,
+    where marble is a slab, mosaic a fine tessera and the macarons are
+    hexagons;
+*   the brasserie mirror is the only frame with a beaded rim, so its
+    silhouette is scalloped, and the only wall piece whose picture is empty
+    glass with writing on it;
+*   the bottle-green panelling is the only paper that is dark, vertical and
+    unpatterned at once — boards with a rail, not a repeat;
+*   the neon sign is the only light that is a *plate* — squarish, dark, on
+    two chains — and the only one whose light is a drawn outline;
+*   the pub lantern is the only six-sided fitting, pointed at both ends;
+*   the pub boards are the only dark floor with a pale worn path across it,
+    and the bar mat the only black, gridded, unfringed rug.
+
 Drawn against `hcstyle` and nothing else, laid out from `c.w` / `c.h`
 because every routine is handed a 1x and a 2x canvas. The helpers come from
-`decor_surfaces` (panel, band, cord, plate, glow, and the wall-panel wrapper)
-so that a cafe floor and a suite floor are the same strip of material at the
-same y.
+`decor_surfaces` (panel, band, frame, chain, plate, glow, the clipped line
+and the wall-panel wrapper) so that a cafe floor and a suite floor are the
+same strip of material at the same y; the bar's two dark woods and its green
+are the suites' constants, so the bar and the banker's lamp agree on what
+bottle green is.
 """
 from __future__ import annotations
 
 from hcstyle import (
     P, Canvas, LW_PROP, LW_DETAIL, LW_FACE,
-    shade, tint, mix, math,
+    alpha, shade, tint, mix, math,
 )
 
 from decor_surfaces import (
-    _panel, _band, _cord, _ceiling_plate, _glow, _as_wall_panel,
-    BAND_CY, GOLD,
+    _panel, _band, _cord, _chain, _ceiling_plate, _glow, _art_frame,
+    _clipped_line, _as_wall_panel,
+    BAND_CY, GOLD, GOLD_DK, GOLD_HI,
 )
+from decor_suites import BOTTLE, WALNUT_DK
 
 
 # ------------------------------------------------------------------ toolkit
@@ -356,6 +380,324 @@ def wallpaper_sprinkleWall(c: Canvas) -> None:
             c.line([(px - dx, py - dy), (px + dx, py + dy)], colour, 2.0)
 
 
+# --------------------------------------------------------------- restaurant
+
+def flooring_bistroCheck(c: Canvas) -> None:
+    """
+    Black and cream marble squares in a strict straight-laid chequer, three
+    courses deep, with a thin brass trim strip along the front edge.
+
+    The chequer is the whole read, so it is coarse: nine tiles across the
+    band and three down, each a shape of its own at 55% rather than a
+    texture. The cream squares are the band itself and only the black ones
+    are laid on it, which keeps every seam a hard edge — a grout line between
+    tiles this contrasted reads as a grey halo round the black. The trim is
+    the one thing on the floor that is not a square: a warm horizontal at the
+    foot, so the strip still has a front.
+    """
+    cream = mix(P["linen"], P["creamHi"], 0.45)
+    black = mix(P["black"], P["ink2"], 0.30)
+    x, y, w, h = _band(c, 34.0, cream)
+    bottom = min(y + h, c.h)
+    trim_h = 3.6
+    fx0, fy0 = x + 1.6, y + 1.6
+    fx1, fy1 = x + w - 1.6, bottom - trim_h - 0.6
+    # The band's own sheen is painted out: a lighter stripe across the top
+    # course made the cream tiles two different creams.
+    c.rect(fx0, fy0, fx1 - fx0, fy1 - fy0, fill=cream)
+    cols, rows = 9, 3
+    tw, th = (fx1 - fx0) / cols, (fy1 - fy0) / rows
+    for row in range(rows):
+        for col in range(cols):
+            if (row + col) % 2:
+                c.rect(fx0 + col * tw, fy0 + row * th, tw, th, fill=black)
+    # A vein on two of the cream squares — marble, not lino — kept faint so
+    # the tile stays a flat shape from across the room.
+    vein = shade(cream, 0.16)
+    for col, row in ((1, 1), (6, 0)):
+        tx, ty = fx0 + col * tw, fy0 + row * th
+        c.line([(tx + 1.4, ty + th - 1.8), (tx + tw - 1.6, ty + 1.6)], vein, 0.9)
+    c.rect(fx0, fy1, fx1 - fx0, trim_h, fill=GOLD)
+    c.line([(fx0, fy1), (fx1, fy1)], P["ink"], LW_FACE)
+    c.rect(fx0 + 1.0, fy1 + 0.8, fx1 - fx0 - 2.0, 0.9, fill=GOLD_HI)
+
+
+#: "Menu du Jour" as three pen strokes, in (dx, dy) from the start of the
+#: line, baseline at dy = 0. Not letterforms: at this size a real glyph is a
+#: smudge and a confident squiggle with ascenders in the right places is
+#: handwriting.
+_SCRIPT = (
+    ((0.0, 0.0), (1.6, -6.5), (3.2, 0.0), (4.8, -6.5), (6.4, 0.0),          # M
+     (7.6, -2.6), (9.0, 0.0), (10.4, -2.6), (11.8, 0.0),                    # en
+     (13.2, -2.6), (14.6, 0.0), (15.8, -2.6)),                              # u
+    ((19.5, 0.0), (21.0, -2.6), (22.4, 0.0), (23.2, -6.5), (24.0, 0.0),     # d
+     (25.4, -2.6), (26.8, 0.0), (28.0, -2.6)),                              # u
+    ((31.5, -6.0), (34.0, -6.5), (33.0, 0.0), (31.8, 2.4)),                 # J
+    ((35.2, -2.6), (36.6, 0.0), (38.0, -2.6), (39.4, 0.0), (40.6, -2.6),    # ou
+     (41.8, 0.0), (43.0, -2.6), (44.2, -1.4)),                              # r
+)
+
+
+def wallArt_brasserieMirror(c: Canvas) -> None:
+    """
+    A wide landscape mirror in a beaded gilt frame: silver-blue glass with
+    one diagonal streak of reflected light, the day's menu written across
+    the top in gold script and two lines of chalk prices under it.
+
+    The beads sit *on* the frame's outer edge rather than inside it, so the
+    outline is scalloped — a gilt rectangle with a bumpy rim, where every
+    painting is a hard rectangle with or without a crest. Inside, the glass
+    is a cool flat and nearly empty — no scene, no sitter — so at 40px it
+    reads as reflected light rather than as a picture of something.
+    """
+    cx, cy = c.w / 2, c.h / 2
+    fw, fh = 82.0, 52.0
+    x0, y0 = cx - fw / 2, cy - fh / 2
+    ix, iy, iw, ih = _art_frame(c, fw, fh, GOLD, depth=5.0)
+    n_across, n_down = 12, 8
+    for i in range(n_across + 1):
+        bx = x0 + fw * i / n_across
+        for by in (y0, y0 + fh):
+            c.circle(bx, by, 2.4, fill=GOLD_HI, ink=P["ink"], lw=LW_FACE)
+    for j in range(1, n_down):
+        by = y0 + fh * j / n_down
+        for bx in (x0, x0 + fw):
+            c.circle(bx, by, 2.4, fill=GOLD_HI, ink=P["ink"], lw=LW_FACE)
+    c.rrect(x0 + 3.0, y0 + 3.0, fw - 6.0, fh - 6.0, r=1.6, ink=GOLD_DK, lw=LW_FACE)
+    glass = mix(P["tile"], P["glass"], 0.40)
+    c.rect(ix, iy, iw, ih, fill=glass, ink=P["ink"], lw=LW_FACE)
+    # One shade along the foot and the right side: the frame's own depth
+    # falling across the glass, and the one thing that makes it a surface.
+    dusk = shade(glass, 0.14)
+    c.rect(ix, iy + ih - 2.6, iw, 2.6, fill=dusk)
+    c.rect(ix + iw - 2.6, iy, 2.6, ih, fill=dusk)
+    sx, sy, sc = ix + 5.0, iy + 12.5, 1.4
+    for stroke in _SCRIPT:
+        c.line([(sx + dx * sc, sy + dy * sc) for dx, dy in stroke], GOLD_DK, 1.5)
+    chalk = P["white"]
+    for k, (item, price) in enumerate(((22.0, 8.0), (16.0, 6.0))):
+        ly = iy + 21.0 + k * 6.4
+        c.line([(ix + 8.0, ly), (ix + 8.0 + item, ly)], chalk, 1.8)
+        c.line([(ix + iw - 10.0 - price, ly), (ix + iw - 10.0, ly)], chalk, 1.8)
+    # The reflection, last, over everything written on the glass.
+    c.poly([(ix + iw * 0.34, iy + ih), (ix + iw * 0.46, iy + ih),
+            (ix + iw * 0.74, iy), (ix + iw * 0.62, iy)], fill=alpha(P["white"], 0.55))
+
+
+# ---------------------------------------------------------------------- bar
+
+def wallpaper_bottleGreen(c: Canvas) -> None:
+    """
+    Deep bottle-green tongue-and-groove boards standing on end, a brass
+    picture rail across the top and one brass hook hanging off it.
+
+    Seven boards, not twelve: each is a stripe wide enough to keep its groove
+    at 55%, and the groove is what makes it joinery rather than paint — a
+    dark line and a lit edge side by side, the way a bevel catches light.
+    This is the only paper in the catalogue that is dark, vertical and
+    unpatterned at once; the regency stripes are pale and even, everything
+    else is a repeat. The rail and the hook are the two horizontal marks on
+    it, and they are brass because the bar is.
+    """
+    base = BOTTLE
+    x, y, w, h = _panel(c, base, r=2.4)
+    boards = 7
+    bw = (w - 2.4) / boards
+    lit = tint(base, 0.20)
+    groove = shade(base, 0.45)
+    for i in range(boards):
+        bx = x + 1.2 + i * bw
+        c.rect(bx + 1.0, y + 1.2, 1.6, h - 2.4, fill=lit)
+        if i:
+            c.line([(bx - 0.4, y + 1.6), (bx - 0.4, y + h - 1.6)], groove, 1.4)
+    rail_y, rail_h = y + 7.0, 3.6
+    c.rect(x + 1.4, rail_y + rail_h, w - 2.8, 1.4, fill=shade(base, 0.35))
+    c.rrect(x + 1.0, rail_y, w - 2.0, rail_h, r=1.2, fill=GOLD, ink=P["ink"], lw=LW_DETAIL)
+    c.rect(x + 3.0, rail_y + 0.9, w - 6.0, 0.9, fill=GOLD_HI)
+    # The hook: a slider on the rail, a stem, and a J-curl. Drawn as ink
+    # then brass so it stays a wire at 55% rather than a gold smear.
+    hx, hy = x + w * 0.66, rail_y + rail_h
+    stem, r = 6.0, 2.6
+    c.rrect(hx - 2.2, rail_y - 0.6, 4.4, rail_h + 1.2, r=1.0,
+            fill=GOLD_DK, ink=P["ink"], lw=LW_FACE)
+    for colour, lw in ((P["ink"], 2.8), (GOLD_DK, 1.4)):
+        c.line([(hx, hy - 0.6), (hx, hy + stem)], colour, lw)
+        c.arc(hx - r, hy + stem, r, r, 0, 180, colour, lw)
+        c.line([(hx - 2 * r, hy + stem), (hx - 2 * r, hy + stem - 1.8)], colour, lw)
+
+
+def lighting_neonCocktail(c: Canvas) -> None:
+    """
+    A neon sign on two short chains: a coral martini glass, a mint olive on
+    a stick, on a dark backing plate, and the coral haze a tube throws.
+
+    The plate is squarer than anything else that hangs — the batten is a
+    bar, the exit sign a pill, everything else a point on a cord — and it is
+    dark so the glowing outline on it is the brightest thing in the sprite.
+    Each tube is three strokes on top of each other: a wide translucent halo,
+    the coral tube, and a pale core, which is what makes a line read as lit
+    glass rather than as a coral drawing. The olive is a filled disc, not a
+    ring — a ring six pixels across is a smudge at 55%.
+    """
+    cx = c.w / 2
+    drop = 8.0
+    pw, ph = 42.0, 32.0
+    px, py = cx - pw / 2, drop
+    plate = mix(P["black"], P["ink2"], 0.35)
+    for dx in (-13.0, 13.0):
+        _ceiling_plate(c, cx + dx, 8.0, colour=P["metalDk"])
+        _chain(c, cx + dx, drop, links=2)
+    c.rrect(px, py, pw, ph, r=3.0, fill=plate, ink=P["ink"], lw=LW_PROP)
+    c.rect(px + 2.4, py + 1.8, pw - 4.8, 1.4, fill=tint(plate, 0.16))
+    _glow(c, cx, py + ph * 0.55, 21.0, colour=P["coral"])
+
+    def tube(pts, colour, w: float = 2.2) -> None:
+        c.line(pts, alpha(colour, 0.32), w + 2.8)
+        c.line(pts, colour, w)
+        c.line(pts, tint(colour, 0.55), w * 0.4)
+
+    rim_y, half = py + 7.0, 12.0
+    bowl_y = rim_y + 12.0
+    foot_y = py + ph - 5.0
+    neon = P["coral"]
+    tube([(cx - half, rim_y), (cx + half, rim_y), (cx, bowl_y), (cx - half, rim_y)], neon)
+    tube([(cx, bowl_y), (cx, foot_y - 1.0)], neon)
+    tube([(cx - 7.0, foot_y), (cx + 7.0, foot_y)], neon)
+    ox, oy = cx + 1.5, rim_y + 6.0
+    tube([(cx - 8.5, rim_y - 4.0), (ox, oy)], GOLD_HI, 1.4)
+    c.circle(ox, oy, 4.6, fill=alpha(P["mint"], 0.30))
+    c.circle(ox, oy, 2.9, fill=P["mint"])
+    c.circle(ox, oy, 1.0, fill=P["coral"])
+
+
+def lighting_pubLantern(c: Canvas) -> None:
+    """
+    A brass-framed hexagonal lantern with amber panes on a single chain, and
+    the warm pool of light it throws.
+
+    Six sides is the identity: a pointed cap and a pointed foot, where the
+    lobby lantern is a box with a lid and every shade is round. The taper is
+    deep — more than a quarter of the height at each end — because a hexagon
+    that is nearly a rectangle is a rectangle at 55%. Two brass mullions
+    divide the amber into three panes; the left one is lit a shade brighter
+    and the right a shade darker, which is all the roundness a flat lantern
+    gets.
+    """
+    cx = c.w / 2
+    drop = 11.0
+    top, bot = drop + 2.0, drop + 28.0
+    hw, taper = 11.0, 7.5
+    mid = (top + bot) / 2
+    amber = mix(P["gold"], P["coral"], 0.22)
+    _glow(c, cx, mid + 4.0, 18.0, colour=P["gold"])
+    _ceiling_plate(c, cx, 10.0, colour=GOLD_DK)
+    _chain(c, cx, drop, links=3)
+
+    def edge_top(px: float) -> float:
+        return top + taper * abs(px - cx) / hw
+
+    def edge_bot(px: float) -> float:
+        return bot - taper * abs(px - cx) / hw
+
+    def pane(a: float, b: float, fill) -> None:
+        c.poly([(a, edge_top(a)), (b, edge_top(b)), (b, edge_bot(b)), (a, edge_bot(a))],
+               fill=fill)
+
+    hexa = [(cx, top), (cx + hw, top + taper), (cx + hw, bot - taper),
+            (cx, bot), (cx - hw, bot - taper), (cx - hw, top + taper)]
+    c.poly(hexa, fill=amber, ink=P["ink"], lw=LW_PROP)
+    m = 3.8
+    pane(cx - hw + 1.0, cx - m, tint(amber, 0.22))
+    pane(cx + m, cx + hw - 1.0, shade(amber, 0.16))
+    c.ellipse(cx, mid, 2.4, 5.0, fill=P["creamHi"])
+    for dx in (-m, m):
+        px = cx + dx
+        c.line([(px, edge_top(px) + 0.4), (px, edge_bot(px) - 0.4)], GOLD_DK, 1.4)
+    # The brass frame, inside the ink: the same hexagon shrunk on its centre.
+    s = 0.85
+    c.poly([(cx + (px - cx) * s, mid + (py - mid) * s) for px, py in hexa],
+           ink=GOLD_DK, lw=1.3)
+    c.circle(cx, top - 0.6, 2.4, fill=GOLD, ink=P["ink"], lw=LW_FACE)
+    c.circle(cx, bot + 0.4, 1.8, fill=GOLD_DK, ink=P["ink"], lw=LW_FACE)
+
+
+def flooring_pubBoards(c: Canvas) -> None:
+    """
+    Wide dark-walnut boards, a nail head at each end of every board, and a
+    paler path worn across the middle where the drinkers walk.
+
+    Three boards to the strip and no end joints: the oak floor is staggered
+    courses of pale timber, and what separates a pub floor from it is that
+    the boards are long, dark and few. The worn path runs *across* the strip
+    — front to back, the way a room is walked — as a pale zone whose width
+    changes on each board, so it reads as wear and not as a stripe painted
+    on. The grain is drawn after it so the same boards continue through.
+    """
+    walnut = WALNUT_DK
+    x, y, w, h = _band(c, 28.0, walnut)
+    bottom = min(y + h, c.h)
+    rows = 3
+    top = y + 1.6
+    depth = (bottom - 0.6 - top) / rows
+    cxm = c.w / 2
+    worn = mix(walnut, P["woodPale"], 0.40)
+    worn_edge = mix(walnut, P["woodPale"], 0.18)
+    for row in range(rows):
+        ry = top + row * depth
+        half = (10.0, 12.5, 9.0)[row]
+        c.rect(cxm - half - 2.4, ry, half * 2 + 4.8, depth, fill=worn_edge)
+        c.rect(cxm - half, ry, half * 2, depth, fill=worn)
+    for row in range(1, rows):
+        ry = top + row * depth
+        c.line([(x + 1.4, ry), (x + w - 1.4, ry)], shade(walnut, 0.45), 1.3)
+    grain, pale = shade(walnut, 0.28), tint(walnut, 0.14)
+    for row in range(rows):
+        ry = top + row * depth
+        c.rect(x + 8.0 + row * 9.0, ry + depth * 0.30, w * 0.30, 1.0, fill=grain)
+        c.rect(x + w * 0.48 - row * 7.0, ry + depth * 0.66, w * 0.26, 1.0, fill=pale)
+    # One nail at each end of each board. Two a side is twelve dots, and
+    # twelve dots on a dark floor is a keyboard.
+    nail = P["metalDk"]
+    for row in range(rows):
+        ny = top + row * depth + depth / 2
+        for nx in (x + 4.2, x + w - 4.2):
+            c.circle(nx, ny, 1.5, fill=nail)
+            c.circle(nx - 0.5, ny - 0.5, 0.6, fill=tint(nail, 0.5))
+
+
+def rug_barMat(c: Canvas) -> None:
+    """
+    A black rubber bar mat: a raised diamond grid on the top, a coral stripe
+    along its front edge, and a lip round the rim.
+
+    Rubber, not textile, so no fringe, no border, no medallion — the three
+    things every woven rug on the slot has — and black, which no rug is. It
+    is drawn deeper than it is long, the proportion of a service mat, so it
+    reads apart from the wide, low anti-fatigue mat in maintenance even when
+    both are a dark block. The grid is a lattice of lit lines clipped to the
+    top face: the one texture that says moulded rubber.
+    """
+    rubber = mix(P["black"], P["shadow"], 0.25)
+    x, y, w, h = _band(c, 22.0, rubber, r=2.4, w=50.0)
+    bottom = min(y + h, c.h)
+    stripe_h = 4.0
+    face_bot = bottom - stripe_h - 0.8
+    c.rrect(x + 1.6, y + 1.6, w - 3.2, face_bot - y - 2.4, r=1.6,
+            ink=tint(rubber, 0.30), lw=LW_FACE)
+    inner = (x + 3.0, y + 3.0, w - 6.0, face_bot - y - 5.2)
+    ix, iy, iw, ih = inner
+    lat = tint(rubber, 0.36)
+    step = 6.0
+    n = int((iw + ih) // step) + 2
+    for i in range(-n, n):
+        px = ix + i * step
+        _clipped_line(c, (px, iy + ih), (px + ih, iy), inner, lat, 1.1)
+        _clipped_line(c, (px, iy), (px + ih, iy + ih), inner, lat, 1.1)
+    c.rect(x + 1.4, face_bot, w - 2.8, stripe_h, fill=P["coral"])
+    c.line([(x + 1.4, face_bot), (x + w - 1.4, face_bot)], P["ink"], LW_FACE)
+    c.rect(x + 3.0, face_bot + 0.8, w - 6.0, 0.9, fill=tint(P["coral"], 0.35))
+
+
 PIECES = {
     "rug_latteRug":            rug_latteRug,
     "flooring_macaronTiles":   flooring_macaronTiles,
@@ -364,4 +706,14 @@ PIECES = {
     # Framed and washed the way every wallpaper in `decor_surfaces` is, so
     # the cafe's sprinkles sit in the same moulded panel as the suites' silk.
     "wallpaper_sprinkleWall":  _as_wall_panel(wallpaper_sprinkleWall),
+
+    "flooring_bistroCheck":    flooring_bistroCheck,
+    "wallArt_brasserieMirror": wallArt_brasserieMirror,
+    # The same moulded panel again: the bar's boards are wall treatment,
+    # and the wash lets the navy behind them through.
+    "wallpaper_bottleGreen":   _as_wall_panel(wallpaper_bottleGreen),
+    "lighting_neonCocktail":   lighting_neonCocktail,
+    "lighting_pubLantern":     lighting_pubLantern,
+    "flooring_pubBoards":      flooring_pubBoards,
+    "rug_barMat":              rug_barMat,
 }

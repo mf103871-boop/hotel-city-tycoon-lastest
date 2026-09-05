@@ -83,9 +83,10 @@ NAVY = shade(P["wallNavy"], 0.15)
 BOTTLE = mix(P["greenDk"], P["ink2"], 0.30)
 
 #: Blush. The honeymoon wall is `wallRose`, and a drape the same pink as the
-#: wall it hangs in front of is invisible; pulled a third of the way toward
-#: `hairPink` it is a pink that white posts and white bedding separate from.
-BLUSH = mix(P["wallRose"], P["hairPink"], 0.30)
+#: wall it hangs in front of is invisible — a third of the way to `hairPink`
+#: it still was. Two thirds of the way it is a pink the wall, the white posts
+#: and the white bedding all separate from, and still a pastel.
+BLUSH = mix(P["hairPink"], P["wallRose"], 0.35)
 
 #: Rose-pink for blooms and petals: `hairPink` warmed toward coral, so a
 #: three-pixel bloom on a cream rug is a dot of colour rather than a smudge.
@@ -317,6 +318,10 @@ def _festoons(c: Canvas, x0: float, x1: float, top: float, depth: float,
     hung under a straight edge, and this one dips.
     """
     amp = 1.6
+    # `body` is the fabric's thickness at the gathers: without it each
+    # festoon tapered to nothing at its ends and the drape was two crescents
+    # of string rather than one length of cloth.
+    body = 2.6
     pts = [(x0, top), (x1, top)]
     n = 26
     for i in range(n * halves, -1, -1):
@@ -324,15 +329,16 @@ def _festoons(c: Canvas, x0: float, x1: float, top: float, depth: float,
         ul = (u * halves) % 1.0 if i != n * halves else 0.0
         if i == 0:
             ul = 0.0
-        y = top + depth * math.sin(math.pi * ul) + amp * abs(math.sin(scallops * math.pi * ul))
+        y = (top + body + depth * math.sin(math.pi * ul)
+             + amp * abs(math.sin(scallops * math.pi * ul)))
         pts.append((x0 + (x1 - x0) * u, y))
     c.poly(pts, fill=colour, ink=P["ink"], lw=LW_PROP)
     # One fold line per festoon, following the sag: the shading budget.
     for k in range(halves):
         fx0 = x0 + (x1 - x0) * (k + 0.16) / halves
         fx1 = x0 + (x1 - x0) * (k + 0.84) / halves
-        c.line(_bez((fx0, top + 2.6), ((fx0 + fx1) / 2, top + depth * 1.35 - 1.0),
-                    (fx1, top + 2.6), 10), tint(colour, 0.36), LW_FACE)
+        c.line(_bez((fx0, top + body + 1.4), ((fx0 + fx1) / 2, top + body + depth * 1.35 - 1.0),
+                    (fx1, top + body + 1.4), 10), tint(colour, 0.36), LW_FACE)
 
 
 def bed_petalCanopy(c: Canvas) -> None:
@@ -428,7 +434,7 @@ def rug_roseGarland(c: Canvas) -> None:
         t = 2 * math.pi * i / 40
         hx = 16 * math.sin(t) ** 3
         hy = 13 * math.cos(t) - 5 * math.cos(2 * t) - 2 * math.cos(3 * t) - math.cos(4 * t)
-        heart.append((cx + hx * 0.66, cy - 1.0 - hy * 0.40))
+        heart.append((cx + hx * 0.74, cy - 1.2 - hy * 0.45))
     c.poly(heart, fill=ivory, ink=shade(ROSE, 0.20), lw=LW_DETAIL)
     c.line([(cx - 4.4, cy - 4.6), (cx - 2.4, cy - 5.6)], tint(ivory, 0.6), LW_FACE)
     # The garland: blooms on the rim with a leaf on the tangent between each
@@ -548,14 +554,14 @@ def rug_ermineHearth(c: Canvas) -> None:
     # Ermine tips: short black drops in three rows, each row shifted half a
     # pitch — a diamond scatter, and loose enough that they stay separate
     # dashes at 55% rather than a dotted line.
-    pitch = 9.0
+    pitch = 12.0
     for row in range(3):
-        yy = by + bh * (0.24 + row * 0.26)
+        yy = by + bh * (0.22 + row * 0.28)
         offset = pitch / 2 if row % 2 else 0.0
-        x = bx + 5.0 + offset
-        while x < bx + bw - 4.0:
-            c.line([(x, yy - 1.5), (x, yy + 1.5)], P["ink"], 1.8)
-            c.circle(x, yy + 1.5, 1.15, fill=P["ink"])
+        x = bx + 6.0 + offset
+        while x < bx + bw - 5.0:
+            c.line([(x, yy - 1.3), (x, yy + 1.3)], P["ink"], 1.6)
+            c.circle(x, yy + 1.4, 1.1, fill=P["ink"])
             x += pitch
 
 
@@ -702,10 +708,23 @@ def _standard(c: Canvas, top, bottom, banner, out: int) -> None:
     a1 = (tx + ux * -25.0, ty + uy * -25.0)
     hem_y = ty + 30.0
     swing = out * 3.0
-    c.poly([a0, a1, (a1[0] + swing * 0.4, hem_y), (a0[0] + swing, hem_y)],
+    outer_top, outer_hem = a0, (a0[0] + swing, hem_y)
+    inner_top, inner_hem = a1, (a1[0] + swing * 0.4, hem_y)
+    c.poly([outer_top, inner_top, inner_hem, outer_hem],
            fill=banner, ink=P["ink"], lw=LW_PROP)
-    c.line([(a0[0] + swing * 0.55, a0[1] + 4.0), (a0[0] + swing * 0.9, hem_y - 3.0)],
-           tint(banner, 0.22), LW_FACE)
+
+    # One fold line a fifth of the way in from the free edge. It is placed
+    # by interpolating between the two edges at each end, because a line
+    # offset from the top corner alone ran outside the cloth: the free edge
+    # swings, and the fold has to swing with it.
+    def fold(s: float, k: float) -> tuple[float, float]:
+        ox = outer_top[0] + (outer_hem[0] - outer_top[0]) * s
+        oy = outer_top[1] + (outer_hem[1] - outer_top[1]) * s
+        ix = inner_top[0] + (inner_hem[0] - inner_top[0]) * s
+        iy = inner_top[1] + (inner_hem[1] - inner_top[1]) * s
+        return (ox + (ix - ox) * k, oy + (iy - oy) * k)
+
+    c.line([fold(0.22, 0.2), fold(0.9, 0.2)], tint(banner, 0.22), LW_FACE)
     # Fringe: gold stubs hanging off the hem, coarse enough to stay stubs.
     fx0, fx1 = a1[0] + swing * 0.4, a0[0] + swing
     for i in range(6):

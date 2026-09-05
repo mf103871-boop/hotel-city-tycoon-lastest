@@ -58,14 +58,15 @@ from decor_surfaces import (
 # Each is mixed from two palette entries rather than typed in as hex, so the
 # room stays inside the hotel's gamut and a later palette change moves them.
 
-#: Magenta: the pink of the hair palette pushed toward lavender.
-MAGENTA = mix(P["hairPink"], P["lavender"], 0.30)
+#: Magenta: the hair palette's pink, nudged toward coral so it stays
+#: saturated over a navy wall (toward lavender it went dusty).
+MAGENTA = mix(P["hairPink"], P["coral"], 0.12)
 #: Cyan is simply the pool's water.
 CYAN = P["water"]
 #: The orange of a heat lamp element and a pair of flip-flops.
 ORANGE = mix(P["coral"], P["gold"], 0.45)
 #: Fog: lilac, mostly white, so it reads as vapour and not as a purple blob.
-LILAC = mix(P["lavender"], P["white"], 0.55)
+LILAC = mix(P["lavender"], P["white"], 0.36)
 
 
 # --------------------------------------------------------------- toolkit
@@ -298,17 +299,21 @@ def flooring_ledDanceFloor(c: Canvas) -> None:
     cols, rows = 5, 2
     tw = (w - inset * 2) / cols
     th = (h - inset * 2) / rows
-    pale = mix(P["white"], P["glass"], 0.40)
+    pale = mix(P["white"], P["glass"], 0.22)
     pattern = ((CYAN, MAGENTA, pale, MAGENTA, CYAN),
                (MAGENTA, pale, CYAN, pale, MAGENTA))
     for j in range(rows):
         for i in range(cols):
             fill = pattern[j][i]
             tx, ty = x + inset + i * tw, y + inset + j * th
-            c.rrect(tx + 0.7, ty + 0.7, tw - 1.4, th - 1.4, r=1.0, fill=fill)
+            # Each cell carries its own darker rim: without it the white
+            # cells melt into the white ground and the grid loses a fifth of
+            # its tiles at 55%.
+            c.rrect(tx + 0.7, ty + 0.7, tw - 1.4, th - 1.4, r=1.0, fill=fill,
+                    ink=shade(fill, 0.30), lw=LW_FACE)
             # One lit sliver per cell, top-left, so each tile reads as a lamp
             # under glass rather than as a painted square.
-            c.rect(tx + 2.0, ty + 1.8, tw * 0.45, 1.6, fill=tint(fill, 0.55))
+            c.rect(tx + 2.2, ty + 2.0, tw * 0.42, 1.5, fill=tint(fill, 0.55))
     c.rrect(x + 1.4, y + 1.4, w - 2.8, h - 2.8, r=1.8, ink=tint(P["glass"], 0.5), lw=LW_FACE)
 
 
@@ -541,7 +546,11 @@ def wallArt_lifeguardBoard(c: Canvas) -> None:
     # The depth: 1.8 in blue, with a water line under it as the unit.
     end = _seg_text(c, ix + 30.0, iy + 6.0, "1.8", 6.4, 12.0, P["roomBlue"], gap=3.0, lw=1.9)
     c.line([(ix + 30.0, iy + 22.0), (end - 3.0, iy + 22.0)], P["water"], 1.6)
-    c.rrect(end + 1.0, iy + 12.0, 8.0, 6.0, r=1.2, fill=P["water"], ink=P["ink"], lw=LW_FACE)
+    # A down-arrow beside the figure: 'this deep', which is what the number
+    # means and the one glyph for it that needs no letters.
+    ax = end + 4.0
+    c.line([(ax, iy + 7.0), (ax, iy + 15.0)], P["roomBlue"], 1.8)
+    c.poly([(ax - 3.2, iy + 14.0), (ax + 3.2, iy + 14.0), (ax, iy + 18.6)], fill=P["roomBlue"])
     # The rules row: three red rings, each with a glyph and a slash.
     ry = iy + ih - 13.0
     c.line([(ix + 4.0, iy + 27.0), (ix + iw - 4.0, iy + 27.0)], alpha(P["ink2"], 0.35), 1.0)

@@ -86,13 +86,14 @@ def _pin_star(c: Canvas, cx: float, cy: float, r: float = 1.3) -> None:
 
 
 def _chevron(c: Canvas, cx: float, cy: float, dx: float, dy: float, colour,
-             half_w: float = 5.6, depth: float = 7.4, thick: float = 3.2) -> None:
+             half_w: float = 5.8, depth: float = 7.6, thick: float = 4.6) -> None:
     """
     A chunky chevron arrow pointing along (dx, dy), one of the four unit axes.
 
-    Six points: a tip, two fat wings and a notch cut up into the back. Filled
-    rather than stroked, and thick to more than a third of its own depth, so
-    it stays one bright wedge at 55% instead of two thin legs that fall apart.
+    Six points: a tip, two fat wings and a shallow notch cut into the back.
+    Filled rather than stroked, with arms more than half its own depth thick,
+    so it stays one bright wedge at 55% instead of two thin legs that fall
+    apart — the first cut had a deep notch and read as a pair of brackets.
     """
     # `a` points the way the arrow points, `b` runs across it.
     ax, ay = dx, dy
@@ -106,7 +107,7 @@ def _chevron(c: Canvas, cx: float, cy: float, dx: float, dy: float, colour,
         at(front, 0.0),
         at(back, half_w),
         at(back, half_w - thick),
-        at(front - thick * 1.15, 0.0),
+        at(back + thick * 0.55, 0.0),
         at(back, -(half_w - thick)),
         at(back, -half_w),
     ]
