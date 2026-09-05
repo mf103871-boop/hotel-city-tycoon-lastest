@@ -513,29 +513,32 @@ def wallArt_bedsideSconce(c: Canvas) -> None:
     wedge is what fills the canvas the frame would have.
     """
     cx, cy = c.w / 2, c.h / 2
-    plate = (cx - 15.0, cy - 12.0)
-    elbow = (cx - 4.0, cy - 25.0)
+    plate = (cx - 18.0, cy - 10.0)
+    elbow = (cx - 4.0, cy - 27.0)
     tilt = math.radians(24.0)
     # The drum's axis points down and to the left, toward the bed.
     dx, dy = -math.sin(tilt), math.cos(tilt)
     px, py = math.cos(tilt), math.sin(tilt)
-    sc = (cx + 8.0, cy - 15.0)
-    half_w, half_h = 10.0, 7.0
+    sc = (cx + 11.0, cy - 14.0)
+    half_w, half_h = 12.0, 8.5
 
-    # The fan of light: three nested wedges from the mouth of the shade, at
-    # the low opacities `_glow` uses, aimed a little left of straight down.
+    # The fan of light: three nested wedges from the mouth of the shade,
+    # aimed a little left of straight down. Warmer than `_glow`'s halo and a
+    # step more opaque, because this room's wall is cream and a cream glow
+    # on a cream wall is no glow at all.
     ax, ay = sc[0] + dx * (half_h + 1.0), sc[1] + dy * (half_h + 1.0)
-    for r, a in ((42.0, 0.08), (32.0, 0.09), (22.0, 0.11)):
-        c.pie(ax, ay, r, r, 50, 152, fill=alpha(P["creamHi"], a))
+    warm = mix(P["cream"], GOLD, 0.45)
+    for r, a in ((42.0, 0.13), (32.0, 0.14), (22.0, 0.16)):
+        c.pie(ax, ay, r, r, 50, 152, fill=alpha(warm, a))
 
     # The backplate and the arm.
-    c.circle(plate[0], plate[1], 8.5, fill=GOLD, ink=P["ink"], lw=LW_PROP)
-    c.circle(plate[0], plate[1], 5.0, fill=tint(GOLD, 0.28), ink=P["ink"], lw=LW_FACE)
-    c.circle(plate[0] - 3.4, plate[1] - 3.4, 1.4, fill=GOLD_HI)
+    c.circle(plate[0], plate[1], 10.0, fill=GOLD, ink=P["ink"], lw=LW_PROP)
+    c.circle(plate[0], plate[1], 6.0, fill=tint(GOLD, 0.28), ink=P["ink"], lw=LW_FACE)
+    c.circle(plate[0] - 4.0, plate[1] - 4.0, 1.6, fill=GOLD_HI)
     top = (sc[0] - dx * half_h, sc[1] - dy * half_h)
-    _tube(c, [plate, elbow, top], 2.8, GOLD)
+    _tube(c, [plate, elbow, top], 3.2, GOLD)
     for jx, jy in (plate, elbow):
-        c.circle(jx, jy, 2.4, fill=GOLD_DK, ink=P["ink"], lw=LW_FACE)
+        c.circle(jx, jy, 2.7, fill=GOLD_DK, ink=P["ink"], lw=LW_FACE)
 
     # The drum: a rotated rectangle with pleat lines along its axis, a dark
     # cap at the top and a lit mouth at the bottom.
@@ -543,15 +546,15 @@ def wallArt_bedsideSconce(c: Canvas) -> None:
                for s, t in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
     c.poly(corners, fill=P["linen"], ink=P["ink"], lw=LW_PROP)
     for k in range(-2, 3):
-        u = k * 3.6
+        u = k * 4.4
         c.line([(sc[0] + px * u - dx * (half_h - 1.4), sc[1] + py * u - dy * (half_h - 1.4)),
                 (sc[0] + px * u + dx * (half_h - 1.4), sc[1] + py * u + dy * (half_h - 1.4))],
                P["linenSh"], 0.9)
-    c.poly(_oval(sc[0] - dx * half_h, sc[1] - dy * half_h, half_w, 2.4, tilt),
+    c.poly(_oval(sc[0] - dx * half_h, sc[1] - dy * half_h, half_w, 2.8, tilt),
            fill=shade(P["linen"], 0.20), ink=P["ink"], lw=LW_FACE)
-    c.poly(_oval(sc[0] + dx * half_h, sc[1] + dy * half_h, half_w, 2.6, tilt),
+    c.poly(_oval(sc[0] + dx * half_h, sc[1] + dy * half_h, half_w, 3.0, tilt),
            fill=P["cream"], ink=P["ink"], lw=LW_FACE)
-    c.poly(_oval(sc[0] + dx * half_h, sc[1] + dy * half_h, 3.2, 1.3, tilt), fill=P["creamHi"])
+    c.poly(_oval(sc[0] + dx * half_h, sc[1] + dy * half_h, 3.8, 1.5, tilt), fill=P["creamHi"])
 
 
 def lighting_paperLantern(c: Canvas) -> None:
@@ -569,19 +572,21 @@ def lighting_paperLantern(c: Canvas) -> None:
     gy = drop + r
     paper = P["linen"]
 
-    _glow(c, cx, gy + 2.0, 22.0)
+    # The halo leans to gold: the standard room's wall is cream, and the
+    # cream halo `_glow` draws by default disappears into it.
+    _glow(c, cx, gy + 2.0, 22.0, colour=mix(P["cream"], GOLD, 0.50))
     _ceiling_plate(c, cx, 10.0, colour=P["white"])
     _cord(c, cx, drop, colour=P["ink2"])
     c.circle(cx, gy, r, fill=paper, ink=P["ink"], lw=LW_PROP)
-    # The bulb through the paper: a warm oval, then the bulb itself.
-    c.ellipse(cx, gy + 1.0, 8.5, 10.5, fill=P["cream"])
-    c.ellipse(cx, gy + 0.4, 3.6, 4.6, fill=P["creamHi"])
+    # The bulb through the paper: a warm disc with a warmer core. A lighter
+    # core read as a ring; the bulb is the yellowest point, not the whitest.
+    c.circle(cx, gy + 0.6, 8.8, fill=P["cream"])
+    c.circle(cx, gy + 0.4, 4.2, fill=mix(P["cream"], GOLD, 0.40))
     # The ribs: chords at latitude, in shadow linen. Five, not fifteen.
     for k in (-2, -1, 0, 1, 2):
         ry = gy + k * 6.2
         hw = math.sqrt(max(0.0, r * r - (ry - gy) ** 2)) - 1.4
         c.line([(cx - hw, ry), (cx + hw, ry)], P["linenSh"], 0.9)
-    c.arc(cx, gy, r - 3.0, r - 3.0, 200, 250, P["white"], 1.4)
     # The wire collars at the poles, so the paper hangs from something.
     c.ellipse(cx, gy - r + 0.6, 3.6, 1.6, fill=P["black"], ink=P["ink"], lw=LW_FACE)
     c.ellipse(cx, gy + r - 0.6, 3.6, 1.6, fill=P["black"], ink=P["ink"], lw=LW_FACE)
