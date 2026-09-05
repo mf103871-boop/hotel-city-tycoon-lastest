@@ -1,0 +1,49 @@
+{
+  "room": "cinema",
+  "items": [
+    {"id": "seating_loungeBooth", "category": "seating", "slotType": "floor", "new": false},
+    {"id": "appliance_popcornCart", "category": "appliance", "slotType": "equipment", "new": false},
+    {"id": "plant_palm", "category": "plant", "slotType": "floor", "new": false},
+    {"id": "table_sideTable", "category": "table", "slotType": "floor", "new": false},
+    {
+      "id": "wallArt_nowShowingBoard", "category": "wallArt", "slotType": "wall", "new": true,
+      "nameEn": "Now Showing Board",
+      "nameAr": "لوحة يُعرض الآن",
+      "artBrief": "A black letterboard inside a red frame studded with warm yellow marquee bulbs, three rows of small white letter tiles spelling a film title, hung high by the curtain. At 40px it reads as a dark rectangle rimmed with a ring of glowing dots; no other wall piece has a bulb-lit frame (poster, print and painting are flat framed pictures, the projector screen is a plain white sheet)."
+    },
+    {
+      "id": "lighting_exitSign", "category": "lighting", "slotType": "ceiling", "new": true,
+      "nameEn": "Glowing Exit Sign",
+      "nameAr": "لافتة خروج مضيئة",
+      "artBrief": "A wide, flat green sign box hanging from the ceiling on two short dark stems, white EXIT letters and a running-man pictogram, with a soft green glow spilling below it. At 40px it is a low glowing green bar with a halo, unlike every other lamp in the game which is a round shade, bare bulb, lantern or chandelier; drawn wide and shallow so it fills the corner box beside the projection booth."
+    },
+    {
+      "id": "rug_multiplexCarpet", "category": "rug", "slotType": "floor", "new": true,
+      "nameEn": "Multiplex Carpet",
+      "nameAr": "سجادة السينما",
+      "artBrief": "A square of deep navy-purple carpet scattered with tiny neon confetti - teal squiggles, magenta stars and yellow dots - the classic multiplex foyer carpet, no border. At 40px it reads as a dark square speckled with bright flecks; every other rug is a bordered wool, silk or Persian pattern and every flooring is a plain material."
+    },
+    {
+      "id": "flooring_aisleLights", "category": "flooring", "slotType": "floor", "new": true,
+      "nameEn": "Lit Aisle Strip",
+      "nameAr": "شريط إضاءة الممر",
+      "artBrief": "A shallow, wide charcoal floor strip along the bottom of the canvas with a row of tiny amber LED dots along its front edge and a faint amber pool of light on the floor in front, the aisle lighting of a dark cinema. At 40px it is a dark band edged with dotted light, unlike every plain flooring square (carpet, oak, marble, concrete, obsidian) and unlike any rug."
+    }
+  ],
+  "slots": [
+    {"kind": "ground", "x": 28, "y": 14, "w": 5, "h": 7, "fixture": "seating_cinemaSeats"},
+    {"kind": "ground", "x": 36, "y": 14, "w": 5, "h": 7},
+    {"kind": "ground", "x": 3, "y": 14, "w": 4, "h": 7},
+    {"kind": "ground", "x": 45, "y": 14, "w": 4, "h": 7},
+    {"kind": "wall", "x": 45, "y": 4, "w": 4, "h": 5},
+    {"kind": "ceiling", "x": 2, "y": 0, "w": 4, "h": 3},
+    {"kind": "surface", "x": 16, "y": 14, "w": 5, "h": 7},
+    {"kind": "surface", "x": 32, "y": 14, "w": 5, "h": 7}
+  ],
+  "extraFixtureSlots": [
+    {"kind": "ground", "x": 12, "y": 14, "w": 5, "h": 7, "fixture": "seating_cinemaSeats"},
+    {"kind": "ground", "x": 20, "y": 14, "w": 5, "h": 7, "fixture": "seating_cinemaSeats"}
+  ],
+  "requiredFixtures": ["seating_cinemaSeats", "seating_cinemaSeats", "seating_cinemaSeats"],
+  "designNotes": "The painted curtains (x 40-76 and 308-344 px) split the floor into a 232 px stretch in front of the screen and two 40 px end columns, and the screen and booth window rule out wall or ceiling boxes anywhere but those columns. In front of the screen sit exactly four standing pieces at even 24 px gaps: two built-in seat rows, the lounge booth taking the third row's slot as its plush upgrade, and the popcorn cart at the concession end. The palm stands in the left column below the exit sign, which is the only piece low enough (18 px) to fit above the projection booth window; the side table stands in the right column, beneath the Now Showing board hung high in the empty top-right corner where a marquee board naturally goes. The multiplex carpet lies in the gap between the two seat rows and the lit aisle strip in the gap between the booth and the popcorn cart, so both surfaces stay visible instead of hiding under a chair. Every piece is drawn at 60-100% of natural size and all eight places span the full 384 px width."
+}
