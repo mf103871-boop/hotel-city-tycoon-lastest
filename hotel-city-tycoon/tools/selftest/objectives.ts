@@ -396,12 +396,27 @@ await check('the guidance runs as far as the game does', () => {
 await check('there is something left to buy at every stage', () => {
   // Past level 40 the entire game contained one decor item. The shop is meant
   // to be the weekly reason to return, and it had nothing to offer.
+  //
+  // Decor is sold per room now, and a room's eight pieces unlock with the
+  // room, so what there is to want at a level is the rooms that open there
+  // and the sets they bring. Every band up to the last room a player can
+  // build must open pieces; past that the sets already opened are the
+  // late-game purchase path, and the shop keeps rotating them.
   const maxLevel = data.levels[data.levels.length - 1]!.level;
-  for (let band = 0; band < maxLevel; band += 10) {
+  const lastRoom = Math.max(...data.rooms.filter((r) => r.unlockLevel <= maxLevel).map((r) => r.unlockLevel));
+  assert(lastRoom >= 30, `the last room opens at level ${lastRoom} — the late game has nothing new`);
+  for (let band = 0; band <= lastRoom; band += 10) {
     const inBand = data.decor.filter((d) => d.unlockLevel >= band && d.unlockLevel < band + 10);
     assert(inBand.length >= 3,
       `levels ${band}-${band + 9} unlock only ${inBand.length} decor item(s) — nothing to want`);
   }
+  // And the sets are worth the levels: the last room's own eight cost more
+  // than a level-one room's whole set, so the late game still has a ladder.
+  const cheapest = (id: string) => data.decor.find((d) => d.id === id)!.cost.amount;
+  const early = data.decorCatalogues['economy']!.reduce((n, id) => n + cheapest(id), 0);
+  const late = data.rooms.filter((r) => r.unlockLevel === lastRoom)
+    .map((r) => data.decorCatalogues[r.id]!.reduce((n, id) => n + cheapest(id), 0));
+  assert(late.every((sum) => sum > early), 'the last room\'s set is no dearer than the budget room\'s');
 });
 
 await check('the shop does not run out of stock in a month', () => {

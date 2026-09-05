@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "tuningStatus": "per-room-catalogues-1",
+  "tuningStatus": "designed-per-room-catalogues",
   "assetKeyConvention": "decor.<category>.<name>  |  single sprite + optional _hi variant",
   "slotTypes": [
     "wall",

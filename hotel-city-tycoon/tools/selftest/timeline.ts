@@ -538,6 +538,10 @@ check('the shop hands over what it charges for', () => {
     'coins left the player and no item arrived');
 });
 
+/** The first two pieces the standard room sells — what most checks below furnish it with. */
+const STANDARD_A = catalogueFor(data, 'standard')[0]!;
+const STANDARD_B = catalogueFor(data, 'standard')[1]!;
+
 /** The floor covering (rug or flooring) a room sells — every room sells one. */
 function surfaceSoldBy(roomDefId: string): string {
   const id = catalogueFor(data, roomDefId).find((d) => {
@@ -613,6 +617,7 @@ check('every piece a room sells stands in its own place, apart from the others, 
   // and buying all eight fills the meter exactly.
   const state = fresh();
   state.player.coins += 50_000_000;
+  state.player.gems += 500;
   state.player.level = 52;
   for (const defId of ['restaurant', 'gym', 'deluxe']) {
     assert(execute(data, state, { type: 'BUILD_ROOM', defId }).ok, `could not build a ${defId}`);
@@ -862,7 +867,7 @@ function built(): { state: GameState; roomId: string } {
 check('a room can be moved, and nothing is charged or lost', () => {
   const { state, roomId } = built();
   const room = state.hotel.rooms.find((r) => r.id === roomId)!;
-  execute(data, state, { type: 'PLACE_DECOR', roomId, defId: 'wallpaper_plain', slot: 0 });
+  execute(data, state, { type: 'PLACE_DECOR', roomId, defId: STANDARD_A, slot: 0 });
   const coins = state.player.coins;
   const decorCount = room.decor.length;
 
@@ -892,7 +897,7 @@ check('a room cannot be moved off the plot', () => {
 
 check('storing and restoring returns the same room, decor and condition', () => {
   const { state, roomId } = built();
-  execute(data, state, { type: 'PLACE_DECOR', roomId, defId: 'wallpaper_plain', slot: 0 });
+  execute(data, state, { type: 'PLACE_DECOR', roomId, defId: STANDARD_A, slot: 0 });
   const room = state.hotel.rooms.find((r) => r.id === roomId)!;
   room.cleanliness = 0.9;
   const decorIds = room.decor.map((d) => d.id).join(',');
@@ -1011,10 +1016,11 @@ check('selling a room releases its staff rather than stranding them', () => {
 
 check('selling a room returns its decor instead of liquidating it', () => {
   const { state, roomId } = built();
-  execute(data, state, { type: 'PLACE_DECOR', roomId, defId: 'wallpaper_plain', slot: 0 });
-  const before = owned(state, 'wallpaper_plain');
+  const sold = catalogueFor(data, state.hotel.rooms.find((r) => r.id === roomId)!.defId)[0]!;
+  execute(data, state, { type: 'PLACE_DECOR', roomId, defId: sold, slot: 0 });
+  const before = owned(state, sold);
   assert(execute(data, state, { type: 'SELL_ROOM', roomId }).ok, 'selling failed');
-  assert(owned(state, 'wallpaper_plain') === before + 1, 'the decor was destroyed with the room');
+  assert(owned(state, sold) === before + 1, 'the decor was destroyed with the room');
 });
 
 check('a plot that cannot hold the hotel is refused', () => {
@@ -1911,16 +1917,17 @@ check('an owned piece is placed without paying again', () => {
   execute(data, state, { type: 'BUILD_ROOM', defId: 'standard' });
   const room = state.hotel.rooms[state.hotel.rooms.length - 1]!;
 
-  execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
+  const first = catalogueFor(data, 'standard')[0]!;
+  execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: first, slot: 0 });
   const piece = room.decor[0]!;
   execute(data, state, { type: 'REMOVE_DECOR', roomId: room.id, decorId: piece.id });
-  assert(owned(state, 'wallpaper_plain') === 1, 'removing did not return the piece');
+  assert(owned(state, first) === 1, 'removing did not return the piece');
 
   const before = state.player.coins;
-  assert(execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 1 }).ok,
+  assert(execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: first, slot: 0 }).ok,
     'placing the owned piece failed');
   assert(state.player.coins === before, 'placing an owned piece charged for it again');
-  assert(owned(state, 'wallpaper_plain') === 0, 'the owned copy was not consumed');
+  assert(owned(state, first) === 0, 'the owned copy was not consumed');
 });
 
 check('expansion, move, store and inventory all survive a reload', async () => {
@@ -1935,11 +1942,12 @@ check('expansion, move, store and inventory all survive a reload', async () => {
   execute(data, state, { type: 'BUILD_ROOM', defId: 'standard' });
   const room = state.hotel.rooms[state.hotel.rooms.length - 1]!;
   room.cleanliness = 1;
-  execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
+  const first = catalogueFor(data, 'standard')[0]!;
+  execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: first, slot: 0 });
   execute(data, state, { type: 'REMOVE_DECOR', roomId: room.id, decorId: room.decor[0]!.id });
   execute(data, state, { type: 'STORE_ROOM', roomId: room.id });
 
-  const ownedBefore = owned(state, 'wallpaper_plain');
+  const ownedBefore = owned(state, first);
   const storedBefore = state.storedRooms.length;
 
   const saves = new SaveManager(new MemoryStorage());
@@ -1953,7 +1961,7 @@ check('expansion, move, store and inventory all survive a reload', async () => {
 
   assert(back.state.hotel.plotId === plotAfter, 'the expanded plot did not survive');
   assert(back.state.storedRooms.length === storedBefore, 'the stored room did not survive');
-  assert(owned(back.state, 'wallpaper_plain') === ownedBefore, 'the owned decor did not survive');
+  assert(owned(back.state, first) === ownedBefore, 'the owned decor did not survive');
 });
 
 // ---------------------------------------------------------- DEC-010 position
@@ -1966,11 +1974,17 @@ check('a freshly placed piece gets a real, in-bounds anchor — not the same spo
   const room = state.hotel.rooms[state.hotel.rooms.length - 1]!;
   const rdef = roomDef(data, room.defId);
 
-  const wall = data.decor.find((d) => d.slotType === 'wall' && d.unlockLevel <= 40)!;
-  const floor = data.decor.find((d) => d.slotType !== 'wall' && d.slotType !== 'ceiling' && d.unlockLevel <= 40
-    && slotAllowed(data, rdef, d.id))!;
-  assert(execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: wall.id, slot: 0 }).ok, 'wall piece refused');
-  assert(execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: floor.id, slot: 1 }).ok, 'floor piece refused');
+  // The room's own wall piece and its own floor piece, each in its place.
+  const sold = catalogueFor(data, 'standard');
+  const wall = decorDef(data, sold.find((id) => decorDef(data, id).slotType === 'wall')!);
+  const floor = decorDef(data, sold.find((id) => !['wall', 'ceiling'].includes(decorDef(data, id).slotType)
+    && slotAllowed(data, rdef, id))!);
+  assert(execute(data, state, {
+    type: 'PLACE_DECOR', roomId: room.id, defId: wall.id, slot: sold.indexOf(wall.id),
+  }).ok, 'wall piece refused');
+  assert(execute(data, state, {
+    type: 'PLACE_DECOR', roomId: room.id, defId: floor.id, slot: sold.indexOf(floor.id),
+  }).ok, 'floor piece refused');
   const [a, b] = room.decor;
 
   for (const piece of [a!, b!]) {
@@ -1987,25 +2001,24 @@ check('a freshly placed piece gets a real, in-bounds anchor — not the same spo
   assert(a!.localY < b!.localY, `the wall piece (y=${a!.localY}) is not above the floor piece (y=${b!.localY})`);
 });
 
-check('placing two of the same piece never reuses an anchor', () => {
+check('a second copy of a piece is refused, so no anchor is ever reused', () => {
+  // Under the old rules the same rug could be bought eight times and the
+  // plan had to find eight anchors for it. A room now holds each of its
+  // pieces once, in the one place designed for it, and the second copy is
+  // refused before any money moves.
   const state = fresh();
   state.player.coins += 5_000_000;
   state.player.level = 40;
   assert(execute(data, state, { type: 'BUILD_ROOM', defId: 'standard' }).ok, 'could not build the room');
   const room = state.hotel.rooms[state.hotel.rooms.length - 1]!;
-  const rug = data.decor.find((d) => d.slotType === 'floor' && d.unlockLevel <= 40)!;
-  const seen = new Set<string>();
-  let placed = 0;
-  for (let slot = 0; slot < roomDef(data, room.defId).decorSlots && placed < 6; slot++) {
-    if (!execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: rug.id, slot }).ok) continue;
-    placed++;
-  }
-  assert(placed >= 4, `only placed ${placed} copies of the same piece — cannot check anchor spread`);
-  for (const piece of room.decor) {
-    const key = `${piece.localX},${piece.localY}`;
-    assert(!seen.has(key), `two copies of ${rug.id} share anchor ${key}`);
-    seen.add(key);
-  }
+  const rug = surfaceSoldBy('standard');
+  const slot = catalogueIndex(data, 'standard', rug);
+  assert(execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: rug, slot }).ok, 'the rug was refused');
+  const coins = state.player.coins;
+  const again = execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: rug, slot });
+  assert(!again.ok && again.reason === 'alreadyPlaced', 'a second copy of the same piece was sold');
+  assert(state.player.coins === coins, 'a refused second copy still charged');
+  assert(room.decor.length === 1, 'a refused second copy still landed');
 });
 
 check('decor position, flip and z-bias survive a reload', async () => {
@@ -2014,7 +2027,7 @@ check('decor position, flip and z-bias survive a reload', async () => {
   state.player.level = 40;
   execute(data, state, { type: 'BUILD_ROOM', defId: 'standard' });
   const room = state.hotel.rooms[state.hotel.rooms.length - 1]!;
-  execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
+  execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: catalogueFor(data, 'standard')[0]!, slot: 0 });
   const piece = room.decor[0]!;
   // Nothing sets flipX/zBias to anything but the defaults yet (no MOVE_DECOR
   // or FLIP_DECOR command exists — HC-P1-S3's own scope note), so the round
@@ -2141,19 +2154,20 @@ check('a penniless player can still place a piece they own', () => {
   state.player.level = 30;
   execute(data, state, { type: 'BUILD_ROOM', defId: 'standard' });
   const room = state.hotel.rooms[state.hotel.rooms.length - 1]!;
-  execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
+  const first = catalogueFor(data, 'standard')[0]!;
+  execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: first, slot: 0 });
   execute(data, state, { type: 'REMOVE_DECOR', roomId: room.id, decorId: room.decor[0]!.id });
 
   // Broke, but holding the piece.
   state.player.coins = 0;
   state.player.gems = 0;
-  const row = decorCatalog(state, room.id).find((d) => d.defId === 'wallpaper_plain');
+  const row = decorCatalog(state, room.id).find((d) => d.defId === first);
   assert(row, 'the owned piece vanished from the catalogue');
   assert(row.owned === 1, `the catalogue says ${row.owned} owned`);
   assert(row.blocker !== 'cannotAfford',
     'a player was told they could not afford something they already own');
 
-  const r = execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
+  const r = execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: first, slot: 0 });
   assert(r.ok, `placing an owned piece with no money failed: ${r.ok === false ? r.reason : ''}`);
   assert(state.player.coins === 0 && state.player.gems === 0, 'placing an owned piece charged');
 });
@@ -2288,7 +2302,7 @@ function soundSave(): GameState {
   execute(data, s, { type: 'BUILD_ROOM', defId: 'standard' });
   const room = s.hotel.rooms[s.hotel.rooms.length - 1]!;
   room.cleanliness = 1;
-  execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
+  execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: catalogueFor(data, 'standard')[0]!, slot: 0 });
   execute(data, s, { type: 'STORE_ROOM', roomId: room.id });
   return s;
 }
@@ -2528,7 +2542,7 @@ check('the six commands survive a real save and reload', async () => {
   execute(data, state, { type: 'BUILD_ROOM', defId: 'standard' });
   const room = state.hotel.rooms[state.hotel.rooms.length - 1]!;
   room.cleanliness = 1;
-  execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
+  execute(data, state, { type: 'PLACE_DECOR', roomId: room.id, defId: STANDARD_A, slot: 0 });
 
   const spot = findFreeSpot(data, state, roomDef(data, room.defId).blocks);
   assert(spot, 'nowhere to move to');
@@ -2536,9 +2550,9 @@ check('the six commands survive a real save and reload', async () => {
 
   assert(execute(data, state, { type: 'REMOVE_DECOR', roomId: room.id, decorId: room.decor[0]!.id }).ok, 'REMOVE_DECOR failed');
   const coinsBeforeSell = state.player.coins;
-  const def = data.decor.find((d) => d.id === 'wallpaper_plain')!;
+  const def = data.decor.find((d) => d.id === STANDARD_A)!;
   const expectedRefund = Math.round(def.cost.amount * data.economy.sellback.ratio);
-  assert(execute(data, state, { type: 'SELL_DECOR', defId: 'wallpaper_plain' }).ok, 'SELL_DECOR failed');
+  assert(execute(data, state, { type: 'SELL_DECOR', defId: STANDARD_A }).ok, 'SELL_DECOR failed');
   assert(state.player.coins === coinsBeforeSell + expectedRefund,
     `the sale paid ${state.player.coins - coinsBeforeSell}, expected ${expectedRefund}`);
 
@@ -2550,7 +2564,7 @@ check('the six commands survive a real save and reload', async () => {
     coins: state.player.coins, plotId,
     id: before.id, defId: before.defId, x: before.x, y: before.y,
     decorPoints: before.decorPoints, cleanliness: before.cleanliness, builtAtTick: before.builtAtTick,
-    owned: owned(state, 'wallpaper_plain'),
+    owned: owned(state, STANDARD_A),
   };
 
   const saves = new SaveManager(new MemoryStorage(), data);
@@ -2567,7 +2581,7 @@ check('the six commands survive a real save and reload', async () => {
   assert(after.decorPoints === snapshot.decorPoints, 'decorPoints changed across the reload');
   assert(after.cleanliness === snapshot.cleanliness, 'cleanliness changed across the reload');
   assert(after.builtAtTick === snapshot.builtAtTick, 'builtAtTick changed across the reload');
-  assert(owned(back.state, 'wallpaper_plain') === snapshot.owned, 'the inventory changed across the reload');
+  assert(owned(back.state, STANDARD_A) === snapshot.owned, 'the inventory changed across the reload');
 });
 
 // ---------------------------------------------------------------- decor identity
@@ -2588,8 +2602,8 @@ function identityFixture(): GameState {
   assert(rooms.length >= 4, 'the fixture could not build four rooms');
   for (const room of rooms) {
     room.cleanliness = 1;
-    execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
-    execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 1 });
+    execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: STANDARD_A, slot: 0 });
+    execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: STANDARD_B, slot: 1 });
   }
   execute(data, s, { type: 'STORE_ROOM', roomId: rooms[2]!.id });
   execute(data, s, { type: 'STORE_ROOM', roomId: rooms[3]!.id });
@@ -2714,7 +2728,7 @@ check('B — a stale or invalid decor counter is refused; a correct one is not',
     execute(data, s, { type: 'BUILD_ROOM', defId: 'standard' });
     const room = s.hotel.rooms[s.hotel.rooms.length - 1]!;
     room.cleanliness = 1;
-    execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 });
+    execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: STANDARD_A, slot: 0 });
     room.decor[0]!.id = id;
     s.counters.decor = counter;
     return s;
@@ -2749,7 +2763,7 @@ check('C — ownedDecor keys must exist; counts are not tied to live pieces', as
   await expectSemanticRejection('unknown owned def', unknown, 'owned decor references');
 
   const known = identityFixture();
-  known.ownedDecor['wallpaper_plain'] = 3;   // also placed in every room: allowed
+  known.ownedDecor[STANDARD_A] = 3;   // also placed in every room: allowed
   await expectSound('known def owned and placed at once', known);
 
   // Several pieces of one definition, each its own instance: allowed.
@@ -2773,8 +2787,8 @@ check('D — decor identity survives the whole command lifecycle', () => {
   const room = s.hotel.rooms[s.hotel.rooms.length - 1]!;
   room.cleanliness = 1;
   const counterBefore = s.counters.decor;
-  assert(execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 0 }).ok, 'place 1');
-  assert(execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: 'wallpaper_plain', slot: 1 }).ok, 'place 2');
+  assert(execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: STANDARD_A, slot: 0 }).ok, 'place 1');
+  assert(execute(data, s, { type: 'PLACE_DECOR', roomId: room.id, defId: STANDARD_B, slot: 1 }).ok, 'place 2');
   const [p1, p2] = room.decor.map((p) => p.id) as [string, string];
   assert(p1 !== p2, 'two placements shared an id');
   assert(s.counters.decor === counterBefore + 2, 'the counter did not advance twice');
@@ -2798,33 +2812,34 @@ check('D — decor identity survives the whole command lifecycle', () => {
   sound('after restore');
 
   const back = s.hotel.rooms.find((r) => r.id === room.id)!;
-  const ownedBefore = owned(s, 'wallpaper_plain');
+  const ownedBefore = owned(s, STANDARD_A);
   assert(execute(data, s, { type: 'REMOVE_DECOR', roomId: back.id, decorId: p1 }).ok, 'remove');
   assert(!liveDecorIds(s).has(p1), 'the removed id is still live');
-  assert(owned(s, 'wallpaper_plain') === ownedBefore + 1, 'removal returned the wrong count');
+  assert(owned(s, STANDARD_A) === ownedBefore + 1, 'removal returned the wrong count');
   sound('after remove');
 
   const coinsBefore = s.player.coins;
-  assert(execute(data, s, { type: 'PLACE_DECOR', roomId: back.id, defId: 'wallpaper_plain', slot: 0 }).ok, 're-place');
-  assert(owned(s, 'wallpaper_plain') === ownedBefore, 're-placing did not consume the owned copy');
+  assert(execute(data, s, { type: 'PLACE_DECOR', roomId: back.id, defId: STANDARD_A, slot: 0 }).ok, 're-place');
+  assert(owned(s, STANDARD_A) === ownedBefore, 're-placing did not consume the owned copy');
   assert(s.player.coins === coinsBefore, 're-placing an owned copy charged');
   const p3 = back.decor.find((p) => p.slot === 0)!.id;
   assert(p3 !== p1, 'a retired id was reused');
   sound('after re-placing from stock');
 
   execute(data, s, { type: 'REMOVE_DECOR', roomId: back.id, decorId: p3 });
-  const ownedForSale = owned(s, 'wallpaper_plain');
-  assert(execute(data, s, { type: 'SELL_DECOR', defId: 'wallpaper_plain' }).ok, 'sell');
-  assert(owned(s, 'wallpaper_plain') === ownedForSale - 1, 'selling changed the count by other than one');
+  const ownedForSale = owned(s, STANDARD_A);
+  assert(execute(data, s, { type: 'SELL_DECOR', defId: STANDARD_A }).ok, 'sell');
+  assert(owned(s, STANDARD_A) === ownedForSale - 1, 'selling changed the count by other than one');
   assert(liveDecorIds(s).has(p2), 'selling stock touched a live id');
   sound('after sell');
 
-  execute(data, s, { type: 'PLACE_DECOR', roomId: back.id, defId: 'wallpaper_plain', slot: 0 });
+  execute(data, s, { type: 'PLACE_DECOR', roomId: back.id, defId: STANDARD_A, slot: 0 });
   const livingBefore = [...liveDecorIds(s).keys()].filter((id) => back.decor.some((p) => p.id === id));
-  const ownedBeforeSale = owned(s, 'wallpaper_plain');
+  const ownedBeforeSale = owned(s, STANDARD_A) + owned(s, STANDARD_B);
   assert(execute(data, s, { type: 'SELL_ROOM', roomId: back.id }).ok, 'sell room');
   for (const id of livingBefore) assert(!liveDecorIds(s).has(id), `${id} survived the room being sold`);
-  assert(owned(s, 'wallpaper_plain') === ownedBeforeSale + livingBefore.length,
+  // One of each: the room held its first and its second piece, and both come back.
+  assert(owned(s, STANDARD_A) + owned(s, STANDARD_B) === ownedBeforeSale + livingBefore.length,
     'selling the room returned the wrong number of pieces');
   sound('after selling the room');
 });
