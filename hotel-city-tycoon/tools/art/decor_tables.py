@@ -499,7 +499,10 @@ def wallpaper_bottleGreen(c: Canvas) -> None:
     else is a repeat. The rail and the hook are the two horizontal marks on
     it, and they are brass because the bar is.
     """
-    base = BOTTLE
+    # A step darker than the banker's lamp glass: the wall-panel wrapper lets
+    # the room through the paper, and the suites' green came out sage on the
+    # bar's navy. Shaded rather than mixed, so it is still that green.
+    base = shade(BOTTLE, 0.18)
     x, y, w, h = _panel(c, base, r=2.4)
     boards = 7
     bw = (w - 2.4) / boards
