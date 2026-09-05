@@ -1,0 +1,134 @@
+{
+  "room": "maintenance",
+  "items": [
+    {
+      "id": "storage_partsBin",
+      "category": "storage",
+      "slotType": "equipment",
+      "new": false
+    },
+    {
+      "id": "table_deskWood",
+      "category": "table",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "storage_safeCabinet",
+      "category": "storage",
+      "slotType": "equipment",
+      "new": false
+    },
+    {
+      "id": "flooring_checkerPlate",
+      "category": "flooring",
+      "slotType": "floor",
+      "new": true,
+      "nameEn": "Checker Plate Floor",
+      "nameAr": "أرضية صاج مضلّع",
+      "artBrief": "A flat patch of galvanised steel checker plate lying on the floor: cool silver-grey metal with rows of small raised oval studs alternating direction, a pale highlight along the top edge and a darker band along the bottom so it reads as a sheet on the ground. At 40px it is a shiny dotted grey slab; flooring_concrete is a flat dull grey and every other flooring is polished stone or wood, none of them studded metal."
+    },
+    {
+      "id": "rug_antiFatigueMat",
+      "category": "rug",
+      "slotType": "floor",
+      "new": true,
+      "nameEn": "Anti-Fatigue Mat",
+      "nameAr": "بساط مطاطي",
+      "artBrief": "A low black rubber standing mat with rounded corners, a bright safety-yellow bevelled border all round and a faint diamond texture drawn as rows of tiny lighter dots inside. At 40px it reads as a black rectangle with a yellow rim, unlike rug_mat (a plain coir doormat) and the patterned wool, silk and Persian rugs, which are all warm fabric colours."
+    },
+    {
+      "id": "wallArt_breakerPanel",
+      "category": "wallArt",
+      "slotType": "wall",
+      "new": true,
+      "nameEn": "Breaker Panel",
+      "nameAr": "لوحة قواطع الكهرباء",
+      "artBrief": "A grey steel electrical breaker box hung on the wall with its door swung open to one side: a metalDk cabinet with a cream inner panel holding two columns of small black toggle breakers, one big red main switch at the top and a small yellow warning-triangle sticker on the open door. At 40px it is a dark box with a red dot and rows of black dashes, the only wallArt in the game that is not a picture in a frame."
+    },
+    {
+      "id": "wallpaper_breezeBlock",
+      "category": "wallpaper",
+      "slotType": "wall",
+      "new": true,
+      "nameEn": "Breeze Block Wall",
+      "nameAr": "جدار بلوك أسمنتي",
+      "artBrief": "A panel of painted cinder blocks laid in running bond: fat cool-grey concrete rectangles with pale mortar lines between them, a slightly darker recess line along each block's lower edge and one faint rust-brown drip stain near the top corner. At 40px it reads as a staggered grey brick grid, nothing like wallpaper_striped's vertical bands, wallpaper_plain's flat colour or the damask and gilded patterns."
+    },
+    {
+      "id": "lighting_cageLamp",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "new": true,
+      "nameEn": "Caged Work Lamp",
+      "nameAr": "مصباح ورشة مقفّص",
+      "artBrief": "A mechanic's cage lamp hanging from the pipe run on a short black cord: a round black cap, then a warm yellow bulb sitting inside a rounded wire cage of four dark metalDk ribs meeting at the bottom, with a soft warm glow halo behind. At 40px the dark ribs crossing the bulb are the read; lighting_bulb is a bare white bulb with no cage and lighting_lamp and lighting_pendant hang solid fabric or metal shades."
+    }
+  ],
+  "slots": [
+    {
+      "kind": "ground",
+      "x": 14,
+      "y": 14,
+      "w": 4,
+      "h": 7,
+      "fixture": "storage_toolRack"
+    },
+    {
+      "kind": "ground",
+      "x": 19,
+      "y": 14,
+      "w": 4,
+      "h": 7
+    },
+    {
+      "kind": "ground",
+      "x": 25,
+      "y": 14,
+      "w": 5,
+      "h": 7,
+      "fixture": "storage_stepLadder"
+    },
+    {
+      "kind": "surface",
+      "x": 25,
+      "y": 14,
+      "w": 5,
+      "h": 7
+    },
+    {
+      "kind": "surface",
+      "x": 19,
+      "y": 14,
+      "w": 5,
+      "h": 7
+    },
+    {
+      "kind": "wall",
+      "x": 14,
+      "y": 6,
+      "w": 6,
+      "h": 6
+    },
+    {
+      "kind": "wall",
+      "x": 28,
+      "y": 6,
+      "w": 7,
+      "h": 7
+    },
+    {
+      "kind": "ceiling",
+      "x": 20,
+      "y": 2,
+      "w": 5,
+      "h": 5
+    }
+  ],
+  "extraFixtureSlots": [],
+  "requiredFixtures": [
+    "storage_toolRack",
+    "storage_stepLadder"
+  ],
+  "designNotes": "The painted workbench (px 7-92) and toolbox (px 222-246) leave one clear run of floor, px 92-222, so exactly three standing pieces fit with 8px gaps: the parts bin beside the bench (x=14, replacing the built-in tool rack, storage for storage), the engineer's desk in the middle (x=19), and the safe cabinet at the far end by the toolbox (x=25, replacing the step ladder, which moves 40px right to lean in that corner). Both built-ins share slots because a fourth standing box cannot fit the run, and same-category replacement is what the game's fixture upgrade means. The anti-fatigue mat is centred exactly under the desk (x=19) and the checker-plate patch exactly under the safe (x=25), 8px apart, so each surface reads as the floor its piece stands on. The breaker panel hangs on the blank wall just right of the pegboard, above the parts bin (px 88-136, y 18-54), and the breeze-block wallpaper panel hangs over the safe and toolbox at the right end (px 196-252, y 15-57); both sit below the crossable pipe run and clear of the pegboard, bench and toolbox. The caged work lamp drops from the pipe run at x=20 (px 140-180, y 12-42) over the desk and its mat, in the gap between the two wall boxes so lamp and wall pieces never overlap."
+}

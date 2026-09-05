@@ -1,0 +1,34 @@
+{
+  "room": "housekeeping",
+  "items": [
+    {"id": "storage_linenShelf", "category": "storage", "slotType": "equipment", "new": false},
+    {"id": "storage_amenityShelf", "category": "storage", "slotType": "equipment", "new": false},
+    {"id": "appliance_vacuum", "category": "appliance", "slotType": "equipment", "new": false},
+    {"id": "flooring_concrete", "category": "flooring", "slotType": "floor", "new": false},
+    {"id": "rug_mat", "category": "rug", "slotType": "floor", "new": false},
+    {
+      "id": "wallArt_roomStatusBoard",
+      "category": "wallArt",
+      "slotType": "wall",
+      "new": true,
+      "nameEn": "Room Status Board",
+      "nameAr": "لوحة حالة الغرف",
+      "artBrief": "A landscape white housekeeping board in a slim grey aluminium frame, gridded into a 4x3 block of small room cells, each cell carrying one coloured status tag (mint = clean, coral = dirty, gold = in progress) and a narrow marker tray along the foot holding two markers. At 40px it reads as a white rectangle dotted with green, red and yellow squares; unlike every other wallArt it is a chart rather than a picture: no scene, no mount, no tape, no gilt frame."
+    },
+    {"id": "wallpaper_plain", "category": "wallpaper", "slotType": "wall", "new": false},
+    {"id": "lighting_bulb", "category": "lighting", "slotType": "ceiling", "new": false}
+  ],
+  "slots": [
+    {"kind": "ground", "x": 3, "y": 14, "w": 5, "h": 7, "fixture": "storage_supplyCart"},
+    {"kind": "ground", "x": 9, "y": 14, "w": 4, "h": 7, "fixture": "storage_laundryBasket"},
+    {"kind": "ground", "x": 14, "y": 14, "w": 4, "h": 7},
+    {"kind": "surface", "x": 4, "y": 14, "w": 6, "h": 7},
+    {"kind": "surface", "x": 12, "y": 14, "w": 5, "h": 7},
+    {"kind": "wall", "x": 12, "y": 7, "w": 6, "h": 5},
+    {"kind": "wall", "x": 11, "y": 12, "w": 7, "h": 4},
+    {"kind": "ceiling", "x": 12, "y": 0, "w": 5, "h": 4}
+  ],
+  "extraFixtureSlots": [],
+  "requiredFixtures": ["storage_supplyCart", "storage_laundryBasket"],
+  "designNotes": "The painted linen shelving fills the upper-left wall (px 8-66 x 14-48), so every wall and ceiling box lives in the blank right column: the bare bulb hangs from the top edge, the new Room Status Board sits beneath it at eye level where it is fully visible above the furniture, and the plain wallpaper panel drops to the skirting line so it reads as wall meeting floor rather than a picture. The floor is only 128px, so three standing boxes fill it edge to edge with 8-12px gaps: the wide linen shelf takes the supply cart's bay on the left (the wider w=5 box, since both are bay-width pieces), the deliberately narrow amenity shelf takes the laundry basket's bay in the middle, and the upright vacuum stands on the far right where its slim body hides the least wallpaper. A fourth standing piece cannot fit at a readable size, which is why the invented item is a wall chart rather than another trolley. Concrete flooring lies under the left bay and the mat spans the gap between the middle bay and the vacuum, keeping the two surfaces 20px apart. Both built-ins share catalogue slots because five standing boxes would never fit this width."
+}

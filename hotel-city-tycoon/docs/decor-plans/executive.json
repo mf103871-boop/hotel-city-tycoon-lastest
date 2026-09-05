@@ -1,0 +1,75 @@
+{
+  "room": "executive",
+  "items": [
+    {
+      "id": "seating_chaise",
+      "category": "seating",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "rug_antiquecarpet",
+      "category": "rug",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "bed_leatherWingback",
+      "category": "bed",
+      "slotType": "bed",
+      "new": true,
+      "nameEn": "Leather Wingback Bed",
+      "nameAr": "سرير جلدي مجنّح",
+      "artBrief": "A low wide bed whose headboard is a tall charcoal-leather wingback: a dark padded board with two flared 'ears' angled out at the top corners, a single line of small brass nail-heads round its edge, a crisp white duvet turned down at the top, and a folded navy throw across the foot on a dark walnut base with short square feet. At 40px it reads as a dark tall-backed bed with winged top corners, unlike the king's cream buttoned grid headboard, the queen's plain board, the canopy's overhead frame, the fourposter's posts, the floating bed's missing legs and the emperor's gilded sprawl."
+    },
+    {
+      "id": "luxury_minibar",
+      "category": "luxury",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "table_writingdesk",
+      "category": "table",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "lighting_bankersPendant",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "new": true,
+      "nameEn": "Banker's Pendant",
+      "nameAr": "مصباح المصرفي المعلّق",
+      "artBrief": "A brass rod pendant ending in a wide shallow bottle-green glass shade, oval in profile with a paler mint underside and a warm cream glow pooling beneath it, hung from a small round brass ceiling plate. At 40px it reads as a flat green lens on a thin gold stick: the plain lamp is a cream cone on a cord, the pendant a coral half-dome, the bulb a bare globe, the lantern a glazed box on a chain, and every chandelier is branched with candles or drops; nothing else in the category is green or as wide-and-flat."
+    },
+    {
+      "id": "plant_indoorolivetree",
+      "category": "plant",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "wallArt_worldClocks",
+      "category": "wallArt",
+      "slotType": "wall",
+      "new": true,
+      "nameEn": "World Clock Trio",
+      "nameAr": "ساعات التوقيت العالمي",
+      "artBrief": "A wide dark-walnut overdoor plaque carrying three small round brass-rimmed clock faces in a row (white dials, black hands set to three different hours) with a tiny cream city label under each, no picture and no gilt frame. At 40px it reads as three gold rings on a slim dark bar, a landscape strip clearly wider than tall, unlike the framed rectangles of the painting, print, poster, portrait, landscape, masterpiece and city map, the spiky metal sunburst of the sculpture wall, and the plain white projector screen."
+    }
+  ],
+  "slots": [
+    { "kind": "ground",  "x": 16, "y": 14, "w": 4, "h": 7 },
+    { "kind": "surface", "x": 17, "y": 14, "w": 6, "h": 7 },
+    { "kind": "bed",     "x": 23, "y": 14, "w": 8, "h": 6, "fixture": "bed_king" },
+    { "kind": "ground",  "x": 30, "y": 14, "w": 4, "h": 7 },
+    { "kind": "ground",  "x": 35, "y": 14, "w": 4, "h": 7 },
+    { "kind": "ceiling", "x": 34, "y": 2,  "w": 3, "h": 5 },
+    { "kind": "ground",  "x": 40, "y": 14, "w": 4, "h": 7 },
+    { "kind": "wall",    "x": 45, "y": 2,  "w": 6, "h": 4 }
+  ],
+  "extraFixtureSlots": [],
+  "requiredFixtures": ["bed_king"],
+  "designNotes": "The painted chimney breast takes the left third of the floor (px 6-110) and the door the right end (px 342-374), so all five standing pieces share the 232px run under the three arched windows at exact 8px gaps: the Chaise sits at the hearth beside the chimney breast on the Antique Carpet (a hearth rug that peeks out either side of it), the Leather Wingback Bed takes the built-in king bed's place under the first arch as its upgrade, the Minibar stands bedside under the second arch, the Writing Desk under the third, and the Indoor Olive Tree softens the doorway. Boxes are 4 units wide because 4x32px + 64px bed + four 8px gaps is exactly the free run; the bed keeps its full 64x36. The wall in this room is almost all glass and chimney, so the Banker's Pendant hangs in the only clear ceiling gap between the second and third windows, directly over the Writing Desk, and the World Clock Trio hangs as an overdoor plaque in the clear corner above the suite door (its box stops at 24px, above the door transom at 27.5px and clear of the third window). Nothing hangs over a window, the chimney breast or the door, and the single wall and ceiling boxes are at opposite ends of the room's right half."
+}

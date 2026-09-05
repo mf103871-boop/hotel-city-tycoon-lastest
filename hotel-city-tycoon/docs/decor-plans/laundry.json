@@ -1,0 +1,83 @@
+{
+  "room": "laundry",
+  "items": [
+    {
+      "id": "appliance_commercialWasher",
+      "category": "appliance",
+      "slotType": "equipment",
+      "new": true,
+      "nameEn": "Commercial Washer",
+      "nameAr": "غسالة صناعية",
+      "artBrief": "A brushed-steel industrial front-loader, squarer and heavier than the white domestic washer: dark-grey riveted body on a plinth with a yellow hazard stripe, one oversized black-rimmed porthole nearly the full width with a chunky side-hinged lever handle and pale suds behind the glass, and a slim red digital readout strip instead of dials. At 40px it reads as a grey box with a giant dark circle, where the domestic washer is white with three small coral dials and a sock in the glass and the dryer is warm-white with a vent hose and towels on its lid."
+    },
+    {
+      "id": "appliance_foldingTable",
+      "category": "appliance",
+      "slotType": "equipment",
+      "new": false
+    },
+    {
+      "id": "plant_succulent",
+      "category": "plant",
+      "slotType": "floor",
+      "new": false
+    },
+    {
+      "id": "appliance_ironingBoard",
+      "category": "appliance",
+      "slotType": "equipment",
+      "new": false
+    },
+    {
+      "id": "flooring_drainTile",
+      "category": "flooring",
+      "slotType": "floor",
+      "new": true,
+      "nameEn": "Drain Tile Floor",
+      "nameAr": "أرضية بلاط بمصرف",
+      "artBrief": "A flat band of small pale-grey non-slip ceramic tiles on a square grid with dark grout, a round chrome floor drain (concentric rings and four slot marks) dead centre, and a faint pale-blue wet sheen fanning out from the drain. At 40px it reads as a grey grid with a dark disc in the middle; concrete is a plain slab with two joints, marble and onyx are veined slabs, mosaic is coloured chips, and no other flooring has a drain."
+    },
+    {
+      "id": "wallArt_lostSockBoard",
+      "category": "wallArt",
+      "slotType": "wall",
+      "new": true,
+      "nameEn": "Lost Sock Board",
+      "nameAr": "لوحة الجوارب الضائعة",
+      "artBrief": "A landscape cork noticeboard in a pale pine frame with six odd socks pinned in two rows by coloured push-pins, each sock hanging toe-down at a slight tilt in a different pattern (striped, spotted, plain) and colour (coral, mint, room-blue, gold), plus one small cream label card in a corner. At 40px it reads as a brown rectangle with a row of bright little dangling shapes; it is neither a picture nor a chart: no scene, no mount, no tape, no gilt frame, the pinned socks are the whole piece."
+    },
+    {
+      "id": "wallpaper_utilityTile",
+      "category": "wallpaper",
+      "slotType": "wall",
+      "new": true,
+      "nameEn": "Utility Tiling",
+      "nameAr": "سيراميك المغسلة",
+      "artBrief": "A wall panel of glossy white rectangular subway tiles laid in brick bond with mid-grey grout, one course of pale-blue tiles running across at two-thirds height as a border stripe, and a slim chrome pipe run with a small red stop-tap wheel set along the foot of the panel. At 40px it reads as a white brick-grid with a single blue stripe and a metal line at the bottom; plain wallpaper is flat plaster with a skirting, striped is vertical bands, damask, velvet and gilded are patterned or ornate, mural is a scene."
+    },
+    {
+      "id": "lighting_laundryBatten",
+      "category": "lighting",
+      "slotType": "ceiling",
+      "new": true,
+      "nameEn": "Fluorescent Batten",
+      "nameAr": "مصباح فلورسنت",
+      "artBrief": "A long flat grey-metal batten hung from the ceiling on two short chains, holding one glowing cool-white fluorescent tube with pale mint end caps and a soft cool glow spilling below; the silhouette is a wide horizontal bar, clearly wider than tall. At 40px it reads as a thin bright horizontal line under a grey strip; the bulb is a single round globe on a cord, the pendant and lamp are shades, chandeliers are branched and hung with drops, and the hologram and laser rigs are coloured."
+    }
+  ],
+  "slots": [
+    {"kind": "ground", "x": 4, "y": 14, "w": 5, "h": 7, "fixture": "appliance_washer"},
+    {"kind": "ground", "x": 24, "y": 14, "w": 5, "h": 7, "fixture": "appliance_washer"},
+    {"kind": "ground", "x": 19, "y": 14, "w": 3, "h": 7},
+    {"kind": "ground", "x": 30, "y": 14, "w": 4, "h": 7},
+    {"kind": "surface", "x": 9, "y": 14, "w": 5, "h": 7},
+    {"kind": "wall", "x": 9, "y": 4, "w": 6, "h": 6},
+    {"kind": "wall", "x": 23, "y": 4, "w": 6, "h": 6},
+    {"kind": "ceiling", "x": 17, "y": 0, "w": 5, "h": 4}
+  ],
+  "extraFixtureSlots": [
+    {"kind": "ground", "x": 14, "y": 14, "w": 5, "h": 7, "fixture": "appliance_dryer"}
+  ],
+  "requiredFixtures": ["appliance_washer", "appliance_washer", "appliance_dryer"],
+  "designNotes": "The three painted bays (px 12-58, 91-137, 169-215) take 138 of the 256px floor, so every machine box is the same w=5 (40x30, filling its 42px recess) and the built-ins are ordered left to right as the work flows: washer in bay 1, dryer in bay 2, then the third bay's washer is the slot the Folding Table upgrades into, with the Ironing Board on the open 32px strip at the right wall, so a full room reads wash, dry, fold, iron. Bay 1 is the Commercial Washer's upgrade slot (a proper machine-for-machine replacement), which is why only one washer bay is ever given over to furniture; the Succulent takes the 24px gap between the dryer and the folding bay, where a floor-slot sprite still draws at 61% while any equipment piece would go small. The Drain Tile Floor fills the 40px gap between washer and dryer at full size, where the wet floor and drain belong. Both wall panels hang on the strip of blank wall above the bays (y px 6-42, crossing only the washing line, which is crossable): the Lost Sock Board over the washer-dryer gap on the left, the Utility Tiling as a splashback over the folding bay on the right, each 48x36. The Fluorescent Batten hangs dead centre at the ceiling line with 8px clear of the sock board and 16px clear of the tiling, so no lamp overlaps a picture."
+}
