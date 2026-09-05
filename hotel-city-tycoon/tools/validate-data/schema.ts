@@ -12,6 +12,7 @@ import type { ZodTypeAny } from 'zod';
 import {
   EconomySchema, RoomsSchema, ShiftsSchema, StarsSchema, GuestsSchema,
   StaffSchema, EventsSchema, PlotsSchema, DecorSchema, LevelsSchema, ObjectivesSchema, UpgradesSchema, ShopSchema, SeasonsSchema, GiftsSchema, NeighboursSchema,
+  AnimationSchema,
 } from '../../src/data/schemas/index.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -41,7 +42,18 @@ console.log(line);
 console.log('  Hotel City Tycoon — data schema');
 console.log(line);
 
-for (const [file, schema] of TARGETS) {
+/**
+ * The per-character animation files share one schema. Every file in the
+ * directory is checked, so a new character's file cannot skip validation by
+ * not being listed here.
+ */
+const ANIMATIONS = path.join(ROOT, 'data', 'animations');
+const animationTargets: Array<[string, ZodTypeAny]> = fs.existsSync(ANIMATIONS)
+  ? fs.readdirSync(ANIMATIONS).filter((f) => f.endsWith('.json')).sort()
+    .map((f) => [path.join('animations', f), AnimationSchema])
+  : [];
+
+for (const [file, schema] of [...TARGETS, ...animationTargets]) {
   const raw = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', file), 'utf8'));
   const result = schema.safeParse(raw);
   if (result.success) {

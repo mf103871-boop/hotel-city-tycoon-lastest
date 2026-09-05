@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "tuningStatus": "designed-presentation",
+  "note": "Senior, heavy, unhurried: the slowest of the staff, with a long dwell at the pass and a short one at the tables. Presentation only: nothing here moves a coin, and the simulation never reads this file (HC-P2-S1, DEC-012). Frame counts are what tools/art/gen_chars.py draws; the manifest copies the clip table from here.",
+  "id": "staff.chef",
+  "frame": {
+    "w": 48,
+    "h": 72,
+    "pivot": {
+      "x": 24,
+      "y": 70
+    },
+    "facing": "right"
+  },
+  "clips": {
+    "idle": {
+      "frames": 1,
+      "fps": 3,
+      "loop": true
+    },
+    "walk": {
+      "frames": 6,
+      "fps": 10,
+      "loop": true
+    },
+    "work": {
+      "frames": 1,
+      "fps": 8,
+      "loop": true
+    }
+  },
+  "motion": {
+    "walkSpeedBlocksPerSec": 1.3,
+    "speedJitter": 0.1,
+    "turnPauseMs": 160,
+    "liftMs": 400
+  },
+  "behaviour": {
+    "blinkEveryMs": [
+      2500,
+      5000
+    ],
+    "fidgets": [
+      "glance",
+      "shiftWeight"
+    ],
+    "fidgetEveryMs": [
+      4000,
+      8000
+    ],
+    "workWhen": "guestInRoom",
+    "patrol": {
+      "points": [
+        "staffWork",
+        "patrol1"
+      ],
+      "dwellMs": [
+        4000,
+        2000
+      ]
+    }
+  },
+  "reactions": {}
+}

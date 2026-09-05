@@ -177,6 +177,37 @@ export interface ObjectiveDef {
   rewardCoins: number; rewardGems: number;
 }
 
+/** One row of a character's sheet: how many frames, how fast, whether it loops. */
+export interface ClipDef { frames: number; fps: number; loop: boolean }
+
+/**
+ * A character's animation file — `data/animations/<kind>_<id>.json` (DEC-012).
+ *
+ * Presentation data, carried here so it reaches the bridge through the same
+ * injection everything else uses. The simulation itself never reads it; a
+ * selftest holds that line. Frame counts, rates, speeds and routines are all
+ * facts about the pictures and the way they move, not about the economy.
+ */
+export interface CharacterAnimationDef {
+  id: string;
+  frame: { w: number; h: number; pivot: { x: number; y: number }; facing: 'right' };
+  clips: Record<string, ClipDef>;
+  motion: { walkSpeedBlocksPerSec: number; speedJitter: number; turnPauseMs: number; liftMs: number };
+  behaviour: {
+    blinkEveryMs: [number, number];
+    fidgets: string[];
+    fidgetEveryMs: [number, number];
+    workWhen?: 'guestCheckingIn' | 'cleaning' | 'guestInRoom';
+    /** Waypoints to wander between and, in the same order, how long to stay at each. */
+    patrol?: { points: string[]; dwellMs: number[] };
+    sleep?: { wakeEverySec: [number, number]; awakeSec: number };
+    impatientAfter?: number;
+    angryBelow?: number;
+  };
+  /** Simulation event type → one-shot clip name. */
+  reactions: Record<string, string>;
+}
+
 export interface EconomyDef {
   start: { coins: number; gems: number; level: number; stars: number; plotBlocks: number; prebuiltRooms: string[] };
   simulation: {
@@ -275,6 +306,14 @@ export interface SimData {
   neighbours: NeighboursDef;
   seasons: SeasonDef[];
   gifts: GiftsDef;
+  /**
+   * `data/animations/*.json`, one per staff role and guest type.
+   *
+   * Never read by the simulation. It rides along so the bridge, which derives
+   * where everyone is and what they are doing, gets it through the same
+   * injection as the balance data, in the app and in the headless tools alike.
+   */
+  animations: CharacterAnimationDef[];
 }
 
 // ---------------------------------------------------------------- helpers

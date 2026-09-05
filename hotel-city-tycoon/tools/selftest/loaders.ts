@@ -137,6 +137,24 @@ check('both loaders are updated together', () => {
   eq(fromTests.size, dataFiles.length, 'the loaders read a different number of files than exist');
 });
 
+check('both loaders read the per-character animation directory', () => {
+  // HC-P2-S1: `data/animations/` holds one file per staff role and guest
+  // type. Neither loader may name those files — the set is defined by
+  // staff.json and guests.json — so both read the directory whole.
+  const files = fs.readdirSync('data/animations').filter((f) => f.endsWith('.json'));
+  assert(files.length > 0, 'data/animations is empty');
+  assert(/readDir\('animations'\)/.test(testLoader), 'the test loader does not read data/animations');
+  assert(/import\.meta\.glob\('\.\.\/\.\.\/data\/animations\/\*\.json'/.test(gameIndex),
+    'the game does not glob data/animations');
+  assert(!/animations\/[a-z_]+\.json/.test(testLoader) && !/animations\/[a-z_]+\.json/.test(gameIndex),
+    'a loader names an animation file — the directory is the contract, not the list');
+  const validator = fs.readFileSync('tools/validate-data/schema.ts', 'utf8');
+  assert(/AnimationSchema/.test(validator) && /readdirSync\(ANIMATIONS\)/.test(validator),
+    'the schema validator does not check every animation file');
+  eq(loadSimData().animations.length, files.length, 'the loader read a different number of animation files than exist');
+  console.log(`      ${files.length} animation files, read as a directory by both loaders`);
+});
+
 check('every schema is applied to exactly one file', () => {
   const validator = fs.readFileSync('tools/validate-data/schema.ts', 'utf8');
   const pairs = [...validator.matchAll(/\['([a-z]+\.json)',\s*(\w+Schema)\]/g)];

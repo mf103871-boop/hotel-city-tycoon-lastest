@@ -25,7 +25,18 @@ import giftsRaw from '../../data/gifts.json';
 import {
   EconomySchema, RoomsSchema, ShiftsSchema, StarsSchema, GuestsSchema,
   StaffSchema, EventsSchema, PlotsSchema, DecorSchema, LevelsSchema, ObjectivesSchema, UpgradesSchema, ShopSchema, SeasonsSchema, GiftsSchema, NeighboursSchema,
+  AnimationSchema,
 } from './schemas/index.ts';
+
+/**
+ * The per-character animation files, one per staff role and guest type.
+ *
+ * Loaded by glob rather than by name on purpose: the set is defined by
+ * `staff.json` and `guests.json` (the integrity validator holds the two in
+ * step), so a new character means a new file and nothing to edit here. Sorted
+ * so the order is the directory's, not the bundler's.
+ */
+const animationsRaw = import.meta.glob('../../data/animations/*.json', { eager: true, import: 'default' }) as Record<string, unknown>;
 
 /**
  * Parsed once at module load. In dev this throws loudly on malformed data;
@@ -49,6 +60,7 @@ export const GameData = {
   neighbours: NeighboursSchema.parse(neighboursRaw),
   seasons: SeasonsSchema.parse(seasonsRaw),
   gifts: GiftsSchema.parse(giftsRaw),
+  animations: Object.keys(animationsRaw).sort().map((file) => AnimationSchema.parse(animationsRaw[file])),
 } as const;
 
 // ---- lookup tables, built once ---------------------------------------
@@ -62,6 +74,7 @@ export const GuestTypeById = byId(GameData.guests.types);
 export const ShiftById = byId(GameData.shifts.shifts);
 export const PlotById = byId(GameData.plots.expansions);
 export const EventById = byId(GameData.events.events);
+export const AnimationById = byId(GameData.animations);
 
 export const GuestRooms = GameData.rooms.rooms.filter((r) => r.category === 'guest');
 export const CommercialRooms = GameData.rooms.rooms.filter((r) => r.category === 'commercial');

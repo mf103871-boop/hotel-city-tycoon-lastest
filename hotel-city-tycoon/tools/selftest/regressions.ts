@@ -431,6 +431,11 @@ await check('every data file is parsed through a schema', () => {
   for (const file of files) {
     assert(loader.includes(file), `tools/balance-sim/load-data.ts does not read data/${file}`);
   }
+  // The animation files are a directory, read whole and parsed through one
+  // schema (HC-P2-S1). A file added there is checked without anyone listing it.
+  assert(fs.existsSync('data/animations'), 'data/animations is missing');
+  assert(/AnimationSchema\.parse\(/.test(source), 'src/data never parses the animation files');
+  assert(/readDir\('animations'\)/.test(loader), 'tools/balance-sim/load-data.ts does not read data/animations');
 });
 
 await check('no translation key is defined twice', () => {
