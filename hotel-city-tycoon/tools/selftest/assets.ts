@@ -532,11 +532,13 @@ await check('the night wash never drives a channel to its ceiling', () => {
  *
  * These are not the save-time bug below — `save_png` is lossless now — they
  * are ART-0 §13's other rule: "لا نعتمد على تفاصيل أصغر من بكسلين فعليين بعد
- * التصغير". The nine wallpapers carry a repeating pattern whose stroke is
- * under two device pixels at 1x, so the supersample average erases it and 23%
- * of the sprite goes with it. Fixing that means redrawing the patterns coarser,
- * which is an art decision; listing them keeps it visible and keeps the check
- * honest about what it is not covering.
+ * التصغير". The wallpapers carry a repeating pattern whose stroke is under
+ * two device pixels at 1x, so the supersample average erases it and 23% of
+ * the sprite goes with it — every panel `_as_wall_panel` wraps shows the same
+ * 23%, the four per-room ones (utility tiling, sprinkle, bottle green, pool
+ * mosaic) exactly like the nine before them. Fixing that means redrawing the
+ * patterns coarser, which is an art decision; listing them keeps it visible
+ * and keeps the check honest about what it is not covering.
  */
 const KNOWN_1X_TONE_LOSS = new Set([
   'decor/appliance_foldingTable.png', 'decor/lighting_laserRig.png',
@@ -545,6 +547,8 @@ const KNOWN_1X_TONE_LOSS = new Set([
   'decor/wallpaper_animatedAurora.png', 'decor/wallpaper_damask.png',
   'decor/wallpaper_gilded.png', 'decor/wallpaper_gildedpanelling.png',
   'decor/wallpaper_handpaintedsilk.png', 'decor/wallpaper_mural.png',
+  'decor/wallpaper_utilityTile.png', 'decor/wallpaper_sprinkleWall.png',
+  'decor/wallpaper_bottleGreen.png', 'decor/wallpaper_poolMosaic.png',
   'decor/wallpaper_plain.png', 'decor/wallpaper_striped.png',
   'decor/wallpaper_velvet.png',
 ]);
