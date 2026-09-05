@@ -1,0 +1,133 @@
+{
+ "room": "presidential",
+ "items": [
+  {
+   "id": "bed_stateBed",
+   "category": "bed",
+   "slotType": "bed",
+   "new": true,
+   "nameEn": "State Bed",
+   "nameAr": "السرير الرئاسي",
+   "artBrief": "A dais bed: a wide crimson-quilted mattress on a two-step gilt platform, with a gold crown-shaped corona mounted high above the headboard from which navy drapes sweep down and out to both sides, tied back with gold cords. At 40px it reads as a bed under a golden crown with a V of blue curtain behind it; no other bed has a crown, drapes falling from a single point, or a stepped plinth (the canopy bed has a flat fabric roof on four posts, the four-poster bare turned posts, the emperor a tall arched headboard)."
+  },
+  {
+   "id": "seating_throne",
+   "category": "seating",
+   "slotType": "floor",
+   "new": false
+  },
+  {
+   "id": "table_crystalTable",
+   "category": "table",
+   "slotType": "floor",
+   "new": false
+  },
+  {
+   "id": "luxury_piano",
+   "category": "luxury",
+   "slotType": "floor",
+   "new": false
+  },
+  {
+   "id": "luxury_goldStatue",
+   "category": "luxury",
+   "slotType": "floor",
+   "new": false
+  },
+  {
+   "id": "flooring_onyxfloor",
+   "category": "flooring",
+   "slotType": "floor",
+   "new": false
+  },
+  {
+   "id": "wallArt_crossedStandards",
+   "category": "wallArt",
+   "slotType": "wall",
+   "new": true,
+   "nameEn": "Crossed Standards",
+   "nameAr": "الرايات المتقاطعة",
+   "artBrief": "Two ceremonial standards crossed in an X on the wall: dark polished poles with gold spearhead finials, one banner crimson and one navy, each gold-fringed with a single gold star, a round gilt laurel medallion covering the crossing and two tassels hanging beneath it. At 40px it reads as a gold X carrying two coloured flags; it is frameless like the sunburst but a diagonal-cross silhouette, and nothing else in wall art has poles, flags or a medallion at a crossing."
+  },
+  {
+   "id": "lighting_constellationlights",
+   "category": "lighting",
+   "slotType": "ceiling",
+   "new": false
+  }
+ ],
+ "slots": [
+  {
+   "kind": "bed",
+   "x": 26,
+   "y": 30,
+   "w": 8,
+   "h": 6,
+   "fixture": "bed_fourposter"
+  },
+  {
+   "kind": "ground",
+   "x": 15,
+   "y": 16,
+   "w": 5,
+   "h": 7
+  },
+  {
+   "kind": "ground",
+   "x": 24,
+   "y": 16,
+   "w": 5,
+   "h": 7
+  },
+  {
+   "kind": "ground",
+   "x": 17,
+   "y": 30,
+   "w": 5,
+   "h": 7
+  },
+  {
+   "kind": "ground",
+   "x": 46,
+   "y": 30,
+   "w": 4,
+   "h": 7
+  },
+  {
+   "kind": "surface",
+   "x": 17,
+   "y": 30,
+   "w": 6,
+   "h": 7
+  },
+  {
+   "kind": "wall",
+   "x": 30,
+   "y": 7,
+   "w": 7,
+   "h": 7
+  },
+  {
+   "kind": "ceiling",
+   "x": 15,
+   "y": 2,
+   "w": 5,
+   "h": 5
+  }
+ ],
+ "extraFixtureSlots": [
+  {
+   "kind": "bed",
+   "x": 6,
+   "y": 16,
+   "w": 8,
+   "h": 6,
+   "fixture": "bed_fourposter"
+  }
+ ],
+ "requiredFixtures": [
+  "bed_fourposter",
+  "bed_fourposter"
+ ],
+ "designNotes": "The suite has two standing lines, so the plan uses both: the lower salon between the entrance doors (x 28-106px) and the stair (x 250-346px) takes the State Bed at its centre with the grand piano on the onyx floor patch beside it, and the gold statue stands in the narrow strip right of the stair foot (x 352-384px) so the far right edge is used. One built-in four-poster keeps its slot under the State Bed (the upgrade), and the second is moved up to the mezzanine sleeping gallery at the left, which stops the two beds sitting jammed side by side under the deck as the old plan had them and gives every standing piece 20px or more of clear floor. The throne stands on the mezzanine between the two upper windows directly under the constellation lights, which hang on the only ceiling stretch between the windows (x 100-140px), and the crystal table sits further right at the stair head. The Crossed Standards hang at natural size on the one large blank wall, between the right upper window and the tall window (x 212-268px, y 21-63px), clear of the balustrade below and well apart from the lamp. The lower-left 28px strip beside the doors is deliberately left empty because nothing fits there at a readable size."
+}
