@@ -1,41 +1,134 @@
 {
-  "room": "staffRoom",
-  "items": [
-    {"id": "storage_miniFridge", "category": "storage", "slotType": "equipment", "new": false},
-    {"id": "appliance_snackVending", "category": "appliance", "slotType": "equipment", "new": true,
-     "nameEn": "Snack Vending Machine",
-     "nameAr": "آلة بيع الوجبات الخفيفة",
-     "artBrief": "A squat twin-front vending machine that fills the equipment canvas edge to edge: a dark navy cabinet with two tall glass windows side by side, each showing three shelves of bright coral, gold and mint packet dots, a lit cream price strip and coin slot between them, and a dark dispensing flap along the bottom. At 32px it reads as a dark block with two glowing dotted windows, unlike the cream coffeeMachine (small box with a jug), the chrome espressoBar, the clear curved-glass cakeDisplay on a chrome base and the beerTap; it is the only appliance that is a dark cabinet with a grid of colour inside."},
-    {"id": "seating_staffSofa", "category": "seating", "slotType": "floor", "new": false},
-    {"id": "plant_bonsai", "category": "plant", "slotType": "floor", "new": false},
-    {"id": "rug_antiFatigueMat", "category": "rug", "slotType": "floor", "new": true,
-     "nameEn": "Anti-Fatigue Mat",
-     "nameAr": "حصيرة مطاطية",
-     "artBrief": "A black rubber anti-fatigue mat lying flat: a thick charcoal rectangle with a bevelled bright-yellow border, a faint grid of small grey drainage holes across the top surface and a slightly lighter front edge to show its thickness. At 40px it is a dark block with a yellow outline, nothing like the tan coir doormat (rug_mat), the curled teal yogaMat, the long red entranceRunner or the patterned fabric rugs."},
-    {"id": "flooring_scuffedLino", "category": "flooring", "slotType": "floor", "new": true,
-     "nameEn": "Scuffed Lino Tiles",
-     "nameAr": "بلاط مشمّع",
-     "artBrief": "A square of institutional vinyl tiles: a 2x2 grid of pale sage-green lino squares split by thin grey seams, one square a shade darker, with two short dark-grey scuff streaks and one tiny lighter chip; matte and flat with no gloss or veining. At 40px it reads as a soft green cross-seamed square, unlike the white veined marble, the tiny multicolour mosaic, the plain grey concrete, the fuzzy carpet, the oak planks, the glossy black obsidian, the herringbone parquet and the banded onyx."},
-    {"id": "wallArt_starEmployee", "category": "wallArt", "slotType": "wall", "new": true,
-     "nameEn": "Star Employee Frame",
-     "nameAr": "إطار موظف الشهر",
-     "artBrief": "An employee-of-the-month frame: a plain dark-walnut rectangular frame around a pale blue-grey photo of a smiling chibi staffer in a navy hotel uniform with a name lanyard, a big gold five-point star stuck over the top-right corner and a small brass plaque along the bottom rail. At 40px it is a dark rectangle with a pale face and one gold star, unlike the gilt oval commissionedportrait, the taped-up poster, the landscape painting and print, the sculptureWall and the cityMap; the star and the flat photo-booth colouring say staff room, not gallery."},
-    {"id": "lighting_exitSign", "category": "lighting", "slotType": "ceiling", "new": true,
-     "nameEn": "Glowing Exit Sign",
-     "nameAr": "لافتة مخرج مضيئة",
-     "artBrief": "A green emergency exit sign hanging from the ceiling on a short black bracket: a shallow rounded rectangle in bright signal green with a white running figure and a white arrow, and a faint green glow beneath it, drawn wide and low so it fills the top of a small box. At 24px it is a green pill with white marks, the only lighting piece in the game that is a sign rather than a lamp: no bulb, no shade, no chain, no crystal."}
-  ],
-  "slots": [
-    {"kind": "ground",  "x": 14, "y": 14, "w": 5, "h": 7, "fixture": "storage_lockers"},
-    {"kind": "ground",  "x": 30, "y": 14, "w": 4, "h": 7, "fixture": "appliance_coffeeMachine"},
-    {"kind": "ground",  "x": 20, "y": 14, "w": 5, "h": 7},
-    {"kind": "ground",  "x": 25, "y": 14, "w": 3, "h": 7},
-    {"kind": "surface", "x": 14, "y": 14, "w": 5, "h": 7},
-    {"kind": "surface", "x": 28, "y": 14, "w": 6, "h": 7},
-    {"kind": "wall",    "x": 13, "y": 5,  "w": 7, "h": 6},
-    {"kind": "ceiling", "x": 25, "y": 0,  "w": 3, "h": 5}
-  ],
-  "extraFixtureSlots": [],
-  "requiredFixtures": ["storage_lockers", "appliance_coffeeMachine"],
-  "designNotes": "The painted kitchenette owns the left 90px, so the only usable floor is the 166px to its right; four standing pieces at 40/40/24/32px with 8px gaps use every unit of it, from the mini fridge tight against the counter (taking over the built-in lockers' slot) to the vending machine in the far right corner under the window (taking the coffee machine's slot, the built-in moved right so the sofa can have the centre). The staff sofa sits full size in the middle directly beneath the noticeboard, with the small bonsai between it and the machine. The rubber anti-fatigue mat lies where staff stand at the counter, under the fridge, and the lino patch sits at the opposite end under the bonsai and vending machine so the two surfaces frame the room. The wall has exactly one blank stretch between the cupboards and the noticeboard, which is where the star-employee frame hangs at the same height as the board; the exit sign hangs from the ceiling in the gap between the noticeboard and the window, clear of the frame."
+ "room": "staffRoom",
+ "items": [
+  {
+   "id": "storage_miniFridge",
+   "category": "storage",
+   "slotType": "equipment",
+   "new": false
+  },
+  {
+   "id": "appliance_snackVending",
+   "category": "appliance",
+   "slotType": "equipment",
+   "new": true,
+   "nameEn": "Snack Vending Machine",
+   "nameAr": "آلة بيع الوجبات الخفيفة",
+   "artBrief": "A squat twin-front vending machine that fills the equipment canvas edge to edge: a dark navy cabinet with two tall glass windows side by side, each showing three shelves of bright coral, gold and mint packet dots, a lit cream price strip and coin slot between them, and a dark dispensing flap along the bottom. At 32px it reads as a dark block with two glowing dotted windows, unlike the cream coffeeMachine (small box with a jug), the chrome espressoBar, the clear curved-glass cakeDisplay on a chrome base and the beerTap; it is the only appliance that is a dark cabinet with a grid of colour inside."
+  },
+  {
+   "id": "seating_staffSofa",
+   "category": "seating",
+   "slotType": "floor",
+   "new": false
+  },
+  {
+   "id": "plant_bonsai",
+   "category": "plant",
+   "slotType": "floor",
+   "new": false
+  },
+  {
+   "id": "rug_kitchenMat",
+   "category": "rug",
+   "slotType": "floor",
+   "new": true,
+   "nameEn": "Kitchenette Mat",
+   "nameAr": "بساط المطبخ الصغير",
+   "artBrief": "A small cotton runner by the kitchenette: cream ground with three thin coral and mint stripes running lengthways, a tea-ring stain near one end and fringed short edges. Striped and stained, unlike the rubber mats and woven rugs."
+  },
+  {
+   "id": "flooring_scuffedLino",
+   "category": "flooring",
+   "slotType": "floor",
+   "new": true,
+   "nameEn": "Scuffed Lino Tiles",
+   "nameAr": "بلاط مشمّع",
+   "artBrief": "A square of institutional vinyl tiles: a 2x2 grid of pale sage-green lino squares split by thin grey seams, one square a shade darker, with two short dark-grey scuff streaks and one tiny lighter chip; matte and flat with no gloss or veining. At 40px it reads as a soft green cross-seamed square, unlike the white veined marble, the tiny multicolour mosaic, the plain grey concrete, the fuzzy carpet, the oak planks, the glossy black obsidian, the herringbone parquet and the banded onyx."
+  },
+  {
+   "id": "wallArt_starEmployee",
+   "category": "wallArt",
+   "slotType": "wall",
+   "new": true,
+   "nameEn": "Star Employee Frame",
+   "nameAr": "إطار موظف الشهر",
+   "artBrief": "An employee-of-the-month frame: a plain dark-walnut rectangular frame around a pale blue-grey photo of a smiling chibi staffer in a navy hotel uniform with a name lanyard, a big gold five-point star stuck over the top-right corner and a small brass plaque along the bottom rail. At 40px it is a dark rectangle with a pale face and one gold star, unlike the gilt oval commissionedportrait, the taped-up poster, the landscape painting and print, the sculptureWall and the cityMap; the star and the flat photo-booth colouring say staff room, not gallery."
+  },
+  {
+   "id": "lighting_stringBulbs",
+   "category": "lighting",
+   "slotType": "ceiling",
+   "new": true,
+   "nameEn": "String Bulbs",
+   "nameAr": "سلسلة مصابيح",
+   "artBrief": "A short string of five small party bulbs in coral, mint, gold, sky and cream hung in a shallow sag between two ceiling hooks — a birthday leftover nobody took down. A sagging row of coloured dots, unlike every single lamp."
+  }
+ ],
+ "slots": [
+  {
+   "kind": "ground",
+   "x": 14,
+   "y": 14,
+   "w": 5,
+   "h": 7,
+   "fixture": "storage_lockers"
+  },
+  {
+   "kind": "ground",
+   "x": 30,
+   "y": 14,
+   "w": 4,
+   "h": 7,
+   "fixture": "appliance_coffeeMachine"
+  },
+  {
+   "kind": "ground",
+   "x": 20,
+   "y": 14,
+   "w": 5,
+   "h": 7
+  },
+  {
+   "kind": "ground",
+   "x": 25,
+   "y": 14,
+   "w": 3,
+   "h": 7
+  },
+  {
+   "kind": "surface",
+   "x": 14,
+   "y": 14,
+   "w": 5,
+   "h": 7
+  },
+  {
+   "kind": "surface",
+   "x": 28,
+   "y": 14,
+   "w": 6,
+   "h": 7
+  },
+  {
+   "kind": "wall",
+   "x": 13,
+   "y": 5,
+   "w": 7,
+   "h": 6
+  },
+  {
+   "kind": "ceiling",
+   "x": 25,
+   "y": 0,
+   "w": 3,
+   "h": 5
+  }
+ ],
+ "extraFixtureSlots": [],
+ "requiredFixtures": [
+  "storage_lockers",
+  "appliance_coffeeMachine"
+ ],
+ "designNotes": "The painted kitchenette owns the left 90px, so the only usable floor is the 166px to its right; four standing pieces at 40/40/24/32px with 8px gaps use every unit of it, from the mini fridge tight against the counter (taking over the built-in lockers' slot) to the vending machine in the far right corner under the window (taking the coffee machine's slot, the built-in moved right so the sofa can have the centre). The staff sofa sits full size in the middle directly beneath the noticeboard, with the small bonsai between it and the machine. The rubber anti-fatigue mat lies where staff stand at the counter, under the fridge, and the lino patch sits at the opposite end under the bonsai and vending machine so the two surfaces frame the room. The wall has exactly one blank stretch between the cupboards and the noticeboard, which is where the star-employee frame hangs at the same height as the board; the exit sign hangs from the ceiling in the gap between the noticeboard and the window, clear of the frame."
 }

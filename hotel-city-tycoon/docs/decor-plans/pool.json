@@ -1,0 +1,152 @@
+{
+ "room": "pool",
+ "items": [
+  {
+   "id": "luxury_divingBoard",
+   "category": "luxury",
+   "slotType": "floor",
+   "new": false
+  },
+  {
+   "id": "plant_poolPalm",
+   "category": "plant",
+   "slotType": "floor",
+   "new": false
+  },
+  {
+   "id": "flooring_deckTiles",
+   "category": "flooring",
+   "slotType": "floor",
+   "new": true,
+   "nameEn": "Deck Tiles",
+   "nameAr": "بلاط السطح",
+   "artBrief": "A band of pale sand-coloured non-slip deck tiles with a wavy blue border tile along the front edge and a small drain grille. Sand tiles with a blue wave edge, unlike every indoor floor."
+  },
+  {
+   "id": "rug_swimTowel",
+   "category": "rug",
+   "slotType": "floor",
+   "new": true,
+   "nameEn": "Striped Swim Towel",
+   "nameAr": "منشفة سباحة مخططة",
+   "artBrief": "A beach towel spread flat on the deck: broad sky-blue and white stripes, one corner folded back, a pair of orange flip-flops on it. Striped and casual, unlike every rug."
+  },
+  {
+   "id": "wallpaper_poolMosaic",
+   "category": "wallpaper",
+   "slotType": "wall",
+   "new": true,
+   "nameEn": "Pool Mosaic",
+   "nameAr": "فسيفساء المسبح",
+   "artBrief": "A wall panel of small square glass mosaic tiles in three blues and one mint, laid in a grid with a wavy darker-blue line running across the middle. Tiny bright blue tiles, unlike the papers and panels."
+  },
+  {
+   "id": "wallArt_lifeguardBoard",
+   "category": "wallArt",
+   "slotType": "wall",
+   "new": true,
+   "nameEn": "Lifeguard Board",
+   "nameAr": "لوحة المنقذ",
+   "artBrief": "A white board in a red frame with a red cross, a depth figure and three pictogram rules in a row beneath. Red-framed white with a cross, unlike every framed picture."
+  },
+  {
+   "id": "lighting_poolFloodlight",
+   "category": "lighting",
+   "slotType": "ceiling",
+   "new": true,
+   "nameEn": "Pool Floodlight",
+   "nameAr": "كشاف المسبح",
+   "artBrief": "A pair of square metal floodlight heads on a short bracket hung from the ceiling, tilted down, with a cool white glow. Twin square heads on a bracket, unlike every shade."
+  },
+  {
+   "id": "lighting_heatLamp",
+   "category": "lighting",
+   "slotType": "ceiling",
+   "new": true,
+   "nameEn": "Heat Lamp",
+   "nameAr": "مصباح تدفئة",
+   "artBrief": "A wide shallow steel dome hung on a short rod with a coral-orange element glowing inside its mouth. A flat wide dome with an orange glow, unlike the cool lamps."
+  }
+ ],
+ "slots": [
+  {
+   "kind": "ground",
+   "x": 62,
+   "y": 10,
+   "w": 4,
+   "h": 7
+  },
+  {
+   "kind": "ground",
+   "x": 57,
+   "y": 10,
+   "w": 3,
+   "h": 7
+  },
+  {
+   "kind": "surface",
+   "x": 4,
+   "y": 10,
+   "w": 6,
+   "h": 7
+  },
+  {
+   "kind": "surface",
+   "x": 60,
+   "y": 10,
+   "w": 6,
+   "h": 7
+  },
+  {
+   "kind": "wall",
+   "x": 22,
+   "y": 5,
+   "w": 5,
+   "h": 6
+  },
+  {
+   "kind": "wall",
+   "x": 40,
+   "y": 5,
+   "w": 5,
+   "h": 6
+  },
+  {
+   "kind": "ceiling",
+   "x": 16,
+   "y": 0,
+   "w": 4,
+   "h": 4
+  },
+  {
+   "kind": "ceiling",
+   "x": 46,
+   "y": 0,
+   "w": 4,
+   "h": 4
+  }
+ ],
+ "extraFixtureSlots": [
+  {
+   "kind": "ground",
+   "x": 2,
+   "y": 10,
+   "w": 3,
+   "h": 7,
+   "fixture": "seating_sunLounger"
+  },
+  {
+   "kind": "ground",
+   "x": 6,
+   "y": 10,
+   "w": 3,
+   "h": 7,
+   "fixture": "luxury_parasol"
+  }
+ ],
+ "requiredFixtures": [
+  "seating_sunLounger",
+  "luxury_parasol"
+ ],
+ "designNotes": "The basin (px 70-442) is most of the floor, so the deck is two strips: the built-in lounger and parasol keep the left strip and the diving board and palm take the right strip with 8-12px gaps, the board at the very end of the pool. The deck tiles lie under the loungers and the swim towel under the palm. The blank wall between the left window and the lifebuoy carries the mosaic, the stretch between the lifebuoy and the right window the lifeguard board, and the two lamps hang in the ceiling gaps beside them, never over a window or the lifebuoy."
+}

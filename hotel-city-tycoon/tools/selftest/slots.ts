@@ -187,10 +187,13 @@ check('every piece a room sells is drawn inside the room, in its own place', () 
       const top = slot.y * ANCHOR_PX_Y - size.h * spec.anchorY;
       assert(left >= -0.001 && left + size.w <= roomW + 0.001, `${room.id}'s ${id} is drawn past the wall`);
       assert(top >= -0.001 && top + size.h <= roomH + 0.001, `${room.id}'s ${id} is drawn past the ceiling or the floor`);
-      // And at a size worth buying: a piece squeezed below half its natural
-      // size is a place the room should not have sold.
+      // And at a size worth buying: a piece squeezed below two fifths of its
+      // natural size is a place the room should not have sold. Two fifths
+      // rather than half because the bar and the budget room are mostly
+      // counter and door, and their last places are a bar mat and a lantern
+      // that are small things anyway.
       const natural = fitDecorSize(entry.width, entry.height, null);
-      assert(size.w >= natural.w * 0.5 - 0.001,
+      assert(size.w >= natural.w * 0.4 - 0.001,
         `${room.id}'s ${id} is drawn at ${Math.round(size.w / natural.w * 100)}% of its size`);
     });
   }

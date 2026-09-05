@@ -1,0 +1,131 @@
+{
+ "room": "double",
+ "items": [
+  {
+   "id": "bed_twinBrass",
+   "category": "bed",
+   "slotType": "bed",
+   "new": true,
+   "nameEn": "Brass Twin Bed",
+   "nameAr": "سرير مفرد نحاسي",
+   "artBrief": "A twin bed with a brass tube frame: two tall uprights with ball finials at the head, a lower rail at the foot, a white quilt with a navy stripe folded across the foot. Reads by the shine of the gold rails against the white bedding; no wooden headboard anywhere."
+  },
+  {
+   "id": "bed_twinOak",
+   "category": "bed",
+   "slotType": "bed",
+   "new": true,
+   "nameEn": "Oak Twin Bed",
+   "nameAr": "سرير مفرد من البلوط",
+   "artBrief": "A twin bed with a plain solid oak headboard, slightly taller than its footboard, both slab-shaped with rounded top corners, a mint quilt with two cream pillows. The slab headboard and mint bedding tell it from the brass bed beside it."
+  },
+  {
+   "id": "table_twinNightstand",
+   "category": "table",
+   "slotType": "floor",
+   "new": true,
+   "nameEn": "Twin Nightstand",
+   "nameAr": "كومودينو مزدوج",
+   "artBrief": "A narrow two-drawer bedside chest in pale oak with a small round brass lamp on top under a cream shade. Taller than it is wide, so it reads as a bedside tower rather than a table."
+  },
+  {
+   "id": "luxury_chevalMirror",
+   "category": "luxury",
+   "slotType": "floor",
+   "new": true,
+   "nameEn": "Cheval Mirror",
+   "nameAr": "مرآة قائمة",
+   "artBrief": "A tall oval cheval mirror on two splayed walnut legs, tilted slightly back, its glass a pale sky blue with one diagonal highlight. Its tall oval outline is unlike every other luxury piece."
+  },
+  {
+   "id": "rug_silkRug",
+   "category": "rug",
+   "slotType": "floor",
+   "new": false
+  },
+  {
+   "id": "flooring_mosaic",
+   "category": "flooring",
+   "slotType": "floor",
+   "new": false
+  },
+  {
+   "id": "wallpaper_velvet",
+   "category": "wallpaper",
+   "slotType": "wall",
+   "new": false
+  },
+  {
+   "id": "lighting_crystalTiers",
+   "category": "lighting",
+   "slotType": "ceiling",
+   "new": false
+  }
+ ],
+ "slots": [
+  {
+   "kind": "bed",
+   "x": 5,
+   "y": 14,
+   "w": 8,
+   "h": 6,
+   "fixture": "bed_single"
+  },
+  {
+   "kind": "bed",
+   "x": 15,
+   "y": 14,
+   "w": 8,
+   "h": 6,
+   "fixture": "bed_single"
+  },
+  {
+   "kind": "ground",
+   "x": 22,
+   "y": 14,
+   "w": 4,
+   "h": 7
+  },
+  {
+   "kind": "ground",
+   "x": 30,
+   "y": 14,
+   "w": 3,
+   "h": 7
+  },
+  {
+   "kind": "surface",
+   "x": 5,
+   "y": 14,
+   "w": 6,
+   "h": 7
+  },
+  {
+   "kind": "surface",
+   "x": 15,
+   "y": 14,
+   "w": 6,
+   "h": 7
+  },
+  {
+   "kind": "wall",
+   "x": 22,
+   "y": 8,
+   "w": 5,
+   "h": 6
+  },
+  {
+   "kind": "ceiling",
+   "x": 22,
+   "y": 0,
+   "w": 4,
+   "h": 4
+  }
+ ],
+ "extraFixtureSlots": [],
+ "requiredFixtures": [
+  "bed_single",
+  "bed_single"
+ ],
+ "designNotes": "The door (px 196-228) leaves one long run of floor, so the two beds take the two built-ins' places under the windows with 16px between them, the nightstand stands between the second bed and the door, and the cheval mirror takes the narrow strip past the door. The only wall wide enough for a picture at readable size is the stretch between the right window and the door, so the velvet panel hangs there with the chandelier above it, box to box without overlapping. Each rug lies under its own bed."
+}
