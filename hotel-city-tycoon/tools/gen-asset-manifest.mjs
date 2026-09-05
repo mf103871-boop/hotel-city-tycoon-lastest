@@ -48,6 +48,22 @@ for (const room of rooms) {
       }[variant],
     });
   }
+  // A room only declares a front layer when it drew one. The generator writes
+  // `rooms/<id>_front.png` for a RoomSpec with a `front` routine and for no
+  // other, so the file on disk is the whole of the contract — and the manifest
+  // must not promise one nobody drew, or `assets.ts` fails on a missing file.
+  if (fs.existsSync(`public/assets/rooms/${room.id}_front.png`)) {
+    add({
+      key: `room.${room.id}.front`,
+      bundle: 'rooms',
+      file: `rooms/${room.id}_front.png`,
+      width: w,
+      height: h,
+      required: false,
+      note: 'The furniture people stand behind — a counter, a desk. Transparent '
+        + 'everywhere else, and drawn above the band the characters sort in.',
+    });
+  }
 }
 
 // ---- decor: single sprites, sized by slot ---------------------------------

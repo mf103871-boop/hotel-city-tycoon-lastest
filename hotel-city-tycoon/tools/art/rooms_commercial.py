@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from hcstyle import (
     P, RoomSpec, Canvas, LW_PROP, LW_DETAIL, LW_FACE,
-    alpha, shade, tint, mix, math, window, counter,
+    alpha, shade, tint, mix, math, window, counter, FOOT_OVERHANG,
 )
 from hcvariants import seeded
 
@@ -63,7 +63,7 @@ def neon(c: Canvas, pts, colour, lw: float = 2.0) -> None:
     c.blit(glow, 0, 0)
 
 
-def service_counter(c: Canvas, x, fy, w, h, body, top) -> None:
+def service_counter(c: Canvas, x, fy, w, h, body, top, skirt: float = 0.0) -> None:
     """
     The shared `counter()` with a timber top you can actually see.
 
@@ -72,7 +72,7 @@ def service_counter(c: Canvas, x, fy, w, h, body, top) -> None:
     too thin for a cafe or a bar where the top edge is the thing the eye lands
     on. This puts a deeper slab over it and keeps everything else shared.
     """
-    counter(c, x, fy, w, h, body=body, top=top)
+    counter(c, x, fy, w, h, body=body, top=top, skirt=skirt)
     c.rrect(x - 1.4, fy - h - 3.0, w + 2.8, 4.8, r=1.8, fill=top, ink=P["ink"], lw=LW_DETAIL)
 
 
@@ -231,6 +231,11 @@ def restaurant(c: Canvas, fy: float) -> None:
 
 # --------------------------------------------------------------------- bar
 
+#: The bar counter's width. One definition: the art draws it and
+#: `roomWaypoints.ts` stands the bartender behind it.
+BAR_COUNTER_W = 156.0
+
+
 def bar(c: Canvas, fy: float) -> None:
     """
     A back-bar of bottles over a heavy counter, on a navy wall.
@@ -258,14 +263,6 @@ def bar(c: Canvas, fy: float) -> None:
             c.rect(bxx + 1.2, y - bh + 3.0, 4.0, 2.6, fill=tint(col, 0.55))
         c.rect(sx + 2, y, sw - 4, 2.6, fill=P["woodPale"], ink=P["ink"], lw=LW_FACE)
 
-    # The counter, with a brass foot rail. The rail is what makes it a bar and
-    # not a reception desk, and it fills the gap the missing stools leave.
-    cw = 156.0
-    service_counter(c, 12, fy, cw, 26, body=P["woodDk"], top=P["woodPale"])
-    c.line([(16, fy - 6.0), (12 + cw - 4, fy - 6.0)], P["gold"], LW_PROP)
-    for x in (22.0, 12 + cw - 10):
-        c.line([(x, fy - 6.0), (x, fy - 1.0)], P["goldDk"], LW_DETAIL)
-
     # A hanging glass rack over the far end: fixed to the ceiling, and the one
     # piece of sparkle in an otherwise dark room.
     rx, rw = w - 74.0, 62.0
@@ -275,6 +272,22 @@ def bar(c: Canvas, fy: float) -> None:
         c.poly([(gx - 6, 14), (gx + 6, 14), (gx, 23)], fill=P["glass"], ink=P["ink"], lw=LW_FACE)
         c.line([(gx, 23), (gx, 28)], P["ink"], LW_FACE)
         c.line([(gx - 3.4, 28.6), (gx + 3.4, 28.6)], P["ink"], LW_FACE)
+
+
+
+def bar_front(c: Canvas, fy: float) -> None:
+    """
+    The counter and its brass rail, drawn over whoever is standing behind it.
+
+    The rail is what makes it a bar and not a reception desk, and it fills the
+    gap the missing stools leave. On its own layer the bartender can work the
+    far side of it, which is the only side a bartender ever works.
+    """
+    cw = BAR_COUNTER_W
+    service_counter(c, 12, fy, cw, 26, body=P["woodDk"], top=P["woodPale"], skirt=FOOT_OVERHANG)
+    c.line([(16, fy - 6.0), (12 + cw - 4, fy - 6.0)], P["gold"], LW_PROP)
+    for x in (22.0, 12 + cw - 10):
+        c.line([(x, fy - 6.0), (x, fy - 1.0)], P["goldDk"], LW_DETAIL)
 
 
 # ------------------------------------------------------------------ arcade
@@ -537,7 +550,7 @@ ROOMS = {
     "cafe":       RoomSpec(P["wallCream"], P["wood"], cafe),
     "gym":        RoomSpec(P["wallSky"], P["wood"], gym),
     "restaurant": RoomSpec(P["wallRed"], P["wood"], restaurant),
-    "bar":        RoomSpec(P["wallNavy"], P["woodDk"], bar),
+    "bar":        RoomSpec(P["wallNavy"], P["woodDk"], bar, front=bar_front),
     "arcade":     RoomSpec(P["wallGrape"], P["carpet"], arcade),
     "cinema":     RoomSpec(P["wallNavy"], P["carpet"], cinema),
     # The disco is the one room whose wall is not a palette entry as drawn:

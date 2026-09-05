@@ -1,5 +1,5 @@
 {
-  "note": "What each room's own picture already paints, measured off tools/art/rooms_*.py in 1x logical pixels from the room's top-left. It exists so tools/selftest/slots.ts can prove that a designed decor slot does not stand a sprite on top of the building. \"standing\": true marks a fixture that occupies FLOOR — a desk, a counter, the pool itself — which is what a floor slot must keep clear of; everything else is on the wall, and furniture standing in front of it is the arrangement rather than a clash. Update it in the same commit as any change to a room routine.",
+  "note": "What each room's own picture already paints, measured off tools/art/rooms_*.py in 1x logical pixels from the room's top-left. It exists so tools/selftest/slots.ts can prove that a designed decor slot does not stand a sprite on top of the building. \"standing\": true marks a fixture that occupies FLOOR — a desk, a counter, the pool itself — which is what a floor slot must keep clear of; everything else is on the wall, and furniture standing in front of it is the arrangement rather than a clash. Update it in the same commit as any change to a room routine. \"behind\": true marks a fixture the room paints on its own front layer (rooms/<id>_front.png, BL-035) — somebody may stand on that floor line and be hidden from the waist down by it, which is what a desk is for. Such a fixture also carries \"paint\": the alpha bounds of what that layer actually draws, measured off the file. The two differ and both are needed: x0..y1 is the furniture's body, which is what decor must not stand on, while \"paint\" adds the outline, the bell and ledger on the counter top and the skirt that hides a character's feet — which is what the front layer may cover and nothing more.",
   "units": "1x logical pixels; a block is 128x96",
   "rooms": {
     "lobby": [
@@ -31,7 +31,14 @@
         "y0": 58.4,
         "x1": 206.6,
         "y1": 82.6,
-        "standing": true
+        "standing": true,
+        "behind": true,
+        "paint": {
+          "x0": 140,
+          "y0": 51,
+          "x1": 209,
+          "y1": 87
+        }
       },
       {
         "name": "sconce left",
@@ -628,7 +635,14 @@
         "y0": 53.6,
         "x1": 168.6,
         "y1": 82.6,
-        "standing": true
+        "standing": true,
+        "behind": true,
+        "paint": {
+          "x0": 8,
+          "y0": 51,
+          "x1": 172,
+          "y1": 87
+        }
       },
       {
         "name": "glass rack",

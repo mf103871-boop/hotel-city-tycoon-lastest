@@ -260,8 +260,8 @@ def sheet_compose(room_id: str, zoom: int = 3) -> None:
     spec = gen_rooms.REGISTRY[room_id]
     tier = 2
     c = Canvas(bw * BLOCK_W, bh * BLOCK_H, tier=tier)
-    fy = room_shell(c, spec.wall, spec.floor, floor_h=spec.floor_h)
-    spec.draw(c, fy)
+    fy_room = room_shell(c, spec.wall, spec.floor, floor_h=spec.floor_h)
+    spec.draw(c, fy_room)
     room = c.image()
 
     items = {i["id"]: i for i in _decor_data()}
@@ -310,6 +310,14 @@ def sheet_compose(room_id: str, zoom: int = 3) -> None:
         fx = int(spot["x"] * (BLOCK_W / 16) * tier - cw / 2)
         fy = int(spot["y"] * (BLOCK_H / 16) * tier - ch * (FOOT_Y / CHAR_H))
         room.alpha_composite(art, (fx, fy))
+
+    # Last of all, the furniture people stand behind (BL-035). The renderer
+    # draws this above the whole band, so the shot has to as well — otherwise
+    # the one thing the layer exists to show is the one thing it cannot show.
+    if spec.front is not None:
+        fc = Canvas(bw * BLOCK_W, bh * BLOCK_H, tier=tier)
+        spec.front(fc, fy_room)
+        room.alpha_composite(fc.image())
 
     big = room.resize((room.width * zoom // 2, room.height * zoom // 2), Image.LANCZOS)
     sheet = Image.new("RGBA", (big.width + 40, big.height + 40), SHEET_BG)

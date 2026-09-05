@@ -93,7 +93,12 @@ const POINTS: Readonly<Record<string, RoomPoints>> = {
   lobby: {
     door: { x: 2.75 },
     standLeft: 6.5, standRight: 29.5,
-    staffWork: { x: 29.5, facing: 'left' },
+    // Behind the desk, not at the end of it. The lobby paints its desk on a
+    // front layer now (BL-035), so the receptionist stands on the desk's own
+    // floor line at its centre and the desk hides them from the waist down.
+    // Before that layer existed every character was drawn over the desk, and
+    // the only way to look like staff was to stand clear of it at x=29.5.
+    staffWork: { x: 21.75, facing: 'left' },
     deskFront: 16, queue: [12.5, 9.25, 6.5],
     clean: 6.5,
   },
@@ -125,7 +130,9 @@ const POINTS: Readonly<Record<string, RoomPoints>> = {
   // The counter runs to 168 px; the stools stand beyond it.
   bar: {
     standLeft: 22, standRight: 29,
-    staffWork: { x: 22, facing: 'right' }, patrol: [27],
+    // Behind the counter, facing the customers on the far side of it. Same
+    // change as the lobby desk, same reason (BL-035).
+    staffWork: { x: 11, facing: 'right' }, patrol: [27],
     use: [{ x: 27 }], clean: 22,
   },
   arcade: { use: [{ x: 12 }, { x: 19 }], clean: 12 },

@@ -30,7 +30,16 @@ function eq(a: unknown, b: unknown, m: string): void {
   if (a !== b) throw new Error(`${m} (got ${String(a)}, expected ${String(b)})`);
 }
 
-interface Fixture { name: string; x0: number; y0: number; x1: number; y1: number; standing?: boolean }
+interface Fixture {
+  name: string; x0: number; y0: number; x1: number; y1: number;
+  standing?: boolean;
+  /**
+   * The room paints this one on its own front layer (BL-035), so a character
+   * may stand on its floor line: the fixture is drawn over them and hides them
+   * from the waist down, which is what a reception desk is for.
+   */
+  behind?: boolean;
+}
 
 const data = loadSimData();
 const painted = JSON.parse(fs.readFileSync('tools/selftest/room-fixtures.json', 'utf8')) as { rooms: Record<string, Fixture[]> };
@@ -128,7 +137,7 @@ check('nobody stands in the building', () => {
       const cx = p.x * ANCHOR_PX_X;
       const floorPx = p.y * ANCHOR_PX_Y;
       for (const f of fixtures) {
-        if (!f.standing) continue;
+        if (!f.standing || f.behind) continue;
         if (!(f.y0 <= floorPx + 6 && f.y1 >= floorPx - 6)) continue;
         compared++;
         assert(!(cx - BODY_HALF_WIDTH_PX < f.x1 - 0.001 && cx + BODY_HALF_WIDTH_PX > f.x0 + 0.001),
@@ -137,6 +146,44 @@ check('nobody stands in the building', () => {
     }
   }
   console.log(`      ${compared} point-against-fixture comparisons`);
+});
+
+check('a fixture may only be stood behind if the room actually paints one', () => {
+  // `behind` switches off the rule that keeps a character out of the
+  // furniture, so it has to be backed by a file. Without this the flag is
+  // just a way to silence the check and stand somebody inside a solid desk.
+  let behind = 0;
+  for (const [roomId, fixtures] of Object.entries(painted.rooms)) {
+    for (const f of fixtures as Fixture[]) {
+      if (!f.behind) continue;
+      behind++;
+      assert(f.standing, `${roomId}'s ${f.name} is marked behind but does not stand on the floor`);
+      const art = `public/assets/rooms/${roomId}_front.png`;
+      assert(fs.existsSync(art),
+        `${roomId}'s ${f.name} is marked behind but ${art} does not exist — `
+        + 'the character would be drawn on top of it');
+      assert(fs.existsSync(`public/assets/@2x/rooms/${roomId}_front.png`),
+        `${roomId} has a front layer at 1x but not at 2x, and @2x is all or nothing`);
+    }
+  }
+  assert(behind > 0, 'nothing is marked behind, so BL-035 painted a layer nobody stands behind');
+  console.log(`      ${behind} fixtures with a painted front layer`);
+});
+
+check('the staff of a room with a counter stand behind it', () => {
+  // The whole point of the front layer. A work point merely *near* the desk is
+  // what the room had before, and it is what this proves it no longer has.
+  for (const [roomId, fixtures] of Object.entries(painted.rooms)) {
+    const fixture = (fixtures as Fixture[]).find((f) => f.behind);
+    if (!fixture) continue;
+    const room = data.rooms.find((r) => r.id === roomId);
+    assert(room, `${roomId} is not a room`);
+    const work = waypoint(roomId, room.blocks.w, room.blocks.h, 'staffWork');
+    assert(work, `${roomId} paints a counter but has no staffWork point`);
+    const px = work.x * ANCHOR_PX_X;
+    assert(px > fixture.x0 && px < fixture.x1,
+      `${roomId}'s staff stand at ${px}px, outside their own ${fixture.name} (${fixture.x0}..${fixture.x1})`);
+  }
 });
 
 check('a door point is on the door, when the room paints one', () => {

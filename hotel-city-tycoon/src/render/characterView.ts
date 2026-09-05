@@ -21,7 +21,7 @@ import {
 } from './anim/clipPlayer.ts';
 import { createScheduler, resetScheduler, tick } from './anim/scheduler.ts';
 import type { SchedulerConfig, Fidget } from './anim/scheduler.ts';
-import { BLOCK_W, BLOCK_H, blockToWorld } from './layout.ts';
+import { BLOCK_W, BLOCK_H, blockToWorld, bandDepth, DEPTH_CHARACTER_BIAS } from './layout.ts';
 import { INK, NIGHT_TINT, nightfall } from './backdrop.ts';
 
 /** The desire bubble's card. Warm white, from ART-0 §7. */
@@ -317,7 +317,9 @@ export class CharacterView extends Container {
     // Draw order by the foot the character stands on, so two people passing
     // each other overlap the way the room does. The pool never reorders its
     // children, so without this the order was whatever recycling produced.
-    this.zIndex = y * 4096 + x;
+    // The same formula places the room's furniture (`decorView.ts`), which is
+    // what lets somebody walk behind a sofa and in front of the next one.
+    this.zIndex = bandDepth(x, y, DEPTH_CHARACTER_BIAS);
 
     // The small human things, while they are standing about doing nothing.
     const settled = this.sample.vx === 0 && this.sample.vy === 0;

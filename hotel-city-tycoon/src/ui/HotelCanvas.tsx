@@ -60,6 +60,7 @@ function toSnapshot(state: GameState): SceneSnapshot {
       label: r.defId,
       assetKey: r.assetKey,
       artIsNight: r.artIsNight,
+      frontKey: r.frontKey,
       pestKey: r.pestKey,
       fill: r.fill,
       showMeter: r.showMeter,

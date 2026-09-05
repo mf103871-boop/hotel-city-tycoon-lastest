@@ -15,6 +15,7 @@ import {
   decorArtSpec, fitDecorSize, compareDecorDraw, decorBox, clampDecorBox,
 } from './decorArt.ts';
 import type { DecorBox } from './decorArt.ts';
+import type { DecorPlacement } from './decorView.ts';
 
 /**
  * Category colours, chosen to read at a glance while zoomed out.
@@ -94,6 +95,8 @@ export interface RoomViewDecorItem {
 }
 
 export interface RoomViewData {
+  /** The room's own id, so the furniture it hands the scene can be keyed by it. */
+  id: string;
   /** Asset key for the finished art. Falls back to a drawn shell when absent. */
   assetKey?: string;
   /**
@@ -105,6 +108,13 @@ export interface RoomViewData {
    * in a dark hotel.
    */
   artIsNight?: boolean;
+  /**
+   * The room's own furniture that stands in front of the people — a reception
+   * desk, a bar counter. Drawn by the scene in `LAYER.roomFront`, not here:
+   * inside the RoomView it would be under every character, which is the whole
+   * reason it was split out of the room's one picture.
+   */
+  frontKey?: string;
   /**
    * Transparent roach layer, stretched over the room's own art. Empty when the
    * room is clean. It is a separate picture rather than a fifth room variant
@@ -140,6 +150,15 @@ export class RoomView extends Container {
   private readonly pestArt = new Sprite();
   /** DEC-010 decor, drawn above the room's own art/shell and below badges. */
   private readonly decorLayer = new Container();
+  /**
+   * The room's standing furniture, measured but not drawn here.
+   *
+   * The scene reads this after `update` and draws the pieces in the band the
+   * characters share (`decorView.ts`). Rewritten in place rather than
+   * reallocated: `update` is dirty-key guarded, so a still hotel touches this
+   * array once and then never again.
+   */
+  readonly front: DecorPlacement[] = [];
   private readonly meter = new Graphics();
   private readonly caption: Text;
   private readonly badges = new Graphics();
@@ -222,7 +241,7 @@ export class RoomView extends Container {
       this.pestArt.visible = false;
     }
 
-    this.drawDecor(data.decor, w, h, night);
+    this.drawDecor(data.decor, w, h, night, data.id, world.x, world.y);
 
     this.meter.clear();
     if (data.showMeter) {
@@ -284,13 +303,22 @@ export class RoomView extends Container {
    * has not drawn. Both paths use the same anchor, scale and ordering
    * contract (decorArt.ts), so a piece does not jump when its art lands.
    *
+   * Only the `back` band is drawn here. A `front` piece stands on the floor
+   * and has to sort against the people walking past it, which two fixed
+   * layers cannot do, so it is measured here and handed to the scene as a
+   * `DecorPlacement` to be drawn in the band the characters live in
+   * (`decorView.ts`). The geometry is identical either way — the same anchor,
+   * the same fitted box, the same clamp to the room — so a piece does not
+   * move when it changes band.
+   *
    * Rebuilt in full on every dirty update — the catalogue caps a room at 24
    * pieces (data/economy.json limits.maxDecorPerRoom), cheap enough that this
    * does not need RoomView's own texture-reuse tricks.
    */
   private drawDecor(pieces: RoomViewDecorItem[], roomW: number, roomH: number,
-                    night: boolean): void {
+                    night: boolean, roomId: string, worldX: number, worldY: number): void {
     this.decorLayer.removeChildren();
+    this.front.length = 0;
     // Pixi draws children back-to-front in addChild order, so the comparator's
     // "lowest first" is literally the draw order.
     const ordered = [...pieces].sort(compareDecorDraw);
@@ -319,6 +347,27 @@ export class RoomView extends Container {
         decorBox(anchorToLocalPx(piece.localX, piece.localY), size, spec),
         roomW, roomH,
       );
+
+      if (spec.band === 'front') {
+        // Measured here, drawn by the scene among the people. The world
+        // position is the room's own origin plus the box the room measured,
+        // so a piece is in exactly the place it was before it changed band.
+        this.front.push({
+          key: `${roomId}:${piece.id}`,
+          assetKey: piece.assetKey ?? null,
+          x: worldX + box.left + box.w / 2,
+          y: worldY + box.top + box.h / 2,
+          w: box.w,
+          h: box.h,
+          footY: worldY + box.top + box.h,
+          depth: spec.depth,
+          flipX: piece.flipX,
+          night,
+          slotType: piece.slotType,
+          category: piece.category,
+        });
+        continue;
+      }
 
       const holder = new Container();
       // Mirroring around the box's own centre is what flipX means: the piece
@@ -364,6 +413,7 @@ export class RoomView extends Container {
 
   reset(): void {
     this.lastKey = '';
+    this.front.length = 0;
     this.art.visible = false;
     this.pestArt.visible = false;
     this.visible = true;

@@ -18,11 +18,16 @@ from __future__ import annotations
 
 from hcstyle import (
     P, RoomSpec, Canvas, LW_PROP, LW_DETAIL, LW_FACE,
-    alpha, shade, tint, window, door, counter, wall_lamp,
+    alpha, shade, tint, window, door, counter, wall_lamp, FOOT_OVERHANG,
 )
 
 
 # --------------------------------------------------------------------- lobby
+
+def _lobby_desk(w: float) -> tuple[float, float]:
+    """The reception desk's width and left edge. One definition, two layers."""
+    return min(w * 0.34, 62), w * 0.56
+
 
 def lobby(c: Canvas, fy: float) -> None:
     """
@@ -61,18 +66,27 @@ def lobby(c: Canvas, fy: float) -> None:
     for i, (cx, cy) in enumerate(((kx + kw * 0.13, 25), (kx + kw * 0.62, 32), (kx + kw * 0.87, 39))):
         c.circle(cx, cy, 1.6, fill=P["gold"], ink=P["ink"], lw=LW_FACE)
 
-    # The desk. Fixed: a lobby without one is not a lobby.
-    dw = min(w * 0.34, 62)
-    dx = w * 0.56
-    counter(c, dx, fy, dw, 22, body=P["woodDk"], top=P["woodPale"])
+    wall_lamp(c, w * 0.44, 14)
+    if w > 200:
+        wall_lamp(c, w * 0.90, 14)
+
+
+def lobby_front(c: Canvas, fy: float) -> None:
+    """
+    The desk, drawn over the people so the receptionist can stand behind it.
+
+    It used to be part of the room's one picture, which meant every character
+    was drawn on top of it and the receptionist had to be parked at the end of
+    their own desk to look like they were working. On its own layer the desk
+    hides whoever is behind it from the waist down, which is what a desk does.
+    """
+    w = c.w
+    dw, dx = _lobby_desk(w)
+    counter(c, dx, fy, dw, 22, body=P["woodDk"], top=P["woodPale"], skirt=FOOT_OVERHANG)
     c.rrect(dx + dw * 0.10, fy - 20, dw * 0.80, 6.0, r=1.2, fill=alpha(P["woodPale"], 0.55))
     # A bell and a ledger on the counter top.
     c.circle(dx + dw * 0.86, fy - 26.2, 2.2, fill=P["gold"], ink=P["ink"], lw=LW_FACE)
     c.rrect(dx + dw * 0.10, fy - 26.4, 8.0, 2.4, r=0.8, fill=P["white"], ink=P["ink"], lw=LW_FACE)
-
-    wall_lamp(c, w * 0.44, 14)
-    if w > 200:
-        wall_lamp(c, w * 0.90, 14)
 
 
 # ------------------------------------------------------------- housekeeping
@@ -297,7 +311,7 @@ def business(c: Canvas, fy: float) -> None:
 
 
 ROOMS = {
-    "lobby":        RoomSpec(P["wallCream"], P["wood"], lobby),
+    "lobby":        RoomSpec(P["wallCream"], P["wood"], lobby, front=lobby_front),
     "housekeeping": RoomSpec(P["wallSky"], P["tile"], housekeeping),
     "laundry":      RoomSpec(P["wallSky"], P["tile"], laundry),
     "staffRoom":    RoomSpec(P["wallMint"], P["wood"], staff_room),

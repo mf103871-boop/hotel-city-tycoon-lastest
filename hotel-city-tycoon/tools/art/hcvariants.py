@@ -219,7 +219,8 @@ def thumbnail(base: Image.Image, tier: int, wall) -> Image.Image:
     return out
 
 
-def write_variants(room_id: str, base: Canvas, wall, floor_y: float) -> list[str]:
+def write_variants(room_id: str, base: Canvas, wall, floor_y: float,
+                   front: Canvas | None = None) -> list[str]:
     """
     Write `night`, `dirty`, `pest` and `thumb` for one room at one tier.
 
@@ -228,6 +229,12 @@ def write_variants(room_id: str, base: Canvas, wall, floor_y: float) -> list[str
     it back from disk only adds a way for the two to disagree; and the canvas
     still holds its supersampled pixels, so the grime and the litter are drawn
     at full working resolution and downsampled once, like everything else.
+
+    `front` is the room's front layer, if it has one. Only the thumbnail wants
+    it: night, dirty and pest are layers the renderer stacks under the people
+    and the front layer goes over them separately, but the thumbnail is a
+    picture of the whole room and a lobby thumbnail without its reception desk
+    is a picture of an empty room.
     """
     from PIL import ImageDraw
     tier = base.tier
@@ -244,7 +251,11 @@ def write_variants(room_id: str, base: Canvas, wall, floor_y: float) -> list[str
     pest_layer(pest, room_id, floor_y)
     paths.append(_save(pest.image(), room_id, "pest", tier))
 
-    paths.append(_save(thumbnail(final, tier, wall), room_id, "thumb", tier))
+    whole = final
+    if front is not None:
+        whole = final.copy()
+        whole.alpha_composite(front.image())
+    paths.append(_save(thumbnail(whole, tier, wall), room_id, "thumb", tier))
     return paths
 
 

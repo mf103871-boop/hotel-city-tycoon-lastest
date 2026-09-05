@@ -3,6 +3,8 @@ export type { RendererHandle, RendererOptions } from './app.ts';
 export { HotelScene } from './scene.ts';
 export type { SceneSnapshot, SceneRoom, SceneCharacter, SceneCallbacks } from './scene.ts';
 export { RoomView } from './roomView.ts';
+export { DecorView } from './decorView.ts';
+export type { DecorPlacement } from './decorView.ts';
 export { CharacterView, prefersReducedMotion, setReducedMotionForTests } from './characterView.ts';
 export type { CharacterViewData } from './characterView.ts';
 export {

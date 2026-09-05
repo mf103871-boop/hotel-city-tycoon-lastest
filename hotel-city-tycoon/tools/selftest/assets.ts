@@ -562,6 +562,56 @@ await check('the two resolutions of a sprite are the same picture', () => {
   if (problems.length > 0) throw new Error(`1x and @2x disagree: ${problems.join('; ')}`);
 });
 
+check('a room\'s front layer paints only the furniture it was measured for', () => {
+  // BL-035. Everything on a front layer is drawn over the people, so a stray
+  // pixel there hides somebody for no reason — and a front layer that covered
+  // the wall would hide the whole room. `room-fixtures.json` measured the
+  // desk and the counter off the drawing code; this holds the art to them.
+  const painted = JSON.parse(fs.readFileSync('tools/selftest/room-fixtures.json', 'utf8')) as {
+    rooms: Record<string, Array<{
+      name: string; x0: number; y0: number; x1: number; y1: number; behind?: boolean;
+      paint?: { x0: number; y0: number; x1: number; y1: number };
+    }>>;
+  };
+  const fronts = entries.filter((e) => e.key.endsWith('.front'));
+  assert(fronts.length > 0, 'no room declares a front layer');
+  let checked = 0;
+  for (const entry of fronts) {
+    const roomId = entry.key.split('.')[1]!;
+    // The painted bounds, not the furniture's body: the layer is allowed its
+    // own outline, the bell and ledger standing on the counter top, and the
+    // skirt that hides a character's feet.
+    const boxes = (painted.rooms[roomId] ?? []).filter((f) => f.behind).map((f) => f.paint ?? f);
+    assert(boxes.length > 0, `${roomId} ships a front layer but no fixture is marked behind`);
+    for (const tier of tiers) {
+      const file = tierPath(tier, entry.file);
+      assert(fs.existsSync(file), `${file} is declared and missing`);
+      const png = readPng(file);
+      eq(png.width, entry.width * tier, `${file} is not the width the manifest declares`);
+      eq(png.height, entry.height * tier, `${file} is not the height the manifest declares`);
+      // The boxes were measured off this very art, so the only slack needed is
+      // for the Lanczos downsample's own soft edge.
+      const slack = 1 * tier;
+      let stray = 0;
+      let painted_px = 0;
+      for (let y = 0; y < png.height; y++) {
+        for (let x = 0; x < png.width; x++) {
+          if (png.data[(y * png.width + x) * png.channels + 3]! < 128) continue;
+          painted_px++;
+          const inside = boxes.some((b) => x >= b.x0 * tier - slack && x <= b.x1 * tier + slack
+            && y >= b.y0 * tier - slack && y <= b.y1 * tier + slack);
+          if (!inside) stray++;
+        }
+      }
+      assert(painted_px > 0, `${file} is empty — the room declares a front layer and paints nothing`);
+      assert(stray === 0,
+        `${file} paints ${stray} pixels outside the furniture it was measured for, and every one of them hides a character`);
+      checked++;
+    }
+  }
+  console.log(`      ${fronts.length} front layers, ${checked} images, nothing painted outside the furniture`);
+});
+
 console.log(line);
 if (failures.length === 0) console.log(`  ${passed} checks passed`);
 else { console.log(`  ${passed} passed, ${failures.length} FAILED`); failures.forEach(f => console.log(`    ✗ ${f}`)); }
