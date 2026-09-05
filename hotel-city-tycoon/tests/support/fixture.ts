@@ -4,6 +4,10 @@ import type { SimData } from '../../src/core/data-source.ts';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 const read = (f: string) => JSON.parse(fs.readFileSync(path.join(ROOT, 'data', f), 'utf8'));
+const readDir = (dir: string) => fs.readdirSync(path.join(ROOT, 'data', dir))
+  .filter((f) => f.endsWith('.json'))
+  .sort()
+  .map((f) => read(path.join(dir, f)));
 
 /**
  * The real balance data, loaded without Zod.
@@ -37,5 +41,6 @@ export function simData(): SimData {
     neighbours: read('neighbours.json'),
     seasons: read('seasons.json').seasons,
     gifts: read('gifts.json'),
+    animations: readDir('animations'),
   };
 }

@@ -669,45 +669,105 @@ _BOB = {
     "idle": (0.0, -0.4, -0.55, -0.4),
     "walk": (-0.8, -0.3, 0.5, 0.8, 0.3, -0.5),
     "work": (0.0, -0.6, -0.3),
-    "sit": (0.0,),
+    # Seated, breathing. Without the second value both frames of a two-frame
+    # sit clip are the same picture, which is a still image wearing an
+    # animation's frame count.
+    "sit": (0.0, -0.5),
     "stand": (0.0,),
+    # A hop, and back down. Two pixels is the whole of it: ART-0 §11 line 278
+    # asks for motion that is small and clear, a character who leaves the floor
+    # by more than this reads as a cartoon rather than a person, and the tallest
+    # of the cast has only a few pixels of headroom in a 72-pixel cell before
+    # the hat meets the canvas edge. The cheer is carried by the arms.
+    "happy": (0.0, -1.4, -2.0, -0.7),
+    # A stamp: down onto the front foot, then back up.
+    "angry": (0.0, 0.8, 0.0, 0.4),
+    # A flinch backwards. It shows in the lean, not in the height.
+    "scared": (0.0, -0.5),
 }
+
+
+def cycle(table, phase: int, frames: int = 0) -> float:
+    """
+    Sample a looping motion table at frame `phase` of `frames`.
+
+    The tables above were written at one length each, and the animation files
+    may ask for another — ART-0 §11 wants eight walk frames where the first
+    sheets held six. Resampling the ring rather than re-authoring it keeps two
+    promises at once: the shape of the motion is the same curve whatever its
+    length, and the first and last frames of a loop still meet, because both
+    are read from the same closed ring.
+
+    Asking for a length the table already has returns the table's own value,
+    so a sheet regenerated at its original frame count is unchanged to the
+    pixel.
+    """
+    n = len(table)
+    if n == 0:
+        return 0.0
+    if frames <= 0 or frames == n:
+        return table[phase % n]
+    at = (phase % frames) / frames * n
+    lo = int(at) % n
+    hi = (lo + 1) % n
+    t = at - int(at)
+    return table[lo] * (1 - t) + table[hi] * t
 
 
 def draw_person(c: Canvas, who: Person, ox: float, oy: float = 0.0,
                 pose: str = "idle", phase: int = 0, expression: str = "smile",
-                prop: str | None = None, facing: int = 1) -> None:
+                prop: str | None = None, facing: int = 1, frames: int = 0) -> None:
     """
     Draw one character with their feet at `(ox, FOOT_Y + oy)`.
 
     `pose` is the activity the simulation is in — idle, walk, work, sit, sleep
-    — and `phase` the frame within it. Only limbs and a sub-pixel bob change
-    between frames: the head, the face and the clothes are re-read from `who`
-    every time, so a walk cycle physically cannot change who somebody is.
+    — and `phase` the frame within it, out of `frames`. Only limbs and a
+    sub-pixel bob change between frames: the head, the face and the clothes are
+    re-read from `who` every time, so a walk cycle physically cannot change who
+    somebody is.
+
+    `frames` is what the character's animation file asks for; leaving it at 0
+    uses each motion table's own length, which is what every caller before
+    HC-P2-S1 did.
     """
     if pose == "sleep":
-        _draw_sleeper(c, who, ox, oy, expression)
+        _draw_sleeper(c, who, ox, oy, expression, phase, frames)
         return
 
     g = _figure(who)
-    bob = _BOB.get(pose, (0.0,))[phase % len(_BOB.get(pose, (0.0,)))]
-    oy += bob
+    oy += cycle(_BOB.get(pose, (0.0,)), phase, frames)
 
-    head_cy = g["head_cy"] + oy
-    body_top = g["body_top"] + oy
-    hip_y = g["hip_y"] + oy
+    # A flinch leans the whole figure away; the feet stay put, so the pivot
+    # does not move and ART-0 §11's "the centre never jumps" still holds. It is
+    # applied before anything is drawn, so the hair leans with the head.
+    lean = cycle((0.0, -1.6), phase, frames) * facing if pose == "scared" else 0.0
+
+    # Sitting lowers the body onto a seat; the feet stay on the floor line, so
+    # the legs fold instead of the figure shrinking. Without this a seated
+    # character is a standing one with its feet pointed forward, which is not
+    # a pose anybody reads as sitting.
+    seat = pose == "sit"
+    drop = 5.0 if seat else 0.0
+
+    head_cy = g["head_cy"] + oy + drop + lean * 0.9
+    body_top = g["body_top"] + oy + drop + lean * 0.4
+    hip_y = g["hip_y"] + oy + drop
     foot = FOOT_Y + oy
     shoulder = g["shoulder"]
     head_r = g["head_r"]
 
-    c.contact_shadow(ox, FOOT_Y + 0.4, shoulder * 0.62, a=0.14)
+    # A seated figure touches the ground over a smaller patch: the shadow is
+    # under the feet, not under a whole standing body.
+    c.contact_shadow(ox, FOOT_Y + 0.4, shoulder * (0.44 if seat else 0.62), a=0.14)
     _draw_hair_back(c, who, ox, head_cy, head_r)
 
     # --- legs: short, thick, and always ending in a shoe -------------------
     swing = 0.0
     if pose == "walk":
-        swing = (3.8, 2.0, -2.0, -3.8, -2.0, 2.0)[phase % 6] * facing
-    seat = pose == "sit"
+        swing = cycle((3.8, 2.0, -2.0, -3.8, -2.0, 2.0), phase, frames) * facing
+    elif pose == "angry":
+        # One foot forward, planted. The stamp is in the bob, not in a stride.
+        swing = cycle((1.4, 2.6, 1.4, 0.6), phase, frames) * facing
     for side in (-1, 1):
         hx = ox + side * shoulder * 0.26
         fx = hx + swing * side
@@ -738,17 +798,32 @@ def draw_person(c: Canvas, who: Person, ox: float, oy: float = 0.0,
     arm_y = body_top + torso_h * 0.26
     arm_len = torso_h * 0.72
     hands: dict[int, tuple[float, float]] = {}
+    # The working arm reaches and returns, so the tool it holds moves with it
+    # rather than hanging in the air — ART-0 §11 asks for work "synced to the
+    # tool", which is the difference between mopping and holding a mop.
+    reach = cycle((0.0, 0.55, 1.0, 0.75, 0.3, 0.1), phase, frames) if pose == "work" else 0.0
     for side in (-1, 1):
         ax = ox + side * (shoulder / 2 - 0.6)
         if pose == "work" and side == facing:
-            end = (ax + side * 4.8, arm_y + arm_len * 0.30)
+            end = (ax + side * (3.4 + 2.4 * reach), arm_y + arm_len * (0.46 - 0.22 * reach))
         elif pose == "work":
             end = (ax + side * 1.6, arm_y + arm_len * 0.90)
         elif pose == "walk":
-            sw = (-3.0, -1.5, 1.5, 3.0, 1.5, -1.5)[phase % 6] * -side * facing
+            sw = cycle((-3.0, -1.5, 1.5, 3.0, 1.5, -1.5), phase, frames) * -side * facing
             end = (ax + sw * 0.8, arm_y + arm_len)
         elif pose == "sit":
             end = (ax + side * 2.2, arm_y + arm_len * 0.68)
+        elif pose == "happy":
+            # Both arms up. The cheer is the silhouette, so it reads at the
+            # size a character is actually seen — about thirty pixels tall.
+            raise_by = cycle((0.0, 0.7, 1.0, 0.45), phase, frames)
+            end = (ax + side * (1.3 + 2.4 * raise_by), arm_y + arm_len * (1 - 1.55 * raise_by))
+        elif pose == "angry":
+            # Fists in, elbows out: the shape of somebody who has had enough.
+            end = (ax + side * 0.4, arm_y + arm_len * 0.52)
+        elif pose == "scared":
+            # Hands up and in, close to the chest.
+            end = (ax + side * 0.9, arm_y + arm_len * 0.40)
         else:
             end = (ax + side * 1.3, arm_y + arm_len)
         c.line([(ax, arm_y), end], P["ink"], 4.0)
@@ -808,14 +883,14 @@ def _draw_hair_front(c: Canvas, who: Person, cx, cy, r):
     fringe_y = cy - r * 0.16
 
     if style == "curly":
-        for dx, dy, rr in ((-0.78, -0.42, 0.40), (-0.40, -0.80, 0.44), (0.0, -0.94, 0.44),
-                           (0.40, -0.80, 0.44), (0.78, -0.42, 0.40)):
+        for dx, dy, rr in ((-0.78, -0.42, 0.40), (-0.40, -0.70, 0.42), (0.0, -0.80, 0.42),
+                           (0.40, -0.70, 0.42), (0.78, -0.42, 0.40)):
             c.circle(cx + dx * r, cy + dy * r, rr * r, fill=who.hair)
     elif style == "spiky":
         # Three soft tufts. Sharp spikes read as horns at this size, which is
         # a different character than the one the uniform is describing.
-        for dx, lift in ((-0.52, 0.86), (0.0, 1.00), (0.52, 0.86)):
-            c.ellipse(cx + dx * r, cy - r * lift * 0.72, r * 0.30, r * 0.42, fill=who.hair)
+        for dx, lift in ((-0.52, 0.68), (0.0, 0.78), (0.52, 0.68)):
+            c.ellipse(cx + dx * r, cy - r * lift * 0.72, r * 0.30, r * 0.36, fill=who.hair)
     elif style in ("short", "bun", "ponytail"):
         # Two small side tabs in front of the ears.
         for side in (-1, 1):
@@ -841,7 +916,11 @@ def _draw_cap(c: Canvas, who: Person, cx, cy, r):
     """
     style = who.cap_style
     if style == "toque":
-        c.rrect(cx - r * 0.74, cy - r * 1.72, r * 1.48, r * 1.20, r=r * 0.46,
+        # Shortened in HC-P2-S1: at the old height the chef's hat reached above
+        # the top of the 48x72 cell and lost a pixel to the canvas edge — and
+        # a hop of any size lost several. The toque still reads as the tallest
+        # hat in the cast, which is the whole of its job.
+        c.rrect(cx - r * 0.74, cy - r * 1.42, r * 1.48, r * 0.94, r=r * 0.40,
                 fill=who.cap, ink=P["ink"], lw=LW_FACE)
         c.rrect(cx - r * 0.86, cy - r * 0.68, r * 1.72, r * 0.36, r=r * 0.16,
                 fill=who.cap, ink=P["ink"], lw=LW_FACE)
@@ -875,9 +954,18 @@ def _draw_face(c: Canvas, who: Person, cx, cy, r, expression):
     """
     ex = r * 0.36
     ey = cy + r * 0.14
-    if expression == "sleep":
+    if expression in ("sleep", "blink"):
+        # Shut. A blink and a sleeping face wear the same eye; what tells them
+        # apart is the mouth below and the fact that a blink lasts 140ms.
         for side in (-1, 1):
             c.arc(cx + side * ex, ey + r * 0.04, r * 0.19, r * 0.16, 190, 350, P["ink"], LW_FACE)
+    elif expression == "scared":
+        # Wide, with a brow lifted over each. Two more strokes than the usual
+        # face and not one more than the reading needs.
+        for side in (-1, 1):
+            c.ellipse(cx + side * ex, ey, r * 0.17, r * 0.23, fill=P["ink"])
+            c.circle(cx + side * ex - r * 0.05, ey - r * 0.08, r * 0.06, fill=P["white"])
+            c.arc(cx + side * ex, ey - r * 0.30, r * 0.20, r * 0.14, 200, 340, P["ink"], LW_FACE)
     else:
         for side in (-1, 1):
             c.ellipse(cx + side * ex, ey, r * 0.135, r * 0.175, fill=P["ink"])
@@ -887,7 +975,10 @@ def _draw_face(c: Canvas, who: Person, cx, cy, r, expression):
                   fill=alpha(P["blush"], 0.6))
 
     my = cy + r * 0.46
-    if expression == "happy":
+    if expression == "scared":
+        # A small open oval. At this size a gasp is a hole, not a shape.
+        c.ellipse(cx, my, r * 0.13, r * 0.15, fill=P["ink"])
+    elif expression == "happy":
         # A small open smile. The first version was a filled half-disc a
         # quarter of the head wide, which at 30 pixels tall read as a snout.
         c.pie(cx, my - r * 0.10, r * 0.17, r * 0.19, 8, 172, fill=P["ink"])
@@ -940,7 +1031,7 @@ def _draw_prop(c: Canvas, prop: str, x, y, facing):
         c.line([(x - 3.4, y + 2.6), (x + 3.4, y + 2.6)], P["gold"], 0.8)
 
 
-def _draw_sleeper(c: Canvas, who: Person, ox, oy, expression="sleep"):
+def _draw_sleeper(c: Canvas, who: Person, ox, oy, expression="sleep", phase=0, frames=0):
     """
     Asleep, seen from the same flat front as everything else.
 
@@ -950,16 +1041,28 @@ def _draw_sleeper(c: Canvas, who: Person, ox, oy, expression="sleep"):
     shoulders, an arm resting on top, a bump where the feet are, and two Zs.
     That is the whole reading at thirty pixels tall, and it is the shorthand
     the reference uses.
-    """
-    head_r = 11.4
-    quilt_h = 15.0
-    quilt_top = FOOT_Y + oy - quilt_h - 1.0
-    cy = quilt_top - 4.0
-    hx = ox - 11.5
 
-    c.contact_shadow(ox, FOOT_Y + oy - 0.6, 21.0, 2.8, a=0.12)
-    # Pillow, propped up behind the head where a pillow actually is.
-    c.rrect(hx - 12.0, cy - 8.4, 18.0, 13.4, r=5.6, fill=P["linen"], ink=P["ink"], lw=LW_DETAIL)
+    Across frames the quilt rises and falls half a pixel and the Zs drift up —
+    breathing, at the smallest scale that reads. The head, the pillow and the
+    bed do not move at all: a sleeper whose head bobbed would look restless
+    rather than asleep.
+    """
+    breath = cycle((0.0, -0.5, -0.2), phase, frames)
+    drift = cycle((0.0, -1.1, -2.2), phase, frames)
+    head_r = 11.4
+    quilt_h = 15.0 - breath
+    quilt_top = FOOT_Y + oy - quilt_h - 1.0 + breath
+    cy = quilt_top - 4.0
+    # The sleeper is the widest thing the cast draws — a head, a pillow and a
+    # bed's length of quilt — so it is placed to leave a margin at both ends of
+    # the cell rather than centred on the standing figure's pivot.
+    hx = ox - 9.5
+
+    c.contact_shadow(ox, FOOT_Y + oy - 0.6, 19.0, 2.8, a=0.12)
+    # Pillow, propped up behind the head where a pillow actually is. Narrowed
+    # in HC-P2-S1: at eighteen wide its outline sat on column 0 of the cell and
+    # was shaved off by the canvas edge.
+    c.rrect(hx - 10.4, cy - 8.4, 16.4, 13.4, r=5.6, fill=P["linen"], ink=P["ink"], lw=LW_DETAIL)
     # The body under the quilt: a hump, so the bedding has somebody in it.
     c.ellipse(ox + 3.0, quilt_top + 1.0, 13.0, 5.0, fill=who.top, ink=P["ink"], lw=LW_PROP)
     c.rrect(hx + 1.0, quilt_top, 29.0, quilt_h, r=4.6, fill=who.top, ink=P["ink"], lw=LW_PROP)
@@ -984,7 +1087,7 @@ def _draw_sleeper(c: Canvas, who: Person, ox, oy, expression="sleep"):
     _draw_face(c, who, hx, cy, head_r, expression)
 
     for i, (dx, dy, s) in enumerate(((6.0, -13.0, 1.0), (11.5, -19.0, 0.72))):
-        zx, zy = ox + dx, cy + dy
+        zx, zy = ox + dx, cy + dy + drift * (1 + i * 0.4)
         c.line([(zx - 2.2 * s, zy - 2.2 * s), (zx + 2.2 * s, zy - 2.2 * s),
                 (zx - 2.2 * s, zy + 2.2 * s), (zx + 2.2 * s, zy + 2.2 * s)],
                alpha(P["ink2"], 0.9 - i * 0.25), 1.2 * s)
@@ -999,7 +1102,7 @@ __all__ = [
     "SS", "BLOCK_W", "BLOCK_H", "ASSET_ROOT", "P", "RoomSpec",
     "LW_FRAME", "LW_PROP", "LW_DETAIL", "LW_FACE",
     "CHAR_W", "CHAR_H", "FOOT_Y",
-    "Canvas", "Person", "rgb", "mix", "shade", "tint", "alpha",
+    "Canvas", "Person", "cycle", "rgb", "mix", "shade", "tint", "alpha",
     "save_png", "both_tiers", "soften", "math",
     "room_shell", "room_frame", "window", "door", "wall_lamp", "pendant",
     "rug_strip", "plant_pot", "counter", "draw_person",

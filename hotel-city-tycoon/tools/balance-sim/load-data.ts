@@ -12,6 +12,11 @@ import type { SimData } from '../../src/core/data-source.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const read = (f: string) => JSON.parse(fs.readFileSync(path.join(ROOT, 'data', f), 'utf8'));
+/** Every file in a sub-directory of data/, in name order. */
+const readDir = (dir: string) => fs.readdirSync(path.join(ROOT, 'data', dir))
+  .filter((f) => f.endsWith('.json'))
+  .sort()
+  .map((f) => read(path.join(dir, f)));
 
 export function loadSimData(): SimData {
   return {
@@ -36,5 +41,6 @@ export function loadSimData(): SimData {
     neighbours: read('neighbours.json'),
     seasons: read('seasons.json').seasons,
     gifts: read('gifts.json'),
+    animations: readDir('animations'),
   };
 }

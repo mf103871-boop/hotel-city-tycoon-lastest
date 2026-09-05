@@ -44,7 +44,7 @@ window.hct = {
     };
     // A walk sheet is the sharpest test of deployment freshness: it exists
     // only in builds from the point the animation work landed.
-    say('walk sheet', await probe('assets/characters/guest_tourist_walk.png'));
+    say('character sheet', await probe('assets/characters/guest_standard_sheet.png'));
     say('room art', await probe('assets/rooms/lobby_base.png'));
     say('manifest', await probe('assets/manifest.json'));
 

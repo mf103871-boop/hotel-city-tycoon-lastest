@@ -1990,22 +1990,71 @@
       "note": "Overlay or badge, transparent background"
     },
     {
-      "key": "guest.inspector.idle",
+      "key": "guest.inspector.sheet",
       "bundle": "characters",
-      "file": "characters/guest_inspector_idle.png",
-      "width": 48,
-      "height": 72,
+      "file": "characters/guest_inspector_sheet.png",
+      "width": 384,
+      "height": 576,
       "required": true,
-      "note": "Single frame, transparent"
-    },
-    {
-      "key": "guest.inspector.sleep",
-      "bundle": "characters",
-      "file": "characters/guest_inspector_sleep.png",
-      "width": 48,
-      "height": 72,
-      "required": false,
-      "note": "Single frame, transparent"
+      "note": "Sheet: 8 clips x up to 8 frames of 48x72, pivot (24, 70)",
+      "anim": {
+        "frame": {
+          "w": 48,
+          "h": 72,
+          "pivotX": 24,
+          "pivotY": 70
+        },
+        "clips": {
+          "idle": {
+            "row": 0,
+            "frames": 4,
+            "fps": 6,
+            "loop": true
+          },
+          "blink": {
+            "row": 1,
+            "frames": 1,
+            "fps": 8,
+            "loop": false
+          },
+          "walk": {
+            "row": 2,
+            "frames": 8,
+            "fps": 11,
+            "loop": true
+          },
+          "sleep": {
+            "row": 3,
+            "frames": 3,
+            "fps": 2,
+            "loop": true
+          },
+          "sit": {
+            "row": 4,
+            "frames": 2,
+            "fps": 2,
+            "loop": true
+          },
+          "happy": {
+            "row": 5,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "angry": {
+            "row": 6,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "scared": {
+            "row": 7,
+            "frames": 2,
+            "fps": 4,
+            "loop": false
+          }
+        }
+      }
     },
     {
       "key": "guest.inspector.thumb",
@@ -2017,31 +2066,71 @@
       "note": "Single frame, transparent"
     },
     {
-      "key": "guest.inspector.walk",
+      "key": "guest.standard.sheet",
       "bundle": "characters",
-      "file": "characters/guest_inspector_walk.png",
-      "width": 288,
-      "height": 72,
-      "required": false,
-      "note": "Sprite sheet, 6 frames horizontal (288x72 total)"
-    },
-    {
-      "key": "guest.standard.idle",
-      "bundle": "characters",
-      "file": "characters/guest_standard_idle.png",
-      "width": 48,
-      "height": 72,
+      "file": "characters/guest_standard_sheet.png",
+      "width": 384,
+      "height": 576,
       "required": true,
-      "note": "Single frame, transparent"
-    },
-    {
-      "key": "guest.standard.sleep",
-      "bundle": "characters",
-      "file": "characters/guest_standard_sleep.png",
-      "width": 48,
-      "height": 72,
-      "required": false,
-      "note": "Single frame, transparent"
+      "note": "Sheet: 8 clips x up to 8 frames of 48x72, pivot (24, 70)",
+      "anim": {
+        "frame": {
+          "w": 48,
+          "h": 72,
+          "pivotX": 24,
+          "pivotY": 70
+        },
+        "clips": {
+          "idle": {
+            "row": 0,
+            "frames": 4,
+            "fps": 6,
+            "loop": true
+          },
+          "blink": {
+            "row": 1,
+            "frames": 1,
+            "fps": 8,
+            "loop": false
+          },
+          "walk": {
+            "row": 2,
+            "frames": 8,
+            "fps": 11,
+            "loop": true
+          },
+          "sleep": {
+            "row": 3,
+            "frames": 3,
+            "fps": 2,
+            "loop": true
+          },
+          "sit": {
+            "row": 4,
+            "frames": 2,
+            "fps": 2,
+            "loop": true
+          },
+          "happy": {
+            "row": 5,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "angry": {
+            "row": 6,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "scared": {
+            "row": 7,
+            "frames": 2,
+            "fps": 4,
+            "loop": false
+          }
+        }
+      }
     },
     {
       "key": "guest.standard.thumb",
@@ -2051,15 +2140,6 @@
       "height": 64,
       "required": false,
       "note": "Single frame, transparent"
-    },
-    {
-      "key": "guest.standard.walk",
-      "bundle": "characters",
-      "file": "characters/guest_standard_walk.png",
-      "width": 288,
-      "height": 72,
-      "required": false,
-      "note": "Sprite sheet, 6 frames horizontal (288x72 total)"
     },
     {
       "key": "room.arcade.base",
@@ -3097,13 +3177,65 @@
       "note": "Square icon for the build menu."
     },
     {
-      "key": "staff.bartender.idle",
+      "key": "staff.bartender.sheet",
       "bundle": "characters",
-      "file": "characters/staff_bartender_idle.png",
-      "width": 48,
-      "height": 72,
+      "file": "characters/staff_bartender_sheet.png",
+      "width": 384,
+      "height": 504,
       "required": true,
-      "note": "Single frame, transparent"
+      "note": "Sheet: 7 clips x up to 8 frames of 48x72, pivot (24, 70)",
+      "anim": {
+        "frame": {
+          "w": 48,
+          "h": 72,
+          "pivotX": 24,
+          "pivotY": 70
+        },
+        "clips": {
+          "idle": {
+            "row": 0,
+            "frames": 4,
+            "fps": 6,
+            "loop": true
+          },
+          "blink": {
+            "row": 1,
+            "frames": 1,
+            "fps": 8,
+            "loop": false
+          },
+          "walk": {
+            "row": 2,
+            "frames": 8,
+            "fps": 11,
+            "loop": true
+          },
+          "work": {
+            "row": 3,
+            "frames": 6,
+            "fps": 9,
+            "loop": true
+          },
+          "happy": {
+            "row": 4,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "angry": {
+            "row": 5,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "scared": {
+            "row": 6,
+            "frames": 2,
+            "fps": 4,
+            "loop": false
+          }
+        }
+      }
     },
     {
       "key": "staff.bartender.thumb",
@@ -3115,31 +3247,65 @@
       "note": "Single frame, transparent"
     },
     {
-      "key": "staff.bartender.walk",
+      "key": "staff.chef.sheet",
       "bundle": "characters",
-      "file": "characters/staff_bartender_walk.png",
-      "width": 288,
-      "height": 72,
-      "required": false,
-      "note": "Sprite sheet, 6 frames horizontal (288x72 total)"
-    },
-    {
-      "key": "staff.bartender.work",
-      "bundle": "characters",
-      "file": "characters/staff_bartender_work.png",
-      "width": 48,
-      "height": 72,
-      "required": false,
-      "note": "Single frame, transparent"
-    },
-    {
-      "key": "staff.chef.idle",
-      "bundle": "characters",
-      "file": "characters/staff_chef_idle.png",
-      "width": 48,
-      "height": 72,
+      "file": "characters/staff_chef_sheet.png",
+      "width": 384,
+      "height": 504,
       "required": true,
-      "note": "Single frame, transparent"
+      "note": "Sheet: 7 clips x up to 8 frames of 48x72, pivot (24, 70)",
+      "anim": {
+        "frame": {
+          "w": 48,
+          "h": 72,
+          "pivotX": 24,
+          "pivotY": 70
+        },
+        "clips": {
+          "idle": {
+            "row": 0,
+            "frames": 4,
+            "fps": 6,
+            "loop": true
+          },
+          "blink": {
+            "row": 1,
+            "frames": 1,
+            "fps": 8,
+            "loop": false
+          },
+          "walk": {
+            "row": 2,
+            "frames": 8,
+            "fps": 11,
+            "loop": true
+          },
+          "work": {
+            "row": 3,
+            "frames": 6,
+            "fps": 9,
+            "loop": true
+          },
+          "happy": {
+            "row": 4,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "angry": {
+            "row": 5,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "scared": {
+            "row": 6,
+            "frames": 2,
+            "fps": 4,
+            "loop": false
+          }
+        }
+      }
     },
     {
       "key": "staff.chef.thumb",
@@ -3151,31 +3317,65 @@
       "note": "Single frame, transparent"
     },
     {
-      "key": "staff.chef.walk",
+      "key": "staff.cleaner.sheet",
       "bundle": "characters",
-      "file": "characters/staff_chef_walk.png",
-      "width": 288,
-      "height": 72,
-      "required": false,
-      "note": "Sprite sheet, 6 frames horizontal (288x72 total)"
-    },
-    {
-      "key": "staff.chef.work",
-      "bundle": "characters",
-      "file": "characters/staff_chef_work.png",
-      "width": 48,
-      "height": 72,
-      "required": false,
-      "note": "Single frame, transparent"
-    },
-    {
-      "key": "staff.cleaner.idle",
-      "bundle": "characters",
-      "file": "characters/staff_cleaner_idle.png",
-      "width": 48,
-      "height": 72,
+      "file": "characters/staff_cleaner_sheet.png",
+      "width": 384,
+      "height": 504,
       "required": true,
-      "note": "Single frame, transparent"
+      "note": "Sheet: 7 clips x up to 8 frames of 48x72, pivot (24, 70)",
+      "anim": {
+        "frame": {
+          "w": 48,
+          "h": 72,
+          "pivotX": 24,
+          "pivotY": 70
+        },
+        "clips": {
+          "idle": {
+            "row": 0,
+            "frames": 4,
+            "fps": 6,
+            "loop": true
+          },
+          "blink": {
+            "row": 1,
+            "frames": 1,
+            "fps": 8,
+            "loop": false
+          },
+          "walk": {
+            "row": 2,
+            "frames": 8,
+            "fps": 11,
+            "loop": true
+          },
+          "work": {
+            "row": 3,
+            "frames": 6,
+            "fps": 9,
+            "loop": true
+          },
+          "happy": {
+            "row": 4,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "angry": {
+            "row": 5,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "scared": {
+            "row": 6,
+            "frames": 2,
+            "fps": 4,
+            "loop": false
+          }
+        }
+      }
     },
     {
       "key": "staff.cleaner.thumb",
@@ -3187,31 +3387,65 @@
       "note": "Single frame, transparent"
     },
     {
-      "key": "staff.cleaner.walk",
+      "key": "staff.lifeguard.sheet",
       "bundle": "characters",
-      "file": "characters/staff_cleaner_walk.png",
-      "width": 288,
-      "height": 72,
-      "required": false,
-      "note": "Sprite sheet, 6 frames horizontal (288x72 total)"
-    },
-    {
-      "key": "staff.cleaner.work",
-      "bundle": "characters",
-      "file": "characters/staff_cleaner_work.png",
-      "width": 48,
-      "height": 72,
-      "required": false,
-      "note": "Single frame, transparent"
-    },
-    {
-      "key": "staff.lifeguard.idle",
-      "bundle": "characters",
-      "file": "characters/staff_lifeguard_idle.png",
-      "width": 48,
-      "height": 72,
+      "file": "characters/staff_lifeguard_sheet.png",
+      "width": 384,
+      "height": 504,
       "required": true,
-      "note": "Single frame, transparent"
+      "note": "Sheet: 7 clips x up to 8 frames of 48x72, pivot (24, 70)",
+      "anim": {
+        "frame": {
+          "w": 48,
+          "h": 72,
+          "pivotX": 24,
+          "pivotY": 70
+        },
+        "clips": {
+          "idle": {
+            "row": 0,
+            "frames": 4,
+            "fps": 6,
+            "loop": true
+          },
+          "blink": {
+            "row": 1,
+            "frames": 1,
+            "fps": 8,
+            "loop": false
+          },
+          "walk": {
+            "row": 2,
+            "frames": 8,
+            "fps": 11,
+            "loop": true
+          },
+          "work": {
+            "row": 3,
+            "frames": 6,
+            "fps": 9,
+            "loop": true
+          },
+          "happy": {
+            "row": 4,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "angry": {
+            "row": 5,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "scared": {
+            "row": 6,
+            "frames": 2,
+            "fps": 4,
+            "loop": false
+          }
+        }
+      }
     },
     {
       "key": "staff.lifeguard.thumb",
@@ -3223,31 +3457,65 @@
       "note": "Single frame, transparent"
     },
     {
-      "key": "staff.lifeguard.walk",
+      "key": "staff.receptionist.sheet",
       "bundle": "characters",
-      "file": "characters/staff_lifeguard_walk.png",
-      "width": 288,
-      "height": 72,
-      "required": false,
-      "note": "Sprite sheet, 6 frames horizontal (288x72 total)"
-    },
-    {
-      "key": "staff.lifeguard.work",
-      "bundle": "characters",
-      "file": "characters/staff_lifeguard_work.png",
-      "width": 48,
-      "height": 72,
-      "required": false,
-      "note": "Single frame, transparent"
-    },
-    {
-      "key": "staff.receptionist.idle",
-      "bundle": "characters",
-      "file": "characters/staff_receptionist_idle.png",
-      "width": 48,
-      "height": 72,
+      "file": "characters/staff_receptionist_sheet.png",
+      "width": 384,
+      "height": 504,
       "required": true,
-      "note": "Single frame, transparent"
+      "note": "Sheet: 7 clips x up to 8 frames of 48x72, pivot (24, 70)",
+      "anim": {
+        "frame": {
+          "w": 48,
+          "h": 72,
+          "pivotX": 24,
+          "pivotY": 70
+        },
+        "clips": {
+          "idle": {
+            "row": 0,
+            "frames": 4,
+            "fps": 6,
+            "loop": true
+          },
+          "blink": {
+            "row": 1,
+            "frames": 1,
+            "fps": 8,
+            "loop": false
+          },
+          "walk": {
+            "row": 2,
+            "frames": 8,
+            "fps": 11,
+            "loop": true
+          },
+          "work": {
+            "row": 3,
+            "frames": 6,
+            "fps": 9,
+            "loop": true
+          },
+          "happy": {
+            "row": 4,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "angry": {
+            "row": 5,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "scared": {
+            "row": 6,
+            "frames": 2,
+            "fps": 4,
+            "loop": false
+          }
+        }
+      }
     },
     {
       "key": "staff.receptionist.thumb",
@@ -3259,31 +3527,65 @@
       "note": "Single frame, transparent"
     },
     {
-      "key": "staff.receptionist.walk",
+      "key": "staff.trainer.sheet",
       "bundle": "characters",
-      "file": "characters/staff_receptionist_walk.png",
-      "width": 288,
-      "height": 72,
-      "required": false,
-      "note": "Sprite sheet, 6 frames horizontal (288x72 total)"
-    },
-    {
-      "key": "staff.receptionist.work",
-      "bundle": "characters",
-      "file": "characters/staff_receptionist_work.png",
-      "width": 48,
-      "height": 72,
-      "required": false,
-      "note": "Single frame, transparent"
-    },
-    {
-      "key": "staff.trainer.idle",
-      "bundle": "characters",
-      "file": "characters/staff_trainer_idle.png",
-      "width": 48,
-      "height": 72,
+      "file": "characters/staff_trainer_sheet.png",
+      "width": 384,
+      "height": 504,
       "required": true,
-      "note": "Single frame, transparent"
+      "note": "Sheet: 7 clips x up to 8 frames of 48x72, pivot (24, 70)",
+      "anim": {
+        "frame": {
+          "w": 48,
+          "h": 72,
+          "pivotX": 24,
+          "pivotY": 70
+        },
+        "clips": {
+          "idle": {
+            "row": 0,
+            "frames": 4,
+            "fps": 6,
+            "loop": true
+          },
+          "blink": {
+            "row": 1,
+            "frames": 1,
+            "fps": 8,
+            "loop": false
+          },
+          "walk": {
+            "row": 2,
+            "frames": 8,
+            "fps": 11,
+            "loop": true
+          },
+          "work": {
+            "row": 3,
+            "frames": 6,
+            "fps": 9,
+            "loop": true
+          },
+          "happy": {
+            "row": 4,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "angry": {
+            "row": 5,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "scared": {
+            "row": 6,
+            "frames": 2,
+            "fps": 4,
+            "loop": false
+          }
+        }
+      }
     },
     {
       "key": "staff.trainer.thumb",
@@ -3295,31 +3597,65 @@
       "note": "Single frame, transparent"
     },
     {
-      "key": "staff.trainer.walk",
+      "key": "staff.usher.sheet",
       "bundle": "characters",
-      "file": "characters/staff_trainer_walk.png",
-      "width": 288,
-      "height": 72,
-      "required": false,
-      "note": "Sprite sheet, 6 frames horizontal (288x72 total)"
-    },
-    {
-      "key": "staff.trainer.work",
-      "bundle": "characters",
-      "file": "characters/staff_trainer_work.png",
-      "width": 48,
-      "height": 72,
-      "required": false,
-      "note": "Single frame, transparent"
-    },
-    {
-      "key": "staff.usher.idle",
-      "bundle": "characters",
-      "file": "characters/staff_usher_idle.png",
-      "width": 48,
-      "height": 72,
+      "file": "characters/staff_usher_sheet.png",
+      "width": 384,
+      "height": 504,
       "required": true,
-      "note": "Single frame, transparent"
+      "note": "Sheet: 7 clips x up to 8 frames of 48x72, pivot (24, 70)",
+      "anim": {
+        "frame": {
+          "w": 48,
+          "h": 72,
+          "pivotX": 24,
+          "pivotY": 70
+        },
+        "clips": {
+          "idle": {
+            "row": 0,
+            "frames": 4,
+            "fps": 6,
+            "loop": true
+          },
+          "blink": {
+            "row": 1,
+            "frames": 1,
+            "fps": 8,
+            "loop": false
+          },
+          "walk": {
+            "row": 2,
+            "frames": 8,
+            "fps": 11,
+            "loop": true
+          },
+          "work": {
+            "row": 3,
+            "frames": 6,
+            "fps": 9,
+            "loop": true
+          },
+          "happy": {
+            "row": 4,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "angry": {
+            "row": 5,
+            "frames": 4,
+            "fps": 6,
+            "loop": false
+          },
+          "scared": {
+            "row": 6,
+            "frames": 2,
+            "fps": 4,
+            "loop": false
+          }
+        }
+      }
     },
     {
       "key": "staff.usher.thumb",
@@ -3327,24 +3663,6 @@
       "file": "characters/staff_usher_thumb.png",
       "width": 64,
       "height": 64,
-      "required": false,
-      "note": "Single frame, transparent"
-    },
-    {
-      "key": "staff.usher.walk",
-      "bundle": "characters",
-      "file": "characters/staff_usher_walk.png",
-      "width": 288,
-      "height": 72,
-      "required": false,
-      "note": "Sprite sheet, 6 frames horizontal (288x72 total)"
-    },
-    {
-      "key": "staff.usher.work",
-      "bundle": "characters",
-      "file": "characters/staff_usher_work.png",
-      "width": 48,
-      "height": 72,
       "required": false,
       "note": "Single frame, transparent"
     },

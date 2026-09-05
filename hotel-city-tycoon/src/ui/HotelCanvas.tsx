@@ -16,6 +16,7 @@ import type { SceneSnapshot } from '../render/index.ts';
 import { useGameStore } from '../bridge/index.ts';
 import { summariseRooms, gridSize, hotelIsOpen } from '../bridge/selectors.ts';
 import { characterViews, guestNear } from '../bridge/characters.ts';
+import { reactionsFor } from '../bridge/reactions.ts';
 import type { GameState } from '../bridge/selectors.ts';
 
 function toSnapshot(state: GameState): SceneSnapshot {
@@ -36,12 +37,21 @@ function toSnapshot(state: GameState): SceneSnapshot {
       assetKey: c.assetKey,
       x: c.x,
       y: c.y,
+      vx: c.vx,
+      vy: c.vy,
+      toX: c.toX,
+      toY: c.toY,
+      segment: c.segment,
       facing: c.facing,
       desire: c.desire,
       draggable: c.draggable,
+      tappable: c.tappable,
       opacity: c.opacity,
       kind: c.kind,
       activity: c.activity,
+      clip: c.clip,
+      mood: c.mood,
+      seed: c.seed,
     })),
     rooms: summariseRooms(state).map((r) => ({
       id: r.id,
@@ -81,6 +91,7 @@ export interface CanvasStats {
   rooms: number;
   visibleRooms: number;
   characters: number;
+  visibleCharacters: number;
   zoom: number;
   fpsP95Low: number;
   memoryMB: number | null;
@@ -182,8 +193,11 @@ export function HotelCanvas({ onRoomTap, onEmptyTap, onStats }: HotelCanvasProps
       scene.setSnapshot(toSnapshot(engine.getState()));
       scene.focusHotel();
 
-      const unsubscribe = engine.subscribe((state) => {
-        scene?.setSnapshot(toSnapshot(state));
+      // Events come through with the state so the people they are about can
+      // answer them: a cheer at a check-in, a flinch at a fire. The bridge
+      // decides who reacts and with which clip; the scene only plays it.
+      const unsubscribe = engine.subscribe((state, events) => {
+        scene?.setSnapshot(toSnapshot(state), reactionsFor(state, events));
       });
       handle.app.ticker.add((ticker) => scene?.render(ticker.deltaMS));
 
@@ -217,6 +231,10 @@ export function HotelCanvas({ onRoomTap, onEmptyTap, onStats }: HotelCanvasProps
         // Where the rooms are on screen, so a browser test taps a room rather
         // than a coordinate that happened to hold on one viewport.
         roomRects: () => scene?.roomScreenRects() ?? [],
+        // What each person is doing, on a device with a real canvas. The
+        // animation cannot be asserted on in CI (DEC-009), so this is how a
+        // visual review answers "is it actually moving?" with a number.
+        characters: () => scene?.characterDiagnostics() ?? [],
       };
 
       const onResize = () => {

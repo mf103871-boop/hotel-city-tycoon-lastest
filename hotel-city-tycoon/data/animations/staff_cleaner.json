@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "tuningStatus": "designed-presentation",
+  "note": "Walks to whichever room the cleaning order puts first and mops there; the steadiest walker in the cast, and the least fidgety — she is busy. Presentation only: nothing here moves a coin, and the simulation never reads this file (HC-P2-S1, DEC-012). Frame counts follow ART-0 §11 and are what tools/art/gen_chars.py draws; the manifest copies the clip table from here.",
+  "id": "staff.cleaner",
+  "frame": {
+    "w": 48,
+    "h": 72,
+    "pivot": {
+      "x": 24,
+      "y": 70
+    },
+    "facing": "right"
+  },
+  "clips": {
+    "idle": {
+      "frames": 4,
+      "fps": 6,
+      "loop": true
+    },
+    "blink": {
+      "frames": 1,
+      "fps": 8,
+      "loop": false
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 11,
+      "loop": true
+    },
+    "work": {
+      "frames": 6,
+      "fps": 9,
+      "loop": true
+    },
+    "happy": {
+      "frames": 4,
+      "fps": 6,
+      "loop": false
+    },
+    "angry": {
+      "frames": 4,
+      "fps": 6,
+      "loop": false
+    },
+    "scared": {
+      "frames": 2,
+      "fps": 4,
+      "loop": false
+    }
+  },
+  "motion": {
+    "walkSpeedBlocksPerSec": 1.6,
+    "speedJitter": 0.12,
+    "turnPauseMs": 100,
+    "liftMs": 400
+  },
+  "behaviour": {
+    "blinkEveryMs": [
+      2500,
+      5000
+    ],
+    "fidgets": [
+      "shiftWeight"
+    ],
+    "fidgetEveryMs": [
+      5000,
+      10000
+    ],
+    "workWhen": "cleaning"
+  },
+  "reactions": {
+    "guestCheckedIn": "happy",
+    "hazardCleared": "happy",
+    "fireStarted": "scared",
+    "pestAppeared": "scared",
+    "ghostAppeared": "scared"
+  }
+}

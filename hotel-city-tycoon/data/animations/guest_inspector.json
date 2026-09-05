@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "tuningStatus": "designed-presentation",
+  "note": "The secret inspector: slower, steadier, rarely blinks, seldom fidgets, and sleeps soundly. The one thing that must not give him away is a tell in his motion. Presentation only: nothing here moves a coin, and the simulation never reads this file (HC-P2-S1, DEC-012). Frame counts follow ART-0 §11 and are what tools/art/gen_chars.py draws; the manifest copies the clip table from here.",
+  "id": "guest.inspector",
+  "frame": {
+    "w": 48,
+    "h": 72,
+    "pivot": {
+      "x": 24,
+      "y": 70
+    },
+    "facing": "right"
+  },
+  "clips": {
+    "idle": {
+      "frames": 4,
+      "fps": 6,
+      "loop": true
+    },
+    "blink": {
+      "frames": 1,
+      "fps": 8,
+      "loop": false
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 11,
+      "loop": true
+    },
+    "sleep": {
+      "frames": 3,
+      "fps": 2,
+      "loop": true
+    },
+    "sit": {
+      "frames": 2,
+      "fps": 2,
+      "loop": true
+    },
+    "happy": {
+      "frames": 4,
+      "fps": 6,
+      "loop": false
+    },
+    "angry": {
+      "frames": 4,
+      "fps": 6,
+      "loop": false
+    },
+    "scared": {
+      "frames": 2,
+      "fps": 4,
+      "loop": false
+    }
+  },
+  "motion": {
+    "walkSpeedBlocksPerSec": 1.2,
+    "speedJitter": 0.08,
+    "turnPauseMs": 180,
+    "liftMs": 400
+  },
+  "behaviour": {
+    "blinkEveryMs": [
+      3500,
+      6500
+    ],
+    "fidgets": [
+      "glance"
+    ],
+    "fidgetEveryMs": [
+      5000,
+      10000
+    ],
+    "impatientAfter": 0.5,
+    "sleep": {
+      "wakeEverySec": [
+        50,
+        100
+      ],
+      "awakeSec": 5
+    },
+    "angryBelow": 45
+  },
+  "reactions": {
+    "guestLeftAngry": "angry",
+    "guestPoked": "scared",
+    "fireStarted": "scared",
+    "pestAppeared": "scared",
+    "ghostAppeared": "scared",
+    "hazardCleared": "happy",
+    "desireUnmet": "angry"
+  }
+}

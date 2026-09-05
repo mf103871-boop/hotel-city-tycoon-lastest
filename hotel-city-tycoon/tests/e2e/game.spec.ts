@@ -247,6 +247,38 @@ test('characters are drawn, not left as placeholder shapes', async ({ page }) =>
   expect(characterFailures?.text(), 'character textures failed to load').toBeUndefined();
 });
 
+test('the people are animated, not standing in one frame', async ({ page }) => {
+  // HC-P2-S1. Loading the art proves the sheets arrived; it does not prove
+  // anything moves. This asks the scene itself what each person is doing and
+  // whether they got anywhere between two samples — the only assertion about
+  // the animation that a headless run can honestly make.
+  test.skip(NO_3D, 'canvas lane is disabled on CI runners');
+  await bootFresh(page);
+  await page.getByRole('button', { name: /open hotel/i }).first().click();
+  await page.getByRole('button', { name: /hours/i }).first().click();
+  await page.waitForTimeout(6000);
+
+  type Person = { id: string; clip: string; x: number; y: number; visible: boolean };
+  const read = async (): Promise<Person[]> =>
+    page.evaluate(() => (window as unknown as { hct: { characters: () => Person[] } }).hct.characters());
+
+  const first = await read();
+  expect(first.length, 'nobody is on screen in an open hotel').toBeGreaterThan(0);
+  for (const person of first) {
+    expect(person.clip, `${person.id} has no clip`).toMatch(/^(idle|walk|work|sleep|sit|happy|angry|scared)$/);
+  }
+  // Somebody is always in motion in an open hotel: a guest arriving, the
+  // cleaner on her round, a member of staff on patrol.
+  await page.waitForTimeout(700);
+  const later = await read();
+  const moved = later.some((p) => {
+    const was = first.find((q) => q.id === p.id);
+    return was && (was.x !== p.x || was.y !== p.y);
+  });
+  const walking = later.some((p) => p.clip === 'walk');
+  expect(moved || walking, 'nobody moved or walked in most of a second').toBe(true);
+});
+
 test('the debug badge can be turned on in a deployed build', async ({ page }) => {
   await page.goto('/?debug=1');
   await expect(page.getByText(/renderer/)).toBeVisible({ timeout: 20_000 });

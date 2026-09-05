@@ -33,7 +33,7 @@ that brief made executable.
 | `gen_decor.py` | Driver: sizes each piece from `data/decor.json` and the manifest's slot table. |
 | `decor_surfaces.py` `decor_props.py` | The catalogue: wall and floor treatments, then everything that stands in a room. |
 | `decor_service.py` `decor_fitness.py` `decor_dining.py` `decor_leisure.py` | The pieces that belong to one room rather than to the hotel — the back of house and the lobby, the gym and the poolside, the cafe/restaurant/bar, the arcade/cinema/disco. |
-| `gen_chars.py` | Driver: idle, walk sheet, thumb and work/sleep for every staff role and guest type. |
+| `gen_chars.py` | Driver: one sheet per staff role and guest type — a row per clip, laid out by `data/animations/<kind>_<id>.json` — plus the thumb. |
 | `characters.py` | The casting table — who each of them is. |
 | `gen_ui.py` `ui_icons.py` | Currency, shift timers and the six incident badges. |
 | `gen_sounds.py` | The audio cues. Unrelated to the drawing, same idea. |

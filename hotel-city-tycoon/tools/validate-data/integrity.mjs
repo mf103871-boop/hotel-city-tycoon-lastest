@@ -420,6 +420,66 @@ if (fs.existsSync(MANIFEST_PATH)) {
   warn('assets', 'manifest.json not found — run tools/gen-asset-manifest.mjs');
 }
 
+// ---------------------------------------------------------------- 15. character animations
+// One file per staff role and guest type (HC-P2-S1, DEC-012), named
+// `<kind>_<id>.json` and carrying the same id inside. The shape is Zod's job
+// (schema.ts); this checks what a schema cannot: that the set of files is
+// exactly the cast, that reactions answer to events the simulation actually
+// emits, and that a patrol names a place the room plans can supply.
+const ANIM_DIR = path.join(DATA, 'animations');
+const animFiles = fs.existsSync(ANIM_DIR)
+  ? fs.readdirSync(ANIM_DIR).filter(f => f.endsWith('.json')).sort()
+  : [];
+const anims = new Map();
+for (const f of animFiles) {
+  try { anims.set(f, JSON.parse(fs.readFileSync(path.join(ANIM_DIR, f), 'utf8'))); }
+  catch (e) { err(`animations/${f}`, `invalid JSON — ${e.message}`); }
+}
+const cast = [
+  ...staffRoles.map(r => ['staff', r.id]),
+  ...guestTypes.map(g => ['guest', g.id]),
+];
+for (const [kind, id] of cast) {
+  const file = `${kind}_${id}.json`;
+  if (!anims.has(file)) err(`animations/${file}`, `${kind} "${id}" has no animation file`);
+}
+const castFiles = new Set(cast.map(([kind, id]) => `${kind}_${id}.json`));
+for (const f of animFiles) {
+  if (!castFiles.has(f)) err(`animations/${f}`, 'names nobody in staff.json or guests.json');
+}
+// The event vocabulary comes from the source, so the schema's mirror of it
+// cannot quietly fall behind a renamed or removed event.
+const TYPES_PATH = path.join(ROOT, 'src/core/state/types.ts');
+const simEvents = fs.existsSync(TYPES_PATH)
+  ? new Set([...fs.readFileSync(TYPES_PATH, 'utf8').matchAll(/\{ type: '([a-zA-Z]+)'/g)].map(m => m[1]))
+  : null;
+// The places a routine may name. The room plans (src/core/systems/roomWaypoints.ts)
+// supply these for every room; a name outside the vocabulary is a typo.
+const WAYPOINT_RE = /^(door|edgeLeft|edgeRight|standLeft|standRight|staffWork|clean|patrol\d+|guestSleep\d+|guestUse\d+|standNearBed\d+)$/;
+for (const [f, a] of anims) {
+  const label = `animations/${f}`;
+  const expectedId = f.replace('.json', '').replace('_', '.');
+  if (a.id !== expectedId) err(label, `id "${a.id}" does not match the file name (expected "${expectedId}")`);
+  const clips = a.clips ?? {};
+  for (const [name, clip] of Object.entries(clips)) {
+    if (clip.loop && clip.frames === 1) {
+      warn(label, `"${name}" is a single-frame loop — ART-0 §11 asks for 4–8 drawn frames; it holds until the sheet is redrawn`);
+    }
+  }
+  for (const [event, clip] of Object.entries(a.reactions ?? {})) {
+    if (simEvents && !simEvents.has(event)) err(label, `reaction to "${event}", which the simulation never emits`);
+    if (!clips[clip]) err(label, `reaction "${event}" plays "${clip}", a clip this character does not carry`);
+    else if (clips[clip].loop) err(label, `reaction "${event}" plays "${clip}", which loops — a reaction must be a one-shot`);
+  }
+  const patrol = a.behaviour?.patrol;
+  for (const point of patrol?.points ?? []) {
+    if (!WAYPOINT_RE.test(point)) err(label, `patrol names "${point}", which is not a waypoint the room plans supply`);
+  }
+  if (patrol && patrol.points.length !== patrol.dwellMs.length) {
+    err(label, `patrol has ${patrol.points.length} points and ${patrol.dwellMs.length} dwells — one dwell per point`);
+  }
+}
+
 // ---------------------------------------------------------------- report
 function report() {
   const line = '─'.repeat(58);
@@ -430,7 +490,8 @@ function report() {
   for (const e of errors) console.log(`  ✗ ${e}`);
   if (!errors.length) {
     console.log(`  ✓ ${FILES.length} files · ${rooms.length} rooms · ${decorItems.length} decor` +
-                ` · ${staffRoles.length} roles · ${guestTypes.length} guest types · ${levels.length} levels`);
+                ` · ${staffRoles.length} roles · ${guestTypes.length} guest types · ${levels.length} levels` +
+                ` · ${animFiles.length} animation files`);
     console.log(`  ✓ all cross-references resolve`);
     if (assetSummary) {
       console.log(`  ✓ ${assetSummary.total} asset entries · ${assetSummary.present} drawn · ` +

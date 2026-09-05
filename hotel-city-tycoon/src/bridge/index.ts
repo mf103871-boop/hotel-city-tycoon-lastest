@@ -4,8 +4,14 @@ export {
   useGameStore, selectCoins, selectGems, selectLevel, selectXp, selectStars,
   selectHotelName, selectRooms, selectGuests, selectShift, selectStats, selectDispatch,
 } from './store.ts';
-export { characterViews, guestPosition, staffPosition, guestNear, unmetDesires } from './characters.ts';
-export type { CharacterView as CharacterViewModel, Activity } from './characters.ts';
+export {
+  characterViews, guestPosition, guestPose, staffPosition, guestNear, unmetDesires, cleanerTarget,
+} from './characters.ts';
+export type { CharacterView as CharacterViewModel, Activity, Clip, Mood } from './characters.ts';
+export { reactionsFor } from './reactions.ts';
+export type { Reaction } from './reactions.ts';
+export { PAVEMENT_Y, personSeed, walkSpeed, evaluate as evaluatePath } from './paths.ts';
+export type { Leg, PathSample } from './paths.ts';
 export { noticesFrom, dedupe, mergeNotices, offlineSummary, MAX_VISIBLE, OFFLINE_SUMMARY_FLOOR_MS } from './notifications.ts';
 export type { Notice, NoticeKind, Tone, OfflineSummary } from './notifications.ts';
 export {

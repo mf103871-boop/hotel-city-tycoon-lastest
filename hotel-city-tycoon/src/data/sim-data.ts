@@ -31,5 +31,6 @@ export function appSimData(): SimData {
     neighbours: GameData.neighbours as unknown as SimData['neighbours'],
     seasons: GameData.seasons.seasons as unknown as SimData['seasons'],
     gifts: GameData.gifts as unknown as SimData['gifts'],
+    animations: GameData.animations as unknown as SimData['animations'],
   };
 }

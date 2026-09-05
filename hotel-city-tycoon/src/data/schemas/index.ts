@@ -4,6 +4,7 @@ import { FileHeader, Id, I18nKey, AssetKey, Level, NonNegInt, PosInt, Ratio, Pri
 export * from './common.ts';
 export * from './economy.ts';
 export * from './rooms.ts';
+export * from './animations.ts';
 
 export const ShiftsSchema = z.object({
   ...FileHeader,

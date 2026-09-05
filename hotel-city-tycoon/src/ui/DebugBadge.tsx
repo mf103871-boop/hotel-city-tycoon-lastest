@@ -15,6 +15,7 @@ export interface RenderStats {
   rooms: number;
   visibleRooms: number;
   characters: number;
+  visibleCharacters: number;
   zoom: number;
   /** The frame rate 95% of frames beat — what the game feels like at its worst. */
   fpsP95Low: number;
@@ -79,7 +80,7 @@ export function DebugBadge({ stats }: { stats: RenderStats }) {
           </div>
           {stats.memoryMB !== null && <div>memory {stats.memoryMB.toFixed(0)}MB</div>}
           <div>rooms {stats.visibleRooms}/{stats.rooms} drawn</div>
-          <div>people {stats.characters}</div>
+          <div>people {stats.visibleCharacters}/{stats.characters} drawn</div>
           <div>zoom {stats.zoom.toFixed(2)}×</div>
           <div className="mt-1 border-t border-white/10 pt-1 text-[10px] text-sand-500">
             build {typeof __BUILD_ID__ === 'string' ? __BUILD_ID__ : 'dev'}

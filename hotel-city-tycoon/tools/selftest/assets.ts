@@ -9,88 +9,9 @@
  * Run: node --experimental-strip-types tools/selftest/assets.ts
  */
 import fs from 'node:fs';
-import zlib from 'node:zlib';
 import { loadSimData } from '../balance-sim/load-data.ts';
-
-/**
- * A minimal PNG reader, because nothing here has ever read a shipped pixel.
- *
- * Every test in this file until now checked the manifest — that a key has a
- * file and a path resolves. None of them opened one. That is how a night wash
- * that clipped every pale blue to #0000FF shipped through a green suite: the
- * only thing that would have caught it is looking at the pixels.
- *
- * Handles the 8-bit RGB/RGBA/indexed, non-interlaced files the art pipeline
- * produces — `save_png` quantises anything under 256 colours, so the pest
- * overlays arrive palettised — and refuses anything else rather than guessing.
- */
-interface Png { width: number; height: number; channels: number; data: Buffer }
-
-function readPng(path: string): Png {
-  const file = fs.readFileSync(path);
-  if (file.readUInt32BE(0) !== 0x89504e47) throw new Error(`${path} is not a PNG`);
-  let pos = 8;
-  let width = 0; let height = 0; let depth = 0; let colour = 0; let interlace = 0;
-  const idat: Buffer[] = [];
-  let palette: Buffer | null = null;
-  let alphas: Buffer | null = null;
-  while (pos < file.length) {
-    const len = file.readUInt32BE(pos);
-    const type = file.toString('ascii', pos + 4, pos + 8);
-    const body = file.subarray(pos + 8, pos + 8 + len);
-    pos += 12 + len;
-    if (type === 'IHDR') {
-      width = body.readUInt32BE(0); height = body.readUInt32BE(4);
-      depth = body[8]!; colour = body[9]!; interlace = body[12]!;
-    } else if (type === 'IDAT') idat.push(body);
-    else if (type === 'PLTE') palette = body;
-    else if (type === 'tRNS') alphas = body;
-    else if (type === 'IEND') break;
-  }
-  if (depth !== 8 || interlace !== 0 || (colour !== 2 && colour !== 6 && colour !== 3)) {
-    throw new Error(`${path}: unsupported PNG (depth ${depth}, colour ${colour}, interlace ${interlace})`);
-  }
-  if (colour === 3 && !palette) throw new Error(`${path}: indexed PNG with no palette`);
-  const channels = colour === 6 ? 4 : colour === 3 ? 1 : 3;
-  const raw = zlib.inflateSync(Buffer.concat(idat));
-  const stride = width * channels;
-  const out = Buffer.alloc(stride * height);
-  let prev = Buffer.alloc(stride);
-  let read = 0;
-  for (let y = 0; y < height; y++) {
-    const filter = raw[read++]!;
-    const line = Buffer.from(raw.subarray(read, read + stride));
-    read += stride;
-    for (let x = 0; x < stride; x++) {
-      const a = x >= channels ? line[x - channels]! : 0;
-      const b = prev[x]!;
-      const c = x >= channels ? prev[x - channels]! : 0;
-      if (filter === 1) line[x] = (line[x]! + a) & 0xff;
-      else if (filter === 2) line[x] = (line[x]! + b) & 0xff;
-      else if (filter === 3) line[x] = (line[x]! + ((a + b) >> 1)) & 0xff;
-      else if (filter === 4) {
-        const p = a + b - c;
-        const pa = Math.abs(p - a); const pb = Math.abs(p - b); const pc = Math.abs(p - c);
-        line[x] = (line[x]! + (pa <= pb && pa <= pc ? a : pb <= pc ? b : c)) & 0xff;
-      }
-    }
-    line.copy(out, y * stride);
-    prev = line;
-  }
-  if (colour !== 3) return { width, height, channels, data: out };
-
-  // Expand the palette so every caller sees RGBA and none of them has to know
-  // which of the three encodings a given file happens to use.
-  const rgba = Buffer.alloc(width * height * 4);
-  for (let i = 0; i < width * height; i++) {
-    const idx = out[i]!;
-    rgba[i * 4] = palette![idx * 3]!;
-    rgba[i * 4 + 1] = palette![idx * 3 + 1]!;
-    rgba[i * 4 + 2] = palette![idx * 3 + 2]!;
-    rgba[i * 4 + 3] = alphas && idx < alphas.length ? alphas[idx]! : 255;
-  }
-  return { width, height, channels: 4, data: rgba };
-}
+import { readPng } from './png.ts';
+import type { Png } from './png.ts';
 
 /** Every shipped room PNG, both tiers. */
 function roomFiles(): string[] {
@@ -166,7 +87,12 @@ async function check(name: string, fn: () => void | Promise<void>): Promise<void
 function assert(c: unknown, m: string): asserts c { if (!c) throw new Error(m); }
 function eq(a: unknown, b: unknown, m: string): void { if (a !== b) throw new Error(`${m} (got ${String(a)}, expected ${String(b)})`); }
 
-interface Entry { key: string; bundle: string; file: string; width: number; height: number; required: boolean }
+/** One row of a character sheet, as the manifest carries it (HC-P2-S1). */
+interface AnimClip { row: number; frames: number; fps: number; loop: boolean }
+interface Entry {
+  key: string; bundle: string; file: string; width: number; height: number; required: boolean;
+  anim?: { frame: { w: number; h: number; pivotX: number; pivotY: number }; clips: Record<string, AnimClip> };
+}
 const entries = manifest.entries as Entry[];
 
 const line = '─'.repeat(66);
@@ -186,11 +112,20 @@ await check('every decor item, staff role and guest type has art', () => {
     assert(entries.some((e) => e.key === item.assetKey ||
       e.file === `decor/${item.id}.png`), `no manifest entry for decor "${item.id}"`);
   }
+  // Since HC-P2-S1 a character is one sheet holding every state they can be
+  // in, so the sheet is what must exist — and it must carry an idle row,
+  // which is what everything falls back to.
   for (const role of data.staffRoles) {
-    assert(entries.some((e) => e.key === `staff.${role.id}.idle`), `no idle art for staff "${role.id}"`);
+    const sheet = entries.find((e) => e.key === `staff.${role.id}.sheet`);
+    assert(sheet, `no sheet for staff "${role.id}"`);
+    assert(sheet.anim?.clips['idle'], `staff "${role.id}" has a sheet with no idle row`);
+    assert(sheet.anim?.clips['work'], `staff "${role.id}" has a sheet with no work row`);
   }
   for (const guest of data.guestTypes) {
-    assert(entries.some((e) => e.key === `guest.${guest.id}.idle`), `no idle art for guest "${guest.id}"`);
+    const sheet = entries.find((e) => e.key === `guest.${guest.id}.sheet`);
+    assert(sheet, `no sheet for guest "${guest.id}"`);
+    assert(sheet.anim?.clips['idle'], `guest "${guest.id}" has a sheet with no idle row`);
+    assert(sheet.anim?.clips['sleep'], `guest "${guest.id}" has a sheet with no sleep row`);
   }
 });
 
@@ -353,35 +288,75 @@ await check('something actually calls loadBundle', () => {
   console.log(`      loadBundle called from ${callers.join(', ')}`);
 });
 
-await check('walk sheets hold exactly the frames the renderer slices', () => {
+await check('every character sheet is the size its own clip table says', () => {
   // The manifest once declared a walk sheet as 48 wide while its own note said
-  // 288. The renderer slices six frames; if the file disagrees, characters
-  // animate through empty space.
-  const declared = entries.filter((e) => e.key.endsWith('.walk'));
-  assert(declared.length > 0, 'no walk sheets are declared');
+  // 288. Since HC-P2-S1 the size is derived from the character's animation
+  // file — a row per clip, a column per frame — so the check is that the three
+  // parties still agree: the file, the manifest entry, and the pixels.
+  const sheets = entries.filter((e) => e.key.endsWith('.sheet'));
+  assert(sheets.length > 0, 'no character sheets are declared');
 
-  const renderer = fs.readFileSync('src/render/characterView.ts', 'utf8');
-  const frames = Number(/WALK_FRAMES\s*=\s*(\d+)/.exec(renderer)?.[1] ?? 0);
-  const width = Number(/const CHAR_W\s*=\s*(\d+)/.exec(renderer)?.[1] ?? 0);
-  assert(frames > 0 && width > 0, 'could not read the frame layout from the renderer');
-
-  for (const entry of declared) {
-    eq(entry.width, width * frames,
-      `"${entry.key}" is declared ${entry.width}px wide but the renderer slices ${frames} frames of ${width}px`);
+  for (const entry of sheets) {
+    const [kind, id] = entry.key.split('.');
+    const anim = JSON.parse(fs.readFileSync(`data/animations/${kind}_${id}.json`, 'utf8')) as {
+      frame: { w: number; h: number }; clips: Record<string, { frames: number; fps: number; loop: boolean }>;
+    };
+    assert(entry.anim, `"${entry.key}" carries no anim block — the renderer has nothing to slice by`);
+    const names = Object.keys(anim.clips);
+    const cols = Math.max(...names.map((n) => anim.clips[n]!.frames));
+    eq(entry.width, anim.frame.w * cols, `"${entry.key}" declared ${entry.width}px wide for ${cols} frames of ${anim.frame.w}px`);
+    eq(entry.height, anim.frame.h * names.length, `"${entry.key}" declared ${entry.height}px tall for ${names.length} clips`);
+    // And the manifest's copy of the table is the table.
+    eq(Object.keys(entry.anim.clips).join(','), names.join(','), `"${entry.key}" manifest clips differ from the file`);
+    names.forEach((name, row) => {
+      const declared = entry.anim!.clips[name]!;
+      eq(declared.row, row, `"${entry.key}" puts ${name} on row ${declared.row}, the file has it at ${row}`);
+      eq(declared.frames, anim.clips[name]!.frames, `"${entry.key}" ${name} frame count differs from the file`);
+      eq(declared.fps, anim.clips[name]!.fps, `"${entry.key}" ${name} fps differs from the file`);
+    });
   }
-  console.log(`      ${declared.length} sheets, ${frames} frames of ${width}x${declared[0]!.height}`);
+  console.log(`      ${sheets.length} sheets, every row matching its animation file`);
 });
 
-await check('every walk sheet on disk matches its declared size', () => {
-  for (const entry of entries.filter((e) => e.key.endsWith('.walk'))) {
-    const path = `public/assets/${entry.file}`;
-    if (!fs.existsSync(path)) continue;
-    const buf = fs.readFileSync(path);
-    const w = buf.readUInt32BE(16);
-    const h = buf.readUInt32BE(20);
-    eq(w, entry.width, `${entry.file} is ${w}px wide, declared ${entry.width}`);
-    eq(h, entry.height, `${entry.file} is ${h}px tall, declared ${entry.height}`);
+await check('every character sheet on disk matches its declared size, at both tiers', () => {
+  for (const entry of entries.filter((e) => e.key.endsWith('.sheet'))) {
+    for (const tier of manifest.resolutions as number[]) {
+      const path = tier > 1 ? `public/assets/@${tier}x/${entry.file}` : `public/assets/${entry.file}`;
+      if (!fs.existsSync(path)) continue;
+      const buf = fs.readFileSync(path);
+      const w = buf.readUInt32BE(16);
+      const h = buf.readUInt32BE(20);
+      eq(w, entry.width * tier, `${path} is ${w}px wide, declared ${entry.width * tier}`);
+      eq(h, entry.height * tier, `${path} is ${h}px tall, declared ${entry.height * tier}`);
+    }
   }
+});
+
+await check('the renderer slices from the manifest, not from constants of its own', () => {
+  // ART-0 §17 item 7: animation sizes, rates and pivot come from the manifest.
+  // A constant here would be a second source of truth, and the one that wins
+  // silently when the two disagree.
+  const slicer = fs.readFileSync('src/render/anim/sheet.ts', 'utf8');
+  assert(/entryFor\(/.test(slicer) && /\.anim\b/.test(slicer), 'the slicer never reads the manifest anim block');
+  const view = fs.readFileSync('src/render/characterView.ts', 'utf8');
+  assert(!/WALK_FRAMES\s*=/.test(view), 'characterView still hard-codes a frame count');
+  assert(!/WALK_CYCLE_MS\s*=/.test(view), 'characterView still hard-codes a cycle length');
+  assert(/clipOf\(/.test(view), 'characterView never asks the manifest for a clip\'s timing');
+});
+
+await check('nothing under characters/ is undeclared or missing', () => {
+  // A sheet replaced four per-variant files. Left on disk they would be dead
+  // weight against the asset budget and invisible to every other check here.
+  const declared = new Set(entries.filter((e) => e.bundle === 'characters').map((e) => e.file.split('/')[1]!));
+  for (const tier of manifest.resolutions as number[]) {
+    const dir = tier > 1 ? `public/assets/@${tier}x/characters` : 'public/assets/characters';
+    const onDisk = fs.readdirSync(dir).filter((f) => f.endsWith('.png'));
+    const strays = onDisk.filter((f) => !declared.has(f));
+    assert(strays.length === 0, `@${tier}x has ${strays.length} undeclared character file(s): ${strays.slice(0, 4).join(', ')}`);
+    const absent = [...declared].filter((f) => !onDisk.includes(f));
+    assert(absent.length === 0, `@${tier}x is missing ${absent.length} declared file(s): ${absent.slice(0, 4).join(', ')}`);
+  }
+  console.log(`      ${declared.size} character files, present at every declared tier and nothing besides`);
 });
 
 await check('something animates the characters', () => {
@@ -441,9 +416,9 @@ await check('a lookup made before its bundle lands does not poison the key for t
     'texture() records a miss before the key\'s bundle has loaded');
   assert(/missing\.delete\(entry\.key\)/.test(loader),
     'loadBundle never clears an earlier miss once the file arrives');
-  const characters = fs.readFileSync('src/render/characterView.ts', 'utf8');
-  assert(/walkFramesGeneration/.test(characters),
-    'a walk sheet that was not there yet is cached as absent for ever');
+  const slicer = fs.readFileSync('src/render/anim/sheet.ts', 'utf8');
+  assert(/sheetGeneration/.test(slicer),
+    'a character sheet that was not there yet is cached as absent for ever');
 });
 
 await check('the night, dirty and pest variants are drawn, not merely shipped', () => {

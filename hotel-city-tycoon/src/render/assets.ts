@@ -17,6 +17,27 @@ import { Assets } from 'pixi.js';
 import type { Texture } from 'pixi.js';
 import manifest from '../../public/assets/manifest.json' with { type: 'json' };
 
+/** One row of a character sheet, as the manifest declares it. */
+export interface AnimClip {
+  /** Which row of the sheet, counting from the top. */
+  row: number;
+  frames: number;
+  /** Drawn frames per second — 8 to 12, per ART-0 §11. Not the display rate. */
+  fps: number;
+  loop: boolean;
+}
+
+/**
+ * A character sheet's layout, copied into the manifest from that character's
+ * animation file (HC-P2-S1). The renderer reads sizes, pivot and rates from
+ * here rather than from constants of its own, which is what ART-0 §17 asks
+ * for: one number, one source, three consumers.
+ */
+export interface AnimSpec {
+  frame: { w: number; h: number; pivotX: number; pivotY: number };
+  clips: Record<string, AnimClip>;
+}
+
 export interface AssetEntry {
   key: string;
   bundle: string;
@@ -25,6 +46,8 @@ export interface AssetEntry {
   height: number;
   required: boolean;
   note?: string;
+  /** Present on character sheets, absent on everything else. */
+  anim?: AnimSpec;
 }
 
 export interface AssetManifest {

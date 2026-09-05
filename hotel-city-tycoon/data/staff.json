@@ -1,13 +1,13 @@
 {
   "version": 1,
   "tuningStatus": "original-snapshot-3A",
-  "assetKeyConvention": "staff.<roleId>.<variant>  |  variants: idle, walk, work, rest, thumb",
+  "assetKeyConvention": "staff.<roleId>.<variant>  |  variants: sheet, thumb. The sheet holds one row per clip; data/animations/staff_<roleId>.json names the clips and the manifest carries the layout.",
   "note": "3B, decision 12a: the seven original roles only. barista/attendant/therapist/launderer/engineer/concierge removed; save migration v13->14 drops any hired staff holding a removed role. 4B: the cafe, arcade and disco are staffless as the original listed them, so each role serves exactly one room. Wages and hire costs stay zero (decision 10a) and grades stay neutralised. 4A: tempWagePerHour is the original's dearer TEMP worker — an unstaffed slot is covered automatically at this rate while a shift runs; hiring the permanent (free, wage 0) removes it. That restores the original incentive without touching the shift table: a fully staffed hotel still pays exactly 25/90/225/1,781/14,145.",
   "roles": [
     {
       "id": "receptionist",
       "nameKey": "staff.receptionist.name",
-      "assetKey": "staff.receptionist.idle",
+      "assetKey": "staff.receptionist.sheet",
       "roomTypes": [
         "lobby"
       ],
@@ -19,7 +19,7 @@
     {
       "id": "cleaner",
       "nameKey": "staff.cleaner.name",
-      "assetKey": "staff.cleaner.idle",
+      "assetKey": "staff.cleaner.sheet",
       "roomTypes": [
         "housekeeping"
       ],
@@ -31,7 +31,7 @@
     {
       "id": "trainer",
       "nameKey": "staff.trainer.name",
-      "assetKey": "staff.trainer.idle",
+      "assetKey": "staff.trainer.sheet",
       "roomTypes": [
         "gym"
       ],
@@ -43,7 +43,7 @@
     {
       "id": "chef",
       "nameKey": "staff.chef.name",
-      "assetKey": "staff.chef.idle",
+      "assetKey": "staff.chef.sheet",
       "roomTypes": [
         "restaurant"
       ],
@@ -55,7 +55,7 @@
     {
       "id": "bartender",
       "nameKey": "staff.bartender.name",
-      "assetKey": "staff.bartender.idle",
+      "assetKey": "staff.bartender.sheet",
       "roomTypes": [
         "bar"
       ],
@@ -67,7 +67,7 @@
     {
       "id": "usher",
       "nameKey": "staff.usher.name",
-      "assetKey": "staff.usher.idle",
+      "assetKey": "staff.usher.sheet",
       "roomTypes": [
         "cinema"
       ],
@@ -79,7 +79,7 @@
     {
       "id": "lifeguard",
       "nameKey": "staff.lifeguard.name",
-      "assetKey": "staff.lifeguard.idle",
+      "assetKey": "staff.lifeguard.sheet",
       "roomTypes": [
         "pool"
       ],

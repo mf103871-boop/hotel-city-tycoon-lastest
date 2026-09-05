@@ -5,6 +5,16 @@ export type { SceneSnapshot, SceneRoom, SceneCharacter, SceneCallbacks } from '.
 export { RoomView } from './roomView.ts';
 export { CharacterView, prefersReducedMotion, setReducedMotionForTests } from './characterView.ts';
 export type { CharacterViewData } from './characterView.ts';
+export {
+  createMotion, resetMotion, step as stepMotion, snapTo, fadeAlpha,
+  SAMPLE_S, SNAP_BLOCKS, MAX_DT_S,
+} from './anim/motion.ts';
+export type { MotionSample, MotionState } from './anim/motion.ts';
+export { createPlayer, resetPlayer, setBase, playOnce, advance as advanceClip } from './anim/clipPlayer.ts';
+export type { ClipTiming, PlayerFrame } from './anim/clipPlayer.ts';
+export { createScheduler, resetScheduler, tick as tickScheduler, FIDGET_MS } from './anim/scheduler.ts';
+export type { SchedulerConfig, Fidget, Beat } from './anim/scheduler.ts';
+export { framesFor, animOf, clipOf, clipNames, frameOf, resetSheetCache } from './anim/sheet.ts';
 export type { RoomViewData } from './roomView.ts';
 export * from './camera.ts';
 export * from './culling.ts';

@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "tuningStatus": "designed-presentation",
+  "note": "Everybody who checks in. Average pace with the widest spread between individuals, so two of them in a queue never move in step; loses patience past 60% of the wait. Presentation only: nothing here moves a coin, and the simulation never reads this file (HC-P2-S1, DEC-012). Frame counts follow ART-0 §11 and are what tools/art/gen_chars.py draws; the manifest copies the clip table from here.",
+  "id": "guest.standard",
+  "frame": {
+    "w": 48,
+    "h": 72,
+    "pivot": {
+      "x": 24,
+      "y": 70
+    },
+    "facing": "right"
+  },
+  "clips": {
+    "idle": {
+      "frames": 4,
+      "fps": 6,
+      "loop": true
+    },
+    "blink": {
+      "frames": 1,
+      "fps": 8,
+      "loop": false
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 11,
+      "loop": true
+    },
+    "sleep": {
+      "frames": 3,
+      "fps": 2,
+      "loop": true
+    },
+    "sit": {
+      "frames": 2,
+      "fps": 2,
+      "loop": true
+    },
+    "happy": {
+      "frames": 4,
+      "fps": 6,
+      "loop": false
+    },
+    "angry": {
+      "frames": 4,
+      "fps": 6,
+      "loop": false
+    },
+    "scared": {
+      "frames": 2,
+      "fps": 4,
+      "loop": false
+    }
+  },
+  "motion": {
+    "walkSpeedBlocksPerSec": 1.4,
+    "speedJitter": 0.15,
+    "turnPauseMs": 150,
+    "liftMs": 400
+  },
+  "behaviour": {
+    "blinkEveryMs": [
+      2500,
+      5000
+    ],
+    "fidgets": [
+      "shiftWeight",
+      "glance"
+    ],
+    "fidgetEveryMs": [
+      3000,
+      8000
+    ],
+    "impatientAfter": 0.6,
+    "sleep": {
+      "wakeEverySec": [
+        40,
+        90
+      ],
+      "awakeSec": 6
+    },
+    "angryBelow": 40
+  },
+  "reactions": {
+    "guestCheckedOut": "happy",
+    "guestLeftAngry": "angry",
+    "guestPoked": "scared",
+    "fireStarted": "scared",
+    "pestAppeared": "scared",
+    "ghostAppeared": "scared",
+    "hazardCleared": "happy",
+    "inspectorFound": "happy",
+    "desireUnmet": "angry"
+  }
+}
