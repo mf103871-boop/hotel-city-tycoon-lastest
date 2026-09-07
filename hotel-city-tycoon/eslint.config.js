@@ -21,7 +21,7 @@ const FORBIDDEN_IN_CORE = [
 ];
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'coverage', 'public/assets'] },
+  { ignores: ['dist', 'node_modules', 'coverage', 'public/assets', 'android', 'ios'] },
 
   js.configs.recommended,
   ...tseslint.configs.recommended,

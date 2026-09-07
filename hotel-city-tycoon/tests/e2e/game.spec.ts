@@ -546,3 +546,43 @@ test('the hotel cannot be dragged off screen', async ({ page }) => {
   if (tapped) await expect(page.locator('section[role="dialog"]')).toBeVisible();
   await expect(page.locator('canvas')).toBeVisible();
 });
+
+// HC-P0-S10: actual DOM layout at changing sizes, independent of GPU support.
+// CSS variables simulate the same inset input Capacitor receives on Android;
+// device QA still verifies the real operating-system values.
+test('rotation keeps the open catalog scrollable inside the safe rectangle', async ({ page }) => {
+  await bootFresh(page);
+  const readout = page.locator('[data-hud="top"]');
+  const balanceBefore = await readout.innerText();
+  await page.getByRole('button', { name: /\+ build/i }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  for (const size of [
+    { width: 390, height: 844, top: 47, right: 0, bottom: 34, left: 0 },
+    { width: 844, height: 390, top: 0, right: 47, bottom: 21, left: 47 },
+    { width: 360, height: 800, top: 24, right: 0, bottom: 24, left: 0 },
+  ]) {
+    await page.setViewportSize({ width: size.width, height: size.height });
+    await page.addStyleTag({ content: `.game-safe-area {
+      --safe-area-inset-top: ${size.top}px; --safe-area-inset-right: ${size.right}px;
+      --safe-area-inset-bottom: ${size.bottom}px; --safe-area-inset-left: ${size.left}px;
+    }` });
+    const viewport = page.getByTestId('game-viewport');
+    await expect.poll(async () => (await viewport.boundingBox())?.height)
+      .toBe(size.height - size.top - size.bottom);
+    const box = (await viewport.boundingBox())!;
+    expect(box.x).toBe(size.left);
+    expect(box.width).toBe(size.width - size.left - size.right);
+    const lastRow = dialog.locator('[data-sheet-scroll] button').last();
+    await lastRow.scrollIntoViewIfNeeded();
+    const row = (await lastRow.boundingBox())!;
+    const sheet = (await dialog.boundingBox())!;
+    expect(row.y).toBeGreaterThanOrEqual(sheet.y);
+    expect(row.y + row.height).toBeLessThanOrEqual(sheet.y + sheet.height + 1);
+    expect(sheet.y + sheet.height).toBeLessThanOrEqual(size.height - size.bottom + 1);
+    await expect(dialog.getByRole('button', { name: 'Close', exact: true })).toBeInViewport();
+  }
+  await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect.poll(() => readout.innerText()).toBe(balanceBefore);
+});

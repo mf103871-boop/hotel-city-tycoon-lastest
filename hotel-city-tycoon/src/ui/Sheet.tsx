@@ -58,20 +58,21 @@ export function Sheet({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="max-h-[68%] overflow-hidden rounded-t-2xl border-t border-white/10 bg-midnight-900 shadow-2xl outline-none"
+        className="game-sheet flex min-h-0 flex-col overflow-hidden rounded-t-2xl border-t border-white/10 bg-midnight-900 shadow-2xl outline-none"
       >
-        <header className="flex items-baseline gap-3 border-b border-white/5 px-4 py-3">
+        <header className="flex shrink-0 items-center gap-3 border-b border-white/5 px-4 py-3">
           <h2 id={titleId} className="text-base font-semibold text-white">{title}</h2>
           {subtitle && <span className="text-xs text-sand-400">{subtitle}</span>}
           <button
             type="button"
             onClick={onClose}
-            className="ms-auto rounded-lg px-4 py-2 text-sm text-sand-400 hover:bg-white/5 hover:text-white"
+            aria-label="Close"
+            className="ms-auto min-h-11 min-w-11 shrink-0 rounded-lg px-4 py-2 text-sm text-sand-400 hover:bg-white/5 hover:text-white"
           >
             ✕
           </button>
         </header>
-        <div className="max-h-[calc(68vh-3.5rem)] overflow-y-auto overscroll-contain px-4 py-3">
+        <div data-sheet-scroll className="min-h-0 overflow-y-auto overscroll-contain px-4 py-3">
           {children}
         </div>
       </section>

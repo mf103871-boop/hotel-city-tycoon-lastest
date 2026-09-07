@@ -486,8 +486,9 @@ check('the phone\'s own chrome agrees with the app it frames', () => {
   // viewport-fit=cover the page under them is the canvas — white on the day
   // sky is 2.05:1. Something opaque has to cover the inset.
   if (/apple-mobile-web-app-status-bar-style"\s+content="black-translucent"/.test(html)) {
-    const hud = fs.readFileSync('src/ui/Hud.tsx', 'utf8');
-    assert(/safe-area-inset-top/.test(hud) && /from-ink-950/.test(hud),
+    const css = fs.readFileSync('src/index.css', 'utf8');
+    const safeArea = /\.game-safe-area\s*\{([^}]+)\}/.exec(css)?.[1] ?? '';
+    assert(/safe-area-inset-top/.test(safeArea) && /background: var\(--color-ink-950\)/.test(safeArea),
       'black-translucent status bar with nothing painted behind the safe-area inset');
   }
 });

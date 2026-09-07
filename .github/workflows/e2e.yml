@@ -3,6 +3,10 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+  pull_request:
+    paths:
+      - 'hotel-city-tycoon/**'
+      - '.github/workflows/e2e.yml'
 defaults:
   run:
     working-directory: hotel-city-tycoon
@@ -32,6 +36,11 @@ jobs:
         run: |
           set -o pipefail
           npx playwright install --with-deps chromium 2>&1 | tee docs/ci-install.log
+      - name: verify and sync native projects
+        run: |
+          set -o pipefail
+          npm run verify 2>&1 | tee docs/ci-verify.log
+          npm run mobile:sync 2>&1 | tee docs/ci-mobile-sync.log
       - name: e2e tests
         run: |
           set -o pipefail
@@ -52,6 +61,8 @@ jobs:
             hotel-city-tycoon/docs/ci-install.log
             hotel-city-tycoon/docs/ci-run.log
             hotel-city-tycoon/docs/ci-shots.log
+            hotel-city-tycoon/docs/ci-verify.log
+            hotel-city-tycoon/docs/ci-mobile-sync.log
             hotel-city-tycoon/test-results/
             hotel-city-tycoon/docs/baseline-screens/
           if-no-files-found: warn

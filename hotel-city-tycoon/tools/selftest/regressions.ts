@@ -271,7 +271,12 @@ await check('the daily gift is offered whenever it becomes available, not only a
 
 await check('the HUD bars respect the safe area and can be measured by the canvas', () => {
   const hud = fs.readFileSync(path.join('src', 'ui', 'Hud.tsx'), 'utf8');
-  assert(/safe-area-inset-top/.test(hud) && /safe-area-inset-bottom/.test(hud), 'no safe-area padding on the HUD bars');
+  const css = fs.readFileSync('src/index.css', 'utf8');
+  const app = fs.readFileSync('src/ui/App.tsx', 'utf8');
+  assert(/className="game-safe-area"/.test(app), 'safe-area wrapper is not mounted');
+  for (const edge of ['top', 'right', 'bottom', 'left']) {
+    assert(css.includes(`padding-${edge}: var(--safe-area-inset-${edge}, env(safe-area-inset-${edge}, 0px))`), `missing safe area for ${edge}`);
+  }
   assert(/data-hud="top"/.test(hud) && /data-hud="bottom"/.test(hud), 'the canvas cannot find the HUD bars to measure them');
   const canvas = fs.readFileSync(path.join('src', 'ui', 'HotelCanvas.tsx'), 'utf8');
   assert(/setInsets\(/.test(canvas), 'the canvas never hands the HUD height to the camera');
