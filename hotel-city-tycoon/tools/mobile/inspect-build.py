@@ -11,7 +11,7 @@ from pathlib import Path
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("platform", choices=("android", "ios"))
+    parser.add_argument("platform", choices=("android", "ios", "ios-device"))
     parser.add_argument("package", type=Path)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
@@ -36,8 +36,9 @@ def main():
             report["sha256"] = hashlib.sha256(package.read_bytes()).hexdigest()
         else:
             info = plistlib.loads((package / "Info.plist").read_bytes())
-            if info["CFBundleSupportedPlatforms"] != ["iPhoneSimulator"]:
-                raise ValueError("Expected an iOS Simulator build")
+            expected_platform = "iPhoneOS" if args.platform == "ios-device" else "iPhoneSimulator"
+            if info["CFBundleSupportedPlatforms"] != [expected_platform]:
+                raise ValueError("Expected an " + expected_platform + " build")
             if info["CFBundleIdentifier"] != "com.hotelcitytycoon.app":
                 raise ValueError("Unexpected iOS application identifier")
             executable = package / info["CFBundleExecutable"]
@@ -50,6 +51,7 @@ def main():
             config = json.loads((package / "capacitor.config.json").read_text())
             report["executable_sha256"] = hashlib.sha256(executable.read_bytes()).hexdigest()
             report["minimum_os"] = info["MinimumOSVersion"]
+            report["apple_platform"] = expected_platform
 
         if config.get("appId") != "com.hotelcitytycoon.app":
             raise ValueError("Unexpected Capacitor application identifier")
