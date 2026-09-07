@@ -112,7 +112,7 @@ test('a room can be moved to a valid square', async ({ page }) => {
   }
   await expand.click();
   await page.keyboard.press('Escape').catch(() => {});
-  await page.getByRole('button', { name: '✕' }).first().click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
 
   await tapRoom(page);
   const move = page.getByTestId('room-move');
@@ -207,12 +207,12 @@ test('decor can be removed, appears in the inventory, and goes back for free',
     // while its fixed tap coordinate missed every room.)
     await page.locator('section[role="dialog"] button:enabled').filter({ hasText: /\+\d+/ }).first().click();
     // Back to the room's overview, where what was placed is listed.
-    await page.getByRole('button', { name: '✕' }).first().click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
     const placed = page.getByTestId('placed-decor');
     await expect(placed).toBeVisible();
     await placed.getByRole('button').first().click();
     // The room sheet covers the bottom bar; close it before reaching for Manage.
-    await page.getByRole('button', { name: '✕' }).first().click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
     await expect(page.locator('section[role="dialog"]')).toHaveCount(0);
 
     await openManage(page);
@@ -229,9 +229,9 @@ test('an unplaced piece can be sold, and asks first', async ({ page }) => {
   if (!(await decorate.isVisible().catch(() => false))) test.skip(true, 'no decorable room');
   await decorate.click();
   await page.locator('section[role="dialog"] button:enabled').filter({ hasText: /\+\d+/ }).first().click();
-  await page.getByRole('button', { name: '✕' }).first().click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
   await page.getByTestId('placed-decor').getByRole('button').first().click();
-  await page.getByRole('button', { name: '✕' }).first().click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
   await expect(page.locator('section[role="dialog"]')).toHaveCount(0);
 
   await openManage(page);

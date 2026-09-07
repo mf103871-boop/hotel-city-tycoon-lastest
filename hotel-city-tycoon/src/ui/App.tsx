@@ -140,109 +140,111 @@ export function App() {
   }, [dir, locale]);
 
   return (
-    <div dir={dir} className="relative h-full w-full overflow-hidden bg-midnight-950">
-      {ready ? (
-        <>
-          <HotelCanvas
-            onStats={onStats}
-            onRoomTap={onRoomTap}
-            onEmptyTap={onEmptyTap}
-          />
-          <DebugBadge stats={stats} />
-          {/* Rendered before the panels so every sheet stacks above it. */}
-          <PhoneButton onOpen={() => setPhoneOpen(true)} />
-          <Hud
-            locale={locale}
-            onOpenBuild={() => setPanel('build')}
-            onOpenShift={() => setPanel('shift')}
-            onOpenUpgrades={() => setPanel('upgrades')}
-            onOpenShop={() => setPanel('shop')}
-            onOpenCity={() => setPanel('city')}
-            onOpenManage={() => setPanel('manage')}
-            objective={<ObjectiveCard locale={locale} />}
-          />
-          {panel === 'build' && <BuildPanel locale={locale} onClose={() => setPanel('none')} />}
-          {panel === 'shift' && <ShiftPanel locale={locale} onClose={() => setPanel('none')} />}
-          {panel === 'upgrades' && <UpgradesPanel locale={locale} onClose={() => setPanel('none')} />}
-          {panel === 'shop' && <ShopPanel locale={locale} onClose={() => setPanel('none')} />}
-          {panel === 'city' && <CityPanel locale={locale} onClose={() => setPanel('none')} />}
-          {panel === 'manage' && (
-            <ManagePanel
-              locale={locale}
-              onClose={() => setPanel('none')}
-              onPlaceStored={(roomId) => {
-                const room = storedRoomViews(useGameStore.getState().state!).find((r) => r.id === roomId);
-                if (room) setPlacing({ kind: 'stored', roomId, defId: room.defId, at: null });
-              }}
+    <div dir={dir} className="game-safe-area">
+      <div data-testid="game-viewport" className="relative h-full w-full overflow-hidden bg-midnight-950">
+        {ready ? (
+          <>
+            <HotelCanvas
+              onStats={onStats}
+              onRoomTap={onRoomTap}
+              onEmptyTap={onEmptyTap}
             />
-          )}
-          {placing && (
-            <PlacementBar
-              placement={placing}
+            <DebugBadge stats={stats} />
+            {/* Rendered before the panels so every sheet stacks above it. */}
+            <PhoneButton onOpen={() => setPhoneOpen(true)} />
+            <Hud
               locale={locale}
-              onChange={setPlacing}
-              onDone={() => setPlacing(null)}
+              onOpenBuild={() => setPanel('build')}
+              onOpenShift={() => setPanel('shift')}
+              onOpenUpgrades={() => setPanel('upgrades')}
+              onOpenShop={() => setPanel('shop')}
+              onOpenCity={() => setPanel('city')}
+              onOpenManage={() => setPanel('manage')}
+              objective={<ObjectiveCard locale={locale} />}
             />
-          )}
-          {giftOpen && <DailyGift locale={locale} onClose={() => setGiftOpen(false)} />}
-          {phoneOpen && <PhoneSheet locale={locale} onClose={() => setPhoneOpen(false)} />}
-          <SeasonBanner locale={locale} />
-          <ClimateBanner locale={locale} />
-          {panel === 'settings' && (
-            <SettingsSheet locale={locale} saves={saves} onLocaleChange={changeLocale} onClose={() => setPanel('none')} />
-          )}
-          {openRoom && (
-            <RoomSheet
-              roomId={openRoom}
-              locale={locale}
-              onClose={() => setOpenRoom(null)}
-              onMove={(roomId, defId) => setPlacing({ kind: 'move', roomId, defId, at: null })}
-            />
-          )}
-          <Toasts notices={notices} locale={locale} onExpire={expire} />
-          {welcome && (
-            <WelcomeBack summary={welcome} locale={locale} onDismiss={() => setWelcome(null)} />
-          )}
-          <button
-            type="button"
-            aria-label="Settings"
-            onClick={() => setPanel('settings')}
-            className="absolute end-3 top-24 z-20 min-h-11 rounded-lg border border-white/10 bg-midnight-900/92
-                       px-4 py-2.5 text-sm text-sand-300 backdrop-blur"
-          >
-            ⚙
-          </button>
-          {saveTrouble && (
-            <div className="absolute inset-x-3 top-36 z-30 rounded-xl border border-red-500/40 bg-red-950/90 px-4 py-3 backdrop-blur">
-              <p className="text-sm text-red-100">{translate(locale, 'ui.saveFailing')}</p>
-              <button
-                type="button"
-                onClick={() => setPanel('settings')}
-                className="mt-2 min-h-11 w-full rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white"
-              >
-                {translate(locale, 'ui.exportSave')}
-              </button>
-            </div>
-          )}
-          {/* Below the Settings gear, not over it: at top-24 this banner sat on
-              the gear with the same z-index and swallowed every tap on it —
-              in exactly the case where Settings is the only way out. */}
-          {saveProblem && (
-            <div className="absolute inset-x-3 top-36 z-20 rounded-lg border border-amber-500/30 bg-amber-950/80 px-4 py-3 text-sm text-amber-200">
-              {translate(locale, 'ui.saveCorrupt')}
-            </div>
-          )}
-        </>
-      ) : (
-        <div className="flex h-full flex-col items-center justify-center gap-2 text-sand-500">
-          <span>…</span>
-          {/* Visible without opening a console: two rounds of verification
-              were spent establishing which build was actually live. */}
-          <span className="font-mono text-[11px] text-sand-500">
-            {typeof __BUILD_ID__ === 'string' ? __BUILD_ID__ : 'dev'}
-          </span>
-        </div>
-      )}
+            {panel === 'build' && <BuildPanel locale={locale} onClose={() => setPanel('none')} />}
+            {panel === 'shift' && <ShiftPanel locale={locale} onClose={() => setPanel('none')} />}
+            {panel === 'upgrades' && <UpgradesPanel locale={locale} onClose={() => setPanel('none')} />}
+            {panel === 'shop' && <ShopPanel locale={locale} onClose={() => setPanel('none')} />}
+            {panel === 'city' && <CityPanel locale={locale} onClose={() => setPanel('none')} />}
+            {panel === 'manage' && (
+              <ManagePanel
+                locale={locale}
+                onClose={() => setPanel('none')}
+                onPlaceStored={(roomId) => {
+                  const room = storedRoomViews(useGameStore.getState().state!).find((r) => r.id === roomId);
+                  if (room) setPlacing({ kind: 'stored', roomId, defId: room.defId, at: null });
+                }}
+              />
+            )}
+            {placing && (
+              <PlacementBar
+                placement={placing}
+                locale={locale}
+                onChange={setPlacing}
+                onDone={() => setPlacing(null)}
+              />
+            )}
+            {giftOpen && <DailyGift locale={locale} onClose={() => setGiftOpen(false)} />}
+            {phoneOpen && <PhoneSheet locale={locale} onClose={() => setPhoneOpen(false)} />}
+            <SeasonBanner locale={locale} />
+            <ClimateBanner locale={locale} />
+            {panel === 'settings' && (
+              <SettingsSheet locale={locale} saves={saves} onLocaleChange={changeLocale} onClose={() => setPanel('none')} />
+            )}
+            {openRoom && (
+              <RoomSheet
+                roomId={openRoom}
+                locale={locale}
+                onClose={() => setOpenRoom(null)}
+                onMove={(roomId, defId) => setPlacing({ kind: 'move', roomId, defId, at: null })}
+              />
+            )}
+            <Toasts notices={notices} locale={locale} onExpire={expire} />
+            {welcome && (
+              <WelcomeBack summary={welcome} locale={locale} onDismiss={() => setWelcome(null)} />
+            )}
+            <button
+              type="button"
+              aria-label="Settings"
+              onClick={() => setPanel('settings')}
+              className="absolute end-3 top-24 z-20 min-h-11 rounded-lg border border-white/10 bg-midnight-900/92
+                         px-4 py-2.5 text-sm text-sand-300 backdrop-blur"
+            >
+              ⚙
+            </button>
+            {saveTrouble && (
+              <div className="absolute inset-x-3 top-36 z-30 rounded-xl border border-red-500/40 bg-red-950/90 px-4 py-3 backdrop-blur">
+                <p className="text-sm text-red-100">{translate(locale, 'ui.saveFailing')}</p>
+                <button
+                  type="button"
+                  onClick={() => setPanel('settings')}
+                  className="mt-2 min-h-11 w-full rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white"
+                >
+                  {translate(locale, 'ui.exportSave')}
+                </button>
+              </div>
+            )}
+            {/* Below the Settings gear, not over it: at top-24 this banner sat on
+                the gear with the same z-index and swallowed every tap on it —
+                in exactly the case where Settings is the only way out. */}
+            {saveProblem && (
+              <div className="absolute inset-x-3 top-36 z-20 rounded-lg border border-amber-500/30 bg-amber-950/80 px-4 py-3 text-sm text-amber-200">
+                {translate(locale, 'ui.saveCorrupt')}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center gap-2 text-sand-500">
+            <span>…</span>
+            {/* Visible without opening a console: two rounds of verification
+                were spent establishing which build was actually live. */}
+            <span className="font-mono text-[11px] text-sand-500">
+              {typeof __BUILD_ID__ === 'string' ? __BUILD_ID__ : 'dev'}
+            </span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

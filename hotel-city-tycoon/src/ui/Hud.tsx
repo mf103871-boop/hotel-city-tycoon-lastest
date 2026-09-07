@@ -55,35 +55,11 @@ export function Hud({
 
   return (
     <>
-      {/*
-        `data-hud` lets the canvas measure how much of the screen the HUD
-        covers, so the camera can keep the hotel out from under it. The
-        safe-area padding keeps the bars clear of a notch or home indicator
-        when the game is installed (viewport-fit=cover, standalone).
-      */}
-      {/*
-        * A scrim behind the phone's own status bar.
-        *
-        * index.html asks for `black-translucent`, which makes iOS draw the
-        * clock, signal and battery as *white glyphs over the page* — and with
-        * viewport-fit=cover the page under them is bare canvas. White on the
-        * day sky (#6FBCF9) is 2.05:1: the player cannot read their own clock
-        * while the game is open. The HUD's safe-area padding pushed its panel
-        * clear of the notch and left that strip to the sky.
-        *
-        * Ink fading to nothing keeps the glyphs legible without drawing a hard
-        * band across the top of the picture, and it costs nothing when there
-        * is no inset to cover.
-        */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-ink-950/85 to-transparent"
-        style={{ height: 'calc(env(safe-area-inset-top, 0px) + 0.5rem)' }}
-      />
+      {/* The shared game-safe-area in App protects all four edges, including
+          dialogs and the canvas. data-hud measures only the bars themselves. */}
       <header
         data-hud="top"
         className="pointer-events-none absolute inset-x-0 top-0 z-10 p-3"
-        style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top, 0px))' }}
       >
         <div className="pointer-events-auto flex items-center gap-4 rounded-xl border border-white/5 bg-midnight-900/92 px-4 py-2.5 backdrop-blur">
           <Readout label={t('ui.coins')} value={coins(locale, state.player.coins)} />
@@ -115,7 +91,6 @@ export function Hud({
       <footer
         data-hud="bottom"
         className="pointer-events-none absolute inset-x-0 bottom-0 z-10 p-3"
-        style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
       >
         {objective}
         <div className="pointer-events-auto rounded-xl border border-white/5 bg-midnight-900/92 px-4 py-3 backdrop-blur">

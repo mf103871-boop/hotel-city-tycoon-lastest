@@ -21,6 +21,15 @@ handles.
 
 ## Run it
 
+**Mobile foundation:** the first release targets iPhone and Android, with
+portrait and landscape support. Run `npm run mobile:sync` to build and copy
+the local game into both native projects; see
+[mobile setup and device checks](docs/MOBILE-DEVELOPMENT.md). The approved
+visual target and sample contract are in
+[the official plan](docs/HOTEL_CITY_OFFICIAL_PLAN_AR.md) and
+[HC-VIS-001](docs/HC-VIS-001-SPEC.md). Native device and art approval remain
+separate from a successful web build.
+
 ```bash
 npm ci                    # one lockfile, package-lock.json (npm), generated on Node 22
 npm run validate:data     # must pass before anything else

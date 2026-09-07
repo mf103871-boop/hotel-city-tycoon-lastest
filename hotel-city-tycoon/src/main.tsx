@@ -92,7 +92,9 @@ if (typeof window !== 'undefined' && new URLSearchParams(window.location.search)
 
 // Registered in production only: a service worker caching a dev bundle makes
 // every change invisible until someone clears storage by hand.
-if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+// The native bundle is versioned by the app installation. A worker there
+// could serve an older bundle after an app update.
+if (import.meta.env.PROD && import.meta.env.VITE_NATIVE !== '1' && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {
       // An unavailable service worker is a missing optimisation, not a failure.

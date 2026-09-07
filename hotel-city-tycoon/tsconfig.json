@@ -31,5 +31,5 @@
       "@i18n/*":   ["src/i18n/*"]
     }
   },
-  "include": ["src", "tools", "tests", "vite.config.ts"]
+  "include": ["src", "tools", "tests", "vite.config.ts", "capacitor.config.ts"]
 }

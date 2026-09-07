@@ -244,10 +244,17 @@ export function HotelCanvas({ onRoomTap, onEmptyTap, onStats }: HotelCanvasProps
         scene?.setInsets(hudInsets());
       };
       window.addEventListener('resize', onResize);
+      // Insets may change after rotation without another window resize.
+      // Observe the actual playable rectangle, not only the screen.
+      const resizeObserver = new ResizeObserver(onResize);
+      resizeObserver.observe(holder.current!);
+      window.visualViewport?.addEventListener('resize', onResize);
 
       stop = () => {
         clearInterval(statsTimer);
         window.removeEventListener('resize', onResize);
+        resizeObserver.disconnect();
+        window.visualViewport?.removeEventListener('resize', onResize);
         unsubscribe();
         scene?.destroy();
         handle.destroy();

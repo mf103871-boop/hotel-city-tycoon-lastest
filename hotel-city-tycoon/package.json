@@ -31,29 +31,37 @@
     "sim:horizon": "node --experimental-strip-types tools/balance-sim/horizon.ts",
     "sim:parity": "node --experimental-strip-types tools/balance-sim/offline-parity.ts",
     "sim:sessions": "node --experimental-strip-types tools/balance-sim/sessions.ts",
-    "art:preview": "python3 tools/art/preview.py"
+    "art:preview": "python3 tools/art/preview.py",
+    "mobile:build": "node tools/mobile/build.mjs",
+    "mobile:sync": "npm run mobile:build && cap sync",
+    "mobile:android": "cap open android",
+    "mobile:ios": "cap open ios"
   },
   "dependencies": {
+    "@capacitor/android": "8.5.1",
+    "@capacitor/core": "8.5.1",
+    "@capacitor/ios": "8.5.1",
+    "pixi.js": "^8.6.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zod": "^3.24.1",
-    "zustand": "^5.0.2",
-    "pixi.js": "^8.6.0"
+    "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@capacitor/cli": "8.5.1",
     "@eslint/js": "^9.17.0",
+    "@playwright/test": "^1.49.0",
     "@tailwindcss/vite": "^4.0.0",
     "@types/node": "^22.10.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^4.0.0",
     "eslint": "^9.17.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.18.0",
     "vite": "^6.0.0",
-    "vitest": "^4.0.0",
-    "@vitest/coverage-v8": "^4.0.0",
-    "@playwright/test": "^1.49.0"
+    "vitest": "^4.0.0"
   }
 }

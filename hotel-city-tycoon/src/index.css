@@ -79,6 +79,25 @@
 }
 
 html, body, #root { height: 100%; }
+/* One safe rectangle for the canvas AND every overlay (including dialogs).
+ * Capacitor supplies the custom-property fallback on older Android WebViews.
+ * The opaque page background also keeps white system-bar icons readable. */
+.game-safe-area {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  padding-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  padding-right: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
+  padding-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  padding-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+  overflow: hidden;
+  background: var(--color-ink-950);
+}
+.game-sheet { max-height: 68%; }
+@media (orientation: landscape) and (max-height: 600px) {
+  .game-sheet { max-height: calc(100% - 44px); }
+}
 body {
   margin: 0;
   background: var(--color-ink-950);
