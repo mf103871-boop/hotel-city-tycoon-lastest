@@ -176,7 +176,7 @@ test('tapping a room opens its sheet, and decorating moves the meter', async ({ 
   // everything bought after it share. Placed pieces are listed on the room's
   // overview rather than inside the catalogue the pick was made from, so step
   // back out of it first.
-  await page.getByRole('button', { name: '✕' }).first().click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
   const placedRow = page.getByTestId('placed-decor').locator('li').first();
   const placedName = ((await placedRow.locator('span').first().textContent()) ?? '').trim();
   const replace = placedRow.locator('[data-testid^="replace-decor-"]');
@@ -461,7 +461,7 @@ test('every bottom-bar destination opens', async ({ page }) => {
     if (await page.getByRole('button', { name: button }).count() === 0) continue;
     await page.getByRole('button', { name: button }).first().click();
     await expect(page.getByRole('heading', { name: heading })).toBeVisible();
-    await page.getByRole('button', { name: '✕' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
   }
 });
 
