@@ -19,7 +19,7 @@
  * and that it sorts.
  */
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
-import { texture, entryFor } from './assets.ts';
+import { texture, entryFor, assetGeneration } from './assets.ts';
 import { INK, NIGHT_TINT, nightfall } from './backdrop.ts';
 import { bandDepth } from './layout.ts';
 
@@ -86,7 +86,9 @@ export class DecorView extends Container {
     this.scale.x = piece.flipX ? -1 : 1;
     this.zIndex = bandDepth(piece.x, piece.footY, piece.depth * DEPTH_STEP);
 
-    const key = `${piece.assetKey ?? ''}:${piece.w.toFixed(1)}x${piece.h.toFixed(1)}`
+    // Furniture can be placed before its bundle arrives. A load refresh must
+    // replace the stand-in even when the piece itself has not changed.
+    const key = `${assetGeneration()}:${piece.assetKey ?? ''}:${piece.w.toFixed(1)}x${piece.h.toFixed(1)}`
       + `:${piece.night ? 'n' : 'd'}:${piece.slotType}:${piece.category}`;
     if (key === this.lastKey) return;
     this.lastKey = key;

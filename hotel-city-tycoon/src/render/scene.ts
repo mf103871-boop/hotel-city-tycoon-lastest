@@ -23,6 +23,7 @@ import {
   fitCamera, clampCamera, pan, zoomAt, visibleRect, screenToWorld, worldToScreen,
 } from './camera.ts';
 import { GestureTracker } from './gestures.ts';
+import { openingHotelCamera } from './hotelFraming.ts';
 import { Backdrop, INK, NIGHT, NIGHT_TINT, SKY, nightfall } from './backdrop.ts';
 import { texture, hasTexture } from './assets.ts';
 import { FrameSampler, report } from './perf.ts';
@@ -73,6 +74,8 @@ export class HotelScene {
   private view: Viewport;
   private world: WorldBounds;
   private camera: CameraState;
+  /** Reframe on rotation until the player pans or zooms deliberately. */
+  private automaticFraming = true;
   /** How much of the viewport the HUD covers, so the hotel can clear it. */
   private insets: Insets = { top: 0, bottom: 0 };
   private snapshot: SceneSnapshot = {
@@ -443,7 +446,8 @@ export class HotelScene {
   resize(view: Viewport): void {
     this.view = view;
     this.handle.app.renderer.resize(view.width, view.height);
-    this.camera = clampCamera(this.camera, view, this.world, this.insets);
+    if (this.automaticFraming) this.focusHotel();
+    else this.camera = clampCamera(this.camera, view, this.world, this.insets);
   }
 
   /**
@@ -453,11 +457,16 @@ export class HotelScene {
   setInsets(insets: Insets): void {
     if (insets.top === this.insets.top && insets.bottom === this.insets.bottom) return;
     this.insets = { top: Math.max(0, insets.top), bottom: Math.max(0, insets.bottom) };
-    this.camera = clampCamera(this.camera, this.view, this.world, this.insets);
+    if (this.automaticFraming) this.focusHotel();
+    else this.camera = clampCamera(this.camera, this.view, this.world, this.insets);
   }
 
   focusHotel(): void {
-    this.camera = fitCamera(this.view, this.world, this.insets);
+    this.automaticFraming = true;
+    const rooms = this.snapshot.rooms.map((r) => roomWorldRect(r.rect, this.snapshot.gridH));
+    const lobby = this.snapshot.rooms.find((r) => r.assetKey?.startsWith('room.lobby.'));
+    this.camera = openingHotelCamera(this.view, this.world, rooms,
+      lobby ? roomWorldRect(lobby.rect, this.snapshot.gridH) : null, this.insets);
   }
 
   private attachInput(): void {
@@ -474,8 +483,10 @@ export class HotelScene {
     stage.on('pointermove', (e: { pointerId: number; global: { x: number; y: number } }) => {
       const action = this.gestures.move(e.pointerId, point(e));
       if (action.kind === 'pan') {
+        this.automaticFraming = false;
         this.camera = pan(this.camera, action.dx, action.dy, this.view, this.world, this.insets);
       } else if (action.kind === 'zoom') {
+        this.automaticFraming = false;
         this.camera = zoomAt(this.camera, action.factor, action.anchor, this.view, this.world, this.insets);
       }
     });
@@ -522,6 +533,7 @@ export class HotelScene {
     canvas.addEventListener('wheel', (e: WheelEvent) => {
       e.preventDefault();
       const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
+      this.automaticFraming = false;
       this.camera = zoomAt(this.camera, factor, { x: e.offsetX, y: e.offsetY }, this.view, this.world, this.insets);
     }, { passive: false, signal });
   }

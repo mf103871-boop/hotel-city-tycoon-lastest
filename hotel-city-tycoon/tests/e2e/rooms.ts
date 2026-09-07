@@ -59,9 +59,22 @@ export async function tappableRooms(page: Page): Promise<ScreenRect[]> {
  * Tap a room — the lowest one on screen, which is the ground row on a fresh
  * hotel — and return its id, or null when no room can be reached.
  */
-export async function tapRoom(page: Page): Promise<string | null> {
-  const rooms = await tappableRooms(page);
-  const room = rooms.reduce<ScreenRect | null>((a, b) => (a && a.y + a.h > b.y + b.h ? a : b), null);
+export async function tapRoom(page: Page, roomId?: string): Promise<string | null> {
+  let rooms = await tappableRooms(page);
+  // A readable portrait opening need not show every bedroom. Tests needing
+  // a particular room use the real zoom gesture until that room is visible,
+  // rather than silently treating the reception desk as a guest bedroom.
+  if (roomId) {
+    for (let attempt = 0; attempt < 18 && !rooms.some((r) => r.id === roomId); attempt++) {
+      const band = await visibleBand(page);
+      await page.mouse.move(band.width / 2, (band.top + band.bottom) / 2);
+      await page.mouse.wheel(0, 200);
+      await page.waitForTimeout(100);
+      rooms = await tappableRooms(page);
+    }
+  }
+  const room = roomId ? rooms.find((r) => r.id === roomId)
+    : rooms.reduce<ScreenRect | null>((a, b) => (a && a.y + a.h > b.y + b.h ? a : b), null);
   if (!room) return null;
   const box = await page.locator('canvas').boundingBox();
   if (!box) return null;
