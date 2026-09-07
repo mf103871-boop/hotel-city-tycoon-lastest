@@ -1,0 +1,137 @@
+name: native-build
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'hotel-city-tycoon/**'
+      - '.github/workflows/native-build.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'hotel-city-tycoon/**'
+      - '.github/workflows/native-build.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-build-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+    working-directory: hotel-city-tycoon
+
+jobs:
+  android:
+    name: Android debug APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: hotel-city-tycoon/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+          cache-dependency-path: |
+            hotel-city-tycoon/android/**/*.gradle
+            hotel-city-tycoon/android/gradle/wrapper/gradle-wrapper.properties
+      - name: Install web dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Build and copy the bundled game
+        run: |
+          mkdir -p build/native/logs
+          npm run mobile:build 2>&1 | tee build/native/logs/android-web.log
+          npx cap sync android 2>&1 | tee build/native/logs/android-sync.log
+      - name: Compile and lint Android
+        run: |
+          sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+          cd android
+          ./gradlew --no-daemon :app:assembleDebug :app:lintDebug 2>&1 | tee ../build/native/logs/android-gradle.log
+      - name: Verify and package the APK
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk build/native/hotel-city-android-debug.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose build/native/hotel-city-android-debug.apk
+          python3 tools/mobile/inspect-build.py android build/native/hotel-city-android-debug.apk
+      - name: Upload Android development build
+        uses: actions/upload-artifact@v4
+        with:
+          name: hotel-city-android-debug
+          path: |
+            hotel-city-tycoon/build/native/hotel-city-android-debug.apk
+            hotel-city-tycoon/build/native/android-build.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload Android diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-android-diagnostics
+          path: |
+            hotel-city-tycoon/build/native/logs/
+            hotel-city-tycoon/android/app/build/reports/lint-results-debug.*
+          if-no-files-found: warn
+          retention-days: 14
+
+  ios:
+    name: iOS simulator build
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: hotel-city-tycoon/package-lock.json
+      - name: Check Xcode and install web dependencies
+        run: |
+          xcodebuild -version
+          npm ci --no-audit --no-fund
+      - name: Build and copy the bundled game
+        run: |
+          mkdir -p build/native/logs
+          npm run mobile:build 2>&1 | tee build/native/logs/ios-web.log
+          npx cap sync ios 2>&1 | tee build/native/logs/ios-sync.log
+      - name: Compile for iOS Simulator
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj -scheme App \
+            -configuration Debug -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/native/ios-derived \
+            CODE_SIGNING_ALLOWED=NO build 2>&1 | tee build/native/logs/ios-xcodebuild.log
+      - name: Verify and package the simulator app
+        run: |
+          python3 tools/mobile/inspect-build.py ios build/native/ios-derived/Build/Products/Debug-iphonesimulator/App.app
+          ditto -c -k --sequesterRsrc --keepParent \
+            build/native/ios-derived/Build/Products/Debug-iphonesimulator/App.app \
+            build/native/hotel-city-ios-simulator.zip
+          shasum -a 256 build/native/hotel-city-ios-simulator.zip > build/native/ios-simulator.sha256
+      - name: Upload iOS simulator build
+        uses: actions/upload-artifact@v4
+        with:
+          name: hotel-city-ios-simulator
+          path: |
+            hotel-city-tycoon/build/native/hotel-city-ios-simulator.zip
+            hotel-city-tycoon/build/native/ios-build.json
+            hotel-city-tycoon/build/native/ios-simulator.sha256
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload iOS diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-ios-diagnostics
+          path: hotel-city-tycoon/build/native/logs/
+          if-no-files-found: warn
+          retention-days: 14
