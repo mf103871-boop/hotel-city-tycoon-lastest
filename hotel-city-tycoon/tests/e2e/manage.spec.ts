@@ -154,9 +154,17 @@ test('the placement preview refuses a square that does not fit', async ({ page }
 
 test('a room can be stored and put back, keeping what was in it', async ({ page }) => {
   await bootRich(page);
-  await tapRoom(page);
+  const bedroom = await page.evaluate(() => {
+    const w = window as unknown as { __hct?: { state?: () => {
+      hotel: { rooms: Array<{ id: string; defId: string; decor: unknown[] }> };
+    } | null } };
+    const room = w.__hct?.state?.()?.hotel.rooms.find((r) => r.defId === 'economy');
+    return room ? { id: room.id, decor: room.decor } : null;
+  });
+  expect(bedroom, 'the starting hotel must contain a guest bedroom').not.toBeNull();
+  expect(await tapRoom(page, bedroom!.id)).toBe(bedroom!.id);
   const store = page.getByTestId('room-store');
-  if (!(await store.isVisible().catch(() => false))) test.skip(true, 'the tapped room cannot be stored');
+  await expect(store).toBeEnabled();
   await store.click();
 
   await openManage(page);
@@ -173,12 +181,20 @@ test('a room can be stored and put back, keeping what was in it', async ({ page 
   }
   await page.getByTestId('placement-confirm').click();
   await expect(page.getByTestId('placement-bar')).toBeHidden();
+  const restoredDecor = await page.evaluate((id) => {
+    const w = window as unknown as { __hct?: { state?: () => {
+      hotel: { rooms: Array<{ id: string; decor: unknown[] }> };
+    } | null } };
+    return w.__hct?.state?.()?.hotel.rooms.find((r) => r.id === id)?.decor;
+  }, bedroom!.id);
+  expect(restoredDecor).toEqual(bedroom!.decor);
 });
 
-test('an occupied or dirty room offers no Store button at all', async ({ page }) => {
+test('storage is disabled with a reason when the room cannot be stored', async ({ page }) => {
   await bootRich(page);
-  // Open the hotel and let guests arrive, then a room with somebody in it must
-  // not offer storage — the control is absent, not merely refused.
+  // The current UI deliberately keeps Store visible and explains blockers.
+  // Which room is visible depends on framing; reception is required, while
+  // a bedroom may be occupied or dirty by the time this sheet opens.
   await page.getByRole('button', { name: /open hotel/i }).click();
   await page.getByRole('button', { name: /hours/i }).first().click().catch(() => {});
   await page.waitForTimeout(3000);
@@ -186,9 +202,16 @@ test('an occupied or dirty room offers no Store button at all', async ({ page })
   const sheet = page.getByTestId('room-store');
   const visible = await sheet.isVisible().catch(() => false);
   if (visible) {
-    // If it is offered, the core must accept it — the button may not lie.
-    await sheet.click();
-    await expect(page.getByTestId('room-problem')).toBeHidden();
+    const blocker = await sheet.getAttribute('data-blocked');
+    if (blocker) {
+      expect(['roomRequired', 'roomOccupied', 'roomHasHazard', 'roomTooDirty']).toContain(blocker);
+      await expect(sheet).toBeDisabled();
+      await expect(page.getByTestId('room-problem')).toBeVisible();
+    } else {
+      await expect(sheet).toBeEnabled();
+      await sheet.click();
+      await expect(page.getByTestId('room-problem')).toBeHidden();
+    }
   }
 });
 
