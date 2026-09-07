@@ -73,3 +73,34 @@ ResizeObserver follows the playable rectangle as insets change during rotation.
 
 This foundation does not establish store readiness or visual approval of the
 new art. The next art contract is `HC-VIS-001-SPEC.md`.
+
+## Native builds in GitHub Actions
+
+The `native-build` workflow compiles both platforms on pull requests, pushes
+to main, and manual runs. Android uses JDK 21 and SDK 36; iOS explicitly selects
+Xcode 26.3 on `macos-15` because that image's default Xcode is older than the
+[Capacitor 8 requirement](https://capacitorjs.com/docs/getting-started/environment-setup).
+The selected version is listed in the
+[runner image](https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md).
+
+For a successful run, open **Actions → native-build → the run → Artifacts**:
+
+- `hotel-city-android-debug`: a development APK and its SHA-256/asset report.
+  Extract the downloaded archive and install the APK on an Android test device,
+  or use `adb install -r hotel-city-android-debug.apk`. Each fresh CI runner
+  generates its own development signing key; a later APK may need uninstalling
+  the old build first. Export your save before uninstalling: uninstalling erases
+  that app's local progress. This signing setup is only for disposable testing.
+- `hotel-city-ios-simulator`: a ZIP containing `App.app`, plus the bundle report
+  and archive checksum. On a Mac, extract it and use
+  `xcrun simctl install booted App.app`, then
+  `xcrun simctl launch booted com.hotelcitytycoon.app`.
+  This unsigned simulator app cannot be installed on an iPhone. A device build
+  requires Apple signing; TestFlight distribution is a later step.
+- `native-android-diagnostics` and `native-ios-diagnostics`: build logs, plus
+  Android lint reports. Diagnostics are retained for 14 days; builds for 30 days.
+
+`tools/mobile/inspect-build.py` checks every production web file against its
+copy in the compiled APK/app bundle, verifies the local Capacitor configuration,
+and records the actual checkout revision. It does not claim runtime, visual,
+orientation, save durability, or performance approval on a device.
