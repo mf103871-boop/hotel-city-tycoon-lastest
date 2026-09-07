@@ -104,3 +104,38 @@ For a successful run, open **Actions → native-build → the run → Artifacts*
 copy in the compiled APK/app bundle, verifies the local Capacitor configuration,
 and records the actual checkout revision. It does not claim runtime, visual,
 orientation, save durability, or performance approval on a device.
+
+## Preparing for Xcode Cloud / TestFlight
+
+**Owner update, 2026-09-07:** no local Mac is available, so the primary signing
+route is now the manual `ios-testflight` GitHub Actions workflow. It runs on
+GitHub-hosted macOS from main only, validates the supplied App Store profile
+against the team/bundle/certificate/expiry, signs and inspects an exported IPA,
+and optionally validates/uploads it to Apple. Upload is off by default.
+The [Arabic setup guide](IOS-TESTFLIGHT-SETUP_AR.md) lists the four signing/upload
+secrets and public identifiers. `signing_request.py` prepares an encrypted key,
+public CSR and matching P12 on Linux too; it never creates an Apple certificate
+or publishes credentials by itself. No Apple signing or upload has been tested
+without the owner's account materials. The Xcode Cloud path below stays optional.
+
+See [the Apple setup guide](IOS-TESTFLIGHT-SETUP_AR.md). Apple requires initial
+Xcode Cloud onboarding in Xcode on a Mac; later workflows can be managed in
+App Store Connect. The shared `App` scheme supports Release archiving.
+
+Xcode Cloud discovers `ios/App/ci_scripts/ci_post_clone.sh` beside the project.
+It selects Node 22 (installing it with the provided Homebrew when necessary),
+installs the locked npm dependencies including build tools, builds the native
+web assets and runs `cap sync ios`. This restores generated files excluded from
+Git before Xcode resolves packages/builds. The script is executable and resolves
+the app directory independently of the caller's working directory.
+
+The GitHub iOS job runs that same script from the runner's temporary directory,
+then compiles the simulator and archives Release for `generic/platform=iOS`
+with `CODE_SIGNING_ALLOWED=NO`. The device archive is a compile check; it is
+neither an installable IPA nor a TestFlight upload. Its asset verification report
+is included in `native-ios-diagnostics`. `inspect-build.py ios-device` requires
+an `iPhoneOS` bundle, while `ios` continues to require `iPhoneSimulator`.
+
+Apple team selection, the permanent bundle ID, the app record, cloud onboarding,
+signing and TestFlight distribution remain account-specific steps. No Apple
+account connection or distribution configuration is inferred from CI success.

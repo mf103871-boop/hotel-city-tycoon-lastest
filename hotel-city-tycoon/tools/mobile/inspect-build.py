@@ -11,8 +11,10 @@ from pathlib import Path
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("platform", choices=("android", "ios"))
+    parser.add_argument("platform", choices=("android", "ios", "ios-device"))
     parser.add_argument("package", type=Path)
+    parser.add_argument("--app-id", default="com.hotelcitytycoon.app")
+    parser.add_argument("--build-number")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     dist = root / "dist"
@@ -36,10 +38,13 @@ def main():
             report["sha256"] = hashlib.sha256(package.read_bytes()).hexdigest()
         else:
             info = plistlib.loads((package / "Info.plist").read_bytes())
-            if info["CFBundleSupportedPlatforms"] != ["iPhoneSimulator"]:
-                raise ValueError("Expected an iOS Simulator build")
-            if info["CFBundleIdentifier"] != "com.hotelcitytycoon.app":
+            expected_platform = "iPhoneOS" if args.platform == "ios-device" else "iPhoneSimulator"
+            if info["CFBundleSupportedPlatforms"] != [expected_platform]:
+                raise ValueError("Expected an " + expected_platform + " build")
+            if info["CFBundleIdentifier"] != args.app_id:
                 raise ValueError("Unexpected iOS application identifier")
+            if args.build_number is not None and info["CFBundleVersion"] != args.build_number:
+                raise ValueError("Unexpected iOS build number")
             executable = package / info["CFBundleExecutable"]
             if not executable.is_file() or executable.stat().st_size == 0:
                 raise ValueError("The iOS bundle has no compiled executable")
@@ -50,8 +55,11 @@ def main():
             config = json.loads((package / "capacitor.config.json").read_text())
             report["executable_sha256"] = hashlib.sha256(executable.read_bytes()).hexdigest()
             report["minimum_os"] = info["MinimumOSVersion"]
+            report["apple_platform"] = expected_platform
+            report["app_version"] = info["CFBundleShortVersionString"]
+            report["build_number"] = info["CFBundleVersion"]
 
-        if config.get("appId") != "com.hotelcitytycoon.app":
+        if config.get("appId") != args.app_id:
             raise ValueError("Unexpected Capacitor application identifier")
         if config.get("server", {}).get("url"):
             raise ValueError("The app points to a development server")
