@@ -10,8 +10,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
+import BUDGETS from './performance-budgets.json' with { type: 'json' };
 
-const BUDGETS = {
+/* Shared with the shipping self-test; values retain their existing approvals.
   // The architecture document committed to 350. This was quietly raised to
   // 400 at some point with no reason recorded, which is how a budget stops
   // being a budget. Back to what was agreed.
@@ -27,7 +28,7 @@ const BUDGETS = {
   // The characters bundle is lazily loaded, so this is download weight for a
   // running game, not boot weight; initialAssetsKB is deliberately unchanged.
   totalAssetsKB: 12288,
-};
+*/
 
 const line = '─'.repeat(62);
 const errors = [];

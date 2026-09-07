@@ -405,6 +405,8 @@ def save_png(img: Image.Image, path: str) -> None:
     few hundred flat colours — and the handful that are not cost a few KB
     against a budget with megabytes of headroom.
     """
+    from protected_assets import guard_legacy_write
+    guard_legacy_write(path)
     rgba = img.convert("RGBA")
     colours = rgba.getcolors(maxcolors=1 << 16)
     if colours is not None and len(colours) <= 256:

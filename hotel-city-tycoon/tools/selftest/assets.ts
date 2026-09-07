@@ -449,11 +449,15 @@ await check('the night, dirty and pest variants are drawn, not merely shipped', 
 });
 
 
-await check('no shipped asset uses pure black, which ART-0 §6 forbids', () => {
+await check('legacy room art keeps its navy ink; DEC-015 sample uses the approved black frame', () => {
   // "الخط الخارجي داكن مائل إلى الكحلي، وليس أسود نقيًا" — outlines are deep
   // navy, never pure black. Nothing has ever checked a pixel for it.
   const offenders: string[] = [];
+  // DEC-015 supersedes the old palette for the two explicitly redrawn rooms.
+  // The new PNGs are pinned and validated by check:art, not excluded globally.
+  const currentRooms = new Set(['lobby', 'economy']);
   for (const file of roomFiles()) {
+    if (currentRooms.has(file.split('/').pop()!.split('_')[0]!)) continue;
     const png = readPng(file);
     for (let i = 0; i < png.data.length; i += png.channels) {
       if (png.channels === 4 && png.data[i + 3]! <= 200) continue;

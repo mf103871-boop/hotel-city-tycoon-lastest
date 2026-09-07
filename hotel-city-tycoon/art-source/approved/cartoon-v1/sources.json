@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "file": "bed.png",
+      "sha256": "12326678f9b91e1de39cbaa29513788720c9d7a34c418667dc15f5a757907ae0",
+      "size": [
+        1774,
+        887
+      ],
+      "mode": "RGBA",
+      "status": "SOURCE_REVIEWED; ENGINE_PENDING"
+    },
+    {
+      "file": "cleaner-poses.png",
+      "sha256": "d387a567dd5fea00a3d977409781aa903b50d813228b382f58af638e950232df",
+      "size": [
+        1448,
+        1086
+      ],
+      "mode": "RGBA",
+      "status": "SOURCE_REVIEWED; ENGINE_PENDING"
+    },
+    {
+      "file": "counter.png",
+      "sha256": "230fb342e33e60c66417c784b66dbe7194a840b6250874d62a1108d25e98b283",
+      "size": [
+        2172,
+        724
+      ],
+      "mode": "RGBA",
+      "status": "SOURCE_REVIEWED; ENGINE_PENDING"
+    },
+    {
+      "file": "economy.png",
+      "sha256": "2e87ec89e1cb31905bd93aafab634f60da05eccc9513c39fbd1a72462f6d247f",
+      "size": [
+        1448,
+        1086
+      ],
+      "mode": "RGB",
+      "status": "SOURCE_REVIEWED; ENGINE_PENDING"
+    },
+    {
+      "file": "guest-standard-poses.png",
+      "sha256": "3d9d5113e03507b9ac4c082865a0132495532038effd28816f71b55f764775a4",
+      "size": [
+        1448,
+        1086
+      ],
+      "mode": "RGBA",
+      "status": "SOURCE_REVIEWED; ENGINE_PENDING"
+    },
+    {
+      "file": "lobby.png",
+      "sha256": "719d0abbb96ff9cd5316d87e49f8c48d53f5289ffa454caa646463af7852853c",
+      "size": [
+        2048,
+        768
+      ],
+      "mode": "RGB",
+      "status": "SOURCE_REVIEWED; ENGINE_PENDING"
+    },
+    {
+      "file": "receptionist-poses.png",
+      "sha256": "1c26cdbaa1ef4a9c3f2cf5666adeacd13ac18a98507ea8a41818c7a0aaee8fdf",
+      "size": [
+        1448,
+        1086
+      ],
+      "mode": "RGBA",
+      "status": "SOURCE_REVIEWED; ENGINE_PENDING"
+    }
+  ]
+}

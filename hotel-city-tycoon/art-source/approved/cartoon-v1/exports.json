@@ -1,0 +1,855 @@
+{
+  "version": 1,
+  "status": "IMPLEMENTED; in-engine visual approval pending",
+  "exporter": "tools/art/export_approved.py",
+  "roomAnchor": "top-left; logical lobby 256x96, economy 128x96",
+  "counterPaintBox": [
+    140,
+    51,
+    209,
+    87
+  ],
+  "bedAnchor": [
+    0.5,
+    1
+  ],
+  "hitboxes": "unchanged; existing room/decor/character interaction geometry",
+  "cast": [
+    {
+      "source": "guest-standard-poses.png",
+      "scale": 0.2573099415204678,
+      "frame": {
+        "w": 48,
+        "h": 72,
+        "pivot": {
+          "x": 24,
+          "y": 70
+        },
+        "facing": "right"
+      },
+      "status": "IMPLEMENTED; motion and interaction review pending",
+      "clips": {
+        "idle": {
+          "sourcePoses": [
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              0,
+              3
+            ]
+          ],
+          "frames": 4,
+          "fps": 6,
+          "loop": true
+        },
+        "blink": {
+          "sourcePoses": [
+            [
+              0,
+              4
+            ]
+          ],
+          "frames": 1,
+          "fps": 8,
+          "loop": false
+        },
+        "walk": {
+          "sourcePoses": [
+            [
+              1,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              1,
+              5
+            ],
+            [
+              1,
+              6
+            ],
+            [
+              1,
+              7
+            ]
+          ],
+          "frames": 8,
+          "fps": 11,
+          "loop": true
+        },
+        "sleep": {
+          "sourcePoses": [
+            [
+              2,
+              0
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              2,
+              2
+            ]
+          ],
+          "frames": 3,
+          "fps": 2,
+          "loop": true
+        },
+        "sit": {
+          "sourcePoses": [
+            [
+              0,
+              5
+            ],
+            [
+              0,
+              6
+            ]
+          ],
+          "frames": 2,
+          "fps": 2,
+          "loop": true
+        },
+        "happy": {
+          "sourcePoses": [
+            [
+              2,
+              3
+            ],
+            [
+              2,
+              4
+            ],
+            [
+              2,
+              5
+            ],
+            [
+              2,
+              5
+            ]
+          ],
+          "frames": 4,
+          "fps": 6,
+          "loop": false
+        },
+        "angry": {
+          "sourcePoses": [
+            [
+              3,
+              0
+            ],
+            [
+              3,
+              1
+            ],
+            [
+              3,
+              2
+            ],
+            [
+              3,
+              3
+            ]
+          ],
+          "frames": 4,
+          "fps": 6,
+          "loop": false
+        },
+        "scared": {
+          "sourcePoses": [
+            [
+              0,
+              7
+            ],
+            [
+              2,
+              6
+            ]
+          ],
+          "frames": 2,
+          "fps": 4,
+          "loop": false
+        }
+      }
+    },
+    {
+      "source": "receptionist-poses.png",
+      "scale": 0.24050632911392406,
+      "frame": {
+        "w": 48,
+        "h": 72,
+        "pivot": {
+          "x": 24,
+          "y": 70
+        },
+        "facing": "right"
+      },
+      "status": "IMPLEMENTED; motion and interaction review pending",
+      "clips": {
+        "idle": {
+          "sourcePoses": [
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              0,
+              3
+            ]
+          ],
+          "frames": 4,
+          "fps": 6,
+          "loop": true
+        },
+        "blink": {
+          "sourcePoses": [
+            [
+              0,
+              4
+            ]
+          ],
+          "frames": 1,
+          "fps": 8,
+          "loop": false
+        },
+        "walk": {
+          "sourcePoses": [
+            [
+              1,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              1,
+              5
+            ],
+            [
+              1,
+              6
+            ],
+            [
+              1,
+              7
+            ]
+          ],
+          "frames": 8,
+          "fps": 11,
+          "loop": true
+        },
+        "work": {
+          "sourcePoses": [
+            [
+              2,
+              0
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              2,
+              4
+            ],
+            [
+              2,
+              5
+            ]
+          ],
+          "frames": 6,
+          "fps": 9,
+          "loop": true
+        },
+        "happy": {
+          "sourcePoses": [
+            [
+              0,
+              5
+            ],
+            [
+              0,
+              6
+            ],
+            [
+              0,
+              7
+            ],
+            [
+              2,
+              6
+            ]
+          ],
+          "frames": 4,
+          "fps": 6,
+          "loop": false
+        },
+        "angry": {
+          "sourcePoses": [
+            [
+              3,
+              0
+            ],
+            [
+              3,
+              1
+            ],
+            [
+              3,
+              2
+            ],
+            [
+              3,
+              3
+            ]
+          ],
+          "frames": 4,
+          "fps": 6,
+          "loop": false
+        },
+        "scared": {
+          "sourcePoses": [
+            [
+              2,
+              7
+            ],
+            [
+              3,
+              4
+            ]
+          ],
+          "frames": 2,
+          "fps": 4,
+          "loop": false
+        }
+      }
+    },
+    {
+      "source": "cleaner-poses.png",
+      "scale": 0.20853080568720378,
+      "frame": {
+        "w": 48,
+        "h": 72,
+        "pivot": {
+          "x": 24,
+          "y": 70
+        },
+        "facing": "right"
+      },
+      "status": "IMPLEMENTED; motion and interaction review pending",
+      "clips": {
+        "idle": {
+          "sourcePoses": [
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "frames": 4,
+          "fps": 6,
+          "loop": true
+        },
+        "blink": {
+          "sourcePoses": [
+            [
+              0,
+              1
+            ]
+          ],
+          "frames": 1,
+          "fps": 8,
+          "loop": false
+        },
+        "walk": {
+          "sourcePoses": [
+            [
+              1,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              1,
+              5
+            ],
+            [
+              1,
+              6
+            ],
+            [
+              1,
+              7
+            ]
+          ],
+          "frames": 8,
+          "fps": 11,
+          "loop": true
+        },
+        "work": {
+          "sourcePoses": [
+            [
+              2,
+              0
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              2,
+              4
+            ],
+            [
+              2,
+              5
+            ]
+          ],
+          "frames": 6,
+          "fps": 9,
+          "loop": true
+        },
+        "happy": {
+          "sourcePoses": [
+            [
+              0,
+              4
+            ],
+            [
+              0,
+              5
+            ],
+            [
+              0,
+              6
+            ],
+            [
+              0,
+              7
+            ]
+          ],
+          "frames": 4,
+          "fps": 6,
+          "loop": false
+        },
+        "angry": {
+          "sourcePoses": [
+            [
+              3,
+              0
+            ],
+            [
+              3,
+              1
+            ],
+            [
+              3,
+              2
+            ],
+            [
+              3,
+              3
+            ]
+          ],
+          "frames": 4,
+          "fps": 6,
+          "loop": false
+        },
+        "scared": {
+          "sourcePoses": [
+            [
+              2,
+              7
+            ],
+            [
+              3,
+              4
+            ]
+          ],
+          "frames": 2,
+          "fps": 4,
+          "loop": false
+        }
+      }
+    }
+  ],
+  "exports": [
+    {
+      "file": "public/assets/@2x/characters/guest_standard_sheet.png",
+      "size": [
+        768,
+        1152
+      ],
+      "sha256": "fdb8efd6a07cf03fd62d756760b5a7bdd95f543bd95e399d847c52cb83e36a6c",
+      "tier": 2
+    },
+    {
+      "file": "public/assets/@2x/characters/guest_standard_thumb.png",
+      "size": [
+        128,
+        128
+      ],
+      "sha256": "f859a3e44a4cdd2f6f246ba02fdbe9c3af231e40f697fd22810a6467f347582e",
+      "tier": 2
+    },
+    {
+      "file": "public/assets/@2x/characters/staff_cleaner_sheet.png",
+      "size": [
+        768,
+        1008
+      ],
+      "sha256": "072ea0f8a9d300fda05c8f473d657f12c3f5729ef249b45345f22a179cf489d1",
+      "tier": 2
+    },
+    {
+      "file": "public/assets/@2x/characters/staff_cleaner_thumb.png",
+      "size": [
+        128,
+        128
+      ],
+      "sha256": "ee31264fea81928169afab1574a81f0e05d2814c07a9239f480e1e26e3889280",
+      "tier": 2
+    },
+    {
+      "file": "public/assets/@2x/characters/staff_receptionist_sheet.png",
+      "size": [
+        768,
+        1008
+      ],
+      "sha256": "edf7f57baca0bc76d01ef6f771709dfdfeb2a13cddd8756c8e6612e62f5d7ec8",
+      "tier": 2
+    },
+    {
+      "file": "public/assets/@2x/characters/staff_receptionist_thumb.png",
+      "size": [
+        128,
+        128
+      ],
+      "sha256": "0afcbc8c8d6480d55dc99aa9ea2bfbf61df1c25dd60530480d25bd158642219d",
+      "tier": 2
+    },
+    {
+      "file": "public/assets/@2x/decor/bed_cot.png",
+      "size": [
+        208,
+        128
+      ],
+      "sha256": "8c6abb297975e9ad89dd4be7cc47ce359804ca13498e94e94053b062b60f216a",
+      "tier": 2
+    },
+    {
+      "file": "public/assets/@2x/rooms/economy_base.png",
+      "size": [
+        256,
+        192
+      ],
+      "sha256": "70f23627ac397bb8c5d17ddfea068c4df27481dc9ecdcba0955a723021b37bb0",
+      "tier": 2
+    },
+    {
+      "file": "public/assets/@2x/rooms/economy_dirty.png",
+      "size": [
+        256,
+        192
+      ],
+      "sha256": "50f417a37472f6c2f756c2448a350a63a339216de6506300f155bc8e5e6fcab4",
+      "tier": 2
+    },
+    {
+      "file": "public/assets/@2x/rooms/economy_night.png",
+      "size": [
+        256,
+        192
+      ],
+      "sha256": "dc2226796c9908792716eff1426e44fffd77bfb4e9151055c178582ee3b38978",
+      "tier": 2
+    },
+    {
+      "file": "public/assets/@2x/rooms/economy_thumb.png",
+      "size": [
+        192,
+        192
+      ],
+      "sha256": "68155e4b47cf6558aff3df1f8c422c70756852cf4f0dea284a52bcd8fbb6ca9f",
+      "tier": 2
+    },
+    {
+      "file": "public/assets/@2x/rooms/lobby_base.png",
+      "size": [
+        512,
+        192
+      ],
+      "sha256": "ca67215436ce9e3b90f463d06e80a77068c7fc3a33bed2c2bd13c491913508d4",
+      "tier": 2
+    },
+    {
+      "file": "public/assets/@2x/rooms/lobby_dirty.png",
+      "size": [
+        512,
+        192
+      ],
+      "sha256": "d33a9ea54048798461f677fad020d7a32530e53eb8728e7c3f6f0f9451540b78",
+      "tier": 2
+    },
+    {
+      "file": "public/assets/@2x/rooms/lobby_front.png",
+      "size": [
+        512,
+        192
+      ],
+      "sha256": "2b4dc52c597d168f8885ea878b4f7ff7b718f50b35da47df03381fa10f7d22a9",
+      "tier": 2
+    },
+    {
+      "file": "public/assets/@2x/rooms/lobby_night.png",
+      "size": [
+        512,
+        192
+      ],
+      "sha256": "724fbf6c725470ecce3ab66e45b36dfb1a9a6fdd233a477874f96e2b7b6a8564",
+      "tier": 2
+    },
+    {
+      "file": "public/assets/@2x/rooms/lobby_thumb.png",
+      "size": [
+        192,
+        192
+      ],
+      "sha256": "9dd41238ca46b8a9c291c6f6cc806253509464a89c8e54c584132938eb816e56",
+      "tier": 2
+    },
+    {
+      "file": "public/assets/characters/guest_standard_sheet.png",
+      "size": [
+        384,
+        576
+      ],
+      "sha256": "8cfc78d045e2f57b70355642b93627b808fe3eb2b6be70f0da0d424a9a9fdc3e",
+      "tier": 1
+    },
+    {
+      "file": "public/assets/characters/guest_standard_thumb.png",
+      "size": [
+        64,
+        64
+      ],
+      "sha256": "c4e7dba756f30cabebcaee50d1f614b7150f50b0e15218a0a3ebf7aae4348aab",
+      "tier": 1
+    },
+    {
+      "file": "public/assets/characters/staff_cleaner_sheet.png",
+      "size": [
+        384,
+        504
+      ],
+      "sha256": "826904f736e148370de76519abfd3432242860427033687fe21481381b1c6309",
+      "tier": 1
+    },
+    {
+      "file": "public/assets/characters/staff_cleaner_thumb.png",
+      "size": [
+        64,
+        64
+      ],
+      "sha256": "6b243889faa5cd2f9435efcd7b4f0633d3d8115a2eca21b4db4a09419baf28cc",
+      "tier": 1
+    },
+    {
+      "file": "public/assets/characters/staff_receptionist_sheet.png",
+      "size": [
+        384,
+        504
+      ],
+      "sha256": "abf2ec174e56b8f56615f5298d5cd730736a98a9832d617aa549a88362317754",
+      "tier": 1
+    },
+    {
+      "file": "public/assets/characters/staff_receptionist_thumb.png",
+      "size": [
+        64,
+        64
+      ],
+      "sha256": "5b15759912b0175996ef5f8f0de7d0066f0a8d4a35fb49447d61db3aadab99e3",
+      "tier": 1
+    },
+    {
+      "file": "public/assets/decor/bed_cot.png",
+      "size": [
+        104,
+        64
+      ],
+      "sha256": "6496cccf54028b1cd7426dde46d80a52feef75768102a2d29662fe373fa3b051",
+      "tier": 1
+    },
+    {
+      "file": "public/assets/rooms/economy_base.png",
+      "size": [
+        128,
+        96
+      ],
+      "sha256": "5ee2f1f47ed5edc9ec294bfe399a644e374dd07db836bd8a37413dbaffa0772d",
+      "tier": 1
+    },
+    {
+      "file": "public/assets/rooms/economy_dirty.png",
+      "size": [
+        128,
+        96
+      ],
+      "sha256": "70f159277a3e989a21fbae2826f6c5b5516d4299e4aa9af09f89366ceb642459",
+      "tier": 1
+    },
+    {
+      "file": "public/assets/rooms/economy_night.png",
+      "size": [
+        128,
+        96
+      ],
+      "sha256": "ebf40d5f7bfe9fa101c5696781e46d781cad86ec4abd73698fcfdfbc8ab34159",
+      "tier": 1
+    },
+    {
+      "file": "public/assets/rooms/economy_thumb.png",
+      "size": [
+        96,
+        96
+      ],
+      "sha256": "9e36caa3632ea681bce1796ada98297e2f0962bd772afb9a590bb15f3ee3c6bf",
+      "tier": 1
+    },
+    {
+      "file": "public/assets/rooms/lobby_base.png",
+      "size": [
+        256,
+        96
+      ],
+      "sha256": "b43f066be380e350e04b08a1538dd0dd190fdf1e4661894314fe2332f597ef2c",
+      "tier": 1
+    },
+    {
+      "file": "public/assets/rooms/lobby_dirty.png",
+      "size": [
+        256,
+        96
+      ],
+      "sha256": "5b42d69bea6420bb99fa101f60cc25cd8a194d69c6fcd8a0573d3d3612c8df72",
+      "tier": 1
+    },
+    {
+      "file": "public/assets/rooms/lobby_front.png",
+      "size": [
+        256,
+        96
+      ],
+      "sha256": "c9dd0b58f2933294b1ef79b52919e8428e715ec4f32601f3b67d42444a4301a9",
+      "tier": 1
+    },
+    {
+      "file": "public/assets/rooms/lobby_night.png",
+      "size": [
+        256,
+        96
+      ],
+      "sha256": "4e5468ba61f2e77bbce08063a33b8261fe4fc3be87bc9cfb79620eff2bdc87cc",
+      "tier": 1
+    },
+    {
+      "file": "public/assets/rooms/lobby_thumb.png",
+      "size": [
+        96,
+        96
+      ],
+      "sha256": "c5f9ade61d4334dbb53e933f4605d52e378e18634fe9d608207c8a5014386e45",
+      "tier": 1
+    }
+  ]
+}
