@@ -1,0 +1,69 @@
+name: ios-testflight
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: 'New Apple build number, for example 1 or 1.0.1'
+        required: true
+        type: string
+      upload_to_testflight:
+        description: 'Upload the signed build to Apple after validation'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-testflight
+  cancel-in-progress: false
+
+jobs:
+  sign:
+    name: Sign iPhone build and optionally upload to Apple
+    if: github.ref == 'refs/heads/main'
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      IOS_TEAM_ID: ${{ vars.IOS_TEAM_ID }}
+      IOS_BUNDLE_ID: ${{ vars.IOS_BUNDLE_ID }}
+      IOS_BUILD_NUMBER: ${{ inputs.build_number }}
+      IOS_UPLOAD: ${{ inputs.upload_to_testflight && 'true' || 'false' }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: hotel-city-tycoon
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: hotel-city-tycoon/package-lock.json
+      - name: Build the bundled game
+        run: ios/App/ci_scripts/ci_post_clone.sh
+      - name: Sign, inspect and optionally upload
+        env:
+          IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROFILE_BASE64: ${{ secrets.IOS_PROFILE_BASE64 }}
+          ASC_KEY_ID: ${{ vars.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ vars.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ inputs.upload_to_testflight && secrets.ASC_PRIVATE_KEY || '' }}
+        run: tools/mobile/ios-testflight.sh
+      - name: Save the signed build and verification report
+        if: ${{ !cancelled() && hashFiles('hotel-city-tycoon/build/native/iphone.sha256') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: hotel-city-iphone-signed
+          path: |
+            hotel-city-tycoon/build/native/hotel-city-iphone.ipa
+            hotel-city-tycoon/build/native/iphone.sha256
+            hotel-city-tycoon/build/native/ios-device-build.json
+          if-no-files-found: error
+          retention-days: 14

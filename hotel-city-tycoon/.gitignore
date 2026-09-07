@@ -8,6 +8,12 @@ tsconfig.tsbuildinfo
 *.local
 .DS_Store
 __pycache__/
+.signing/
+*.p12
+*.p8
+*.key
+*.pem
+*.mobileprovision
 
 # public/assets/ is NOT ignored.
 #

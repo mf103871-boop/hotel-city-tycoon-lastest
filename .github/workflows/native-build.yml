@@ -6,11 +6,13 @@ on:
     paths:
       - 'hotel-city-tycoon/**'
       - '.github/workflows/native-build.yml'
+      - '.github/workflows/ios-testflight.yml'
   push:
     branches: [main]
     paths:
       - 'hotel-city-tycoon/**'
       - '.github/workflows/native-build.yml'
+      - '.github/workflows/ios-testflight.yml'
 
 permissions:
   contents: read
@@ -96,6 +98,25 @@ jobs:
           cache-dependency-path: hotel-city-tycoon/package-lock.json
       - name: Check Xcode
         run: xcodebuild -version
+      - name: Check signing guards and installed Apple command options
+        run: |
+          python3 -m unittest discover -s tools/mobile -p 'test_*.py' -v
+          bash -n tools/mobile/ios-testflight.sh
+          xcrun altool --help > "$RUNNER_TEMP/hotel-altool-help.txt" 2>&1
+          xcodebuild -help > "$RUNNER_TEMP/hotel-xcode-help.txt" 2>&1
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          temporary = Path(os.environ['RUNNER_TEMP'])
+          for file, options in {
+              'hotel-altool-help.txt': ['--apiKey', '--apiIssuer', '--validate-app', '--upload-app'],
+              'hotel-xcode-help.txt': ['app-store-connect', 'provisioningProfiles', 'signingCertificate'],
+          }.items():
+              help_text = (temporary / file).read_text()
+              for option in options:
+                  assert option in help_text, f'Installed Apple tool is missing {option}'
+          print('Apple CLI signing/export/upload options are present; account access is not tested')
+          PY
       - name: Run the Xcode Cloud preparation script
         run: |
           mkdir -p build/native/logs

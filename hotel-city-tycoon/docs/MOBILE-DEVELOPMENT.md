@@ -107,6 +107,17 @@ orientation, save durability, or performance approval on a device.
 
 ## Preparing for Xcode Cloud / TestFlight
 
+**Owner update, 2026-09-07:** no local Mac is available, so the primary signing
+route is now the manual `ios-testflight` GitHub Actions workflow. It runs on
+GitHub-hosted macOS from main only, validates the supplied App Store profile
+against the team/bundle/certificate/expiry, signs and inspects an exported IPA,
+and optionally validates/uploads it to Apple. Upload is off by default.
+The [Arabic setup guide](IOS-TESTFLIGHT-SETUP_AR.md) lists the four signing/upload
+secrets and public identifiers. `signing_request.py` prepares an encrypted key,
+public CSR and matching P12 on Linux too; it never creates an Apple certificate
+or publishes credentials by itself. No Apple signing or upload has been tested
+without the owner's account materials. The Xcode Cloud path below stays optional.
+
 See [the Apple setup guide](IOS-TESTFLIGHT-SETUP_AR.md). Apple requires initial
 Xcode Cloud onboarding in Xcode on a Mac; later workflows can be managed in
 App Store Connect. The shared `App` scheme supports Release archiving.
