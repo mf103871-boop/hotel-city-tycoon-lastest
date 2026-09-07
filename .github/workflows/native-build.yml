@@ -53,7 +53,7 @@ jobs:
           npx cap sync android 2>&1 | tee build/native/logs/android-sync.log
       - name: Compile and lint Android
         run: |
-          sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-36' 'build-tools;36.0.0'
           cd android
           ./gradlew --no-daemon :app:assembleDebug :app:lintDebug 2>&1 | tee ../build/native/logs/android-gradle.log
       - name: Verify and package the APK
