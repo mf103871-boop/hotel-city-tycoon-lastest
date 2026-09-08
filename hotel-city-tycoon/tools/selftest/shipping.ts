@@ -10,6 +10,7 @@
  * Run: node --experimental-strip-types tools/selftest/shipping.ts
  */
 import fs from 'node:fs';
+import budgets from '../performance-budgets.json' with { type: 'json' };
 
 let passed = 0;
 const failures: string[] = [];
@@ -248,10 +249,12 @@ check('the shipped payload is inside its budget', () => {
       else bytes += stat.size;
     }
   };
-  walk('public');
+  // Same assets and existing approved 12MB ceiling as check-budget.mjs.
+  // The old literal 8MB predates the 05-09-2026 HC-P2-S1 approval.
+  walk('public/assets');
   const mb = bytes / 1024 / 1024;
-  assert(mb < 8, `public/ is ${mb.toFixed(1)}MB`);
-  console.log(`      everything served is ${mb.toFixed(2)}MB`);
+  assert(bytes <= budgets.totalAssetsKB * 1024, `art/audio is ${mb.toFixed(1)}MB`);
+  console.log(`      art/audio is ${mb.toFixed(2)}MB / ${budgets.totalAssetsKB / 1024}MB`);
 });
 
 check('the worker never caches application code', () => {
