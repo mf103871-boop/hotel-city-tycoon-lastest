@@ -17,7 +17,7 @@
   "cast": [
     {
       "source": "guest-standard-poses.png",
-      "scale": 0.2573099415204678,
+      "scale": 0.26146788990825687,
       "frame": {
         "w": 48,
         "h": 72,
@@ -382,7 +382,7 @@
     },
     {
       "source": "cleaner-poses.png",
-      "scale": 0.20853080568720378,
+      "scale": 0.2430939226519337,
       "frame": {
         "w": 48,
         "h": 72,
@@ -569,7 +569,7 @@
         768,
         1152
       ],
-      "sha256": "fdb8efd6a07cf03fd62d756760b5a7bdd95f543bd95e399d847c52cb83e36a6c",
+      "sha256": "90c2beeff14f9af56ec77259442602583b2018df84f1d54235c8e9f1c3b53aa4",
       "tier": 2
     },
     {
@@ -578,7 +578,7 @@
         128,
         128
       ],
-      "sha256": "f859a3e44a4cdd2f6f246ba02fdbe9c3af231e40f697fd22810a6467f347582e",
+      "sha256": "fcb6b28de451c15c2faf92ca724d6e0f9bc156c0d75b9fdbe1baceb3c7b56d32",
       "tier": 2
     },
     {
@@ -587,7 +587,7 @@
         768,
         1008
       ],
-      "sha256": "072ea0f8a9d300fda05c8f473d657f12c3f5729ef249b45345f22a179cf489d1",
+      "sha256": "266a6fdd099052ce4024077a704be21271442a12182901a355e706fc765a9299",
       "tier": 2
     },
     {
@@ -596,7 +596,7 @@
         128,
         128
       ],
-      "sha256": "ee31264fea81928169afab1574a81f0e05d2814c07a9239f480e1e26e3889280",
+      "sha256": "b968fcb754dbe198123b338524c3e7ff089c76aa7ca1a7a94215954a8567fc26",
       "tier": 2
     },
     {
@@ -713,7 +713,7 @@
         384,
         576
       ],
-      "sha256": "8cfc78d045e2f57b70355642b93627b808fe3eb2b6be70f0da0d424a9a9fdc3e",
+      "sha256": "a4284d14396007b32c7bb51a4333f9c993e39b7bf41ea316c373d796e11b3bc7",
       "tier": 1
     },
     {
@@ -731,7 +731,7 @@
         384,
         504
       ],
-      "sha256": "826904f736e148370de76519abfd3432242860427033687fe21481381b1c6309",
+      "sha256": "c1b99b9cca1bcd9d921462d5fb3afac8b954dee2cb716c9efba4f077624ea028",
       "tier": 1
     },
     {
@@ -740,7 +740,7 @@
         64,
         64
       ],
-      "sha256": "6b243889faa5cd2f9435efcd7b4f0633d3d8115a2eca21b4db4a09419baf28cc",
+      "sha256": "54435b15ea9ffd9240be8fa12b08bf57f77daa07c084d2a2576ea8dcef4debe6",
       "tier": 1
     },
     {

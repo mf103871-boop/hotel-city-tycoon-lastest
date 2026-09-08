@@ -94,7 +94,7 @@ def character(kind, name, bands, clips, columns=None):
     standing = [collection[p] for clip, ps in clips.items() if clip != 'sleep' for p in ps]
     # One scale per character, not a different head size for every wide pose.
     scale = min(57 / max(img.height for img, _ in standing),
-                (px - 2) / max(max(cx, img.width - cx) for img, cx in standing))
+                (fw - 4) / max(img.width for img, _ in standing))
     metadata = {'source': name, 'scale': scale, 'frame': anim['frame'],
                 'status': 'IMPLEMENTED; motion and interaction review pending', 'clips': {}}
     for tier in (1, 2):
@@ -115,6 +115,9 @@ def character(kind, name, bands, clips, columns=None):
                 art = art.crop(bb)
                 center = art.width / 2 if clip == 'sleep' else cx * s * tier - bb[0]
                 x, y = round(px * tier - center), py * tier - art.height + 1
+                # Let a reach lean within the cell instead of shrinking the
+                # entire cleaner merely because her mop extends on one side.
+                x = max(tier, min(x, fw * tier - art.width - tier))
                 # Bed anchor is its floor contact; the sleeper rests on the
                 # mattress above it. Keep the shared pivot, lift only its art.
                 if clip == 'sleep':
