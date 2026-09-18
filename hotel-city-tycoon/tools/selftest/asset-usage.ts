@@ -140,10 +140,9 @@ const PENDING: Array<{ pattern: RegExp; count: number; ticket: string; why: stri
  * Written down rather than deleted: most were generated alongside siblings
  * that ARE wired, so each one is a feature half-built rather than a typo, and
  * BL-046 is where the decision to finish or drop them belongs. The list is
- * exact so a fifteenth cannot appear quietly.
+ * exact so a fourteenth cannot appear quietly.
  */
 const ORPHAN_KEYS: string[] = [
-  'notice.nothingFound',
   'ui.allDone',
   'ui.cityHint',
   'ui.comeBackIn',
@@ -257,6 +256,29 @@ check('nothing ships a file the manifest never mentions', () => {
   walk('public/assets', '');
   assert(stray.length === 0, `shipped but in no manifest entry:\n      ${stray.join('\n      ')}`);
   console.log(`      ${declared.size} declared files, no strays`);
+});
+
+check('no internal identifier is handed to the renderer as text', () => {
+  // HC-P2's gate asks for «تنظيف أسماء الواجهة من المعرّفات الداخلية» — the
+  // interface's names cleaned of internal identifiers. Every React panel goes
+  // through i18n, but the canvas had one hole: the snapshot was handed each
+  // room's `defId` as its label and drew it across the floor whenever the art
+  // had not loaded, so during the boot window an Arabic player read
+  // "staffRoom" and "luxurySuite" in Latin script.
+  //
+  // The renderer cannot translate — it has no locale and no business having
+  // one — so the rule is simply that it is never given an id to draw.
+  const snapshot = fs.readFileSync('src/ui/HotelCanvas.tsx', 'utf8');
+  const block = /rooms:\s*summariseRooms\(state\)\.map\(\(r\) => \(\{[\s\S]*?\n {4}\}\)\)/.exec(snapshot);
+  assert(block, 'the room snapshot mapping was not found — this check is stale');
+  assert(!/\bdefId\b/.test(block[0]),
+    'the scene snapshot carries a room defId. Nothing in the renderer can translate it, '
+    + 'so whatever draws it puts an internal id in front of the player.');
+
+  // And the renderer draws no text it was handed from the simulation at all.
+  const roomView = fs.readFileSync('src/render/roomView.ts', 'utf8');
+  assert(!/\.text = .*data\./.test(roomView),
+    'roomView draws a string that came from the snapshot — see above');
 });
 
 check('every translated string is looked up by something', () => {

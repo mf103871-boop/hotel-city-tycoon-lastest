@@ -78,7 +78,6 @@ const DECOR_PLACEHOLDER_H = 18;
 /** One placed decor piece, as RoomView needs it. See RoomSummaryDecor. */
 export interface RoomViewDecorItem {
   id: string;
-  defId: string;
   category: string;
   slotType: string;
   /** ART-1 art for this piece. Empty or unloaded falls back to the placeholder. */
@@ -124,7 +123,6 @@ export interface RoomViewData {
   pestKey?: string;
   rect: Rect;
   category: 'guest' | 'commercial' | 'functional';
-  label: string;
   /** 0..1 decor meter. Functional rooms pass 1 and the meter is hidden. */
   fill: number;
   showMeter: boolean;
@@ -160,7 +158,6 @@ export class RoomView extends Container {
    */
   readonly front: DecorPlacement[] = [];
   private readonly meter = new Graphics();
-  private readonly caption: Text;
   private readonly badges = new Graphics();
   private readonly fireBadge = new Sprite();
   private readonly ghostBadge = new Sprite();
@@ -169,15 +166,9 @@ export class RoomView extends Container {
 
   constructor() {
     super();
-    this.caption = new Text({
-      text: '',
-      // On the pastel fallback shell, not on the art: ink, not cream.
-      style: { fontSize: 13, fill: INK, fontFamily: 'system-ui, sans-serif' },
-    });
-    this.caption.resolution = 2;
     this.art.visible = false;
     this.pestArt.visible = false;
-    this.addChild(this.shell, this.art, this.pestArt, this.decorLayer, this.meter, this.caption,
+    this.addChild(this.shell, this.art, this.pestArt, this.decorLayer, this.meter,
       this.badges, this.fireBadge, this.ghostBadge, this.pestBadge);
   }
 
@@ -200,7 +191,7 @@ export class RoomView extends Container {
     // happened to change and force a rebuild.
     const key = `${assetGeneration()},${plotHeight},${data.rect.x},${data.rect.y},${data.rect.w},${data.rect.h},${data.category},` +
       `${data.fill.toFixed(2)},${data.showMeter},${data.hasPest},${data.hasFire},${data.hasGhost},${data.occupants},` +
-      `${data.label},${data.assetKey ?? ''},${data.pestKey ?? ''},${data.night ? 'n' : 'd'},` +
+      `${data.assetKey ?? ''},${data.pestKey ?? ''},${data.night ? 'n' : 'd'},` +
       `${data.artIsNight ? 'N' : 'D'},${decorKey}`;
     if (key === this.lastKey) return;
     this.lastKey = key;
@@ -264,10 +255,6 @@ export class RoomView extends Container {
     }
 
     // The room's name is a placeholder affordance: it tells the player what an
-    // untextured box is. Over finished art it is a debug label sitting across
-    // the floor of every room in the hotel, so it goes when the art arrives.
-    this.caption.text = art ? '' : data.label;
-    this.caption.position.set(8, h - 22);
 
     // 5A: the incident art itself, drawn on the room. The coloured circle
     // stays as the placeholder the texture contract promises on a miss.

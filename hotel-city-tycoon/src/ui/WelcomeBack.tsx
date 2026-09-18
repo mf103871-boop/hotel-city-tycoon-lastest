@@ -10,7 +10,7 @@
  */
 import type { OfflineSummary } from '../bridge/notifications.ts';
 import { translate } from '../i18n/index.ts';
-import { coins, num } from '../i18n/format.ts';
+import { coins, num, duration } from '../i18n/format.ts';
 import type { Locale } from '../i18n/index.ts';
 
 function Figure({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
@@ -32,9 +32,7 @@ export function WelcomeBack({
   onDismiss: () => void;
 }) {
   const t = (k: string, v?: Record<string, string | number>) => translate(locale, k, v);
-  const hours = Math.floor(summary.minutesAway / 60);
-  const minutes = summary.minutesAway % 60;
-  const away = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+  const away = duration(locale, summary.minutesAway * 60_000, t);
 
   return (
     <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/70 px-6 backdrop-blur-sm">

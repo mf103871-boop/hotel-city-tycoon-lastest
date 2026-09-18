@@ -57,7 +57,6 @@ function toSnapshot(state: GameState): SceneSnapshot {
       id: r.id,
       rect: { x: r.x, y: r.y, w: r.w, h: r.h },
       category: r.category,
-      label: r.defId,
       assetKey: r.assetKey,
       artIsNight: r.artIsNight,
       frontKey: r.frontKey,
@@ -70,7 +69,6 @@ function toSnapshot(state: GameState): SceneSnapshot {
       occupants: r.occupants,
       decor: r.decor.map((p) => ({
         id: p.id,
-        defId: p.defId,
         category: p.category,
         slotType: p.slotType,
         assetKey: p.assetKey,

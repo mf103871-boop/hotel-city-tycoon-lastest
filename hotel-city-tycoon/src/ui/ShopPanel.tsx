@@ -10,16 +10,10 @@
 import { useGameStore } from '../bridge/index.ts';
 import { shopSlots, shopRefreshIn } from '../bridge/selectors.ts';
 import { translate } from '../i18n/index.ts';
-import { coins, pair } from '../i18n/format.ts';
+import { coins, pair, duration } from '../i18n/format.ts';
 import type { Locale } from '../i18n/index.ts';
 import { Sheet, OptionRow } from './Sheet.tsx';
 import { playSound } from '../audio/index.ts';
-
-function countdown(ms: number): string {
-  const hours = Math.floor(ms / 3600_000);
-  const days = Math.floor(hours / 24);
-  return days > 0 ? `${days}d ${hours % 24}h` : `${hours}h`;
-}
 
 export function ShopPanel({ locale, onClose }: { locale: Locale; onClose: () => void }) {
   const state = useGameStore((s) => s.state);
@@ -33,7 +27,7 @@ export function ShopPanel({ locale, onClose }: { locale: Locale; onClose: () => 
   return (
     <Sheet
       title={t('ui.shop')}
-      subtitle={`${t('ui.refreshesIn')} ${countdown(shopRefreshIn(now))}`}
+      subtitle={`${t('ui.refreshesIn')} ${duration(locale, shopRefreshIn(now), t)}`}
       onClose={onClose}
     >
       {slots.map((slot) => (

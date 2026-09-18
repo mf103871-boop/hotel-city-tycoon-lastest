@@ -155,6 +155,13 @@ export function noticesFrom(events: readonly SimEvent[]): Notice[] {
       case 'inspectorFound':
         out.push(make('inspector', 'notice.inspectorFound', { coins: event.coins }));
         break;
+      // The other half of the same tap. The core has always emitted this and
+      // the string has always been translated; the line that joins them was
+      // missing, so looking for the inspector and not finding one said nothing
+      // at all — indistinguishable from the tap not registering.
+      case 'nothingFound':
+        out.push(make('inspector', 'notice.nothingFound', {}));
+        break;
       case 'guestPoked':
         out.push(make('income', 'notice.guestPoked', { coins: event.coins }));
         break;

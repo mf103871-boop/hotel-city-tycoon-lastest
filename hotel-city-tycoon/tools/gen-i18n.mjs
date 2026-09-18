@@ -90,6 +90,12 @@ const UI = {
   'ui.repairCrew':['Repair crew','فرقة التصليح'],
   'ui.allQuiet':['All quiet','كل شيء هادئ'],
   'ui.minutesShort':['min','د'],
+  // The sibling units. Two panels used to write the letters 'h' and 'd'
+  // into the string themselves, which is an English word in an Arabic
+  // interface and the kind of thing that only shows up when somebody
+  // plays in Arabic.
+  'ui.hoursShort':['h','س'],
+  'ui.daysShort':['d','ي'],
   'ui.ghostHint':['A ghost lives here. Call the ghostbuster from the phone.','شبح يسكن هنا. استدعِ صائد الأشباح من الهاتف.'],
   'ui.freeItemWeekly':["This week's free item",'هدية الأسبوع المجانية'],
   'ui.cannotAfford':['Not enough coins','العملات غير كافية'],

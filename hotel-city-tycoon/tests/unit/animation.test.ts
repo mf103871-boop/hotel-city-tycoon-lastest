@@ -373,7 +373,6 @@ describe('a view never caches its way out of the picture', () => {
       id: 'r1',
       rect: { x: 1, y: 0, w: 2, h: 1 },
       category: 'guest' as const,
-      label: 'economy',
       fill: 0.5,
       showMeter: true,
       hasPest: false,
