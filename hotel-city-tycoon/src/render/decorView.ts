@@ -19,9 +19,10 @@
  * and that it sorts.
  */
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
-import { texture, entryFor } from './assets.ts';
+import { texture, entryFor, assetGeneration } from './assets.ts';
 import { INK, NIGHT_TINT, nightfall } from './backdrop.ts';
 import { bandDepth } from './layout.ts';
+import { decorDirtyKey } from './decorArt.ts';
 
 /** A front-band piece, placed and ready to draw, in world pixels. */
 export interface DecorPlacement {
@@ -86,8 +87,8 @@ export class DecorView extends Container {
     this.scale.x = piece.flipX ? -1 : 1;
     this.zIndex = bandDepth(piece.x, piece.footY, piece.depth * DEPTH_STEP);
 
-    const key = `${piece.assetKey ?? ''}:${piece.w.toFixed(1)}x${piece.h.toFixed(1)}`
-      + `:${piece.night ? 'n' : 'd'}:${piece.slotType}:${piece.category}`;
+    // The key lives in decorArt.ts, where a test can reach it without Pixi.
+    const key = decorDirtyKey(piece, assetGeneration());
     if (key === this.lastKey) return;
     this.lastKey = key;
 

@@ -225,3 +225,32 @@ export function decorBox(
 ): DecorBox {
   return { left: anchorPx.x - size.w * spec.anchorX, top: anchorPx.y - size.h * spec.anchorY, w: size.w, h: size.h };
 }
+
+/**
+ * What a drawn piece is currently showing, as one comparable string.
+ *
+ * `DecorView` skips redundant work by comparing this against what it drew
+ * last. It lives here, away from Pixi, so the property that matters can be
+ * tested directly rather than grepped for.
+ *
+ * `generation` is `assetGeneration()` — the count of bundles that have
+ * finished loading — and it leads the key because of what happens when it is
+ * left out. A piece built before its bundle landed is drawn as a placeholder
+ * box, and its `assetKey` never changes afterwards; every other field is
+ * equally unchanged. So the key matches, the view returns early, and the
+ * placeholder stays for the rest of the session. That shipped twice: once as
+ * a street of blank capsules, and again as ticket ART-REFRESH, where a bed and
+ * a seat kept their labelled boxes until something unrelated about the room
+ * changed and forced a rebuild.
+ */
+export function decorDirtyKey(
+  piece: {
+    assetKey: string | null; w: number; h: number;
+    night: boolean; slotType: string; category: string;
+  },
+  generation: number,
+): string {
+  return `${generation}:${piece.assetKey ?? ''}`
+    + `:${piece.w.toFixed(1)}x${piece.h.toFixed(1)}`
+    + `:${piece.night ? 'n' : 'd'}:${piece.slotType}:${piece.category}`;
+}

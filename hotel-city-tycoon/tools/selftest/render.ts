@@ -21,7 +21,7 @@ import {
   BLOCK_W, BLOCK_H, ANCHOR_UNITS_PER_BLOCK,
 } from '../../src/render/layout.ts';
 import {
-  decorArtSpec, decorDrawSize, fitDecorSize, compareDecorDraw, knownDecorCategories, DECOR_ART_SCALE,
+  decorArtSpec, decorDrawSize, fitDecorSize, compareDecorDraw, knownDecorCategories, DECOR_ART_SCALE, decorDirtyKey,
 } from '../../src/render/decorArt.ts';
 import type { DecorOrderable } from '../../src/render/decorArt.ts';
 import { clampDecorBox, decorBox } from '../../src/render/decorArt.ts';
@@ -883,6 +883,66 @@ check('the front band is handed to the scene, not drawn inside the room', () => 
     'the furniture is not parented into the layer the characters sort in');
   assert(/layers\.characters\.sortableChildren = true/.test(scene),
     'the shared layer does not sort its children');
+});
+
+check('a piece drawn before its art landed is redrawn when it lands', () => {
+  // The grep below holds the rule; this holds the behaviour. Replay the real
+  // sequence: a piece is placed while its bundle is still loading, so it has
+  // no texture and gets a placeholder. The bundle lands. Nothing about the
+  // piece itself changes — same key, same box, same room, same everything —
+  // and that is the trap: the only thing that moved is the load counter.
+  const piece = {
+    assetKey: 'decor.bed_single', w: 104, h: 64,
+    night: false, slotType: 'bed', category: 'bed',
+  };
+  const before = decorDirtyKey(piece, 0);
+  const after = decorDirtyKey(piece, 1);
+  assert(before !== after,
+    'the key is identical before and after the bundle landed, so the view would '
+    + 'skip the redraw and keep its placeholder for the rest of the session');
+  // And it must not be so eager that it redraws for nothing.
+  eq(decorDirtyKey(piece, 1), after, 'the same piece at the same generation produced two keys');
+  eq(decorDirtyKey({ ...piece, night: true }, 1) === after, false, 'nightfall does not change the key');
+  eq(decorDirtyKey({ ...piece, w: 105 }, 1) === after, false, 'a resize does not change the key');
+});
+
+check('a view that caches what it drew keys on the asset generation', () => {
+  // The bug this prevents has now shipped twice. A view skips redundant work by
+  // comparing a "dirty key"; a sprite built before its bundle landed holds a
+  // placeholder and an assetKey that will never change again, so if the key
+  // does not carry the load counter the placeholder stays for the session.
+  // First time it was a street of blank capsules beside one drawn character.
+  // Second time — ticket ART-REFRESH — it was BED and SEAT boxes still showing
+  // after the art had loaded, because BL-035 moved the room's standing
+  // furniture into a new view whose key omitted it.
+  const dir = 'src/render';
+  const files: string[] = [];
+  const walk = (d: string): void => {
+    for (const name of fs.readdirSync(d)) {
+      const full = `${d}/${name}`;
+      if (fs.statSync(full).isDirectory()) walk(full);
+      else if (name.endsWith('.ts')) files.push(full);
+    }
+  };
+  walk(dir);
+  let checked = 0;
+  for (const file of files) {
+    const text = fs.readFileSync(file, 'utf8');
+    // A view that both draws a texture and caches on a key.
+    const draws = /\btexture\(/.test(text);
+    const caches = /this\.lastKey\b/.test(text);
+    if (!draws || !caches) continue;
+    checked++;
+    assert(/assetGeneration\(\)/.test(text),
+      `${file} caches what it drew but never reads assetGeneration() — a piece built `
+      + 'before its bundle landed keeps its placeholder for the rest of the session');
+    // And it has to be IN the key, not merely imported.
+    const key = /const key = ([\s\S]*?);\n/.exec(text);
+    assert(key && /assetGeneration\(\)|decorDirtyKey\(/.test(key[1]!),
+      `${file} imports assetGeneration() but does not put it in its dirty key`);
+  }
+  assert(checked >= 3, `only ${checked} caching views found — the search is not finding them`);
+  console.log(`      ${checked} texture-drawing views, all keyed on the load counter`);
 });
 
 check('the widest band the game permits still sorts inside a frame', () => {
