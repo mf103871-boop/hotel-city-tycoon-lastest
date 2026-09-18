@@ -191,7 +191,14 @@ export class RoomView extends Container {
       .map((p) => `${p.id}:${p.assetKey}:${p.localX}:${p.localY}:${p.flipX ? 1 : 0}:${p.zBias}`
         + `:${p.boxW}x${p.boxH}`)
       .join('|');
-    const key = `${assetGeneration()},${data.rect.x},${data.rect.y},${data.rect.w},${data.rect.h},${data.category},` +
+    // `plotHeight` belongs in the key because the room's world position is
+    // derived from it (roomWorldRect, below) — y grows upward in the hotel and
+    // downward on screen, so buying an expansion that adds a row moves every
+    // existing room down by a block. Without it the rooms alone stayed where
+    // they were while the people, the street and the room's own front layer
+    // all moved, and the hotel tore in half until some unrelated field
+    // happened to change and force a rebuild.
+    const key = `${assetGeneration()},${plotHeight},${data.rect.x},${data.rect.y},${data.rect.w},${data.rect.h},${data.category},` +
       `${data.fill.toFixed(2)},${data.showMeter},${data.hasPest},${data.hasFire},${data.hasGhost},${data.occupants},` +
       `${data.label},${data.assetKey ?? ''},${data.pestKey ?? ''},${data.night ? 'n' : 'd'},` +
       `${data.artIsNight ? 'N' : 'D'},${decorKey}`;

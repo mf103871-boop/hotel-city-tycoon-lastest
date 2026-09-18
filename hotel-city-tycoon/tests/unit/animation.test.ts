@@ -308,3 +308,86 @@ describe('idle scheduling', () => {
     expect(s.blinkTicket).toBe(0);
   });
 });
+
+/**
+ * Two views that cached their way out of the picture.
+ *
+ * Both are the same shape of defect and both are what the HC-P2 gate means by
+ * "a logic change shows up in the scene within the expected time": the
+ * simulation moved, the view had already decided it knew what it was showing,
+ * and the player was left looking at the old frame indefinitely. Pixi's
+ * Container constructs without a GPU, so these drive the real classes rather
+ * than grepping them.
+ */
+describe('a view never caches its way out of the picture', () => {
+  const guestAt = (x: number) => ({
+    kind: 'guest' as const,
+    assetKey: 'guest.standard.sheet',
+    x, y: 1, vx: 1, vy: 0, toX: x + 5, toY: 1,
+    segment: `walk:${Math.floor(x)}`,
+    facing: 'right' as const,
+    activity: 'walking' as const,
+    clip: 'walk' as const,
+    mood: 'neutral' as const,
+    seed: 7,
+    desire: '',
+    draggable: false,
+    tappable: false,
+    opacity: 1,
+    night: false,
+  });
+
+  it('a character who walks off screen can walk back on', async () => {
+    // The scene decides who is visible by reading the view's own transform,
+    // and the culled branch is settle(). While that branch left the transform
+    // alone, walking off screen froze the exact number the test consults to
+    // notice you came back: the guest kept moving in the simulation, the
+    // camera kept showing where they used to be, and they were never drawn
+    // again for the rest of the session.
+    const { CharacterView } = await import('../../src/render/characterView.ts');
+    const view = new CharacterView();
+
+    view.update(guestAt(2), 6);
+    view.tickAnimation(16.7);
+    const wasAt = view.x;
+
+    // Off screen: the scene calls settle() and never tickAnimation().
+    for (let i = 1; i <= 60; i++) {
+      view.update(guestAt(2 + i * 0.2), 6);
+      view.settle();
+    }
+
+    expect(view.x).toBeGreaterThan(wasAt);
+    // And it tracks the truth, not merely "something changed".
+    expect(view.x).toBeCloseTo((2 + 60 * 0.2) * 128, 1);
+  });
+
+  it('a room moves when the plot grows a row under it', async () => {
+    // y grows upward in the hotel and downward on screen, so buying an
+    // expansion moves every existing room down by a block. plotHeight was not
+    // in the room's dirty key, so the rooms alone stayed put while the people,
+    // the street and the rooms' own front layers all moved.
+    const { RoomView } = await import('../../src/render/roomView.ts');
+    const view = new RoomView();
+    const room = {
+      id: 'r1',
+      rect: { x: 1, y: 0, w: 2, h: 1 },
+      category: 'guest' as const,
+      label: 'economy',
+      fill: 0.5,
+      showMeter: true,
+      hasPest: false,
+      hasFire: false,
+      hasGhost: false,
+      occupants: 0,
+      decor: [],
+      night: false,
+    };
+
+    view.update(room, 3);
+    const before = view.y;
+    view.update(room, 4);
+
+    expect(view.y).toBe(before + 96);
+  });
+});

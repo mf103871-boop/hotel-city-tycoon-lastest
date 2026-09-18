@@ -309,10 +309,7 @@ export class CharacterView extends Container {
     // Position, every frame. Characters still travel under reduced motion —
     // freezing them would lose the information that somebody is arriving.
     step(this.motion, this.sample, deltaMs);
-    const base = blockToWorld(0, this.motion.y, this.plotHeight);
-    const x = this.motion.x * BLOCK_W;
-    const y = base.y + BLOCK_H;
-    this.position.set(x, y);
+    const { x, y } = this.place();
     this.alpha = this.baseAlpha * fadeAlpha(this.motion);
     // Draw order by the foot the character stands on, so two people passing
     // each other overlap the way the room does. The pool never reorders its
@@ -368,6 +365,30 @@ export class CharacterView extends Container {
    */
   settle(): void {
     snapTo(this.motion, this.sample);
+    // And put the view where that is.
+    //
+    // This line is what lets somebody walk back on screen. The scene decides
+    // who is visible by reading this transform (scene.ts, the cull loop), and
+    // the culled branch is this method — so without the write, a character who
+    // walks off screen freezes the very number the test consults to notice
+    // they have returned. They keep moving in the simulation, the camera keeps
+    // showing where they used to be, and they are never drawn again.
+    this.place();
+  }
+
+  /**
+   * Put the container where the smoother says the character is.
+   *
+   * Shared by the two paths deliberately: whatever else differs between an
+   * animating view and a culled one, they must agree about where the person
+   * is standing.
+   */
+  private place(): { x: number; y: number } {
+    const base = blockToWorld(0, this.motion.y, this.plotHeight);
+    const x = this.motion.x * BLOCK_W;
+    const y = base.y + BLOCK_H;
+    this.position.set(x, y);
+    return { x, y };
   }
 
   reset(): void {
