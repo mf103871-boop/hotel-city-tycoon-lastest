@@ -53,6 +53,7 @@ export const EconomySchema = z.object({
     tipThreshold: z.number().min(0).max(100), tipMaxRatio: Ratio,
     reviewWindowSec: z.number().positive(), reputationStart: z.number().min(0).max(100),
     desireChanceEarlyScale: Ratio, desireChanceEarlyUntilLevel: NonNegInt,
+    complaintBelow: z.number().min(0).max(100),
     note: z.string().optional(),
   }),
   roomQuality: z.object({

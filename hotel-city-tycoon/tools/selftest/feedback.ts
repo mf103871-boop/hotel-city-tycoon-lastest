@@ -144,6 +144,131 @@ check('every reason the core can emit has a message', () => {
   console.log(`      ${reasons.length} reasons, each with a message and a place in the order`);
 });
 
+check('a bad review says what was bad, and a wanted amenity is named', () => {
+  /*
+   * Both halves of this were emitted by the core and read by nobody.
+   * `guestReviewed` had no consumer at all — every review in the game landed
+   * in a reputation average and the reason behind it was discarded. And
+   * `desireUnmet` reached only the sprite's face, which is why the core still
+   * carries the note that it "has to be counted somewhere they can see it, or
+   * it is just a sad face on a sprite".
+   */
+  const notices = noticesFrom([
+    { type: 'guestReviewed', guestId: 'a', score: 61, reputation: 70, complaint: 'cleanliness' },
+    { type: 'guestReviewed', guestId: 'b', score: 63, reputation: 70, complaint: 'cleanliness' },
+    { type: 'guestReviewed', guestId: 'c', score: 66, reputation: 70, complaint: 'waited' },
+    // A stay good enough to carry no complaint must stay silent.
+    { type: 'guestReviewed', guestId: 'd', score: 97, reputation: 70, complaint: null },
+    { type: 'desireUnmet', guestId: 'e', tag: 'food' },
+    { type: 'desireUnmet', guestId: 'f', tag: 'food' },
+    { type: 'desireUnmet', guestId: 'g', tag: 'food' },
+    { type: 'desireUnmet', guestId: 'h', tag: 'fitness' },
+  ]);
+  const byKey = new Map(notices.map((n) => [n.titleKey, n.values['count']]));
+  eq(byKey.get('notice.complaint.cleanliness'), 2, 'the two dirty rooms were miscounted');
+  eq(byKey.get('notice.complaint.waited'), 1, 'the guest kept waiting was miscounted');
+  assert(!byKey.has('notice.complaint.null'), 'a stay with no complaint produced one anyway');
+  eq(byKey.get('notice.desireUnmet.food'), 3, 'the three who wanted to eat were miscounted');
+  eq(byKey.get('notice.desireUnmet.fitness'), 1, 'the one who wanted a gym was miscounted');
+
+  // Loudest first, within each group: a player reads the top of the stack.
+  const keys = notices.map((n) => n.titleKey);
+  assert(keys.indexOf('notice.desireUnmet.food') < keys.indexOf('notice.desireUnmet.fitness'),
+    'three guests wanting food ranked below one wanting a gym');
+  assert(keys.indexOf('notice.complaint.cleanliness') < keys.indexOf('notice.complaint.waited'),
+    'the bigger complaint was buried under the smaller one');
+});
+
+check('two different sentences with the same count are two notices', () => {
+  /*
+   * A notice used to be identified by its kind and its numbers, from the days
+   * when one kind meant one sentence. Splitting the lost-guest and complaint
+   * messages by reason broke that silently: "3 gave up waiting" and "3 wanted
+   * a gym" are both `guestLost` with `{count: 3}`, so `dedupe` read them as
+   * the same notice twice, added the counts to 6 and dropped one sentence.
+   * The player was told six guests did a thing three of them did.
+   */
+  const notices = noticesFrom([
+    { type: 'guestLeftAngry', guestId: 'a', reason: 'outOfPatience' },
+    { type: 'guestLeftAngry', guestId: 'b', reason: 'outOfPatience' },
+    { type: 'desireUnmet', guestId: 'c', tag: 'food' },
+    { type: 'desireUnmet', guestId: 'd', tag: 'food' },
+  ]);
+  eq(notices.length, 2, 'two different problems did not produce two notices');
+  for (const notice of notices) {
+    eq(notice.values['count'], 2, `${notice.titleKey} absorbed the other one's count`);
+  }
+});
+
+check('the order of a tie does not move between runs', () => {
+  // Two reasons with the same count. Map iteration order is insertion order,
+  // so without a tiebreak the notices would follow whichever guest the
+  // simulation happened to check out first — the same tick, told two ways.
+  const one = noticesFrom([
+    { type: 'desireUnmet', guestId: 'a', tag: 'nightlife' },
+    { type: 'desireUnmet', guestId: 'b', tag: 'food' },
+  ]).map((n) => n.titleKey);
+  const other = noticesFrom([
+    { type: 'desireUnmet', guestId: 'b', tag: 'food' },
+    { type: 'desireUnmet', guestId: 'a', tag: 'nightlife' },
+  ]).map((n) => n.titleKey);
+  eq(one.join('|'), other.join('|'), 'the same tick produced two different orders');
+});
+
+check('everything the core can complain about has a sentence', () => {
+  /*
+   * Two unions meeting a locale file, the same shape as the departure-reason
+   * check above. A complaint reason is a `SatisfactionReason` that
+   * `dominantComplaint` can actually return — the SHORTFALL table says which:
+   * a term read as always worth zero is given, not withheld, and can never be
+   * a complaint. A desire tag is whatever a commercial room declares, because
+   * that is literally where `spawnGuest` reads them from.
+   *
+   * Without this, adding a room category or a satisfaction term produces a
+   * toast whose title resolves to nothing — an empty white box.
+   */
+  const en = JSON.parse(fs.readFileSync('src/i18n/locales/en.json', 'utf8')) as Record<string, string>;
+  const satisfaction = fs.readFileSync('src/core/systems/satisfaction.ts', 'utf8');
+
+  const table = /const SHORTFALL[^{]*\{([\s\S]*?)\n\};/.exec(satisfaction);
+  assert(table, 'the SHORTFALL table was not found — this check is stale');
+  const rows = [...table[1]!.matchAll(/^\s{2}(\w+):\s*\(([^)]*)\)\s*=>\s*(.+?),\s*$/gm)];
+  assert(rows.length >= 8, `only ${rows.length} rows read out of the SHORTFALL table`);
+  const complaintReasons = rows.filter((r) => r[3] !== '0').map((r) => r[1]!);
+  assert(complaintReasons.length >= 6,
+    `only ${complaintReasons.length} reasons can be a complaint — the table shape changed`);
+
+  for (const reason of complaintReasons) {
+    const key = `notice.complaint.${reason}`;
+    assert(key in en, `dominantComplaint can return "${reason}" and ${key} does not exist`);
+  }
+  // And nothing in the locale file promises a complaint that cannot happen.
+  for (const key of Object.keys(en)) {
+    if (!key.startsWith('notice.complaint.')) continue;
+    const reason = key.slice('notice.complaint.'.length);
+    assert(complaintReasons.includes(reason),
+      `${key} exists and no stay can ever raise "${reason}"`);
+  }
+
+  // Desires come from the rooms, exactly as spawnGuest reads them.
+  const rooms = JSON.parse(fs.readFileSync('data/rooms.json', 'utf8')) as
+    { rooms: Array<{ category: string; desireTag?: string }> };
+  const tags = [...new Set(rooms.rooms
+    .filter((r) => r.category === 'commercial' && typeof r.desireTag === 'string')
+    .map((r) => r.desireTag!))];
+  assert(tags.length > 0, 'no commercial room declares a desire tag — this check is stale');
+  for (const tag of tags) {
+    const key = `notice.desireUnmet.${tag}`;
+    assert(key in en, `a guest can want "${tag}" and ${key} does not exist`);
+  }
+  for (const key of Object.keys(en)) {
+    if (!key.startsWith('notice.desireUnmet.')) continue;
+    const tag = key.slice('notice.desireUnmet.'.length);
+    assert(tags.includes(tag), `${key} exists and no room can ever make a guest want "${tag}"`);
+  }
+  console.log(`      ${complaintReasons.length} complaints and ${tags.length} desires, each with a sentence`);
+});
+
 check('a fire outranks everything else in the batch', () => {
   const notices = noticesFrom([
     { type: 'guestCheckedOut', guestId: 'g1', roomId: 'r1', coins: 900, xp: 100 },

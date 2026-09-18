@@ -100,7 +100,8 @@
     "reputationStart": 60,
     "desireChanceEarlyScale": 0.4,
     "desireChanceEarlyUntilLevel": 5,
-    "note": "Satisfaction = clamp(base + quality + cleanliness + service + amenity - wait - incident - unmet, 0, 100). Weights are the maximum each term can contribute. tipMaxRatio caps the bonus a delighted guest adds to their bill. Provisional — Phase 6 tunes."
+    "complaintBelow": 80,
+    "note": "Satisfaction = clamp(base + quality + cleanliness + service + amenity - wait - incident - unmet, 0, 100). Weights are the maximum each term can contribute. tipMaxRatio caps the bonus a delighted guest adds to their bill. complaintBelow is the score under which a stay names its worst term to the player. A stay is base + up to 50 earned, so anything under 80 delivered less than half of what the hotel could have given and the player deserves to know which half. It lands on tipThreshold by agreement, not by reference — the same line separates a guest who tips from one who does not. Provisional — Phase 6 tunes."
   },
   "roomQuality": {
     "repeatFalloff": 0.6,

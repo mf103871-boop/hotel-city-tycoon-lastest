@@ -459,6 +459,25 @@ const UI = {
   'notice.climateEnded':['The weather has passed','انقضت الموجة'],
   'notice.serviceDone':['Service call: -{coins} coins','مكالمة خدمة: -{coins} عملة'],
   'notice.hazardCleared':['Cleared · +{coins} coins','تمت المعالجة · +{coins} عملة'],
+  // What a guest came wanting. A desire was an unlabelled coloured shape in a
+  // bubble and had no name anywhere in the game, so the one thing it exists to
+  // tell the player — build this — could not be said in words. One key per tag
+  // rather than a name substituted into a sentence: Arabic and English put the
+  // article and the verb in different places, and a template that works in one
+  // reads as machine translation in the other.
+  'notice.desireUnmet.food':['{count} wanted somewhere to eat','{count} أرادوا مكانًا للأكل'],
+  'notice.desireUnmet.fitness':['{count} wanted a gym','{count} أرادوا صالة رياضة'],
+  'notice.desireUnmet.nightlife':['{count} wanted somewhere to go at night','{count} أرادوا سهرة'],
+  'notice.desireUnmet.entertainment':['{count} wanted something to do','{count} أرادوا ما يسلّيهم'],
+  // The one term that most spoiled a stay, named so the player has something
+  // to do about it. Raised only under `complaintBelow` from
+  // data/economy.json, so a hotel that is merely imperfect says nothing.
+  'notice.complaint.cleanliness':['{count} marked you down: the room was dirty','{count} خصموا من تقييمك: الغرفة متسخة'],
+  'notice.complaint.waited':['{count} marked you down: they waited too long','{count} خصموا من تقييمك: طال انتظارهم'],
+  'notice.complaint.incident':['{count} marked you down: something happened in their room','{count} خصموا من تقييمك: حدث شيء في غرفتهم'],
+  'notice.complaint.desireUnmet':['{count} marked you down: the hotel had nothing they wanted','{count} خصموا من تقييمك: لا شيء في الفندق يريدونه'],
+  'notice.complaint.roomQuality':['{count} marked you down: the room was bare','{count} خصموا من تقييمك: الغرفة خالية'],
+  'notice.complaint.service':['{count} marked you down: nobody looked after them','{count} خصموا من تقييمك: لم يعتنِ بهم أحد'],
   // One per reason on `guestLeftAngry`. The old single line — "{count}
   // guests walked away" — named the loss and not the cause, which is the
   // half a player can actually act on.

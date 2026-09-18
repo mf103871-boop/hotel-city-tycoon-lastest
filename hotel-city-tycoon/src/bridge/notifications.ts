@@ -96,9 +96,24 @@ const TONE: Record<NoticeKind, Tone> = {
  */
 const LOST_REASONS = ['outOfPatience', 'noRoom', 'hotelClosed'] as const;
 
+/** Biggest first, then by name, so the order is total and stable. */
+function byWeight(counts: Map<string, number>): Array<[string, number]> {
+  return [...counts.entries()].sort((a, b) => (b[1] - a[1]) || (a[0] < b[0] ? -1 : 1));
+}
+
+/*
+ * The identity of a notice is what it says, not what kind of thing it is.
+ *
+ * The id used to be the kind and the values, which was fine while one kind
+ * meant one sentence. It stopped being fine the moment a kind carried several:
+ * "3 gave up waiting" and "3 wanted a gym" are both `guestLost` with
+ * `{count: 3}`, so `dedupe` treated them as the same notice seen twice, added
+ * the counts and threw one of the two sentences away. The title is what makes
+ * them different, so the title is in the id.
+ */
 function make(kind: NoticeKind, titleKey: string, values: Record<string, string | number>): Notice {
   return {
-    id: `${kind}:${JSON.stringify(values)}`,
+    id: `${kind}:${titleKey}:${JSON.stringify(values)}`,
     kind,
     tone: TONE[kind],
     titleKey,
@@ -129,6 +144,18 @@ export function noticesFrom(events: readonly SimEvent[]): Notice[] {
    * one caught by the shift ending is nobody's fault at all.
    */
   const lostBy = new Map<string, number>();
+  /**
+   * Poor reviews, counted by what spoiled the stay, and desires the hotel
+   * could not meet, counted by what was wanted.
+   *
+   * Both events have been emitted since the systems that raise them were
+   * written and consumed by nothing — `guestReviewed` by literally nothing at
+   * all, `desireUnmet` only by the sprite's angry face. The comment beside the
+   * desire tally in the core says what was missing: "it has to be counted
+   * somewhere they can see it, or it is just a sad face on a sprite".
+   */
+  const complaints = new Map<string, number>();
+  const unmet = new Map<string, number>();
   let shiftEnded = false;
 
   for (const event of events) {
@@ -164,6 +191,14 @@ export function noticesFrom(events: readonly SimEvent[]): Notice[] {
         break;
       case 'guestLeftAngry':
         lostBy.set(event.reason, (lostBy.get(event.reason) ?? 0) + 1);
+        break;
+      case 'guestReviewed':
+        // Only a stay that scored below the base carries a complaint, so a
+        // hotel doing well raises nothing here at all.
+        if (event.complaint) complaints.set(event.complaint, (complaints.get(event.complaint) ?? 0) + 1);
+        break;
+      case 'desireUnmet':
+        unmet.set(event.tag, (unmet.get(event.tag) ?? 0) + 1);
         break;
       case 'shiftEnded':
         shiftEnded = true;
@@ -209,6 +244,15 @@ export function noticesFrom(events: readonly SimEvent[]): Notice[] {
     notice.count = count;
     out.push(notice);
   }
+  // Sorted by count, so the loudest problem is the one a player reads first,
+  // and by name after that so a tie does not reorder between runs.
+  for (const [tag, count] of byWeight(unmet)) {
+    out.push(make('guestLost', `notice.desireUnmet.${tag}`, { count }));
+  }
+  for (const [reason, count] of byWeight(complaints)) {
+    out.push(make('guestLost', `notice.complaint.${reason}`, { count }));
+  }
+
   if (coins >= INCOME_TOAST_FLOOR) {
     out.push(make('income', 'notice.income', { coins }));
   }

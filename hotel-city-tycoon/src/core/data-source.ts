@@ -262,6 +262,8 @@ export interface EconomyDef {
     tipThreshold: number; tipMaxRatio: number;
     reviewWindowSec: number; reputationStart: number;
     desireChanceEarlyScale: number; desireChanceEarlyUntilLevel: number;
+    /** Below this score a stay names its worst term to the player. */
+    complaintBelow: number;
   };
   shiftCostScaling: { formula: string; perLevel: number };
   xp: { grantOnGuestCheckout: boolean; grantOnRoomBuild: number; grantOnDecorPlace: number };

@@ -18,7 +18,7 @@ import { seasonIncomeMultiplier, seasonArrivalMultiplier } from './liveops.ts';
 import { arrivalMultiplier, incomeMultiplier, effectiveStars } from './stars.ts';
 import { grantXp } from './progression.ts';
 import { earn, isOpen, shiftIncomeMultiplier } from './economy.ts';
-import { scoreStay, tipRatio, recordReview } from './satisfaction.ts';
+import { scoreStay, tipRatio, recordReview, dominantComplaint } from './satisfaction.ts';
 
 /**
  * Extra income while a notable guest is in the building.
@@ -516,6 +516,7 @@ export function checkOut(
     guestId: guest.id,
     score: satisfaction,
     reputation: state.reputation.score,
+    complaint: dominantComplaint(data, guest),
   });
 
   const c = data.economy.cleanliness;

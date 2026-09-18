@@ -393,7 +393,13 @@ export type SimEvent =
   | { type: 'staffAssigned'; staffId: string; roomId: string }
   | { type: 'staffUnassigned'; staffId: string }
   | { type: 'staffFired'; staffId: string }
-  | { type: 'guestReviewed'; guestId: string; score: number; reputation: number }
+  /**
+   * `complaint` is the one term that most spoiled the stay, when the stay
+   * scored below the base a guest arrives with — `null` otherwise. Carried on
+   * the event because the notice layer sees events and not guests, and because
+   * a review that says only "3 stars" tells a player nothing to fix.
+   */
+  | { type: 'guestReviewed'; guestId: string; score: number; reputation: number; complaint: string | null }
   | { type: 'desireUnmet'; guestId: string; tag: string }
   | { type: 'offlineResolved'; elapsedMs: number; coins: number; xp: number; guestsServed: number };
 

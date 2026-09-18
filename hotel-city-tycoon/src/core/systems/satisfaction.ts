@@ -32,9 +32,20 @@ export type SatisfactionReason =
   | 'waited'
   | 'incident';
 
+/*
+ * A term that contributed nothing is recorded, not dropped.
+ *
+ * This used to return early on a zero delta, to keep the log tidy. But three
+ * of the terms are bonuses bounded by a weight, and the worst possible value
+ * of a bonus is exactly zero — a room caked in filth adds no cleanliness
+ * points, it does not subtract any. Dropping the entry erased the single most
+ * important fact about the stay, and `dominantComplaint` could not have told
+ * the player their rooms were dirty however dirty they got.
+ *
+ * `-0` is normalised away so a saved log never carries it.
+ */
 function note(guest: GuestInstance, reason: SatisfactionReason, delta: number): void {
-  if (delta === 0) return;
-  guest.satisfactionLog.push({ reason, delta: Math.round(delta * 10) / 10 });
+  guest.satisfactionLog.push({ reason, delta: Math.round(delta * 10) / 10 + 0 });
 }
 
 /**
@@ -184,4 +195,79 @@ export function recordReview(
 /** A human-readable trace of one guest's score. Used by the UI and by tests. */
 export function explain(guest: GuestInstance): SatisfactionNote[] {
   return guest.satisfactionLog;
+}
+
+/**
+ * How much each term of the score took off the best stay this hotel could
+ * have given, always as a positive amount.
+ *
+ * The note log stores signed deltas, and reading "the most negative one" is
+ * wrong here in a way that is easy to miss: three of the terms never go
+ * negative at all. A filthy room does not subtract — it contributes nothing
+ * of a weight it could have contributed all of. So the most common real
+ * complaint in the game could never once have been reported.
+ *
+ * `data/economy.json` states the model this reads: "Weights are the maximum
+ * each term can contribute". The shortfall of a bonus term is therefore the
+ * part it did not earn, and the shortfall of a penalty term is what it took.
+ * Both are in the same unit — points off the stay — so they compare directly.
+ *
+ * The table is structure, not balance: which weight bounds which term. Every
+ * number stays in `data/economy.json`, and `Record<SatisfactionReason, ...>`
+ * means a new reason cannot be added without deciding how it is read.
+ */
+type SatisfactionWeights = SimData['economy']['satisfaction'];
+
+const SHORTFALL: Record<
+  SatisfactionReason,
+  (w: SatisfactionWeights, delta: number) => number
+> = {
+  // Given, not withheld: the arrival score and a desire the hotel did meet.
+  base: () => 0,
+  desireMet: () => 0,
+  // Bonuses: what was left on the table.
+  roomQuality: (w, delta) => w.roomQualityWeight - delta,
+  cleanliness: (w, delta) => w.cleanlinessWeight - delta,
+  service: (w, delta) => w.serviceWeight - delta,
+  // Penalties: what was taken. Already stored negative.
+  desireUnmet: (_w, delta) => -delta,
+  waited: (_w, delta) => -delta,
+  incident: (_w, delta) => -delta,
+};
+
+/**
+ * The one thing that most spoiled a stay, or null if nothing did.
+ *
+ * `explain()` hands back every term; this picks the single one worth saying
+ * out loud. A player cannot act on seven signed numbers passing in a toast,
+ * and they can act on "the room was dirty".
+ *
+ * Returns the note's own `reason` string rather than the union, because that is
+ * what the note carries — the two are held in step by tools/selftest/feedback.ts,
+ * which requires every member of the union to have a message.
+ *
+ * Only a stay under `complaintBelow` has one at all, so a hotel that is merely
+ * imperfect does not nag. The line is in `data/economy.json` with the rest of
+ * the satisfaction model, because where "not good enough to mention" ends is a
+ * balance decision and Phase 6 will move it.
+ *
+ * Ties go to the earlier note, and the log is written in one fixed order, so
+ * the same stay always names the same complaint.
+ */
+export function dominantComplaint(
+  data: SimData,
+  guest: GuestInstance,
+): string | null {
+  if (guest.satisfaction < 0) return null;            // never scored
+  const w = data.economy.satisfaction;
+  if (guest.satisfaction >= w.complaintBelow) return null;
+  let worst: string | null = null;
+  let worstAmount = 0;
+  for (const note of guest.satisfactionLog) {
+    const read = SHORTFALL[note.reason as SatisfactionReason];
+    if (!read) continue;                              // a reason this does not model
+    const amount = read(w, note.delta);
+    if (amount > worstAmount) { worstAmount = amount; worst = note.reason; }
+  }
+  return worst;
 }

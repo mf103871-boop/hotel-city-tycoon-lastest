@@ -29,7 +29,7 @@ import { placementProblem, nextExpansion, decorCatalog, roomDetail } from '../..
 import { checkInvariants } from '../../src/core/state/invariants.ts';
 import { roomDef, decorDef, catalogueFor, catalogueIndex } from '../../src/core/data-source.ts';
 import { testGuest } from './guest-factory.ts';
-import { scoreStay, tipRatio } from '../../src/core/systems/satisfaction.ts';
+import { scoreStay, tipRatio, dominantComplaint } from '../../src/core/systems/satisfaction.ts';
 import { effectActive, cleaningCapacity, incomeBlocked } from '../../src/core/systems/cleanliness.ts';
 import { operatingProfit, netProfit, totalShiftCost, shiftUpkeep, shiftIncomeMultiplier, shiftWages } from '../../src/core/systems/economy.ts';
 import { cleaningOrder } from '../../src/core/systems/cleaning.ts';
@@ -1116,6 +1116,76 @@ check('an incident is remembered in the score', () => {
   scoreStay(data, state, g, room);
   assert(g.satisfactionLog.some((e) => e.reason === 'incident' && e.delta < 0),
     'a guest slept through a fire and did not mind');
+});
+
+check('a filthy room is what the stay complains about', () => {
+  /*
+   * The bug this exists to stop coming back: three of the seven terms never
+   * go negative. Cleanliness contributes `cleanliness * weight`, so a room
+   * caked in filth scores 0 there and leaves no negative note at all. A
+   * complaint picked as "the most negative term" could therefore never once
+   * have said "the room was dirty" — the single most common real problem in
+   * the game — and would have blamed the wait instead.
+   *
+   * A term is read here as what it left on the table against its own weight,
+   * which data/economy.json calls "the maximum each term can contribute".
+   */
+  const state = fresh();
+  const room = state.hotel.rooms[1]!;
+  room.cleanliness = 0;
+  // Everything else about the stay is fine or nearly so, and the filth is
+  // still the biggest thing it lost — which is the whole point.
+  room.decorPoints = roomDef(data, room.defId)!.decorTarget;
+  state.lastServiceRating = 0.5;
+  const g = testGuest({
+    id: 'filthy', state: 'staying', roomId: room.id,
+    waitedTicks: 180, patienceTotalTicks: 600,
+  });
+  const score = scoreStay(data, state, g, room);
+  assert(score < data.economy.satisfaction.complaintBelow,
+    `the stay scored ${score}, at or above the complaint line — this check is stale`);
+  const clean = g.satisfactionLog.find((n) => n.reason === 'cleanliness');
+  assert(clean, 'the filthiest room in the game left no cleanliness term at all');
+  eq(clean.delta, 0, 'a room at zero cleanliness did not score zero for it');
+  eq(dominantComplaint(data, g), 'cleanliness',
+    'the filthiest thing about the stay was not what it complained about');
+});
+
+check('a stay only complains once it is actually bad', () => {
+  // Every hotel is imperfect at something. A toast naming the weakest term of
+  // a stay the guest enjoyed is noise, and noise is what players mute.
+  const state = fresh();
+  const room = state.hotel.rooms[1]!;
+  room.cleanliness = 1;
+  room.decorPoints = roomDef(data, room.defId)!.decorTarget;
+  state.lastServiceRating = 1;
+  const g = testGuest({ id: 'happy', state: 'staying', roomId: room.id });
+  const score = scoreStay(data, state, g, room);
+  assert(score >= data.economy.satisfaction.complaintBelow, `a perfect stay scored ${score}`);
+  eq(dominantComplaint(data, g), null, 'a good stay complained anyway');
+  // And a guest who never checked in has no stay to complain about.
+  eq(dominantComplaint(data, testGuest({ id: 'arriving' })), null,
+    'an unscored guest produced a complaint out of nothing');
+});
+
+check('the worst thing that happened is the thing named', () => {
+  // Two problems in one stay. The one that cost more points is the one the
+  // player is told about, because it is the one worth their attention.
+  const state = fresh();
+  const room = state.hotel.rooms[1]!;
+  room.cleanliness = 1;
+  room.decorPoints = roomDef(data, room.defId)!.decorTarget;
+  state.lastServiceRating = 1;
+  const g = testGuest({
+    id: 'both', state: 'staying', roomId: room.id,
+    waitedTicks: 60, patienceTotalTicks: 600, sawIncident: true,
+  });
+  scoreStay(data, state, g, room);
+  const w = data.economy.satisfaction;
+  assert(w.incidentPenalty > w.waitPenaltyMax * 0.1,
+    'the fixture no longer makes the incident the larger of the two');
+  eq(dominantComplaint(data, g), 'incident',
+    'a small wait outranked a fire in the room');
 });
 
 check('reputation is the average of the reviews inside the window', () => {
