@@ -355,7 +355,13 @@ export type SimEvent =
   | { type: 'guestArrived'; guestId: string; typeId: string }
   | { type: 'guestCheckedIn'; guestId: string; roomId: string }
   | { type: 'guestCheckedOut'; guestId: string; roomId: string; coins: number; xp: number }
-  | { type: 'guestLeftAngry'; guestId: string; reason: 'noRoom' | 'outOfPatience' }
+  /**
+   * `reason` is why they gave up, and it has to agree with the guest's own
+   * `leaveReason`. A guest still queuing when the shift ended used to be
+   * stored as `hotelClosed` and announced as `noRoom` — harmless while nothing
+   * read either, and a plain lie to the player the moment one of them is shown.
+   */
+  | { type: 'guestLeftAngry'; guestId: string; reason: 'noRoom' | 'outOfPatience' | 'hotelClosed' }
   | { type: 'incomeBlocked'; roomId: string; reason: 'dirty' | 'pest' | 'fire' | 'ghost' | 'closed' }
   | { type: 'pestAppeared'; roomId: string }
   | { type: 'fireStarted'; roomId: string }

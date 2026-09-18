@@ -459,7 +459,12 @@ const UI = {
   'notice.climateEnded':['The weather has passed','انقضت الموجة'],
   'notice.serviceDone':['Service call: -{coins} coins','مكالمة خدمة: -{coins} عملة'],
   'notice.hazardCleared':['Cleared · +{coins} coins','تمت المعالجة · +{coins} عملة'],
-  'notice.guestLost':['{count} guests walked away','{count} نزلاء غادروا'],
+  // One per reason on `guestLeftAngry`. The old single line — "{count}
+  // guests walked away" — named the loss and not the cause, which is the
+  // half a player can actually act on.
+  'notice.guestLost.outOfPatience':['{count} gave up waiting','{count} سئموا الانتظار'],
+  'notice.guestLost.noRoom':['{count} left — no room free','{count} غادروا — لا غرفة شاغرة'],
+  'notice.guestLost.hotelClosed':['{count} were still waiting when you closed','{count} كانوا ينتظرون حين أغلقت'],
   'notice.shiftEnded':['The hotel has closed','أُغلق الفندق'],
   'notice.income':['+{coins} coins','+{coins} عملة'],
   'notice.offline':['+{coins} coins while you were away','+{coins} عملة أثناء غيابك'],

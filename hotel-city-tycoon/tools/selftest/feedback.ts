@@ -105,6 +105,45 @@ check('guests walking away are counted, not listed', () => {
   eq(notices[0]!.values['count'], 9, 'the count was wrong');
 });
 
+check('a departure says why, and two reasons do not merge into one number', () => {
+  // The event has always carried the reason and the bridge threw it away, so
+  // every way of losing a waiting guest read as the same sentence. A player
+  // who sees "4 walked away" learns that something is wrong; one who sees that
+  // three gave up queuing and one found no free room learns what to build.
+  const notices = noticesFrom([
+    { type: 'guestLeftAngry', guestId: 'a', reason: 'outOfPatience' },
+    { type: 'guestLeftAngry', guestId: 'b', reason: 'outOfPatience' },
+    { type: 'guestLeftAngry', guestId: 'c', reason: 'outOfPatience' },
+    { type: 'guestLeftAngry', guestId: 'd', reason: 'noRoom' },
+  ]);
+  const lost = notices.filter((n) => n.kind === 'guestLost');
+  eq(lost.length, 2, 'two different reasons did not produce two messages');
+  const byKey = new Map(lost.map((n) => [n.titleKey, n.values['count']]));
+  eq(byKey.get('notice.guestLost.outOfPatience'), 3, 'the impatient three were miscounted');
+  eq(byKey.get('notice.guestLost.noRoom'), 1, 'the one with nowhere to sleep was miscounted');
+});
+
+check('every reason the core can emit has a message', () => {
+  // The reason lives in the core and the sentence lives in the locale files.
+  // Without this, adding a reason silently produces a notice whose title key
+  // resolves to nothing — an empty toast.
+  const en = JSON.parse(fs.readFileSync('src/i18n/locales/en.json', 'utf8')) as Record<string, string>;
+  const types = fs.readFileSync('src/core/state/types.ts', 'utf8');
+  const decl = /type: 'guestLeftAngry';[^}]*reason: ([^}]+)\}/.exec(types);
+  assert(decl, 'the guestLeftAngry event declaration was not found — this check is stale');
+  const reasons = [...decl[1]!.matchAll(/'([a-zA-Z]+)'/g)].map((m) => m[1]!);
+  assert(reasons.length >= 3, `only found ${reasons.length} reasons in the union`);
+  for (const reason of reasons) {
+    const key = `notice.guestLost.${reason}`;
+    assert(key in en, `the core can emit reason "${reason}" and ${key} does not exist`);
+    // And it is actually reachable: the bridge must know the reason too.
+    const bridge = fs.readFileSync('src/bridge/notifications.ts', 'utf8');
+    assert(bridge.includes(`'${reason}'`),
+      `LOST_REASONS in notifications.ts does not list "${reason}", so its notice is never emitted`);
+  }
+  console.log(`      ${reasons.length} reasons, each with a message and a place in the order`);
+});
+
 check('a fire outranks everything else in the batch', () => {
   const notices = noticesFrom([
     { type: 'guestCheckedOut', guestId: 'g1', roomId: 'r1', coins: 900, xp: 100 },

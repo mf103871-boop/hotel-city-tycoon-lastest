@@ -573,7 +573,7 @@ export function settleAtGraceEnd(data: SimData, state: GameState, out: SimEvent[
     guest.stateSinceTick = state.tick;
     guest.leaveReason = 'hotelClosed';
     state.stats.guestsLost++;
-    out.push({ type: 'guestLeftAngry', guestId: guest.id, reason: 'noRoom' });
+    out.push({ type: 'guestLeftAngry', guestId: guest.id, reason: 'hotelClosed' });
   }
   state.lobbyQueue = [];
   return settled;

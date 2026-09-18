@@ -87,6 +87,15 @@ const TONE: Record<NoticeKind, Tone> = {
   income: 'good',
 };
 
+/**
+ * Every way a guest can give up, in the order their notices appear.
+ *
+ * Mirrors the `reason` on `guestLeftAngry`; `tools/selftest/feedback.ts` holds
+ * the two in step, so a new reason in the core cannot quietly fall back to a
+ * message that does not exist.
+ */
+const LOST_REASONS = ['outOfPatience', 'noRoom', 'hotelClosed'] as const;
+
 function make(kind: NoticeKind, titleKey: string, values: Record<string, string | number>): Notice {
   return {
     id: `${kind}:${JSON.stringify(values)}`,
@@ -109,7 +118,17 @@ function make(kind: NoticeKind, titleKey: string, values: Record<string, string 
 export function noticesFrom(events: readonly SimEvent[]): Notice[] {
   const out: Notice[] = [];
   let coins = 0;
-  let lost = 0;
+  /**
+   * Departures, counted by why they happened.
+   *
+   * The event has always carried the reason and this function has always
+   * thrown it away, so all three ways to lose a waiting guest produced the one
+   * sentence "{count} guests walked away". That tells a player something went
+   * wrong and nothing about what to do: a guest who gave up in the queue wants
+   * a receptionist, one who found no free room wants another room built, and
+   * one caught by the shift ending is nobody's fault at all.
+   */
+  const lostBy = new Map<string, number>();
   let shiftEnded = false;
 
   for (const event of events) {
@@ -144,7 +163,7 @@ export function noticesFrom(events: readonly SimEvent[]): Notice[] {
         if (event.coins > 0) out.push(make('hazardCleared', 'notice.hazardCleared', { coins: event.coins }));
         break;
       case 'guestLeftAngry':
-        lost++;
+        lostBy.set(event.reason, (lostBy.get(event.reason) ?? 0) + 1);
         break;
       case 'shiftEnded':
         shiftEnded = true;
@@ -180,9 +199,14 @@ export function noticesFrom(events: readonly SimEvent[]): Notice[] {
   }
 
   if (shiftEnded) out.push(make('shiftEnded', 'notice.shiftEnded', {}));
-  if (lost > 0) {
-    const notice = make('guestLost', 'notice.guestLost', { count: lost });
-    notice.count = lost;
+  // One notice per reason, so two different problems in the same tick do not
+  // merge into a single number that explains neither. Ordered so the
+  // aggregation is stable across runs.
+  for (const reason of LOST_REASONS) {
+    const count = lostBy.get(reason) ?? 0;
+    if (count === 0) continue;
+    const notice = make('guestLost', `notice.guestLost.${reason}`, { count });
+    notice.count = count;
     out.push(notice);
   }
   if (coins >= INCOME_TOAST_FLOOR) {
