@@ -321,17 +321,7 @@ export class CharacterView extends Container {
     // Position, every frame. Characters still travel under reduced motion —
     // freezing them would lose the information that somebody is arriving.
     step(this.motion, this.sample, deltaMs);
-    const base = blockToWorld(0, this.motion.y, this.plotHeight);
-    const x = this.motion.x * BLOCK_W;
-    const y = base.y + BLOCK_H;
-    this.position.set(x, y);
-    this.alpha = this.baseAlpha * fadeAlpha(this.motion);
-    // Draw order by the foot the character stands on, so two people passing
-    // each other overlap the way the room does. The pool never reorders its
-    // children, so without this the order was whatever recycling produced.
-    // The same formula places the room's furniture (`decorView.ts`), which is
-    // what lets somebody walk behind a sofa and in front of the next one.
-    this.zIndex = bandDepth(x, y, DEPTH_CHARACTER_BIAS);
+    this.place();
 
     // The small human things, while they are standing about doing nothing.
     const settled = this.sample.vx === 0 && this.sample.vy === 0;
@@ -381,10 +371,33 @@ export class CharacterView extends Container {
    *
    * For a character who was off screen: they must be in the right place the
    * moment they are drawn again, not slide in from wherever the camera left
-   * them.
+   * them. The container is moved too, not only the motion state, because the
+   * scene's cull reads the container's position: a view that only updated
+   * its motion stayed wherever it was last drawn — for a view fresh from the
+   * pool, the plot origin — and on a phone whose fitted camera does not
+   * contain that point it was culled every frame and never drawn at all.
    */
   settle(): void {
     snapTo(this.motion, this.sample);
+    this.place();
+  }
+
+  /**
+   * The container's position, alpha and draw order from the motion state.
+   *
+   * Draw order by the foot the character stands on, so two people passing
+   * each other overlap the way the room does. The pool never reorders its
+   * children, so without this the order was whatever recycling produced.
+   * The same formula places the room's furniture (`decorView.ts`), which is
+   * what lets somebody walk behind a sofa and in front of the next one.
+   */
+  private place(): void {
+    const base = blockToWorld(0, this.motion.y, this.plotHeight);
+    const x = this.motion.x * BLOCK_W;
+    const y = base.y + BLOCK_H;
+    this.position.set(x, y);
+    this.alpha = this.baseAlpha * fadeAlpha(this.motion);
+    this.zIndex = bandDepth(x, y, DEPTH_CHARACTER_BIAS);
   }
 
   reset(): void {

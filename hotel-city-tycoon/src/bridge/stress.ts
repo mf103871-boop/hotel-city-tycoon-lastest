@@ -92,7 +92,10 @@ export function stressRequest(search: string): { rooms: number; seconds: number;
     const params = new URLSearchParams(search);
     if (!params.has('stress')) return null;
     const rooms = Number(params.get('stress'));
-    const epoch = params.has('epoch') ? Number(params.get('epoch')) : Number.NaN;
+    // Digits only: `Number('')` is 0, so a bare `?epoch=` would otherwise
+    // start the hotel at midnight 1970 instead of now.
+    const rawEpoch = params.get('epoch');
+    const epoch = rawEpoch !== null && /^\d+$/.test(rawEpoch) ? Number(rawEpoch) : Number.NaN;
     return {
       rooms: Number.isFinite(rooms) && rooms > 0 ? Math.min(200, rooms) : 60,
       seconds: Number(params.get('warm') ?? 900),

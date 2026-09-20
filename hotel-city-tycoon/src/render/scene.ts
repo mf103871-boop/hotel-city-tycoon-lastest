@@ -301,7 +301,10 @@ export class HotelScene {
      *
      * A culled view is settled onto its target rather than left behind: it
      * must be in the right place the moment it is drawn again, not slide in
-     * from where the camera left it.
+     * from where the camera left it. Settling moves the container as well,
+     * because this test reads the container's position: a view that stayed
+     * at the pool's origin was outside every phone viewport that did not
+     * contain the plot's corner, so it was never drawn (BL-041).
      */
     this.cullBox.x = visible.x - margin;
     this.cullBox.y = visible.y - margin;

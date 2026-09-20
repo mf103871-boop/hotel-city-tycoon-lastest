@@ -70,7 +70,9 @@ Recorded 20-09-2026 with HC-P2-S2.
 1. Open the Pages URL on the phone with the stress handle:
    `https://mf103871-boop.github.io/hotel-city-tycoon-lastest/?stress=60&warm=900&debug=1`
    (60 rooms warmed for 900 simulated seconds; the stress hotel reaches
-   55 people). Add `&epoch=<milliseconds since 1970>` to force the simulation
+   about 60 people — 61 measured on the canvas lane on 20-09-2026, and
+   `tools/selftest/characters.ts` holds the count at 40 or more). Add
+   `&epoch=<milliseconds since 1970>` to force the simulation
    clock to a chosen hour, for example a night reading with the light pools
    and the dark sky up; without it the hour is the phone's local time.
 2. Let the hotel run for at least a minute, then read `p5` from the debug
@@ -84,7 +86,7 @@ Recorded 20-09-2026 with HC-P2-S2.
 4. Paste the object, the device model, the OS version, the build id from
    the badge and the URL used into the step report's evidence section.
 
-`p5 >= 55` at 60 rooms / 55 people is the bar. Inside the Capacitor app the
+`p5 >= 55` at 60 rooms / about 60 people is the bar. Inside the Capacitor app the
 console is not reachable until HC-P2-S8 wires the native debugging switch
 (BL-040); until then take the reading in the phone's browser.
 

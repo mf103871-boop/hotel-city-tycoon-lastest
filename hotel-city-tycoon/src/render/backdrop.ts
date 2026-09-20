@@ -142,6 +142,13 @@ const SUN = 0xfff0be;
 const MOON_R = 20;
 const MOON = 0xf4f1e6;
 const STAR = 0xfff8e7;
+/**
+ * How far above the ground the sun and moon must hang to clear the city:
+ * `drawCity` raises its tallest building 3.3 blocks and a pitched roof adds
+ * 22 % of that, so 4.75 blocks leaves the disc's lower edge a third of a
+ * block above the highest possible peak.
+ */
+const SKYLINE_CLEAR = BLOCK_H * 4.75;
 
 export class Backdrop {
   /**
@@ -202,7 +209,7 @@ export class Backdrop {
     const right = world.x + world.width * 2;
     const top = world.y - world.height;
 
-    this.drawSky(left, right, top, groundY, world, dusk);
+    this.drawSky(left, right, top, groundY, outline, gridH, dusk);
     this.drawCity(left, right, groundY, dusk);
     this.drawStreet(left, right, groundY, world.height, dusk);
     this.drawShell(outline, gridH, stars, dusk);
@@ -223,7 +230,7 @@ export class Backdrop {
    * promise without a second code path.
    */
   private drawSky(left: number, right: number, top: number, groundY: number,
-                  world: WorldBounds, dusk: number): void {
+                  outline: ShellRect | null, gridH: number, dusk: number): void {
     if (!this.shapesReady) {
       this.sun.circle(0, 0, SUN_R).fill(SUN);
       drawCrescent(this.moon, MOON_R);
@@ -252,10 +259,19 @@ export class Backdrop {
     }
     g.alpha = starAlpha(dusk);
 
-    // Sun by day, moon by night, in the same corner of the plot's own sky, so
-    // one fades into the other where the eye already is.
-    const cx = world.x + world.width * 0.82;
-    const cy = world.y + BLOCK_H * 0.55;
+    // Sun by day, moon by night, over the hotel's own roof rather than in the
+    // plot's corner, so one fades into the other where the eye already is. A
+    // phone at the minimum zoom shows about five hundred world units either
+    // side of the centre, and a grown plot's corner is well outside that: the
+    // owner would never see either. Two heights compete: the roof rises as
+    // floors are added (the parapet's stars sit a quarter block above it, so
+    // a block and a half keeps clear of them), and the city behind a low
+    // hotel is taller than the hotel — the disc has to clear the skyline or
+    // it is drawn behind a tower and shows as a sliver over one roof.
+    const roofX = outline ? (outline.x + outline.w / 2) * BLOCK_W : (left + right) / 2;
+    const roofY = outline ? (gridH - outline.y - outline.h) * BLOCK_H : groundY;
+    const cx = roofX + BLOCK_W * 2;
+    const cy = Math.max(top + SUN_R * 2, Math.min(roofY - BLOCK_H * 1.5, groundY - SKYLINE_CLEAR));
     this.sun.position.set(cx, cy);
     this.sun.alpha = 1 - dusk / DUSK_STEPS;
     this.moon.position.set(cx, cy);

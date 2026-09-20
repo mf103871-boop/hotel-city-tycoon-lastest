@@ -62,8 +62,11 @@ export function radialPoolTexture(wPx: number, hPx: number): Texture {
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, wPx, hPx);
 
-  const tex = Texture.from(canvas);
-  tex.source.resolution = scale;
+  // The resolution goes in with the source: a Texture computes its frame and
+  // uvs from the source it is given, and setting `source.resolution` later
+  // rewrites the source's size without telling the Texture, leaving a frame
+  // twice the size of the source it sits in.
+  const tex = Texture.from({ resource: canvas, resolution: scale });
   pools.set(key, tex);
   return tex;
 }

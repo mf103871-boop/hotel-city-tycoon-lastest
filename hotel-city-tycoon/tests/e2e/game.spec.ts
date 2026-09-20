@@ -255,6 +255,9 @@ test('characters are drawn, not left as placeholder shapes', async ({ page }) =>
   type Drawn = { id: string; source: 'sheet' | 'none' };
   const people = await page.evaluate(() =>
     (window as unknown as { hct: { characters: () => Drawn[] } }).hct.characters());
+  // `every` on an empty list is true; a scene that lost its people entirely
+  // is the other way this test's failure can look.
+  expect(people.length, 'no characters in the scene after boot').toBeGreaterThan(0);
   expect(people.every((p) => p.source !== 'none'),
     'somebody is still a placeholder capsule after every bundle loaded').toBe(true);
 });
