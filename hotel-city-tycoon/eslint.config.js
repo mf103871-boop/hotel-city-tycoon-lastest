@@ -21,7 +21,11 @@ const FORBIDDEN_IN_CORE = [
 ];
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'coverage', 'public/assets', 'android', 'ios'] },
+  // `prototypes/` holds throwaway spikes that answer one question and are not
+  // shipped. They carry their own tsconfig and are typechecked on their own;
+  // holding them to the app's rules would mean maintaining code whose whole
+  // purpose is to be deleted once the question it asks is settled.
+  { ignores: ['dist', 'node_modules', 'coverage', 'public/assets', 'android', 'ios', 'prototypes'] },
 
   js.configs.recommended,
   ...tseslint.configs.recommended,

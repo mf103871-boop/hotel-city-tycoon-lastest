@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hotel City Tycoon — نموذج الرسم</title>
+<style>
+  :root {
+    --ink: #031130; --ink2: #132A50; --cream: #FBD991; --creamHi: #FDE4B0;
+    --coral: #ED5C47; --mint: #B4E7C3; --blue: #4F8EE7; --sky: #6FBCF9;
+    --panel: rgba(8, 20, 46, 0.72); --line: rgba(255, 255, 255, 0.14);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden; background: #071026;
+    font-family: system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+    color: #EAF1FA;
+  }
+  #stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+
+  .hud {
+    position: fixed; top: 0; inset-inline: 0; padding: 10px 12px;
+    padding-top: max(10px, env(safe-area-inset-top));
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    background: linear-gradient(180deg, rgba(4,12,32,0.82), rgba(4,12,32,0));
+    pointer-events: none;
+  }
+  .chip {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 999px; padding: 6px 12px; font-size: 13px;
+    backdrop-filter: blur(10px); white-space: nowrap;
+  }
+  .chip b { font-variant-numeric: tabular-nums; font-size: 15px; }
+  .chip .k { opacity: 0.6; font-size: 11px; }
+  .coins b { color: var(--cream); }
+  .stars b { color: var(--cream); letter-spacing: 1px; }
+
+  .xp { position: fixed; inset-inline: 12px; top: 0; height: 3px; pointer-events: none; }
+  #xpbar { height: 100%; background: linear-gradient(90deg, var(--mint), var(--sky)); width: 0; transition: width .4s; }
+
+  .dock {
+    position: fixed; inset-inline: 0; bottom: 0;
+    padding: 12px; padding-bottom: max(12px, env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; gap: 10px; align-items: center;
+    background: linear-gradient(0deg, rgba(4,12,32,0.88), rgba(4,12,32,0));
+  }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .btn {
+    background: var(--panel); border: 1px solid var(--line); color: inherit;
+    border-radius: 12px; padding: 9px 15px; font-size: 13px; font-family: inherit;
+    cursor: pointer; backdrop-filter: blur(10px); transition: .18s;
+  }
+  .btn:hover { border-color: rgba(255,255,255,0.3); }
+  .btn.on { background: var(--blue); border-color: var(--sky); font-weight: 700; }
+  label.tog {
+    display: flex; align-items: center; gap: 7px; font-size: 13px;
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; padding: 9px 13px; cursor: pointer; backdrop-filter: blur(10px);
+  }
+  label.tog input { accent-color: var(--sky); width: 16px; height: 16px; margin: 0; }
+  .note { font-size: 11px; opacity: 0.55; text-align: center; max-width: 560px; line-height: 1.6; }
+  @media (max-width: 420px) { .chip { padding: 5px 9px; font-size: 12px; } .note { display: none; } }
+</style>
+</head>
+<body>
+  <canvas id="stage"></canvas>
+  <div class="xp"><div id="xpbar"></div></div>
+
+  <div class="hud">
+    <div class="chip coins"><span class="k">عملات</span><b id="coins">0</b></div>
+    <div class="chip"><span class="k">جواهر</span><b id="gems">0</b></div>
+    <div class="chip stars"><b id="stars">★★★</b></div>
+    <div class="chip"><span class="k">إشغال</span><b id="occ">0</b></div>
+    <div class="chip"><span class="k">نظافة</span><b id="clean">100%</b></div>
+    <div class="chip"><span class="k">مستوى</span><b id="lvl">1</b></div>
+    <div class="chip"><span class="k">وصول/د</span><b id="arrivals">0</b></div>
+    <div class="chip"><span class="k">خدمنا</span><b id="served">0</b></div>
+    <div class="chip"><span class="k">الساعة</span><b id="clock">—</b></div>
+  </div>
+
+  <div class="dock">
+    <div class="row">
+      <button class="btn" data-speed="1">×1</button>
+      <button class="btn on" data-speed="4">×4</button>
+      <button class="btn" data-speed="16">×16</button>
+      <button class="btn" data-speed="60">×60</button>
+    </div>
+    <div class="row">
+      <label class="tog"><input type="checkbox" id="t-skeletal"> هيكل عظمي</label>
+      <label class="tog"><input type="checkbox" id="t-lighting"> إضاءة وليل</label>
+      <label class="tog"><input type="checkbox" id="t-particles"> تأثيرات</label>
+    </div>
+    <p class="note">
+      كل رقم على الشاشة يخرج من <code>src/core</code> — المحاكاة الحقيقية للعبة.
+      أطفئ «هيكل عظمي» لترى نفس الشخصيات كإطارات ثابتة بدل العظام المحسوبة.
+    </p>
+  </div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>
