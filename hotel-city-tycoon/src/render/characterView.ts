@@ -23,6 +23,7 @@ import { createScheduler, resetScheduler, tick } from './anim/scheduler.ts';
 import type { SchedulerConfig, Fidget } from './anim/scheduler.ts';
 import { BLOCK_W, BLOCK_H, blockToWorld, bandDepth, DEPTH_CHARACTER_BIAS } from './layout.ts';
 import { INK, NIGHT_TINT, nightfall } from './backdrop.ts';
+import { duskTint } from './lighting.ts';
 
 /** The desire bubble's card. Warm white, from ART-0 §7. */
 const BUBBLE = 0xdde2df;
@@ -187,6 +188,13 @@ export interface CharacterViewData {
    * touched, and so the one thing that looked pasted on.
    */
   night?: boolean;
+  /**
+   * Quantised 0..24 night amount for people standing OUTSIDE (y < 0); people
+   * inside keep `night` (DEC-018). Someone on the pavement is lit by the
+   * street, and the street now dims through dusk whether or not the hotel
+   * is trading.
+   */
+  dusk?: number;
 }
 
 export class CharacterView extends Container {
@@ -237,7 +245,7 @@ export class CharacterView extends Container {
     setBase(this.player, data.clip);
 
     const key = `${assetGeneration()},${data.assetKey},${data.facing},${data.desire ?? ''},` +
-      `${data.draggable},${data.opacity.toFixed(2)},${data.night ? 'n' : 'd'},${data.clip}`;
+      `${data.draggable},${data.opacity.toFixed(2)},${data.night ? 'n' : 'd'},${data.dusk ?? 0},${data.clip}`;
     if (key === this.lastKey) return;
     this.lastKey = key;
 
@@ -248,13 +256,18 @@ export class CharacterView extends Container {
     const art = framesFor(data.assetKey, data.clip)?.[0]
       ?? framesFor(data.assetKey, 'idle')?.[0]
       ?? texture(data.assetKey);
+    // Outside the building the light is the sky's; inside it is the room's.
+    const outside = data.y < 0;
+    const lit = (day: number): number => (outside
+      ? duskTint(day, data.dusk ?? 0)
+      : (data.night ? nightfall(day) : day));
     if (art) {
       this.drawn = '';
       this.sprite.texture = art;
       this.sprite.width = frame.w * CHARACTER_ART_SCALE;
       this.sprite.height = frame.h * CHARACTER_ART_SCALE;
       this.sprite.scale.x = Math.abs(this.sprite.scale.x) * this.baseFacing;
-      this.sprite.tint = data.night ? NIGHT_TINT : 0xffffff;
+      this.sprite.tint = outside ? duskTint(0xffffff, data.dusk ?? 0) : (data.night ? NIGHT_TINT : 0xffffff);
       this.sprite.visible = true;
       this.fallback.clear();
     } else {
@@ -264,9 +277,8 @@ export class CharacterView extends Container {
       const h = 34;
       const body = data.kind === 'staff' ? 0x57c2e8 : 0xa7a1d3;
       const face = 0xf7d3b5;
-      this.fallback.roundRect(-w / 2, -h, w, h * 0.62, 2)
-        .fill(data.night ? nightfall(body) : body);
-      this.fallback.circle(0, -h + 2, 5).fill(data.night ? nightfall(face) : face);
+      this.fallback.roundRect(-w / 2, -h, w, h * 0.62, 2).fill(lit(body));
+      this.fallback.circle(0, -h + 2, 5).fill(lit(face));
     }
 
     // A ring marks a guest the player can still pull back to reception.
@@ -347,6 +359,11 @@ export class CharacterView extends Container {
       }
     }
     this.sprite.scale.x = Math.abs(this.sprite.scale.x) * facing;
+  }
+
+  /** Whether this person is drawn from their sheet or is still the placeholder capsule. */
+  drawnSource(): 'sheet' | 'none' {
+    return this.sprite.visible ? 'sheet' : 'none';
   }
 
   /**

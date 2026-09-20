@@ -31,4 +31,6 @@ export {
 } from './assets.ts';
 export type { AssetEntry, AssetManifest } from './assets.ts';
 export { GestureTracker, TAP_SLOP_PX } from './gestures.ts';
+export { quantiseDusk, lerpTint, duskTint, poolAlpha, starAlpha, DUSK_STEPS } from './lighting.ts';
+export { LightLayer } from './lightLayer.ts';
 export type { GestureAction, Point } from './gestures.ts';

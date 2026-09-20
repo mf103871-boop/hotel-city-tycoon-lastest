@@ -17,13 +17,14 @@ import { CharacterView } from './characterView.ts';
 import type { CharacterViewData } from './characterView.ts';
 import { DecorView } from './decorView.ts';
 import { KeyedPool } from './pool.ts';
-import { cull } from './culling.ts';
-import { plotWorldBounds, roomWorldRect, worldToBlock, BLOCK_W, BLOCK_H } from './layout.ts';
+import { plotWorldBounds, roomWorldRect, roomWorldRectInto, worldToBlock, BLOCK_W, BLOCK_H } from './layout.ts';
 import {
   fitCamera, clampCamera, pan, zoomAt, visibleRect, screenToWorld, worldToScreen,
 } from './camera.ts';
 import { GestureTracker } from './gestures.ts';
-import { Backdrop, INK, NIGHT, NIGHT_TINT, SKY, nightfall } from './backdrop.ts';
+import { Backdrop, INK, NIGHT_TINT, SKY } from './backdrop.ts';
+import { quantiseDusk, duskTint } from './lighting.ts';
+import { LightLayer } from './lightLayer.ts';
 import { texture, hasTexture } from './assets.ts';
 import { FrameSampler, report } from './perf.ts';
 import type { CameraState, Viewport, WorldBounds, Insets } from './camera.ts';
@@ -52,6 +53,15 @@ export interface SceneSnapshot {
    * frame. One flag drives all of it so the two halves cannot disagree.
    */
   night: boolean;
+  /**
+   * 0..1 for everything outside the rooms; 1 while closed (DEC-018).
+   *
+   * The sky, the city, the street, the frame and the people on the pavement
+   * follow this number through dusk and dawn; the rooms and everyone inside
+   * them keep following `night`, so an open hotel at eleven at night is a
+   * lit building under a dark sky and a shut one is as dark as it ever was.
+   */
+  nightAmount: number;
 }
 
 export interface SceneCallbacks {
@@ -68,6 +78,8 @@ export class HotelScene {
   private readonly grid = new Graphics();
   /** Sky, city, street and the hotel's own shell. Decoration; never read. */
   private readonly backdrop: Backdrop;
+  /** The warm pools in the lit rooms. Synced per snapshot, never per frame. */
+  private readonly lights: LightLayer;
   private readonly callbacks: SceneCallbacks;
 
   private view: Viewport;
@@ -76,8 +88,10 @@ export class HotelScene {
   /** How much of the viewport the HUD covers, so the hotel can clear it. */
   private insets: Insets = { top: 0, bottom: 0 };
   private snapshot: SceneSnapshot = {
-    rooms: [], characters: [], gridW: 4, gridH: 3, stars: 0, night: false,
+    rooms: [], characters: [], gridW: 4, gridH: 3, stars: 0, night: false, nightAmount: 0,
   };
+  /** The snapshot's night amount quantised to 0..24: what every exterior view is keyed on. */
+  private dusk = 0;
 
   /** Last frame's culling result, for the on-screen verification badge. */
   private visibleCount = 0;
@@ -91,6 +105,8 @@ export class HotelScene {
   private readonly frontRoomIds: string[] = [];
   /** One box, reused every frame: the render loop allocates nothing. */
   private readonly cullBox = { x: 0, y: 0, width: 0, height: 0 };
+  /** The room being measured this iteration, in world pixels. Reused likewise (BL-037). */
+  private readonly roomBox = { x: 0, y: 0, width: 0, height: 0 };
 
   private readonly gestures = new GestureTracker();
   /** Detaches every DOM listener this scene adds to the canvas. */
@@ -184,6 +200,7 @@ export class HotelScene {
 
     handle.layers.street.addChild(this.grid);
     this.backdrop = new Backdrop(handle.layers);
+    this.lights = new LightLayer(handle.layers.overlays);
     this.attachInput();
   }
 
@@ -209,8 +226,13 @@ export class HotelScene {
    */
   setSnapshot(snapshot: SceneSnapshot, reactions: ReadonlyArray<{ id: string; clip: string }> = []): void {
     const resized = snapshot.gridW !== this.snapshot.gridW || snapshot.gridH !== this.snapshot.gridH;
-    const duskChanged = snapshot.night !== this.snapshot.night;
+    // Quantised once here, so a continuous amount reaches no view as a
+    // continuous number: twenty-five distinct pictures between noon and
+    // midnight, not one per tick (and a bounded tint cache on the canvas lane).
+    const dusk = quantiseDusk(snapshot.nightAmount);
+    const duskChanged = snapshot.night !== this.snapshot.night || dusk !== this.dusk;
     this.snapshot = snapshot;
+    this.dusk = dusk;
     // The starting plot happens to be the same size as the placeholder, so a
     // resize-only check left the grid unpainted on a fresh game.
     if (resized || duskChanged || !this.gridDrawn) {
@@ -226,16 +248,17 @@ export class HotelScene {
     // so after dark a hard fling exposed a strip of noon sky at the border of
     // a night picture. It is the one colour in the renderer that the night
     // flag did not reach.
-    const clear = snapshot.night ? NIGHT.sky : SKY;
+    const clear = duskTint(SKY, dusk);
     if (clear !== this.clearColour) {
       this.clearColour = clear;
       this.handle.app.renderer.background.color = clear;
     }
     // The backdrop redraws only when the plot, the hotel's outline or the
     // rating actually changed; it keys on those itself.
-    this.backdrop.update(this.world, snapshot.gridH, snapshot.rooms.map((r) => r.rect),
-      snapshot.stars, snapshot.night);
+    const rects = snapshot.rooms.map((r) => r.rect);
+    this.backdrop.update(this.world, snapshot.gridH, rects, snapshot.stars, snapshot.night, dusk);
     this.reconcile();
+    this.lights.sync(snapshot.rooms, snapshot.gridH, dusk, snapshot.night);
     for (const { id, clip } of reactions) this.characters.get(id)?.react(clip);
   }
 
@@ -245,20 +268,27 @@ export class HotelScene {
     applyCamera(this.handle.world, this.camera, this.view);
 
     const visible = visibleRect(this.camera, this.view);
-    const boxes = this.snapshot.rooms.map((r) => roomWorldRect(r.rect, this.snapshot.gridH));
-    const { visible: shown, hidden } = cull(boxes, visible);
+    const margin = BLOCK_W;
 
-    for (const i of shown) {
-      const room = this.snapshot.rooms[i];
-      const view = room ? this.rooms.get(room.id) : undefined;
-      if (view) view.renderable = true;
+    /*
+     * Rooms are measured against the padded view one at a time, into a box
+     * this scene owns. This used to build an array of rectangles and then
+     * two arrays of indices every frame — three allocations in the hottest
+     * loop the renderer has, for a result the people's cull below already
+     * showed how to get for free (BL-037).
+     */
+    let shownRooms = 0;
+    for (const room of this.snapshot.rooms) {
+      roomWorldRectInto(room.rect, this.snapshot.gridH, this.roomBox);
+      const inside = this.roomBox.x < visible.x + visible.width + margin
+        && visible.x - margin < this.roomBox.x + this.roomBox.width
+        && this.roomBox.y < visible.y + visible.height + margin
+        && visible.y - margin < this.roomBox.y + this.roomBox.height;
+      const view = this.rooms.get(room.id);
+      if (view) view.renderable = inside;
+      if (inside) shownRooms++;
     }
-    for (const i of hidden) {
-      const room = this.snapshot.rooms[i];
-      const view = room ? this.rooms.get(room.id) : undefined;
-      if (view) view.renderable = false;
-    }
-    this.visibleCount = shown.length;
+    this.visibleCount = shownRooms;
 
     /*
      * Only what is on screen animates.
@@ -273,7 +303,6 @@ export class HotelScene {
      * must be in the right place the moment it is drawn again, not slide in
      * from where the camera left it.
      */
-    const margin = BLOCK_W;
     this.cullBox.x = visible.x - margin;
     this.cullBox.y = visible.y - margin;
     this.cullBox.width = visible.width + margin * 2;
@@ -312,13 +341,18 @@ export class HotelScene {
   }
 
   /** Snapshot of what the renderer is doing right now. */
-  stats(): { rooms: number; visibleRooms: number; characters: number; visibleCharacters: number; zoom: number } {
+  stats(): {
+    rooms: number; visibleRooms: number; characters: number; visibleCharacters: number; zoom: number;
+    /** Light pools lit at the last snapshot: the rooms with somebody in, plus the lobby. */
+    lights: number;
+  } {
     return {
       rooms: this.snapshot.rooms.length,
       visibleRooms: this.visibleCount,
       characters: this.snapshot.characters.length,
       visibleCharacters: this.visibleCharacters,
       zoom: this.camera.zoom,
+      lights: this.lights.visibleCount(),
     };
   }
 
@@ -328,9 +362,17 @@ export class HotelScene {
    * The canvas cannot be asserted on in CI (DEC-009), so the way to check
    * that the animation is actually running is to ask it. Exposed through
    * `window.hct.characters()`.
+   *
+   * `source` says whether the person is drawn from their sheet or is still
+   * the placeholder capsule — the cheapest proof, on any lane, that every
+   * bundle actually reached the scene.
    */
-  characterDiagnostics(): Array<{ id: string; clip: string; x: number; y: number; visible: boolean }> {
-    const out: Array<{ id: string; clip: string; x: number; y: number; visible: boolean }> = [];
+  characterDiagnostics(): Array<{
+    id: string; clip: string; x: number; y: number; visible: boolean; source: 'sheet' | 'none';
+  }> {
+    const out: Array<{
+      id: string; clip: string; x: number; y: number; visible: boolean; source: 'sheet' | 'none';
+    }> = [];
     for (const person of this.snapshot.characters) {
       const view = this.characters.get(person.id);
       if (!view) continue;
@@ -340,6 +382,7 @@ export class HotelScene {
         x: Math.round(view.x),
         y: Math.round(view.y),
         visible: view.renderable,
+        source: view.drawnSource(),
       });
     }
     return out;
@@ -365,7 +408,9 @@ export class HotelScene {
     this.characters.sync(this.snapshot.characters.map((c) => c.id));
     for (const person of this.snapshot.characters) {
       const view = this.characters.get(person.id);
-      if (view) view.update({ ...person, night }, this.snapshot.gridH);
+      // The sky's night as well as the hotel's: a person on the pavement is
+      // lit by the street, a person indoors by the room (DEC-018).
+      if (view) view.update({ ...person, night, dusk: this.dusk }, this.snapshot.gridH);
     }
 
     /*
@@ -423,8 +468,8 @@ export class HotelScene {
    * be empty. Ink at a fraction of its weight reads as a guide instead.
    */
   private drawGrid(): void {
-    const { gridW, gridH, night } = this.snapshot;
-    const ink = night ? nightfall(INK) : INK;
+    const { gridW, gridH } = this.snapshot;
+    const ink = duskTint(INK, this.dusk);
     this.grid.clear();
     // Plot outline: the boundary the player buys their way out of.
     this.grid.rect(0, 0, gridW * BLOCK_W, gridH * BLOCK_H)
@@ -552,6 +597,7 @@ export class HotelScene {
     this.domListeners.abort();
     this.rooms.clear();
     this.characters.clear();
+    this.lights.destroy();
     this.grid.destroy();
   }
 }

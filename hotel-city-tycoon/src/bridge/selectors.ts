@@ -31,6 +31,7 @@ import type { Neighbour } from '../core/systems/neighbours.ts';
 import { isOpen, totalShiftCost, shiftPrice, shiftWages } from '../core/systems/economy.ts';
 import { levelProgress, xpForLevel } from '../core/systems/progression.ts';
 import { averageCleanliness, cleaningCoverage } from '../core/systems/cleanliness.ts';
+import { nightAmountAt } from './daylight.ts';
 
 /** Re-exported so the UI never needs a path into src/core. */
 export type { GameState, RoomInstance, SimEvent };
@@ -311,6 +312,16 @@ export function gridSize(state: GameState): { w: number; h: number } {
 
 export function hotelIsOpen(state: GameState): boolean {
   return isOpen(state);
+}
+
+/**
+ * 0 = full day, 1 = full night, for everything the renderer draws OUTSIDE the
+ * rooms; 1 whenever the hotel is shut, so today's meaning of night is a
+ * subset (DEC-018). `tzOffsetMin` is the device's `getTimezoneOffset()`,
+ * read once by the UI: the bridge itself never touches a clock.
+ */
+export function nightAmount(state: GameState, tzOffsetMin: number): number {
+  return nightAmountAt(state.epochMs, tzOffsetMin, !isOpen(state));
 }
 
 /** Seconds until the paid shift expires. Zero when closed. */

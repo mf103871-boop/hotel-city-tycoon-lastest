@@ -10,17 +10,22 @@
 import { useEffect, useRef } from 'react';
 import {
   createRenderer, HotelScene, loadBundle, resolutionTier, missingAssetKeys, declaredAssetCount,
-  formatReport,
+  formatReport, quantiseDusk,
 } from '../render/index.ts';
 import type { SceneSnapshot } from '../render/index.ts';
 import { useGameStore } from '../bridge/index.ts';
-import { summariseRooms, gridSize, hotelIsOpen } from '../bridge/selectors.ts';
+import { summariseRooms, gridSize, hotelIsOpen, nightAmount } from '../bridge/selectors.ts';
 import { characterViews, guestNear } from '../bridge/characters.ts';
 import { reactionsFor } from '../bridge/reactions.ts';
 import type { GameState } from '../bridge/selectors.ts';
 
-function toSnapshot(state: GameState): SceneSnapshot {
+function toSnapshot(state: GameState, tzOffsetMin: number): SceneSnapshot {
   const grid = gridSize(state);
+  // How far into the night the sky and the street are (DEC-018). Quantised
+  // once here rather than per person, so every tinted copy on the Canvas2D
+  // lane shares the same 25 keys instead of one per character.
+  const night = nightAmount(state, tzOffsetMin);
+  const dusk = quantiseDusk(night);
   return {
     gridW: grid.w,
     gridH: grid.h,
@@ -32,6 +37,10 @@ function toSnapshot(state: GameState): SceneSnapshot {
     // renderer draws, so the sky, the street, the furniture and the people go
     // dark with the rooms instead of leaving a night hotel under a noon sky.
     night: !hotelIsOpen(state),
+    // The same fact as a number: 1 while shut, and the local dusk and dawn
+    // ramps while open, for the sky, the street and the light pools only.
+    // The rooms and everyone inside keep the boolean above (DEC-018).
+    nightAmount: night,
     characters: characterViews(state).map((c) => ({
       id: c.id,
       assetKey: c.assetKey,
@@ -52,6 +61,7 @@ function toSnapshot(state: GameState): SceneSnapshot {
       clip: c.clip,
       mood: c.mood,
       seed: c.seed,
+      dusk,
     })),
     rooms: summariseRooms(state).map((r) => ({
       id: r.id,
@@ -87,7 +97,7 @@ function toSnapshot(state: GameState): SceneSnapshot {
 }
 
 export interface CanvasStats {
-  backend: 'webgpu' | 'webgl';
+  backend: 'webgpu' | 'webgl' | 'canvas';
   fps: number;
   rooms: number;
   visibleRooms: number;
@@ -115,6 +125,10 @@ export function HotelCanvas({ onRoomTap, onEmptyTap, onStats }: HotelCanvasProps
     let scene: HotelScene | null = null;
     let stop: (() => void) | null = null;
     let disposed = false;
+    // The device's clock offset, read once and here only: the bridge derives
+    // the hour from the simulation's own epoch and must never touch a clock,
+    // or its selectors stop being pure and the selftests stop meaning anything.
+    const tz = new Date().getTimezoneOffset();
 
     void (async () => {
       const box = holder.current!.getBoundingClientRect();
@@ -191,16 +205,24 @@ export function HotelCanvas({ onRoomTap, onEmptyTap, onStats }: HotelCanvasProps
         bottom: document.querySelector('[data-hud="bottom"]')?.getBoundingClientRect().height ?? 0,
       });
       scene.setInsets(hudInsets());
-      scene.setSnapshot(toSnapshot(engine.getState()));
+      scene.setSnapshot(toSnapshot(engine.getState(), tz));
       scene.focusHotel();
 
       // Events come through with the state so the people they are about can
       // answer them: a cheer at a check-in, a flinch at a fire. The bridge
       // decides who reacts and with which clip; the scene only plays it.
       const unsubscribe = engine.subscribe((state, events) => {
-        scene?.setSnapshot(toSnapshot(state), reactionsFor(state, events));
+        scene?.setSnapshot(toSnapshot(state, tz), reactionsFor(state, events));
       });
       handle.app.ticker.add((ticker) => scene?.render(ticker.deltaMS));
+      // A hidden tab kept drawing every frame and draining the battery
+      // (BL-024). Pixi clamps the first deltaMS after a restart (maxElapsedMS)
+      // and motion.ts clamps again at MAX_DT_S, so nobody teleports on return.
+      const onVisibility = () => {
+        if (document.hidden) handle.app.ticker.stop();
+        else handle.app.ticker.start();
+      };
+      document.addEventListener('visibilitychange', onVisibility);
 
       // Twice a second is enough for a readout and costs nothing.
       const statsTimer = setInterval(() => {
@@ -252,6 +274,7 @@ export function HotelCanvas({ onRoomTap, onEmptyTap, onStats }: HotelCanvasProps
 
       stop = () => {
         clearInterval(statsTimer);
+        document.removeEventListener('visibilitychange', onVisibility);
         window.removeEventListener('resize', onResize);
         resizeObserver.disconnect();
         window.visualViewport?.removeEventListener('resize', onResize);

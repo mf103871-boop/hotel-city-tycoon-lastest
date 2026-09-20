@@ -61,6 +61,33 @@ edges. CSS accepts both standard `env(safe-area-inset-*)` values and the
 plugin on Android. See [SystemBars inset handling](https://capacitorjs.com/docs/apis/system-bars).
 ResizeObserver follows the playable rectangle as insets change during rotation.
 
+## Taking the fps reading on a phone
+
+This is the only measurement that can move a P2 row to `VERIFIED`
+(DEC-005/DEC-009); sandbox numbers from the CI lane are never a substitute.
+Recorded 20-09-2026 with HC-P2-S2.
+
+1. Open the Pages URL on the phone with the stress handle:
+   `https://mf103871-boop.github.io/hotel-city-tycoon-lastest/?stress=60&warm=900&debug=1`
+   (60 rooms warmed for 900 simulated seconds; the stress hotel reaches
+   55 people). Add `&epoch=<milliseconds since 1970>` to force the simulation
+   clock to a chosen hour, for example a night reading with the light pools
+   and the dark sky up; without it the hour is the phone's local time.
+2. Let the hotel run for at least a minute, then read `p5` from the debug
+   badge (bottom of the screen). The badge also names the backend
+   (`webgpu`, `webgl` or `canvas`): a `canvas` reading on a phone is a
+   software fallback and must be reported as such.
+3. For the full report run `window.hct.perf()` in the phone's console:
+   Android via `chrome://inspect` on a desktop Chrome with USB debugging,
+   iOS via Safari > Develop > <device> (Web Inspector enabled in Settings >
+   Safari > Advanced). Copy the returned object as is.
+4. Paste the object, the device model, the OS version, the build id from
+   the badge and the URL used into the step report's evidence section.
+
+`p5 >= 55` at 60 rooms / 55 people is the bar. Inside the Capacitor app the
+console is not reachable until HC-P2-S8 wires the native debugging switch
+(BL-040); until then take the reading in the phone's browser.
+
 ## Required before a device beta
 
 - Build an Android debug APK and an iOS simulator/device build with the actual toolchains.

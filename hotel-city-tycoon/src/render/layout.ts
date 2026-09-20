@@ -31,6 +31,21 @@ export function roomWorldRect(rect: Rect, plotHeight: number): WorldBounds {
 }
 
 /**
+ * The same rectangle written into a box the caller owns.
+ *
+ * For the render loop, which measures every room against the camera each
+ * frame: `roomWorldRect` allocates, and one object per room per frame is the
+ * garbage that reads as stutter on a phone (BL-037).
+ */
+export function roomWorldRectInto(rect: Rect, plotHeight: number,
+                                  out: { x: number; y: number; width: number; height: number }): void {
+  out.x = rect.x * BLOCK_W;
+  out.y = (plotHeight - rect.y - rect.h) * BLOCK_H;
+  out.width = rect.w * BLOCK_W;
+  out.height = rect.h * BLOCK_H;
+}
+
+/**
  * Decor anchor units (DEC-010, docs/HC-P1-S1-PLACEMENT-DECISION.md): 16 per
  * block, so one unit is 8px horizontally and 6px vertically at 1x. A piece's
  * `localX`/`localY` are in these units, measured from the room's own

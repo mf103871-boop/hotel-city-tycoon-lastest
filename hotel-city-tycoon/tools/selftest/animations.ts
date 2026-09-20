@@ -459,6 +459,35 @@ check('a pooled view keeps nothing from the character before it', () => {
   eq(m.y, 1, 'a recycled view slid in from the last character\'s row');
 });
 
+check('no presentation module rolls its own dice or touches the DOM at import', () => {
+  // Every random number the renderer draws is seeded (mulberry32 through the
+  // scheduler, a hash for the skyline and the stars), so a frame is the same
+  // frame on every device and in every capture. And the pure modules — the
+  // animation maths, the lighting maths, the bridge's clock — are loaded
+  // headlessly by this suite and by vitest, which they can only be while they
+  // import no Pixi and touch no DOM (HC-P2-S2; no earlier guard covered this).
+  const strip = (src: string): string => src.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ');
+  for (const file of sources('src/render')) {
+    assert(!/Math\.random/.test(strip(fs.readFileSync(file, 'utf8'))), `${file} uses Math.random`);
+  }
+  // sheet.ts is the one anim module that is not pure: it hands out Pixi
+  // textures, so it is the renderer's and is left out here on purpose.
+  const pure = [
+    'src/render/anim/motion.ts',
+    'src/render/anim/clipPlayer.ts',
+    'src/render/anim/scheduler.ts',
+    'src/render/lighting.ts',
+    'src/bridge/daylight.ts',
+  ];
+  for (const file of pure) {
+    const src = strip(fs.readFileSync(file, 'utf8'));
+    assert(!/from 'pixi\.js'/.test(src), `${file} imports Pixi and can no longer load headlessly`);
+    assert(!/\bdocument\b/.test(src), `${file} touches document`);
+    assert(!/\bwindow\b/.test(src), `${file} touches window`);
+  }
+  console.log(`      ${pure.length} pure modules, ${sources('src/render').length} render files`);
+});
+
 console.log(line);
 if (failures.length === 0) console.log(`  ${passed} checks passed`);
 else { console.log(`  ${passed} passed, ${failures.length} FAILED`); failures.forEach((f) => console.log(`    ✗ ${f}`)); }

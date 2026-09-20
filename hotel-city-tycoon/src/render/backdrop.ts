@@ -17,10 +17,14 @@
  * responds to input, and redraws only when the plot's size or the hotel's
  * outline actually changes.
  */
-import { Graphics } from 'pixi.js';
+import { Graphics, Sprite } from 'pixi.js';
 import type { Container } from 'pixi.js';
 import type { WorldBounds } from './camera.ts';
 import { BLOCK_W, BLOCK_H } from './layout.ts';
+// lighting.ts imports `nightfall` from here and this file imports its tints:
+// a cycle, safe because neither side touches the other at module level.
+import { duskTint, starAlpha, DUSK_STEPS } from './lighting.ts';
+import { verticalGradientTexture } from './fx/glow.ts';
 
 /**
  * The palette, matching `tools/art/hcstyle.py`.
@@ -31,6 +35,8 @@ import { BLOCK_W, BLOCK_H } from './layout.ts';
  */
 export const SKY = 0x6fbcf9;
 export const SKY_HIGH = 0x8fd0fb;
+/** The haze at the horizon: the gradient's third stop (hcstyle `skyLow`, DEC-018). */
+export const SKY_LOW = 0xd9eefd;
 export const CITY_FAR = 0xa9c8e8;
 export const CITY_NEAR = 0x93b8df;
 export const CITY_WINDOW = 0xd8e8f7;
@@ -87,6 +93,7 @@ export const NIGHT_TINT = nightfall(0xffffff);
 export const NIGHT = {
   sky: nightfall(SKY),
   skyHigh: nightfall(SKY_HIGH),
+  skyLow: nightfall(SKY_LOW),
   cityFar: nightfall(CITY_FAR),
   cityNear: nightfall(CITY_NEAR),
   cityWindow: nightfall(CITY_WINDOW),
@@ -128,15 +135,41 @@ function jitter(n: number, salt = 0): number {
   return x - Math.floor(x);
 }
 
+/** How many stars the night sky holds. Positions are hashed, never rolled. */
+const STAR_COUNT = 46;
+const SUN_R = 22;
+const SUN = 0xfff0be;
+const MOON_R = 20;
+const MOON = 0xf4f1e6;
+const STAR = 0xfff8e7;
+
 export class Backdrop {
-  private readonly sky = new Graphics();
+  /**
+   * The sky is one baked gradient per dusk step rather than one Graphics
+   * redrawn per step: a gradient fill would depend on the renderer drawing
+   * it, and the DEC-009 lane draws with Canvas2D (DEC-018; ART-0 §10 asks
+   * for a soft graded sky).
+   *
+   * One sprite, not a day strip with a night strip cross-faded over it. The
+   * two pictures are the same: a linear gradient is linear in its stops, so
+   * blending night over day at `t` is the gradient of the stops blended at
+   * `t`. The cost is not: a second full-sky sprite is a second full-screen
+   * software blit every frame on the Canvas2D lane, and at full night it
+   * took the 60-room stress hotel from 60 fps to 52 with a fifth of the
+   * frames late. Twenty-five 4×256 strips are nothing to hold instead.
+   */
+  private readonly sky = new Sprite();
+  private readonly stars = new Graphics();
+  private readonly sun = new Graphics();
+  private readonly moon = new Graphics();
   private readonly city = new Graphics();
   private readonly street = new Graphics();
   private readonly shell = new Graphics();
   private lastKey = '';
+  private shapesReady = false;
 
   constructor(layers: { sky: Container; cityscape: Container; street: Container; roomShell: Container }) {
-    layers.sky.addChild(this.sky);
+    layers.sky.addChild(this.sky, this.stars, this.sun, this.moon);
     layers.cityscape.addChild(this.city);
     layers.street.addChild(this.street);
     // The shell shares the room layer but is added first, so rooms draw over
@@ -152,10 +185,12 @@ export class Backdrop {
    * player reads a single number.
    */
   update(world: WorldBounds, gridH: number, rooms: ShellRect[], stars: number,
-         night = false): void {
+         night = false, dusk = night ? DUSK_STEPS : 0): void {
     const outline = boundingBox(rooms);
+    // `dusk` is already quantised to 0..24 by the scene, so a two-hour ramp
+    // redraws these Graphics at most twenty-five times.
     const key = `${world.x},${world.y},${world.width},${world.height},${gridH},${stars},` +
-      `${night ? 'n' : 'd'},` +
+      `${night ? 'n' : 'd'},${dusk},` +
       (outline ? `${outline.x},${outline.y},${outline.w},${outline.h}` : 'empty');
     if (key === this.lastKey) return;
     this.lastKey = key;
@@ -167,31 +202,76 @@ export class Backdrop {
     const right = world.x + world.width * 2;
     const top = world.y - world.height;
 
-    this.drawSky(left, right, top, groundY, night);
-    this.drawCity(left, right, groundY, night);
-    this.drawStreet(left, right, groundY, world.height, night);
-    this.drawShell(outline, gridH, stars, night);
+    this.drawSky(left, right, top, groundY, world, dusk);
+    this.drawCity(left, right, groundY, dusk);
+    this.drawStreet(left, right, groundY, world.height, dusk);
+    this.drawShell(outline, gridH, stars, dusk);
   }
 
+  /**
+   * The sky, the stars, the sun and the moon.
+   *
+   * A graded sky, not the three flat bands this replaced: ART-0 §10 asks for
+   * one, and the owner approved the prototype whose sky is this three-stop
+   * gradient (DEC-018 records that approval as the sign-off). Each stop is
+   * `duskTint()` of its day colour, so the strip at step 0 is the day and the
+   * strip at step 24 is the same three stops through `nightfall()`: the ends
+   * of the ramp are exactly the day and the night the art is baked with.
+   *
+   * Nothing here animates: the stars, the sun and the moon are static shapes
+   * whose alpha follows the dusk step, which is what keeps the reduced-motion
+   * promise without a second code path.
+   */
   private drawSky(left: number, right: number, top: number, groundY: number,
-                  night: boolean): void {
-    const g = this.sky;
-    g.clear();
+                  world: WorldBounds, dusk: number): void {
+    if (!this.shapesReady) {
+      this.sun.circle(0, 0, SUN_R).fill(SUN);
+      drawCrescent(this.moon, MOON_R);
+      this.shapesReady = true;
+    }
+    // Same order as the approved prototype: the deep blue at the top, the
+    // lighter blue through the middle, the haze at the horizon. Cached by
+    // its stops, so the strip for a step is baked once and found again.
+    this.sky.texture = verticalGradientTexture([
+      [0, duskTint(SKY, dusk)], [0.55, duskTint(SKY_HIGH, dusk)], [1, duskTint(SKY_LOW, dusk)],
+    ]);
     const w = right - left;
-    g.rect(left, top, w, groundY - top).fill(night ? NIGHT.sky : SKY);
-    // Three bands rather than a gradient: the art is flat, and a real gradient
-    // would be the only smooth thing on screen.
-    const band = (groundY - top) * 0.18;
-    const high = night ? NIGHT.skyHigh : SKY_HIGH;
-    g.rect(left, groundY - band * 2, w, band * 2).fill({ color: high, alpha: 0.55 });
-    g.rect(left, groundY - band, w, band).fill({ color: high, alpha: 0.55 });
+    const h = groundY - top;
+    this.sky.position.set(left, top);
+    this.sky.width = w;
+    this.sky.height = h;
+
+    // Hashed positions, so the same sky comes back every redraw; the lower
+    // band stays clear because the horizon haze would wash them out anyway.
+    const g = this.stars;
+    g.clear();
+    for (let i = 0; i < STAR_COUNT; i++) {
+      const x = left + jitter(i, 90) * w;
+      const y = top + jitter(i, 91) * h * 0.62;
+      g.circle(x, y, 0.7 + jitter(i, 92) * 0.6).fill(STAR);
+    }
+    g.alpha = starAlpha(dusk);
+
+    // Sun by day, moon by night, in the same corner of the plot's own sky, so
+    // one fades into the other where the eye already is.
+    const cx = world.x + world.width * 0.82;
+    const cy = world.y + BLOCK_H * 0.55;
+    this.sun.position.set(cx, cy);
+    this.sun.alpha = 1 - dusk / DUSK_STEPS;
+    this.moon.position.set(cx, cy);
+    this.moon.alpha = dusk / DUSK_STEPS;
   }
 
-  private drawCity(left: number, right: number, groundY: number, night: boolean): void {
+  private drawCity(left: number, right: number, groundY: number, dusk: number): void {
     const g = this.city;
     g.clear();
-    const far = night ? NIGHT.cityFar : CITY_FAR;
-    const near = night ? NIGHT.cityNear : CITY_NEAR;
+    const far = duskTint(CITY_FAR, dusk);
+    const near = duskTint(CITY_NEAR, dusk);
+    const window = duskTint(CITY_WINDOW, dusk);
+    // Lit windows come on from half-dusk, not at the last step: a city that
+    // only lights up once the sky is fully dark spends the whole evening
+    // looking like a power cut.
+    const evening = dusk >= DUSK_STEPS / 2;
     // Two ranks of buildings, the far one paler and shorter, so the skyline
     // has depth without any of it competing with the hotel (ART-0 §10).
     for (const [rank, colour, scale] of [[0, far, 0.72], [1, near, 1.0]] as const) {
@@ -217,10 +297,10 @@ export class Backdrop {
             // After dark a third of them have someone still up. Without this
             // the city dims with the sky and reads as a power cut rather than
             // as a night, and the hotel loses the thing it is lit against.
-            const lit = night && roll > 0.72;
+            const lit = evening && roll > 0.72;
             g.roundRect(x + 8 + cx * 26, y + 12 + cy * 30, 9, 11, 2)
               .fill({
-                color: lit ? NIGHT_WINDOW_LIT : night ? NIGHT.cityWindow : CITY_WINDOW,
+                color: lit ? NIGHT_WINDOW_LIT : window,
                 alpha: lit ? 0.9 : rank === 0 ? 0.5 : 0.75,
               });
           }
@@ -229,8 +309,8 @@ export class Backdrop {
     }
 
     // Trees along the front of the city, in two greens for the same reason.
-    const treeFar = night ? NIGHT.treeFar : TREE_FAR;
-    const treeNear = night ? NIGHT.treeNear : TREE_NEAR;
+    const treeFar = duskTint(TREE_FAR, dusk);
+    const treeNear = duskTint(TREE_NEAR, dusk);
     for (const [rank, colour, size] of [[0, treeFar, 0.8], [1, treeNear, 1.0]] as const) {
       const step = BLOCK_W * 0.62;
       for (let i = Math.floor(left / step); i < Math.ceil(right / step); i++) {
@@ -247,17 +327,17 @@ export class Backdrop {
   }
 
   private drawStreet(left: number, right: number, groundY: number, depth: number,
-                     night: boolean): void {
+                     dusk: number): void {
     const g = this.street;
     g.clear();
     const w = right - left;
     const kerbH = BLOCK_H * 0.22;
-    g.rect(left, groundY, w, depth * 2).fill(night ? NIGHT.road : ROAD);
-    g.rect(left, groundY, w, kerbH).fill(night ? NIGHT.kerb : KERB);
-    g.rect(left, groundY + kerbH, w, 2).fill({ color: night ? NIGHT.ink : INK, alpha: 0.25 });
+    g.rect(left, groundY, w, depth * 2).fill(duskTint(ROAD, dusk));
+    g.rect(left, groundY, w, kerbH).fill(duskTint(KERB, dusk));
+    g.rect(left, groundY + kerbH, w, 2).fill({ color: duskTint(INK, dusk), alpha: 0.25 });
     // Centre line, dashed, well below the pavement the guests walk on.
     const dashY = groundY + kerbH + BLOCK_H * 0.42;
-    const line = night ? NIGHT.roadLine : ROAD_LINE;
+    const line = duskTint(ROAD_LINE, dusk);
     for (let x = Math.floor(left / 64) * 64; x < right; x += 64) {
       g.roundRect(x, dashY, 34, 5, 2.5).fill(line);
     }
@@ -272,7 +352,7 @@ export class Backdrop {
    * empty box, and the frame grows as the hotel does.
    */
   private drawShell(outline: ShellRect | null, gridH: number, stars: number,
-                    night: boolean): void {
+                    dusk: number): void {
     const g = this.shell;
     g.clear();
     if (!outline) return;
@@ -292,7 +372,7 @@ export class Backdrop {
     // every outline baked into a `*_night` room image has had the wash applied
     // to it, so a day-dark frame around them would be the one hard black edge
     // in a picture that no longer has any.
-    const ink = night ? NIGHT.ink : INK;
+    const ink = duskTint(INK, dusk);
     g.roundRect(x - pad, y - pad, w + pad * 2, h + pad * 2, 6)
       .stroke({ width: 5, color: ink, alignment: 0.5 });
     // A parapet along the top, so the building has a top rather than stopping.
@@ -324,6 +404,26 @@ function drawStar(g: Graphics, cx: number, cy: number, r: number): void {
     pts.push(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius);
   }
   g.poly(pts).fill(GOLD).stroke({ width: 2, color: GOLD_DARK });
+}
+
+/**
+ * A crescent moon at the origin: the disc with a bite taken out of its
+ * right-hand side, as one path, so the Graphics' alpha fades it as one
+ * shape rather than showing a sky-coloured disc through it mid-dusk.
+ */
+function drawCrescent(g: Graphics, r: number): void {
+  const biteR = r * 0.85;
+  const biteX = r * 0.5;
+  // Where the two circles cross, on the disc and on the bite.
+  const ix = (biteX * biteX + r * r - biteR * biteR) / (2 * biteX);
+  const iy = Math.sqrt(Math.max(0, r * r - ix * ix));
+  const onDisc = Math.atan2(iy, ix);
+  const onBite = Math.atan2(iy, ix - biteX);
+  g.moveTo(ix, -iy)
+    .arc(0, 0, r, -onDisc, onDisc, true)
+    .arc(biteX, 0, biteR, onBite, -onBite, false)
+    .closePath()
+    .fill(MOON);
 }
 
 /** The smallest block rectangle containing every room, or null if there are none. */

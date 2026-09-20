@@ -33,9 +33,11 @@ import {
 } from '../../src/core/systems/roomAnchors.ts';
 import {
   boundingBox, SKY, CITY_FAR, CITY_NEAR, TREE_FAR, TREE_NEAR, ROAD, INK, GOLD,
-  SKY_HIGH, CITY_WINDOW, ROAD_LINE, KERB, GOLD_DARK,
+  SKY_HIGH, SKY_LOW, CITY_WINDOW, ROAD_LINE, KERB, GOLD_DARK,
   NIGHT, NIGHT_TINT, NIGHT_WASH, nightfall,
 } from '../../src/render/backdrop.ts';
+import { nightAmountAt, clockNight } from '../../src/bridge/daylight.ts';
+import { duskTint, quantiseDusk, DUSK_STEPS } from '../../src/render/lighting.ts';
 import { loadSimData } from '../balance-sim/load-data.ts';
 import fs from 'node:fs';
 
@@ -709,6 +711,7 @@ check('the backdrop palette is the one the art is drawn from', () => {
   };
   eq(SKY, hex('sky'), 'sky');
   eq(SKY_HIGH, hex('skyHi'), 'high sky');
+  eq(SKY_LOW, hex('skyLow'), 'low sky');
   eq(CITY_FAR, hex('cityFar'), 'far city');
   eq(CITY_NEAR, hex('cityNear'), 'near city');
   eq(TREE_FAR, hex('treeFar'), 'far trees');
@@ -916,6 +919,100 @@ check('the furniture is culled with the same box as the people, and allocates no
   assert(/this\.cullBox/.test(loop[0]), 'the furniture is culled against a different box than the people');
   assert(!/new |\.map\(|\.filter\(/.test(loop[0]),
     'the furniture cull allocates, and it runs once per piece per frame');
+});
+
+// ── HC-P2-S2 (DEC-018/019): one continuous night for the outside, an honest
+//    backend name, and a render loop that allocates less than it did.
+
+check('the sky is one continuous night from noon to midnight', () => {
+  // The night amount comes from the simulation's own clock, so it must be a
+  // pure function of the epoch: monotone through dusk, pinned to full night
+  // while the hotel is shut, and its two ends must be exactly the day and the
+  // night the game already drew — anything else is a third picture nobody
+  // approved.
+  const atUtc = (h: number, m = 0): number => Date.UTC(2026, 8, 20, h, m, 0);
+  let last = -1;
+  for (let min = 17 * 60; min <= 21 * 60; min += 5) {
+    const n = nightAmountAt(atUtc(0, min), 0, false);
+    assert(n >= last, `the dusk ramp runs backwards at ${(min / 60).toFixed(2)}h (${n} after ${last})`);
+    assert(n >= 0 && n <= 1, `night amount ${n} is outside 0..1`);
+    last = n;
+  }
+  eq(nightAmountAt(atUtc(12), 0, false), 0, 'noon is not full day');
+  eq(nightAmountAt(atUtc(22), 0, false), 1, 'ten at night is not full night');
+  eq(nightAmountAt(atUtc(12), 0, true), 1, 'a shut hotel at noon is not drawn as night');
+  eq(clockNight(19), 0.5, 'seven in the evening is not half way to night');
+  eq(quantiseDusk(nightAmountAt(atUtc(12), 0, true)), DUSK_STEPS, 'full night does not quantise to the last step');
+
+  // The ramp's ends are today's two pictures, by construction.
+  eq(duskTint(SKY, 0), SKY, 'the day end of the ramp is not the day sky');
+  eq(duskTint(SKY, DUSK_STEPS), NIGHT.sky, 'the night end of the ramp is not nightfall()');
+  eq(duskTint(0xffffff, DUSK_STEPS), NIGHT_TINT, 'the tint people take at full night is not the wash');
+
+  // And no step on the way may be brighter than the day it started from.
+  // The outline is left out on purpose, as it is in the wash check above:
+  // `nightfall()` lifts every channel, so near-black ink comes back a shade
+  // lighter after dark — the one colour the wash is meant to soften.
+  const luminance = (c: number): number => {
+    const ch = (shift: number): number => {
+      const v = ((c >> shift) & 0xff) / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    };
+    return 0.2126 * ch(16) + 0.7152 * ch(8) + 0.0722 * ch(0);
+  };
+  for (const [name, day] of [
+    ['sky', SKY], ['skyHigh', SKY_HIGH], ['skyLow', SKY_LOW], ['cityFar', CITY_FAR], ['cityNear', CITY_NEAR],
+    ['treeFar', TREE_FAR], ['treeNear', TREE_NEAR], ['road', ROAD], ['kerb', KERB],
+    ['roadLine', ROAD_LINE], ['cityWindow', CITY_WINDOW],
+  ] as const) {
+    const dayL = luminance(day);
+    let prev = dayL;
+    for (let step = 0; step <= DUSK_STEPS; step++) {
+      const l = luminance(duskTint(day, step));
+      assert(l <= dayL + 1e-9, `${name} is brighter than its day value at dusk step ${step}`);
+      assert(l <= prev + 1e-9, `${name} gets brighter between dusk steps ${step - 1} and ${step}`);
+      prev = l;
+    }
+  }
+
+  // The one new palette stop is on both sides of the parity check.
+  const style = fs.readFileSync('tools/art/hcstyle.py', 'utf8');
+  const m = /"skyLow":\s*rgb\("#([0-9A-Fa-f]{6})"\)/.exec(style);
+  assert(m, 'hcstyle.py has no colour named "skyLow"');
+  eq(SKY_LOW, parseInt(m[1]!, 16), 'low sky');
+});
+
+check('the renderer names every backend it can actually get', () => {
+  // Pixi has fallen through to its CanvasRenderer on the DEC-009 lane since
+  // 8.16, and for as long as the union had two members the badge, the boot
+  // line and the test all called that lane "webgl". The name lives in five
+  // places and a regex; a partial change breaks the e2e gate, so they are
+  // pinned together here (DEC-019).
+  const app = fs.readFileSync('src/render/app.ts', 'utf8');
+  assert(/RendererType\.CANVAS/.test(app), 'app.ts never checks for the canvas renderer');
+  assert(/'webgpu' \| 'webgl' \| 'canvas'/.test(app), 'app.ts backend union has no canvas member');
+  const spec = fs.readFileSync('tests/e2e/game.spec.ts', 'utf8');
+  assert(/\(webgpu\|webgl\|canvas\)/.test(spec), 'the e2e boot-line regex does not accept "canvas"');
+  for (const file of ['src/ui/DebugBadge.tsx', 'src/ui/App.tsx', 'src/ui/HotelCanvas.tsx']) {
+    const src = fs.readFileSync(file, 'utf8');
+    assert(/'canvas'/.test(src), `${file} does not know the canvas backend`);
+  }
+});
+
+check('the room cull allocates nothing', () => {
+  // The hottest loop the renderer has used to build one array of rectangles
+  // and two arrays of indices per frame. The body of `render()` up to the
+  // point it records the count must now be as allocation-free as the
+  // character cull beside it (BL-037).
+  const scene = fs.readFileSync('src/render/scene.ts', 'utf8');
+  const start = scene.indexOf('  render(deltaMs');
+  assert(start >= 0, 'scene.ts has no render(deltaMs) method');
+  const end = scene.indexOf('this.visibleCount =', start);
+  assert(end > start, 'render() never records the visible room count');
+  const body = scene.slice(start, end).replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ');
+  assert(!/new |\.map\(|\.filter\(/.test(body),
+    'the room cull allocates, and it runs once per room per frame');
+  assert(/roomWorldRectInto\(/.test(body), 'the room cull does not measure into a reused box');
 });
 
 console.log(line);

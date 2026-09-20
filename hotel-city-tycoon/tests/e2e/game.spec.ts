@@ -68,7 +68,10 @@ test('a renderer initialises and says which one', async ({ page }) => {
   const messages = await bootFresh(page);
   const line = messages.find((m) => m.text().includes('[hotel-city-tycoon] renderer:'));
   expect(line, 'the renderer never reported which backend it got').toBeTruthy();
-  expect(line!.text()).toMatch(/renderer: (webgpu|webgl)/);
+  // `canvas` is what the DEC-009 lane (--disable-3d-apis) really gets: Pixi
+  // falls through to its CanvasRenderer, and for a while the boot line called
+  // that "webgl". The name must be truthful in every place it lives (DEC-019).
+  expect(line!.text()).toMatch(/renderer: (webgpu|webgl|canvas)/);
 });
 
 test('the room art actually loads', async ({ page }) => {
@@ -245,6 +248,62 @@ test('characters are drawn, not left as placeholder shapes', async ({ page }) =>
 
   const characterFailures = messages.find((m) => /bundle "characters".*missing/.test(m.text()));
   expect(characterFailures?.text(), 'character textures failed to load').toBeUndefined();
+
+  // The console proves the sheets arrived; the scene itself says whether each
+  // person is drawn from one. A capsule left behind after every bundle landed
+  // is the failure this test exists for, asserted directly (HC-P2-S2).
+  type Drawn = { id: string; source: 'sheet' | 'none' };
+  const people = await page.evaluate(() =>
+    (window as unknown as { hct: { characters: () => Drawn[] } }).hct.characters());
+  expect(people.every((p) => p.source !== 'none'),
+    'somebody is still a placeholder capsule after every bundle loaded').toBe(true);
+});
+
+test('the world is painted, not left blank', async ({ page }) => {
+  // The renderer can initialise, load every texture and still put nothing on
+  // screen. This reads the game canvas back through a fresh 2D canvas and asks
+  // three things of the band between the HUD bars: that it is opaque, that it
+  // holds more than a handful of colours (sky, building, rooms, street), and
+  // that no single colour owns it (a solid clear colour is not a hotel).
+  //
+  // Proven on the canvas lane (--disable-3d-apis): Pixi's CanvasRenderer is a
+  // Canvas2D context and drawImage always reads it back. On real WebGL the
+  // readback needs the drawing buffer preserved, which the VITE_E2E dev server
+  // this suite starts switches on (DEC-019). The default headless SwiftShader
+  // lane captures blank and is not a target (BL-020).
+  await bootFresh(page);
+  await page.waitForTimeout(2000);
+  const paint = await page.evaluate(() => {
+    const game = document.querySelector<HTMLCanvasElement>('canvas[role="img"]');
+    if (!game) throw new Error('no game canvas');
+    const copy = document.createElement('canvas');
+    copy.width = game.width;
+    copy.height = game.height;
+    const ctx = copy.getContext('2d');
+    if (!ctx) throw new Error('no 2d context');
+    ctx.drawImage(game, 0, 0);
+    // The middle half of the canvas is always world; the HUD bars sit over the
+    // top and bottom quarters and may hide the canvas there anyway.
+    const top = Math.floor(copy.height * 0.25);
+    const d = ctx.getImageData(0, top, copy.width, Math.floor(copy.height * 0.5)).data;
+    const seen = new Map<number, number>();
+    let opaque = 0;
+    let n = 0;
+    // Every 8th pixel is plenty; 5-bit channels merge the dithering and
+    // anti-aliasing noise that would otherwise count as hundreds of colours.
+    for (let i = 0; i < d.length; i += 32) {
+      n++;
+      if (d[i + 3] === 255) opaque++;
+      const key = ((d[i]! >> 3) << 10) | ((d[i + 1]! >> 3) << 5) | (d[i + 2]! >> 3);
+      seen.set(key, (seen.get(key) ?? 0) + 1);
+    }
+    let dominant = 0;
+    for (const count of seen.values()) dominant = Math.max(dominant, count);
+    return { opaqueFrac: opaque / n, distinctColours: seen.size, dominantFrac: dominant / n };
+  });
+  expect(paint.opaqueFrac, 'the canvas is transparent where the world should be').toBeGreaterThanOrEqual(0.98);
+  expect(paint.distinctColours, 'the world is a flat fill, not a hotel').toBeGreaterThanOrEqual(8);
+  expect(paint.dominantFrac, 'one colour owns the screen').toBeLessThanOrEqual(0.7);
 });
 
 test('the people are animated, not standing in one frame', async ({ page }) => {
