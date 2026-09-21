@@ -267,6 +267,28 @@ export class CharacterView extends Container {
   private blinkLeftMs = 0;
   /** The lite tier's last posed key: the pose is recomputed only when it changes. */
   private rigKey = -1;
+  /*
+   * The three ambient conditions the effects channel reads (HC-P2-S4).
+   *
+   * Each is a latch this view sets and the scene clears by reading it, so a
+   * condition that happened between two frames is never lost and never
+   * played twice. Nothing here draws anything: this file does not know the
+   * effects exist, it only knows what this person just did.
+   */
+  /** The stride's phase last frame, or -1 when they are not walking. */
+  private lastPhase = -1;
+  private footPending = false;
+  /*
+   * No sleeper's latch here (HC-P2-S4 review, §9 row 1): the rig already
+   * draws a lying sleeper two drifting `z` from `pose.zDrift` at both tiers,
+   * so the effects channel has nothing left to add over a bed.
+   */
+  /** The last work-row frame index, so a stroke is the wrap back to 0. */
+  private workFrame = -1;
+  private strokePending = false;
+  private ownSeed = 0;
+  /** World-px offset of the drawn support foot from the motion pivot. */
+  private footDx = 0;
   private mood: CharacterViewData['mood'] = 'neutral';
   /** The top of the standing figure incl. hair and hat, world px above the feet — where the bubble hangs. */
   private standingTop = 0;
@@ -285,6 +307,7 @@ export class CharacterView extends Container {
     // and left out of the dirty key: a walking character would otherwise
     // re-tessellate their bubble and grab ring ten times a second.
     this.lastAssetKey = data.assetKey;
+    this.ownSeed = data.seed;
     this.plotHeight = plotHeight;
     this.baseAlpha = data.opacity;
     this.impatient = data.mood === 'impatient';
@@ -501,6 +524,38 @@ export class CharacterView extends Container {
     inp.reduced = reduced;
     inp.lite = lite;
     const p = pose(this.rigState, this.proportions, inp);
+
+    /*
+     * What the effects channel reads off this frame (HC-P2-S4). Two latches
+     * and one measurement; no allocation, and nothing that changes the pose.
+     */
+    // A footfall is a *full* stride, not a half: DEC-020 fixes the cadence at
+    // «1.2–1.9 دورة/ث», so at half-strides a crowd of walkers would saturate
+    // the ambient budget and starve the cleaner's sparkle. rig.ts:345 advances
+    // the phase modulo 1, so a full cycle is the wrap — there is no integer
+    // part to watch.
+    if (rigClip === 'walk' && movedPx > 0) {
+      if (this.lastPhase >= 0 && this.rigState.phase < this.lastPhase) this.footPending = true;
+      this.lastPhase = this.rigState.phase;
+    } else {
+      this.lastPhase = -1;
+    }
+    // Where the drawn support foot actually is. The puff is pinned to it
+    // rather than to the motion pivot, because DEC-020 records a declared,
+    // unresolved slide between the two (master reference §, HC-VIS-001) and a
+    // puff at the pivot would turn an on-paper deviation into an on-screen
+    // one. The lower foot (greater y; the ground is y = 0) is the one taking
+    // the weight, and setFacing scales the rig by artScale * facing.
+    const support = p.footL.y >= p.footR.y ? p.footL : p.footR;
+    this.footDx = support.x * CHARACTER_ART_SCALE * facing;
+    // A cleaning stroke is the work row wrapping back to its first frame.
+    if (clip === 'work' && this.look.propWork === 'mop') {
+      if (frame === 0 && this.workFrame !== 0) this.strokePending = true;
+      this.workFrame = frame;
+    } else {
+      this.workFrame = -1;
+    }
+
     const eyesShut = this.blinkLeftMs > 0 || rigClip === 'sleep';
     if (lite) {
       // The pose is computed every frame regardless (its stride phase has to
@@ -539,6 +594,35 @@ export class CharacterView extends Container {
   /** How many Graphics the rig is made of, for `hct.rigStats()`. */
   rigPartCount(): number {
     return this.rig.partCount();
+  }
+
+  /** True once per full stride; reading it clears it (HC-P2-S4). */
+  takeFootfall(): boolean {
+    const v = this.footPending;
+    this.footPending = false;
+    return v;
+  }
+
+  /** True once per stroke of the mop; reading it clears it. */
+  takeWorkStroke(): boolean {
+    const v = this.strokePending;
+    this.strokePending = false;
+    return v;
+  }
+
+  /** World-px offset of the drawn support foot from this view's pivot (0 on the sheet path). */
+  footAnchorDx(): number {
+    return this.look ? this.footDx : 0;
+  }
+
+  /** Which way this person faces, +1 or -1. */
+  facingSign(): number {
+    return this.baseFacing;
+  }
+
+  /** This person's own seed, so their ambience is theirs alone. */
+  seedOf(): number {
+    return this.ownSeed;
   }
 
   /**
@@ -620,5 +704,11 @@ export class CharacterView extends Container {
     this.standingTop = 0;
     this.prevX = NaN;
     this.prevY = NaN;
+    this.lastPhase = -1;
+    this.footPending = false;
+    this.workFrame = -1;
+    this.strokePending = false;
+    this.ownSeed = 0;
+    this.footDx = 0;
   }
 }

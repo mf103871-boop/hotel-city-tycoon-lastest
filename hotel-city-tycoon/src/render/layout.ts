@@ -97,6 +97,22 @@ export const LAYER = {
   roomFront: 65,
   hazards: 70,
   overlays: 80,
+  /**
+   * What the player is told, drawn over the light.
+   *
+   * Everything here is a Sprite, and that is load-bearing rather than
+   * incidental: on Pixi's CanvasRenderer the Graphics adaptor sets the 2D
+   * blend mode inside a save()/restore() pair while the sprite batch sets it
+   * in place, and the context system caches only the mode it last asked for
+   * (CanvasGraphicsAdaptor.mjs:194/196/335, CanvasBatchAdaptor.mjs:42,
+   * CanvasContextSystem.mjs:117 — identical in 8.20.1 and 8.21.0). The first
+   * Graphics drawn after the additive light batch draws correctly and leaves
+   * the two disagreeing; everything after it, and every following frame,
+   * composites additively (BL-048). Sprites cannot, and the blend fence at
+   * the head of this layer leaves the pair agreeing at 'normal' so that even
+   * a Graphics drawn later cannot start the leak.
+   */
+  effects: 85,
   indicators: 90,
 } as const;
 

@@ -1,0 +1,253 @@
+{
+  "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer)",
+  "tier": "full",
+  "viewport": "412x915@2 (deviceScaleFactor 2)",
+  "zoomFit": 0.4,
+  "reducedMotion": "reduce (world held still so the measurement is exact)",
+  "dprScale": 2,
+  "cropCssPx": [
+    120,
+    70
+  ],
+  "cropDevicePx": [
+    240,
+    140
+  ],
+  "anchor": {
+    "id": "s1",
+    "sx": 93,
+    "sy": 565
+  },
+  "out": [
+    {
+      "at": 40,
+      "dt": 50,
+      "warmPx": 645,
+      "bboxDevicePx": {
+        "w": 196,
+        "h": 22,
+        "topFromCropTop": 118
+      },
+      "mean": [
+        233,
+        185,
+        135
+      ],
+      "fx": {
+        "live": 1,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "at": 120,
+      "dt": 133,
+      "warmPx": 644,
+      "bboxDevicePx": {
+        "w": 196,
+        "h": 22,
+        "topFromCropTop": 118
+      },
+      "mean": [
+        234,
+        185,
+        135
+      ],
+      "fx": {
+        "live": 1,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "at": 210,
+      "dt": 217,
+      "warmPx": 644,
+      "bboxDevicePx": {
+        "w": 196,
+        "h": 22,
+        "topFromCropTop": 118
+      },
+      "mean": [
+        233,
+        185,
+        135
+      ],
+      "fx": {
+        "live": 1,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "at": 250,
+      "dt": 250,
+      "warmPx": 644,
+      "bboxDevicePx": {
+        "w": 196,
+        "h": 22,
+        "topFromCropTop": 118
+      },
+      "mean": [
+        233,
+        185,
+        136
+      ],
+      "fx": {
+        "live": 1,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "at": 340,
+      "dt": 350,
+      "warmPx": 642,
+      "bboxDevicePx": {
+        "w": 196,
+        "h": 22,
+        "topFromCropTop": 118
+      },
+      "mean": [
+        233,
+        185,
+        137
+      ],
+      "fx": {
+        "live": 1,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "at": 400,
+      "dt": 400,
+      "warmPx": 642,
+      "bboxDevicePx": {
+        "w": 196,
+        "h": 22,
+        "topFromCropTop": 118
+      },
+      "mean": [
+        233,
+        185,
+        137
+      ],
+      "fx": {
+        "live": 1,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "at": 450,
+      "dt": 450,
+      "warmPx": 613,
+      "bboxDevicePx": {
+        "w": 196,
+        "h": 22,
+        "topFromCropTop": 118
+      },
+      "mean": [
+        233,
+        184,
+        136
+      ],
+      "fx": {
+        "live": 1,
+        "labels": 1,
+        "bubbles": 1,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "at": 490,
+      "dt": 500,
+      "warmPx": 604,
+      "bboxDevicePx": {
+        "w": 196,
+        "h": 22,
+        "topFromCropTop": 118
+      },
+      "mean": [
+        233,
+        183,
+        136
+      ],
+      "fx": {
+        "live": 0,
+        "labels": 0,
+        "bubbles": 1,
+        "pulses": 0,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "at": 500,
+      "dt": 500,
+      "warmPx": 604,
+      "bboxDevicePx": {
+        "w": 196,
+        "h": 22,
+        "topFromCropTop": 118
+      },
+      "mean": [
+        233,
+        183,
+        136
+      ],
+      "fx": {
+        "live": 0,
+        "labels": 0,
+        "bubbles": 1,
+        "pulses": 0,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "at": 560,
+      "dt": 567,
+      "warmPx": 604,
+      "bboxDevicePx": {
+        "w": 196,
+        "h": 22,
+        "topFromCropTop": 118
+      },
+      "mean": [
+        233,
+        183,
+        136
+      ],
+      "fx": {
+        "live": 0,
+        "labels": 0,
+        "bubbles": 1,
+        "pulses": 0,
+        "cap": 192,
+        "tier": "full"
+      }
+    }
+  ]
+}

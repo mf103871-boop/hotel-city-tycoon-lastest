@@ -7,8 +7,8 @@ everything else — code, art, architecture — is new.
 reference for every decision and the order of work is
 `docs/HOTEL_CITY_MASTER_REFERENCE_AR.md`.** The full game — simulation,
 renderer, save system, live-ops — is built and verified headlessly and in CI.
-Current phase: P2, making the hotel visibly alive — step HC-P2-S3, the live
-character rig (P1, the visible decor system, remains in progress). Step
+Current phase: P2, making the hotel visibly alive — step HC-P2-S4, the effects
+channel (P1, the visible decor system, remains in progress). Step
 reports live under `docs/` as `HC-P{phase}-S{step}-REPORT.md`.
 
 ---
@@ -84,7 +84,8 @@ data/          balance data — the source of truth
 src/core/      pure simulation: deterministic, no Pixi, React, DOM or clock
 src/data/      Zod schemas + typed access to data/
 src/render/    Pixi v8 canvas: camera, culling, pools, gestures, characters as a
-               live parts rig (fallback: sheets), continuous day/night lighting,
+               live parts rig (fallback: sheets), an effects channel drawn from a
+               runtime atlas, continuous day/night lighting,
                three backends (webgpu / webgl / canvas)
 src/bridge/    core ↔ React: engine, store, selectors, notifications
 src/ui/        React HUD, sheets, settings

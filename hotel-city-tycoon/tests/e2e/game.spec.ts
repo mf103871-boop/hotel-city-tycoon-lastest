@@ -721,3 +721,329 @@ test('rotation keeps the open catalog scrollable inside the safe rectangle', asy
   await expect(dialog).toHaveCount(0);
   await expect.poll(() => readout.innerText()).toBe(balanceBefore);
 });
+
+// ---------------------------------------------------------------- effects
+
+/*
+ * HC-P2-S4, the effects channel. Three tests, at three different heights.
+ *
+ * All three boot through `bootEffects` rather than `bootFresh`: stress mode
+ * hands over a hotel that is already trading, so there is no "open hotel"
+ * button to press and nothing to wait for but the canvas and the handle.
+ * `window.hct.fx(cue)` fires one cue by hand, which is the only way a browser
+ * test can see an effect at all — waiting for a real checkout is not a test.
+ */
+
+/** The handle `HotelCanvas` installs, beside `characters()` and `rigStats()`. */
+type FxStats = { live: number; labels: number; bubbles: number; pulses: number; cap: number; tier: string };
+type FxPerson = { id: string; sx: number; sy: number; visible: boolean };
+type FxWindow = {
+  hct?: { fx: (cue?: string) => string; fxStats: () => FxStats; characters: () => FxPerson[] };
+};
+
+/** 21-09-2026 at a chosen hour, the way `?epoch=` wants it (stress mode only). */
+function epochAt(hour: number): number {
+  return Date.UTC(2026, 8, 21) + hour * 3_600_000;
+}
+
+/**
+ * Boot straight into a trading hotel at a chosen hour.
+ *
+ * `?lite=0` forces the `full` tier. On this lane the backend is `canvas` and
+ * the renderer would otherwise choose `lite` (fewer particles, padding off),
+ * and a pixel assertion wants the counts pinned rather than inherited from
+ * whatever backend the runner happened to give us (DEC-009, HC-P2-S3 §9).
+ */
+async function bootEffects(page: Page, hour: number): Promise<void> {
+  await page.goto(`/?stress=12&debug=1&lite=0&epoch=${epochAt(hour)}`);
+  await page.locator('canvas[role="img"]').waitFor({ timeout: 20_000 });
+  // `main.tsx` puts a diagnostics object on `window.hct` before the canvas
+  // mounts, so the handle being there is not the same as the scene being
+  // there: wait for the method, not for the object.
+  await page.waitForFunction(
+    () => {
+      const hct = (window as unknown as FxWindow).hct;
+      return typeof hct?.characters === 'function' && hct.characters().length > 0;
+    },
+    null,
+    { timeout: 30_000 },
+  );
+  // Long enough for the arrivals to be posed and the light pools to settle.
+  await page.waitForTimeout(3_000);
+}
+
+test('the night picture stays dark while the effects are running', async ({ page }) => {
+  // BL-048. On Pixi's CanvasRenderer the sprite batch sets the 2D blend mode
+  // in place while the Graphics adaptor sets it inside save()/restore(), and
+  // the context system remembers only the mode it last *asked* for — so the
+  // first Graphics drawn after an additive batch draws correctly and every
+  // one after it, in this frame and in every following frame, composites
+  // additively. The whole frame then piles onto the previous one and the
+  // picture climbs towards white within two frames.
+  //
+  // This is the outside proof that it does not: the sky, which no effect ever
+  // touches, read back three times while a burst of particles is live over a
+  // hotel whose light pools are lit at 22:00. Read through the same drawImage
+  // + getImageData route the character crop uses, so it works on the DEC-009
+  // canvas lane where Pixi is a Canvas2D context.
+  await bootEffects(page, 22);
+
+  const sky = () => page.evaluate(() => {
+    const game = document.querySelector<HTMLCanvasElement>('canvas[role="img"]');
+    if (!game) throw new Error('no game canvas');
+    const copy = document.createElement('canvas');
+    copy.width = game.width;
+    copy.height = game.height;
+    const ctx = copy.getContext('2d');
+    if (!ctx) throw new Error('no 2d context');
+    ctx.drawImage(game, 0, 0);
+    // A fixed 64x64 CSS-px rectangle near the top-left corner. It is sky at
+    // both project viewports and at every hour; the backing store is CSS x
+    // the renderer's resolution, so the ratio comes from the canvas itself.
+    const k = game.width / Math.max(1, game.clientWidth);
+    const side = Math.round(64 * k);
+    const d = ctx.getImageData(Math.round(20 * k), Math.round(120 * k), side, side).data;
+    let r = 0;
+    let g = 0;
+    let b = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      r += d[i]!;
+      g += d[i + 1]!;
+      b += d[i + 2]!;
+    }
+    const n = d.length / 4;
+    return (0.2126 * r + 0.7152 * g + 0.0722 * b) / n;
+  });
+
+  const fire = () => page.evaluate(() => {
+    const hct = (window as unknown as FxWindow).hct!;
+    for (let i = 0; i < 8; i++) hct.fx('payout');
+    return hct.fxStats();
+  });
+
+  const first = await sky();
+  // 22:00 is night on the exterior clock (DEC-018). Measured on this lane the
+  // night sky reads ~125/255 against ~196 at noon, so this threshold says
+  // "the picture is still a night picture", not "the sky is black".
+  expect(first, 'the sky is not dark at 22:00 — the wrong hour, or the picture is already washed out')
+    .toBeLessThan(160);
+
+  const readings = [first];
+  for (let i = 0; i < 3; i++) {
+    const stats = await fire();
+    expect(stats.live, 'the burst put no particles in the field, so this proves nothing').toBeGreaterThan(0);
+    await page.waitForTimeout(150);
+    readings.push(await sky());
+  }
+  const worst = Math.max(...readings);
+  // A leak is not subtle: it is the whole frame compositing over the previous
+  // one, every frame, for good. 4/255 is far tighter than that and far wider
+  // than the quantised dusk step this rectangle can take in half a second.
+  expect(worst - first, `the sky brightened while effects were running (${readings.map((v) => v.toFixed(2)).join(' -> ')})`)
+    .toBeLessThanOrEqual(4);
+});
+
+test('the effects put pixels on the canvas', async ({ page }) => {
+  // The S4 equivalent of 'characters are drawn': `fxStats()` says the field
+  // has particles in it, which is not the same as the atlas reaching the
+  // context. Every effect texture is drawn at runtime on one offscreen 2D
+  // canvas and wrapped with `Texture.from` (the `fx/glow.ts` precedent), so
+  // "it got as far as a texture" and "it got as far as the screen" are
+  // genuinely different claims, and only the second one is worth a test.
+  //
+  // The viewport is pinned because a cue anchors on the first person the
+  // scene is drawing, and on the Pixel 7 profile that person stands off the
+  // left edge of a camera that cannot fit the hotel — the effect is then
+  // drawn where no crop can see it. 900x640 puts the whole cast on screen on
+  // both projects, which is what this test needs and all it needs.
+  await page.setViewportSize({ width: 900, height: 640 });
+  await bootEffects(page, 12);
+
+  /*
+   * Gold, counted in a box around each person on screen.
+   *
+   * Coins, sparks and the '+N' label are baked cream-and-gold in the atlas
+   * and nothing is tinted (DEC-021), so they land in a narrow slice of colour
+   * space. Every person gets a box because the cue anchors on the first view
+   * in the scene's pool, which is not the order `characters()` reports and is
+   * not a thing this test should have to guess.
+   */
+  const goldScan = (fire: boolean) => page.evaluate((shouldFire: boolean) => new Promise<{
+    boxes: Record<string, number>; stats: FxStats; anchor: string;
+  }>((resolve, reject) => {
+    const hct = (window as unknown as FxWindow).hct!;
+    // `fx()` answers with the person it anchored on, or '' for the camera's
+    // centre. The scene picks somebody whose *projected* position is inside
+    // the viewport — not merely `renderable`, which the cull box pads by a
+    // whole block — so this is also the assertion that a cue lands where a
+    // reader can see it (HC-P2-S4 §9 row 8).
+    let anchor = '';
+    if (shouldFire) for (let i = 0; i < 8; i++) anchor = hct.fx('payout');
+    // Two frames, so a cue fired just above is on screen before it is read.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      try {
+        const game = document.querySelector<HTMLCanvasElement>('canvas[role="img"]');
+        if (!game) throw new Error('no game canvas');
+        const copy = document.createElement('canvas');
+        copy.width = game.width;
+        copy.height = game.height;
+        const ctx = copy.getContext('2d');
+        if (!ctx) throw new Error('no 2d context');
+        ctx.drawImage(game, 0, 0);
+        // The backing store is CSS px times the renderer's resolution, so the
+        // ratio comes from the canvas itself and the count is returned as a
+        // share of the box — 1 on the desktop profile, 2 on the phone.
+        const k = game.width / Math.max(1, game.clientWidth);
+        const boxes: Record<string, number> = {};
+        for (const who of hct.characters()) {
+          if (!who.visible) continue;
+          const x0 = Math.max(0, Math.round((who.sx - 44) * k));
+          const y0 = Math.max(0, Math.round((who.sy - 96) * k));
+          const x1 = Math.min(copy.width, Math.round((who.sx + 44) * k));
+          const y1 = Math.min(copy.height, Math.round((who.sy + 12) * k));
+          const w = x1 - x0;
+          const h = y1 - y0;
+          if (w <= 0 || h <= 0) continue;
+          const d = ctx.getImageData(x0, y0, w, h).data;
+          let gold = 0;
+          for (let i = 0; i < d.length; i += 4) {
+            const r = d[i]!;
+            const g = d[i + 1]!;
+            const b = d[i + 2]!;
+            if (r >= 200 && g >= 140 && g <= 245 && b <= 190) gold++;
+          }
+          boxes[who.id] = (gold / (w * h)) * 10_000;
+        }
+        resolve({ boxes, stats: hct.fxStats(), anchor });
+      } catch (error) { reject(error instanceof Error ? error : new Error(String(error))); }
+    }));
+  }), fire);
+
+  const idle = [await goldScan(false), await goldScan(false), await goldScan(false)];
+  expect(idle[0]!.stats.tier, '?lite=0 did not force the full tier').toBe('full');
+  expect(Object.keys(idle[0]!.boxes).length, 'nobody on screen to put an effect beside').toBeGreaterThan(0);
+  const burst = await goldScan(true);
+
+  /*
+   * A walking person carries gold through their own box — a brass trolley, a
+   * lit doorway behind them — so a box is only evidence while it is still.
+   * The three quiet reads say which boxes those are: measured on this lane a
+   * still box drifts by under 4 counts per 10 000 between frames while the
+   * box the cue lands in gains 13 to 17.
+   */
+  const stable: Array<{ id: string; quiet: number; now: number }> = [];
+  for (const [id, now] of Object.entries(burst.boxes)) {
+    const reads = idle.map((s) => s.boxes[id]).filter((v): v is number => v !== undefined);
+    if (reads.length < idle.length) continue;
+    const lo = Math.min(...reads);
+    const hi = Math.max(...reads);
+    if (hi - lo > 4) continue;
+    stable.push({ id, quiet: hi, now });
+  }
+  expect(stable.length, 'every person on screen was moving, so no box could be read').toBeGreaterThan(0);
+  const best = stable.reduce((a, b) => (b.now - b.quiet > a.now - a.quiet ? b : a));
+  const where = stable
+    .map((s) => `${s.id} ${s.quiet.toFixed(1)}->${s.now.toFixed(1)}`)
+    .join('; ') + ' (gold per 10k)';
+
+  expect(burst.anchor, 'the cue found nobody inside the viewport to anchor on').not.toBe('');
+  expect(Object.keys(burst.boxes), 'the cue anchored on somebody no box could see')
+    .toContain(burst.anchor);
+  expect(burst.stats.live, 'the cue fired but the field stayed empty').toBeGreaterThan(idle[0]!.stats.live);
+  expect(burst.stats.labels, 'a payout drew no floating number').toBeGreaterThan(0);
+  // 6 is half the smallest gain measured on either project at either hour and
+  // half again over the drift of a still box. If this ever needs loosening,
+  // the atlas or the layer moved, not the threshold (the HC-P2-S3 §9 rule).
+  expect(best.now - best.quiet, `the burst put no atlas pixels on the canvas (${where})`)
+    .toBeGreaterThanOrEqual(6);
+});
+
+test('a room can flash while a character keeps its outline', async ({ page }) => {
+  // The regression test the pulse arithmetic earns. The room pulse is the one
+  // additive thing S4 adds, and the obvious way to get it wrong is to flood
+  // the room with light until the character standing in it loses the ink
+  // outline that 'characters are drawn' reads as proof the rig painted.
+  //
+  // So: the same crop, byte for byte — (sx-20, sy-48) to (sx+20, sy+4) in CSS
+  // px, five-bit colours, ink at max(r,g,b) < 0x40, >= 10 colours and >= 0.02
+  // ink — taken at the pulse's peak, at noon and again at 22:00 with the
+  // light pools lit. If this goes red, PULSE_ALPHA_PEAK moves, never the
+  // threshold.
+  //
+  // The person cropped is the first one `characters()` reports on screen.
+  // The cue anchors on the first view in the scene's pool that projects
+  // inside the viewport, which is a different ordering and so not guaranteed
+  // to be the same person; measured on this lane at both hours it is, and the
+  // crop reads 40 CSS px of a flashing room either way. `fx()` answers with
+  // the id it chose, and the test insists it chose somebody.
+  //
+  // `pulses` says a room flash is live; it does not say its alpha is non-zero.
+  // The alpha is clamped to POOL_ALPHA_OPEN minus what the room's pool already
+  // draws, so at full dusk in a lit room the flash is bounded down to nothing
+  // on purpose — that ceiling is the one S2 signed (DEC-018).
+  test.setTimeout(75_000);
+  await page.setViewportSize({ width: 900, height: 640 });
+
+  const crop = (fire: boolean) => page.evaluate((shouldFire: boolean) => new Promise<{
+    id: string; sx: number; sy: number; w: number; h: number;
+    distinctColours: number; inkFrac: number; stats: FxStats; anchor: string;
+  }>((resolve, reject) => {
+    const hct = (window as unknown as FxWindow).hct!;
+    let anchor = '';
+    if (shouldFire) for (let i = 0; i < 8; i++) anchor = hct.fx('payout');
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      try {
+        const who = hct.characters().find((c) => c.visible);
+        if (!who) throw new Error('nobody on screen to anchor a cue on');
+        const game = document.querySelector<HTMLCanvasElement>('canvas[role="img"]');
+        if (!game) throw new Error('no game canvas');
+        const copy = document.createElement('canvas');
+        copy.width = game.width;
+        copy.height = game.height;
+        const ctx = copy.getContext('2d');
+        if (!ctx) throw new Error('no 2d context');
+        ctx.drawImage(game, 0, 0);
+        const k = game.width / Math.max(1, game.clientWidth);
+        const x0 = Math.max(0, Math.round((who.sx - 20) * k));
+        const y0 = Math.max(0, Math.round((who.sy - 48) * k));
+        const x1 = Math.min(copy.width, Math.round((who.sx + 20) * k));
+        const y1 = Math.min(copy.height, Math.round((who.sy + 4) * k));
+        const w = x1 - x0;
+        const h = y1 - y0;
+        if (w <= 0 || h <= 0) throw new Error(`crop off canvas at ${who.sx},${who.sy}`);
+        const d = ctx.getImageData(x0, y0, w, h).data;
+        const seen = new Set<number>();
+        let ink = 0;
+        const n = w * h;
+        for (let i = 0; i < d.length; i += 4) {
+          const r = d[i]!;
+          const g = d[i + 1]!;
+          const b = d[i + 2]!;
+          seen.add(((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3));
+          if (Math.max(r, g, b) < 0x40) ink++;
+        }
+        resolve({
+          id: who.id, sx: who.sx, sy: who.sy, w, h,
+          distinctColours: seen.size, inkFrac: ink / n, stats: hct.fxStats(), anchor,
+        });
+      } catch (error) { reject(error instanceof Error ? error : new Error(String(error))); }
+    }));
+  }), fire);
+
+  for (const hour of [12, 22]) {
+    await bootEffects(page, hour);
+    const quiet = await crop(false);
+    const flash = await crop(true);
+    const where = `${flash.id}@${flash.sx},${flash.sy} at ${hour}:00, ${flash.w}x${flash.h}: `
+      + `${quiet.distinctColours} -> ${flash.distinctColours} colours, `
+      + `${(quiet.inkFrac * 100).toFixed(2)}% -> ${(flash.inkFrac * 100).toFixed(2)}% ink`;
+
+    expect(flash.anchor, `the cue found nobody inside the viewport to anchor on (${where})`).not.toBe('');
+    expect(flash.stats.pulses, `no room flashed under the cue (${where})`).toBeGreaterThanOrEqual(1);
+    expect(flash.stats.live, `the cue put no particles on the room (${where})`).toBeGreaterThan(0);
+    expect(flash.distinctColours, `the flash washed the person into a flat patch (${where})`)
+      .toBeGreaterThanOrEqual(10);
+    expect(flash.inkFrac, `the flash ate the person's ink outline (${where})`)
+      .toBeGreaterThanOrEqual(0.02);
+  }
+});

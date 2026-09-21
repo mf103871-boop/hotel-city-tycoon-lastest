@@ -1,0 +1,100 @@
+{
+  "lane": "canvas (--disable-3d-apis)",
+  "tier": "full",
+  "viewport": "900x640@2",
+  "when": "22:00",
+  "skyBoxCssPx": {
+    "name": "sky",
+    "x": 24,
+    "y": 40,
+    "w": 160,
+    "h": 90
+  },
+  "idleSky": {
+    "name": "sky",
+    "px": 57600,
+    "r": 82.56,
+    "g": 129.51,
+    "b": 198.7,
+    "lum": 124.53,
+    "distinctColours": 1,
+    "inkFrac": 0,
+    "goldFrac": 0
+  },
+  "before": {
+    "skyLum": 124.527,
+    "skyColours": 1,
+    "fx": {
+      "live": 2,
+      "labels": 0,
+      "bubbles": 0,
+      "pulses": 0,
+      "cap": 192,
+      "tier": "full"
+    }
+  },
+  "frames": [
+    {
+      "skyLum": 124.527,
+      "skyColours": 1,
+      "fx": {
+        "live": 36,
+        "labels": 4,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "skyLum": 124.527,
+      "skyColours": 1,
+      "fx": {
+        "live": 36,
+        "labels": 4,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "skyLum": 124.527,
+      "skyColours": 1,
+      "fx": {
+        "live": 36,
+        "labels": 4,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    }
+  ],
+  "castSheetSky": {
+    "name": "sky",
+    "px": 57600,
+    "r": 92.46,
+    "g": 115.07,
+    "b": 163.39,
+    "lum": 113.75,
+    "distinctColours": 229,
+    "inkFrac": 0.09,
+    "goldFrac": 0.0064
+  },
+  "afterCastSheetSky": {
+    "name": "sky",
+    "px": 57600,
+    "r": 82.56,
+    "g": 129.51,
+    "b": 198.7,
+    "lum": 124.53,
+    "distinctColours": 1,
+    "inkFrac": 0,
+    "goldFrac": 0
+  },
+  "errors": [
+    "[warning] Failed to create WebGPU Context Provider",
+    "[warning] Failed to create WebGPU Context Provider"
+  ]
+}

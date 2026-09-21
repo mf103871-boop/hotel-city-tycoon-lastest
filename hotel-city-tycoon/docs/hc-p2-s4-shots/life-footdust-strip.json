@@ -1,0 +1,294 @@
+[
+  {
+    "tier": "full",
+    "lane": "canvas (--disable-3d-apis)",
+    "viewport": "1280x720@1",
+    "zoom": 2,
+    "magnification": 8,
+    "who": {
+      "id": "g45",
+      "clip": "walk",
+      "x": 51,
+      "y": 970,
+      "visible": true,
+      "source": "rig",
+      "sx": 361,
+      "sy": 655,
+      "sheetReady": true
+    },
+    "meta": [
+      {
+        "i": 0,
+        "clip": "walk",
+        "sx": 361,
+        "sy": 655,
+        "live": 3
+      },
+      {
+        "i": 1,
+        "clip": "walk",
+        "sx": 352,
+        "sy": 650,
+        "live": 2
+      },
+      {
+        "i": 2,
+        "clip": "walk",
+        "sx": 343,
+        "sy": 645,
+        "live": 2
+      },
+      {
+        "i": 3,
+        "clip": "walk",
+        "sx": 337,
+        "sy": 641,
+        "live": 2
+      },
+      {
+        "i": 4,
+        "clip": "walk",
+        "sx": 331,
+        "sy": 638,
+        "live": 2
+      },
+      {
+        "i": 5,
+        "clip": "walk",
+        "sx": 327,
+        "sy": 635,
+        "live": 2
+      },
+      {
+        "i": 6,
+        "clip": "walk",
+        "sx": 338,
+        "sy": 631,
+        "live": 2
+      },
+      {
+        "i": 7,
+        "clip": "walk",
+        "sx": 347,
+        "sy": 628,
+        "live": 2
+      },
+      {
+        "i": 8,
+        "clip": "walk",
+        "sx": 354,
+        "sy": 625,
+        "live": 2
+      },
+      {
+        "i": 9,
+        "clip": "walk",
+        "sx": 361,
+        "sy": 623,
+        "live": 2
+      },
+      {
+        "i": 10,
+        "clip": "walk",
+        "sx": 366,
+        "sy": 621,
+        "live": 2
+      },
+      {
+        "i": 11,
+        "clip": "walk",
+        "sx": 370,
+        "sy": 619,
+        "live": 2
+      },
+      {
+        "i": 12,
+        "clip": "walk",
+        "sx": 392,
+        "sy": 618,
+        "live": 1
+      },
+      {
+        "i": 13,
+        "clip": "walk",
+        "sx": 410,
+        "sy": 617,
+        "live": 1
+      },
+      {
+        "i": 14,
+        "clip": "walk",
+        "sx": 425,
+        "sy": 616,
+        "live": 1
+      },
+      {
+        "i": 15,
+        "clip": "walk",
+        "sx": 437,
+        "sy": 615,
+        "live": 1
+      },
+      {
+        "i": 16,
+        "clip": "walk",
+        "sx": 448,
+        "sy": 614,
+        "live": 1
+      },
+      {
+        "i": 17,
+        "clip": "idle",
+        "sx": 459,
+        "sy": 614,
+        "live": 1
+      }
+    ]
+  },
+  {
+    "tier": "lite",
+    "lane": "canvas (--disable-3d-apis)",
+    "viewport": "1280x720@1",
+    "zoom": 2,
+    "magnification": 8,
+    "who": {
+      "id": "g45",
+      "clip": "walk",
+      "x": 51,
+      "y": 970,
+      "visible": true,
+      "source": "rig",
+      "sx": 361,
+      "sy": 655,
+      "sheetReady": true
+    },
+    "meta": [
+      {
+        "i": 0,
+        "clip": "walk",
+        "sx": 361,
+        "sy": 655,
+        "live": 0
+      },
+      {
+        "i": 1,
+        "clip": "walk",
+        "sx": 352,
+        "sy": 650,
+        "live": 0
+      },
+      {
+        "i": 2,
+        "clip": "walk",
+        "sx": 344,
+        "sy": 645,
+        "live": 0
+      },
+      {
+        "i": 3,
+        "clip": "walk",
+        "sx": 337,
+        "sy": 641,
+        "live": 0
+      },
+      {
+        "i": 4,
+        "clip": "walk",
+        "sx": 331,
+        "sy": 638,
+        "live": 0
+      },
+      {
+        "i": 5,
+        "clip": "walk",
+        "sx": 341,
+        "sy": 633,
+        "live": 0
+      },
+      {
+        "i": 6,
+        "clip": "walk",
+        "sx": 350,
+        "sy": 630,
+        "live": 0
+      },
+      {
+        "i": 7,
+        "clip": "walk",
+        "sx": 357,
+        "sy": 627,
+        "live": 0
+      },
+      {
+        "i": 8,
+        "clip": "walk",
+        "sx": 363,
+        "sy": 624,
+        "live": 0
+      },
+      {
+        "i": 9,
+        "clip": "walk",
+        "sx": 368,
+        "sy": 622,
+        "live": 0
+      },
+      {
+        "i": 10,
+        "clip": "walk",
+        "sx": 372,
+        "sy": 620,
+        "live": 0
+      },
+      {
+        "i": 11,
+        "clip": "walk",
+        "sx": 393,
+        "sy": 619,
+        "live": 0
+      },
+      {
+        "i": 12,
+        "clip": "walk",
+        "sx": 411,
+        "sy": 617,
+        "live": 0
+      },
+      {
+        "i": 13,
+        "clip": "walk",
+        "sx": 426,
+        "sy": 616,
+        "live": 0
+      },
+      {
+        "i": 14,
+        "clip": "walk",
+        "sx": 438,
+        "sy": 616,
+        "live": 0
+      },
+      {
+        "i": 15,
+        "clip": "walk",
+        "sx": 448,
+        "sy": 615,
+        "live": 0
+      },
+      {
+        "i": 16,
+        "clip": "walk",
+        "sx": 457,
+        "sy": 614,
+        "live": 0
+      },
+      {
+        "i": 17,
+        "clip": "idle",
+        "sx": 467,
+        "sy": 614,
+        "live": 0
+      }
+    ]
+  }
+]

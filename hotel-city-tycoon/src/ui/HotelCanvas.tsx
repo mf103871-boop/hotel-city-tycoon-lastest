@@ -17,6 +17,7 @@ import { useGameStore } from '../bridge/index.ts';
 import { summariseRooms, gridSize, hotelIsOpen, nightAmount } from '../bridge/selectors.ts';
 import { characterViews, guestNear } from '../bridge/characters.ts';
 import { reactionsFor } from '../bridge/reactions.ts';
+import { effectsFor } from '../bridge/effects.ts';
 import type { GameState } from '../bridge/selectors.ts';
 
 function toSnapshot(state: GameState, tzOffsetMin: number): SceneSnapshot {
@@ -220,7 +221,7 @@ export function HotelCanvas({ onRoomTap, onEmptyTap, onStats }: HotelCanvasProps
       // answer them: a cheer at a check-in, a flinch at a fire. The bridge
       // decides who reacts and with which clip; the scene only plays it.
       const unsubscribe = engine.subscribe((state, events) => {
-        scene?.setSnapshot(toSnapshot(state, tz), reactionsFor(state, events));
+        scene?.setSnapshot(toSnapshot(state, tz), reactionsFor(state, events), effectsFor(state, events));
       });
       handle.app.ticker.add((ticker) => scene?.render(ticker.deltaMS));
       // A hidden tab kept drawing every frame and draining the battery
@@ -273,6 +274,11 @@ export function HotelCanvas({ onRoomTap, onEmptyTap, onStats }: HotelCanvasProps
         // The tier, the part count, and how many frames began with a draw-list
         // rebuild flagged or a view update queued (see HotelScene.rigStats).
         rigStats: () => scene?.rigStats(),
+        // Fire one cue by hand, for the evidence captures and the two
+        // blend-leak tests: the canvas cannot be asserted on in CI, and
+        // waiting for a checkout is not a test.
+        fx: (cue?: string) => scene?.playDebugCue(cue ?? 'payout') ?? '',
+        fxStats: () => scene?.fxStats(),
       };
 
       const onResize = () => {

@@ -48,3 +48,26 @@ export { CharacterRig } from './characterRig.ts';
 export { progress as clipProgress } from './anim/clipPlayer.ts';
 export { setMotionTier, motionTier, tierFor, renderFlags } from './quality.ts';
 export type { MotionTier, RenderFlags } from './quality.ts';
+// Effects (HC-P2-S4, DEC-021).
+export {
+  createField, resetField, emit as emitParticle, burst as burstParticles, stepField,
+  stepsOf as fxStepsOf, stepOf as fxStepOf, frameOf as fxFrameOf,
+  xOf as fxXOf, yOf as fxYOf, alphaOf as fxAlphaOf, scaleOf as fxScaleOf,
+  digitsOf as fxDigitsOf, labelOriginX as fxLabelOriginX, labelRiseOf as fxLabelRiseOf,
+  bubbleAlphaOf as fxBubbleAlphaOf, popScaleOf as fxPopScaleOf, pulseAlphaAt,
+  ambientCap, dustCap,
+  FX, FX_KINDS, FIELD_CAP_FULL, FIELD_CAP_LITE, AMBIENT_SHARE, DUST_SHARE,
+  FX_FPS, FX_LIFE_MS, FX_STEPS, LABEL_LIFE_MS, PULSE_LIFE_MS, BUBBLE_LIFE_MS,
+  GRAVITY_PX_S2, PULSE_ALPHA_PEAK, LABEL_RISE_PX, LABEL_MAX_VALUE, DUST_ALPHA_PEAK,
+} from './fx/particles.ts';
+export type { ParticleField } from './fx/particles.ts';
+export {
+  ParticleLayer, FX_CUE, LABELS_FULL, LABELS_LITE, BUBBLES_FULL, BUBBLES_LITE,
+} from './fx/particleLayer.ts';
+export { PulseLayer, PULSES_FULL, PULSES_LITE } from './fx/pulseLayer.ts';
+export {
+  fxFrame, fxAtlasReady, resetFxAtlas, FRAME_DIGIT_0, FRAME_PLUS, FRAME_COIN_0,
+  FRAME_SPARK_0, FRAME_DUST_0, FRAME_MARK_0, FRAME_BLANK, FRAME_BUBBLE, FRAME_COUNT, FX_FRAMES,
+} from './fx/atlas.ts';
+export { GLYPHS, GLYPH_COUNT, DIGIT_COUNT, GLYPH_W, GLYPH_H, GLYPH_ADVANCE_PX } from './fx/glyphs.ts';
+export { blankTexture, roomRimTexture } from './fx/glow.ts';

@@ -66,7 +66,8 @@ ResizeObserver follows the playable rectangle as insets change during rotation.
 This is the only measurement that can move a P2 row to `VERIFIED`
 (DEC-005/DEC-009); sandbox numbers from the CI lane are never a substitute.
 Recorded 20-09-2026 with HC-P2-S2; extended 21-09-2026 with HC-P2-S3 (the
-live character rig, DEC-020).
+live character rig, DEC-020). Extended again 21-09-2026 with HC-P2-S4
+(the effects channel, DEC-021).
 
 1. Open the Pages URL on the phone with the stress handle:
    `https://mf103871-boop.github.io/hotel-city-tycoon-lastest/?stress=60&warm=900&debug=1`
@@ -97,7 +98,16 @@ live character rig, DEC-020).
    with `&lite=1` (the frame-grid tier the CI lane draws, springs off), and
    with `&aa=1` (MSAA on: the rig's outlines are aliased by default on
    WebGL/WebGPU, while every sandbox capture is antialiased by Canvas2D).
-6. Look at the rig while people walk and while they stand, at `?aa=0` and
+6. Since HC-P2-S4 the canvas also runs an effects channel with its own two
+   tiers, so paste `window.hct.fxStats()` beside `perf()` and `rigStats()` in
+   each of the three readings. Two numbers on it matter on a device: the
+   **particle cap actually in force** (192 on the `full` tier, 48 on `lite` —
+   if a phone reports 48 on the default URL it fell back to the software
+   backend, and the badge will say `canvas`), and the **p5 with and without
+   effects live** at `?stress=60&warm=900`: take one reading with the channel
+   idle and one with `window.hct.fx('payout')` fired every 500 ms, and report
+   the pair, because an A/B delta is the honest number and an absolute is not.
+7. Look at the rig while people walk and while they stand, at `?aa=0` and
    `?aa=1`: the owner's eye on the jagged outlines and on edge shimmer on
    idle people decides BL-044 — note which of the two is acceptable.
 

@@ -1,0 +1,80 @@
+[
+  {
+    "what": "CUE.payout then CUE.praise on one person, the order src/bridge/effects.ts emits for inspectorFound",
+    "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+    "tier": "full",
+    "viewport": "1280x720@1",
+    "zoom": 2.022,
+    "magnification": 4,
+    "anchor": "s1",
+    "anchorAt": {
+      "sx": 469,
+      "sy": 417,
+      "clip": "idle"
+    },
+    "crop": {
+      "x": 369,
+      "y": 247,
+      "w": 200,
+      "h": 190
+    },
+    "frames": [
+      {
+        "file": "inspector-paid-and-praised-t084ms.png",
+        "at": 84,
+        "actualMs": 100,
+        "stats": {
+          "live": 7,
+          "labels": 1,
+          "bubbles": 1,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "inspector-paid-and-praised-t252ms.png",
+        "at": 252,
+        "actualMs": 267,
+        "stats": {
+          "live": 6,
+          "labels": 1,
+          "bubbles": 1,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "inspector-paid-and-praised-t420ms.png",
+        "at": 420,
+        "actualMs": 433,
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 1,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "inspector-paid-and-praised-t700ms.png",
+        "at": 700,
+        "actualMs": 700,
+        "stats": {
+          "live": 0,
+          "labels": 0,
+          "bubbles": 1,
+          "pulses": 0,
+          "cap": 192,
+          "tier": "full"
+        }
+      }
+    ],
+    "errors": [
+      "[warning] Failed to create WebGPU Context Provider",
+      "[warning] Failed to create WebGPU Context Provider"
+    ]
+  }
+]

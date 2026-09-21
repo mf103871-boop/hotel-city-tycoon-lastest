@@ -13,7 +13,7 @@ import type { RendererHandle } from './app.ts';
 import { applyCamera } from './app.ts';
 import { RoomView } from './roomView.ts';
 import type { RoomViewData } from './roomView.ts';
-import { CharacterView } from './characterView.ts';
+import { CharacterView, prefersReducedMotion } from './characterView.ts';
 import type { CharacterViewData } from './characterView.ts';
 import { CharacterRig } from './characterRig.ts';
 import { CAST, castIds } from './anim/cast.ts';
@@ -29,11 +29,30 @@ import {
 } from './camera.ts';
 import { GestureTracker } from './gestures.ts';
 import { Backdrop, INK, NIGHT_TINT, SKY } from './backdrop.ts';
-import { quantiseDusk, duskTint } from './lighting.ts';
+import { quantiseDusk, duskTint, poolAlpha } from './lighting.ts';
 import { LightLayer } from './lightLayer.ts';
+import { ParticleLayer, FX_CUE } from './fx/particleLayer.ts';
+import { SEED_MIX_A } from './fx/particles.ts';
+import { PulseLayer } from './fx/pulseLayer.ts';
+/*
+ * The cleaning latch's two pure functions, and nothing else.
+ *
+ * They live beside the cue table in `src/bridge/effects.ts` because the rule
+ * they encode — three consecutive dirty snapshots before the canvas will
+ * celebrate a room coming clean, and never at all in the same batch as the
+ * `hazardCleared` that already earned a spark burst — has to be testable
+ * headlessly, and `HotelScene` cannot be loaded without a renderer. The Map
+ * of counts is this scene's; these decide what it means.
+ */
+import { nextDirtyCount, ringFires } from '../bridge/effects.ts';
 import { texture, hasTexture } from './assets.ts';
 import { FrameSampler, report } from './perf.ts';
 import type { CameraState, Viewport, WorldBounds, Insets } from './camera.ts';
+
+/** Where the cleaner's hand is, world px above their feet: the mop's head. */
+const WORK_HAND_PX = 20;
+/** What a hand-fired payout floats, for the captures and the browser tests. */
+const DEBUG_CUE_COINS = 25;
 
 export interface SceneRoom extends RoomViewData {
   id: string;
@@ -86,6 +105,14 @@ export class HotelScene {
   private readonly backdrop: Backdrop;
   /** The warm pools in the lit rooms. Synced per snapshot, never per frame. */
   private readonly lights: LightLayer;
+  /** The gold rim a room flashes when it earns (HC-P2-S4), beside the pools. */
+  private readonly pulses: PulseLayer;
+  /** The particles, the floating numbers and the reaction bubbles. */
+  private readonly fx: ParticleLayer;
+  /** Consecutive snapshots each room has read dirty, for the cleaning latch. */
+  private readonly dirtySeen = new Map<string, number>();
+  /** Which cleaning ring this is, so its spread is seeded rather than random. */
+  private ringTicket = 0;
   private readonly callbacks: SceneCallbacks;
 
   private view: Viewport;
@@ -113,6 +140,8 @@ export class HotelScene {
   private readonly cullBox = { x: 0, y: 0, width: 0, height: 0 };
   /** The room being measured this iteration, in world pixels. Reused likewise (BL-037). */
   private readonly roomBox = { x: 0, y: 0, width: 0, height: 0 };
+  /** The room a cue is being anchored to, in world pixels. Reused the same way. */
+  private readonly cueBox = { x: 0, y: 0, width: 0, height: 0 };
 
   private readonly gestures = new GestureTracker();
   /** Detaches every DOM listener this scene adds to the canvas. */
@@ -213,6 +242,13 @@ export class HotelScene {
     handle.layers.street.addChild(this.grid);
     this.backdrop = new Backdrop(handle.layers);
     this.lights = new LightLayer(handle.layers.overlays);
+    // Built on the line after the pools, so the two additive groups are
+    // contiguous and the effects layer's blend fence is the first thing drawn
+    // after them (BL-048).
+    this.pulses = new PulseLayer(handle.layers.overlays);
+    this.fx = new ParticleLayer(handle.layers.effects);
+    this.fx.setTier(motionTier());
+    this.pulses.setTier(motionTier());
     this.attachInput();
   }
 
@@ -235,8 +271,18 @@ export class HotelScene {
    * Reactions are one-shots — a cheer, a flinch — resolved by the bridge from
    * the tick's events. They are presentation and nothing else: a reaction
    * missed because the character was off screen is simply not played.
+   *
+   * Cues are the same contract one layer out (HC-P2-S4): what the effects
+   * channel should celebrate, resolved by `src/bridge/effects.ts` from the
+   * same events. They arrive structurally rather than as an imported type, so
+   * `src/render` still imports no shape from the bridge, and they default to
+   * empty so no existing caller changes.
    */
-  setSnapshot(snapshot: SceneSnapshot, reactions: ReadonlyArray<{ id: string; clip: string }> = []): void {
+  setSnapshot(
+    snapshot: SceneSnapshot,
+    reactions: ReadonlyArray<{ id: string; clip: string }> = [],
+    cues: ReadonlyArray<{ kind: number; roomId: string; charId: string; amount: number; seed: number }> = [],
+  ): void {
     const resized = snapshot.gridW !== this.snapshot.gridW || snapshot.gridH !== this.snapshot.gridH;
     // Quantised once here, so a continuous amount reaches no view as a
     // continuous number: twenty-five distinct pictures between noon and
@@ -272,6 +318,95 @@ export class HotelScene {
     this.reconcile();
     this.lights.sync(snapshot.rooms, snapshot.gridH, dusk, snapshot.night);
     for (const { id, clip } of reactions) this.characters.get(id)?.react(clip);
+    this.playCues(cues);
+    this.sweepCleaning(cues);
+  }
+
+  /**
+   * Resolve each cue's anchor to world pixels and play it.
+   *
+   * The person first — a payout belongs over the guest who paid it — then the
+   * room's centre, then the hotel itself, one block above the roof line, for
+   * a cue that is about the whole place. A payout or a clear also flashes the
+   * room's rim, at an alpha computed from the same `poolAlpha()` call
+   * `LightLayer.sync` makes, so the pulse knows what the pool is already
+   * drawing and `lightLayer.ts` stays closed.
+   */
+  private playCues(
+    cues: ReadonlyArray<{ kind: number; roomId: string; charId: string; amount: number; seed: number }>,
+  ): void {
+    if (cues.length === 0) return;
+    const { gridH } = this.snapshot;
+    for (const cue of cues) {
+      let wx = this.world.x + this.world.width / 2;
+      let wy = this.world.y + BLOCK_H;
+      const view = cue.charId ? this.characters.get(cue.charId) : undefined;
+      const room = cue.roomId ? this.roomOf(cue.roomId) : undefined;
+      if (view) {
+        wx = view.x;
+        wy = view.y - view.standingTopPx();
+      } else if (room) {
+        roomWorldRectInto(room.rect, gridH, this.cueBox);
+        wx = this.cueBox.x + this.cueBox.width / 2;
+        wy = this.cueBox.y + this.cueBox.height / 2;
+      }
+      this.fx.play(cue.kind, wx, wy, cue.amount, cue.charId, cue.seed);
+      if ((cue.kind === FX_CUE.payout || cue.kind === FX_CUE.clear) && room) {
+        this.pulses.pulse(room.id, room.rect, gridH, this.poolAlphaOf(room));
+      }
+    }
+  }
+
+  /**
+   * The room that just came clean, and the one rule that keeps it honest.
+   *
+   * A room has to have read dirty for `DIRTY_REARM_SNAPSHOTS` consecutive
+   * snapshots before the canvas will celebrate it coming clean, and a room
+   * carrying a clear cue in the same batch gets nothing — `systems/events.ts`
+   * raises a pest-cleared room's cleanliness to exactly the income gate and
+   * `selectors.ts` tests strictly below it, so the room flips off `.dirty` in
+   * the very tick that already earned a spark burst.
+   */
+  private sweepCleaning(
+    cues: ReadonlyArray<{ kind: number; roomId: string; charId: string; amount: number; seed: number }>,
+  ): void {
+    const { gridH } = this.snapshot;
+    for (const room of this.snapshot.rooms) {
+      const dirtyNow = (room.assetKey ?? '').endsWith('.dirty');
+      const before = this.dirtySeen.get(room.id) ?? 0;
+      let cleared = false;
+      for (const cue of cues) {
+        if (cue.kind === FX_CUE.clear && cue.roomId === room.id) { cleared = true; break; }
+      }
+      if (ringFires(before, dirtyNow, cleared)) {
+        roomWorldRectInto(room.rect, gridH, this.cueBox);
+        this.ringTicket = (this.ringTicket + 1) | 0;
+        this.fx.ring(
+          this.cueBox.x + this.cueBox.width / 2,
+          this.cueBox.y + BLOCK_H / 8,
+          this.cueBox.width * 0.8,
+          Math.imul(this.ringTicket, SEED_MIX_A) >>> 0,
+        );
+        this.pulses.pulse(room.id, room.rect, gridH, this.poolAlphaOf(room));
+      }
+      this.dirtySeen.set(room.id, nextDirtyCount(before, dirtyNow));
+    }
+    // A demolished room must not keep its count for ever.
+    if (this.dirtySeen.size > this.snapshot.rooms.length) {
+      for (const id of this.dirtySeen.keys()) {
+        if (!this.roomOf(id)) this.dirtySeen.delete(id);
+      }
+    }
+  }
+
+  /** What `LightLayer` is drawing on this room right now (DEC-018). */
+  private poolAlphaOf(room: SceneRoom): number {
+    return poolAlpha(this.dusk, room.occupants > 0, room.label === 'lobby', this.snapshot.night);
+  }
+
+  private roomOf(id: string): SceneRoom | undefined {
+    for (const room of this.snapshot.rooms) if (room.id === id) return room;
+    return undefined;
   }
 
   /** Per-frame work. Cheap by design: culling, a camera transform, and strides. */
@@ -336,12 +471,40 @@ export class HotelScene {
     this.cullBox.y = visible.y - margin;
     this.cullBox.width = visible.width + margin * 2;
     this.cullBox.height = visible.height + margin * 2;
+    /*
+     * The two ambient emitters (HC-P2-S4), polled here because this is the
+     * one loop that already knows who is on screen.
+     *
+     * Two, not three: the sleeper's mark was dropped in review because the
+     * rig already draws a lying sleeper two drifting `z` of its own at both
+     * tiers (characterRig.ts:771-772), and a third one anchored at a
+     * *standing* figure's head height floated free of the bed — see §9 row 1
+     * of the step report.
+     *
+     * Only on the full tier, and that is a coupling rather than a budget: the
+     * footfall reads the raw `rigState.phase`, while the lite tier draws
+     * `gridT(rs.phase, frames)` instead — raw and drawn agree only on full.
+     * `tools/selftest/effects.ts` asserts this guard names the tier, so the
+     * day somebody switches ambience on for lite a check fails instead of a
+     * puff drifting off a foot. Reduced motion turns both off outright:
+     * they are continuous garnish, and nothing is withheld by dropping them.
+     */
+    const ambient = motionTier() === 'full' && !prefersReducedMotion();
     let onScreen = 0;
     for (const [, view] of this.characters.entries()) {
       const inside = view.x >= this.cullBox.x && view.x <= this.cullBox.x + this.cullBox.width
         && view.y >= this.cullBox.y && view.y <= this.cullBox.y + this.cullBox.height;
       view.renderable = inside;
-      if (inside) { onScreen++; view.tickAnimation(deltaMs); } else { view.settle(); }
+      if (inside) {
+        onScreen++;
+        view.tickAnimation(deltaMs);
+        if (ambient) {
+          if (view.takeFootfall()) this.fx.puff(view.x + view.footAnchorDx(), view.y, view.facingSign(), view.seedOf());
+          if (view.takeWorkStroke()) this.fx.sparkle(view.x, view.y - WORK_HAND_PX, view.seedOf());
+        }
+      } else {
+        view.settle();
+      }
     }
     this.visibleCharacters = onScreen;
 
@@ -352,6 +515,22 @@ export class HotelScene {
       piece.renderable = piece.x >= this.cullBox.x && piece.x <= this.cullBox.x + this.cullBox.width
         && piece.y >= this.cullBox.y && piece.y <= this.cullBox.y + this.cullBox.height;
     }
+
+    /*
+     * A reaction bubble follows the person it is about at the display's rate
+     * while its own pop and fade step at 12 fps — the two-clock contract.
+     *
+     * By slot index rather than by id: the layer says which ids it is
+     * following, so this is at most four map lookups a frame and no string
+     * comparison at all, instead of four comparisons per visible person.
+     */
+    const bubbles = this.fx.bubbleCount();
+    for (let i = 0; i < bubbles; i++) {
+      const view = this.characters.get(this.fx.bubbleIdAt(i));
+      if (view) this.fx.moveBubble(i, view.x, view.y - view.standingTopPx());
+    }
+    this.fx.tick(deltaMs);
+    this.pulses.tick(deltaMs);
   }
 
   /**
@@ -440,6 +619,82 @@ export class HotelScene {
   }
 
   /**
+   * What the effects channel is drawing right now, for `window.hct.fxStats()`.
+   *
+   * The canvas cannot be asserted on in CI (DEC-009), so the way to check the
+   * effects are running is to ask them — the same reasoning that already put
+   * `characters()` and `rigStats()` on the handle.
+   */
+  fxStats(): { live: number; labels: number; bubbles: number; pulses: number; cap: number; tier: MotionTier } {
+    const fx = this.fx.stats();
+    return {
+      live: fx.live, labels: fx.labels, bubbles: fx.bubbles,
+      pulses: this.pulses.activeCount(), cap: fx.cap, tier: fx.tier,
+    };
+  }
+
+  /**
+   * Fire one cue by hand at the camera's centre, for the evidence captures
+   * and the browser tests — which otherwise have to wait for a checkout.
+   *
+   * Seeded from a fixed number and a ticket, so two captures of the same cue
+   * are the same picture.
+   */
+  playDebugCue(name = 'payout'): string {
+    const kind = name === 'clear' ? FX_CUE.clear
+      : name === 'refuse' ? FX_CUE.refuse
+        : name === 'triumph' ? FX_CUE.triumph
+          : name === 'greet' ? FX_CUE.greet
+            : name === 'praise' ? FX_CUE.praise
+              : name === 'puzzled' ? FX_CUE.puzzled
+                : FX_CUE.payout;
+    /*
+     * Anchored on somebody actually inside the viewport, so the capture shows
+     * what a real cue shows — a bubble over a person and the room they are
+     * standing in flashing — and on the camera's centre otherwise.
+     *
+     * The test is the projected position, not `renderable`: the cull box is
+     * padded by a whole block (`margin = BLOCK_W`, 128 world px), which at the
+     * 2x room zoom these captures use is 259 screen px beyond each edge. The
+     * first pass of the evidence framed an anchor at sx = -252 on a 1280-wide
+     * viewport and reported `fxStats().live = 9` over a picture with no coin
+     * in it. The chosen id comes back so a capture script can say what it
+     * framed rather than assume.
+     */
+    let who = '';
+    let wx = 0;
+    let wy = 0;
+    for (const [id, view] of this.characters.entries()) {
+      if (!view.renderable) continue;
+      const screen = worldToScreen({ x: view.x, y: view.y }, this.camera, this.view);
+      if (screen.x < 0 || screen.x > this.view.width || screen.y < 0 || screen.y > this.view.height) continue;
+      who = id;
+      wx = view.x;
+      wy = view.y - view.standingTopPx();
+      break;
+    }
+    if (!who) {
+      const centre = screenToWorld({ x: this.view.width / 2, y: this.view.height / 2 }, this.camera, this.view);
+      wx = centre.x;
+      wy = centre.y;
+    }
+    this.ringTicket = (this.ringTicket + 1) | 0;
+    const seed = Math.imul(this.ringTicket, SEED_MIX_A) >>> 0;
+    this.fx.play(kind, wx, wy, DEBUG_CUE_COINS, who, seed);
+    // And flash whichever room that point is over, so the capture shows the
+    // rim as well as the particles.
+    const block = worldToBlock(wx, wy, this.snapshot.gridH);
+    for (const room of this.snapshot.rooms) {
+      const { rect } = room;
+      if (block.x >= rect.x && block.x < rect.x + rect.w && block.y >= rect.y && block.y < rect.y + rect.h) {
+        this.pulses.pulse(room.id, rect, this.snapshot.gridH, this.poolAlphaOf(room));
+        break;
+      }
+    }
+    return who;
+  }
+
+  /**
    * A contact sheet of the whole cast, drawn by the rig on the stage above
    * the world, for the art review and the side-by-side with the sheets: one
    * row per member, one column per clip (walk at four phases), each posed
@@ -462,6 +717,15 @@ export class HotelScene {
      * first Graphics drawn after the `add` light batch leaves the real mode
      * at `lighter` for everything that follows, this frame and the next. In
      * play nothing is drawn after the overlays layer; the sheet is.
+     *
+     * 2026-09: since HC-P2-S4 this is belt-and-braces. The effects layer's
+     * blend fence is drawn after the light on every frame and leaves the
+     * cached mode and the real one agreeing at 'normal', so a Graphics drawn
+     * later — this sheet's tick marks included — takes the early return at
+     * CanvasContextSystem.mjs:117 and restores 'source-over'. The line stays
+     * because it is signed behaviour and costs nothing. Note that the
+     * mechanism described above is the right way round here, unlike BL-048's
+     * own description cell, which has a dated correction of its own.
      */
     this.handle.layers.overlays.renderable = false;
     const scale = spec.scale ?? 2;
@@ -724,6 +988,9 @@ export class HotelScene {
     this.rooms.clear();
     this.characters.clear();
     this.lights.destroy();
+    this.fx.destroy();
+    this.pulses.destroy();
+    this.dirtySeen.clear();
     this.grid.destroy();
   }
 }

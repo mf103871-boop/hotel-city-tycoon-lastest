@@ -740,6 +740,12 @@ check('no presentation module rolls its own dice or touches the DOM at import', 
     'src/render/anim/cast.ts',
     'src/render/quality.ts',
     'src/render/lighting.ts',
+    // The effects channel's pure half (HC-P2-S4): the glyph geometry and the
+    // particle maths. They are held to the same standard for the same reason
+    // — the headless suites and vitest load them, and a font, a Pixi import
+    // or a DOM read in either would take the effects' whole contract with it.
+    'src/render/fx/glyphs.ts',
+    'src/render/fx/particles.ts',
     'src/bridge/daylight.ts',
   ];
   for (const file of pure) {

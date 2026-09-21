@@ -1111,6 +1111,61 @@ check('the room cull allocates nothing', () => {
   assert(/roomWorldRectInto\(/.test(body), 'the room cull does not measure into a reused box');
 });
 
+// ------------------------------------------------- HC-P2-S4, the effects
+
+check('the draw order puts the effects above the light and below the indicators', () => {
+  // All twelve numbers, including the eleven that did not change: the ladder
+  // is a contract between files that never import each other, and a silent
+  // renumber is the kind of change nothing else in the build would notice.
+  const src = fs.readFileSync('src/render/layout.ts', 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ');
+  const expected: Array<[string, number]> = [
+    ['sky', 0], ['cityscape', 10], ['street', 20], ['roomShell', 30], ['roomFloor', 40],
+    ['decor', 50], ['characters', 60], ['roomFront', 65], ['hazards', 70],
+    ['overlays', 80], ['effects', 85], ['indicators', 90],
+  ];
+  const found = new Map<string, number>();
+  const at = src.indexOf('LAYER = {');
+  assert(at >= 0, 'layout.ts has no LAYER table');
+  const body = src.slice(at, src.indexOf('} as const', at));
+  for (const m of body.matchAll(/(\w+):\s*(\d+)/g)) found.set(m[1]!, Number(m[2]));
+  eq(found.size, expected.length, 'the layer ladder gained or lost a rung');
+  for (const [name, z] of expected) eq(found.get(name), z, `LAYER.${name} moved`);
+});
+
+check('the additive blend never reaches a Graphics', () => {
+  // BL-048's structural rule, in the file that already owns the render
+  // layer's structure. On Pixi's CanvasRenderer only the Graphics adaptor
+  // sets the 2D blend mode inside a save()/restore() pair, so a Graphics is
+  // the only thing that can leave the context system's cache disagreeing
+  // with the real globalCompositeOperation — and then every later draw, and
+  // every later frame, composites additively.
+  const walk = (dir: string, out: string[] = []): string[] => {
+    for (const name of fs.readdirSync(dir).sort()) {
+      const full = `${dir}/${name}`;
+      if (fs.statSync(full).isDirectory()) walk(full, out);
+      else if (/\.tsx?$/.test(name)) out.push(full);
+    }
+    return out;
+  };
+  let additive = 0;
+  for (const file of walk('src/render')) {
+    const src = fs.readFileSync(file, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ');
+    if (!/blendMode\s*=\s*'add'/.test(src)) continue;
+    additive++;
+    assert(!/new Graphics\(/.test(src), `${file} draws an additive Graphics — that is BL-048's ignition`);
+    assert(/overlays/.test(src), `${file} blends additively outside layers.overlays`);
+  }
+  assert(additive >= 2, `only ${additive} additive files found; the light or the pulse went missing`);
+  // And the layer above the light contains no Graphics at all.
+  for (const file of ['src/render/fx/particleLayer.ts', 'src/render/fx/pulseLayer.ts']) {
+    const src = fs.readFileSync(file, 'utf8');
+    assert(!/new Graphics\(/.test(src.replace(/\/\*[\s\S]*?\*\//g, ' ')),
+      `${file} constructs a Graphics above the light`);
+  }
+});
+
 console.log(line);
 if (failures.length === 0) console.log(`  ${passed} checks passed`);
 else { console.log(`  ${passed} passed, ${failures.length} FAILED`); failures.forEach(f => console.log(`    ✗ ${f}`)); }
