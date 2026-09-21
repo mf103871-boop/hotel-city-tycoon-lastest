@@ -980,6 +980,25 @@
       "lane": "canvas",
       "viewport": "412x915@2",
       "zoomFit": 0.4
+    },
+    {
+      "file": "dist-relative-boot.png",
+      "arm": "after",
+      "shows": "إقلاع بناء `dist` (BASE_PATH=./، مسارات نسبية) مُقدَّمًا من `python3 -m http.server` وليس من vite — الإطار الأول بعد الإقلاع، صفر أخطاء في الطرفية. هذه لقطة تحقّقٍ من البناء قبل النشر كـ Artifact، لا لقطة قياسٍ للرقم.",
+      "tier": "full",
+      "lane": "canvas",
+      "viewport": "412x915@2",
+      "purpose": "تحقّق من البناء"
+    },
+    {
+      "file": "dist-2xonly-boot.png",
+      "arm": "after",
+      "shows": "الإقلاع نفسه من نسخة `dist` مقلّمة إلى طبقة @2x وحدها (390 ملفًا) بعد ضبط `assets/manifest.json` على `resolutions: [2]` — صفر أخطاء، ولا طلب لملفّ @1x. هذه هي النسخة المنشورة على الـ Artifact.",
+      "tier": "full",
+      "lane": "canvas",
+      "viewport": "412x915@2",
+      "purpose": "تحقّق من البناء",
+      "note": "هذا الملف مطابق بايت-ببايت لـ`dist-relative-boot.png` (md5 af49f3de4200a4dd91e7568ba7b27fdb). المطابقة تدلّ على أن إطار الإقلاع نفسه لم يتغيّر بالتقليم — وهو المتوقَّع، إذ يطلب عرضٌ بكثافة 2 طبقةَ @2x في الحالتين. لكن التطابق وحده لا يميّز «تشغيلان أنتجا الإطار ذاته» عن «اللقطة نفسها كُتبت مرّتين»؛ الفارق المسجَّل هو زمن الكتابة (14:39 ثم 14:47) وخلوّ الطرفية من الأخطاء في كلا التشغيلين."
     }
   ],
   "dataFiles": [
@@ -1014,10 +1033,10 @@
   ],
   "unindexed": 0,
   "counts": {
-    "captures": 81,
+    "captures": 83,
     "dataFiles": 7,
     "indexFile": 1,
-    "total": 89
+    "total": 91
   },
   "corrections": [
     {
