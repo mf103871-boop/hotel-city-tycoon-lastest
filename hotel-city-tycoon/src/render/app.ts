@@ -12,6 +12,11 @@
  * software backend on a phone, or in a CI log, is named for what it is
  * (DEC-019).
  *
+ * Antialiasing stays off by default. The live rig (HC-P2-S3, DEC-020) draws
+ * outlines as geometry, which WebGL/WebGPU leave aliased under that default
+ * while the canvas lane antialiases regardless; `antialias` is the knob the
+ * device reading compares (BL-044), reached through `?aa=1`.
+ *
  * NOTE: this file cannot be verified without a browser. Everything in the
  * render layer that could be tested headlessly — camera, culling, pooling,
  * layout — deliberately lives elsewhere.
@@ -37,6 +42,8 @@ export interface RendererOptions {
   /** Capped at 2: beyond that the pixel cost buys nothing visible on a phone. */
   maxResolution?: number;
   background?: number;
+  /** Smooth edges on WebGL/WebGPU. Off by default: crisp, and cheaper. */
+  antialias?: boolean;
 }
 
 export async function createRenderer(opts: RendererOptions): Promise<RendererHandle> {
@@ -51,7 +58,7 @@ export async function createRenderer(opts: RendererOptions): Promise<RendererHan
     // wide margin, but the clear colour is what shows for the instant before
     // the first snapshot lands and at the very edge of a hard fling.
     background: opts.background ?? SKY,
-    antialias: false,          // crisp pixel art; also cheaper
+    antialias: opts.antialias ?? false,   // crisp pixel art; also cheaper
     resolution,
     autoDensity: true,
     powerPreference: 'high-performance' as const,

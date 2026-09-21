@@ -10,7 +10,7 @@
 import { useEffect, useRef } from 'react';
 import {
   createRenderer, HotelScene, loadBundle, resolutionTier, missingAssetKeys, declaredAssetCount,
-  formatReport, quantiseDusk,
+  formatReport, quantiseDusk, renderFlags, setMotionTier, tierFor,
 } from '../render/index.ts';
 import type { SceneSnapshot } from '../render/index.ts';
 import { useGameStore } from '../bridge/index.ts';
@@ -132,12 +132,20 @@ export function HotelCanvas({ onRoomTap, onEmptyTap, onStats }: HotelCanvasProps
 
     void (async () => {
       const box = holder.current!.getBoundingClientRect();
+      // `?lite=0|1` and `?aa=1` (HC-P2-S3, DEC-020): the rig's motion tier
+      // and the renderer's antialiasing, for evidence captures and the
+      // device reading. Parsed by the pure render module; only read here.
+      const flags = renderFlags(window.location.search);
       const handle = await createRenderer({
         canvas: canvas.current!,
         width: box.width,
         height: box.height,
+        ...(flags.aa ? { antialias: true } : {}),
       });
       if (disposed) { handle.destroy(); return; }
+      // The canvas lane redraws every rig part as a path each frame, so it
+      // samples poses on the clip's frame grid unless the URL says otherwise.
+      setMotionTier(tierFor(handle.backend, flags.tier));
 
       // exactOptionalPropertyTypes: only pass the callback if there is one.
       // Load the art before the first snapshot, or the opening frame draws
@@ -258,6 +266,12 @@ export function HotelCanvas({ onRoomTap, onEmptyTap, onStats }: HotelCanvasProps
         // animation cannot be asserted on in CI (DEC-009), so this is how a
         // visual review answers "is it actually moving?" with a number.
         characters: () => scene?.characterDiagnostics() ?? [],
+        // The whole cast, every clip, posed by the rig on the stage at a
+        // fixed scale — the contact sheet the art review reads (DEC-020).
+        castSheet: (spec?: { clip?: string; phase?: number; scale?: number }) => scene?.showCastSheet(spec ?? {}),
+        castSheetOff: () => scene?.showCastSheet(null),
+        // The tier, the part count and how many frames rebuilt the draw list.
+        rigStats: () => scene?.rigStats(),
       };
 
       const onResize = () => {

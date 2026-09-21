@@ -8,13 +8,19 @@
  * That keeps the renderer a pure function of state, which is what makes it
  * possible to replace the placeholder graphics in P3b without touching logic.
  */
-import { Graphics, Sprite } from 'pixi.js';
+import { Container, Graphics, Sprite } from 'pixi.js';
 import type { RendererHandle } from './app.ts';
 import { applyCamera } from './app.ts';
 import { RoomView } from './roomView.ts';
 import type { RoomViewData } from './roomView.ts';
 import { CharacterView } from './characterView.ts';
 import type { CharacterViewData } from './characterView.ts';
+import { CharacterRig } from './characterRig.ts';
+import { CAST, castIds } from './anim/cast.ts';
+import { createRigState, figureFor, pose, NEUTRAL_INPUT } from './anim/rig.ts';
+import type { RigClip, RigInput } from './anim/rig.ts';
+import { motionTier } from './quality.ts';
+import type { MotionTier } from './quality.ts';
 import { DecorView } from './decorView.ts';
 import { KeyedPool } from './pool.ts';
 import { plotWorldBounds, roomWorldRect, roomWorldRectInto, worldToBlock, BLOCK_W, BLOCK_H } from './layout.ts';
@@ -117,6 +123,10 @@ export class HotelScene {
   private clearColour = SKY;
   /** True once the first snapshot has been drawn, so the grid appears at boot. */
   private gridDrawn = false;
+  /** Frames that began with the world's draw list marked for a rebuild (DEC-020 §6): read, never written. */
+  private rebuilds = 0;
+  /** The debug contact sheet of the cast, on the stage, or null. */
+  private castSheet: Container | null = null;
 
   constructor(handle: RendererHandle, view: Viewport, callbacks: SceneCallbacks = {}) {
     this.handle = handle;
@@ -265,6 +275,10 @@ export class HotelScene {
   /** Per-frame work. Cheap by design: culling, a camera transform, and strides. */
   render(deltaMs = 16.7): void {
     this.frames.record(deltaMs);
+    // One boolean, read before Pixi rebuilds: a context swap or a visible
+    // toggle anywhere in the world since the last frame leaves this flag on,
+    // and the rig is designed so a moving crowd never sets it.
+    if (this.handle.world.parentRenderGroup?.structureDidChange) this.rebuilds++;
     applyCamera(this.handle.world, this.camera, this.view);
 
     const visible = visibleRect(this.camera, this.view);
@@ -366,19 +380,25 @@ export class HotelScene {
    * that the animation is actually running is to ask it. Exposed through
    * `window.hct.characters()`.
    *
-   * `source` says whether the person is drawn from their sheet or is still
-   * the placeholder capsule — the cheapest proof, on any lane, that every
-   * bundle actually reached the scene.
+   * `source` says what draws the person: `rig` is the live parts rig
+   * (HC-P2-S3), `sheet` the fallback strip, `none` the placeholder capsule —
+   * the cheapest proof, on any lane, of which path is on screen.
+   * `sheetReady` says the sheet arrived even where the rig stands in front
+   * of it, so the bundle-arrival regression stays exercised; `sx`/`sy` are
+   * the feet in CSS px, so a browser test can crop the person's pixels.
    */
   characterDiagnostics(): Array<{
-    id: string; clip: string; x: number; y: number; visible: boolean; source: 'sheet' | 'none';
+    id: string; clip: string; x: number; y: number; visible: boolean; source: 'rig' | 'sheet' | 'none';
+    sx: number; sy: number; sheetReady: boolean;
   }> {
     const out: Array<{
-      id: string; clip: string; x: number; y: number; visible: boolean; source: 'sheet' | 'none';
+      id: string; clip: string; x: number; y: number; visible: boolean; source: 'rig' | 'sheet' | 'none';
+      sx: number; sy: number; sheetReady: boolean;
     }> = [];
     for (const person of this.snapshot.characters) {
       const view = this.characters.get(person.id);
       if (!view) continue;
+      const screen = worldToScreen({ x: view.x, y: view.y }, this.camera, this.view);
       out.push({
         id: person.id,
         clip: person.clip,
@@ -386,9 +406,93 @@ export class HotelScene {
         y: Math.round(view.y),
         visible: view.renderable,
         source: view.drawnSource(),
+        sx: Math.round(screen.x),
+        sy: Math.round(screen.y),
+        sheetReady: view.sheetReady(),
       });
     }
     return out;
+  }
+
+  /** The rig's tier, how many parts it is drawing, and how many frames so far began with a draw-list rebuild. */
+  rigStats(): { tier: MotionTier; parts: number; rebuilds: number } {
+    let parts = 0;
+    for (const [, view] of this.characters.entries()) parts += view.rigPartCount();
+    return { tier: motionTier(), parts, rebuilds: this.rebuilds };
+  }
+
+  /**
+   * A contact sheet of the whole cast, drawn by the rig on the stage above
+   * the world, for the art review and the side-by-side with the sheets: one
+   * row per member, one column per clip (walk at four phases), each posed
+   * once and left still. Ink tick marks only — the canvas stays word-free.
+   * `null` takes it down.
+   */
+  showCastSheet(spec: { clip?: string; phase?: number; scale?: number } | null): void {
+    if (this.castSheet) {
+      this.handle.app.stage.removeChild(this.castSheet);
+      this.castSheet.destroy({ children: true });
+      this.castSheet = null;
+      this.handle.layers.overlays.renderable = true;
+    }
+    if (!spec) return;
+    /*
+     * The light pools go dark while the sheet is up. On Pixi's CanvasRenderer
+     * (8.20/8.21) the sprite batch sets the 2D blend mode in place while the
+     * Graphics adaptor sets it inside a save()/restore() pair, and the
+     * context system remembers only the mode it last asked for — so the
+     * first Graphics drawn after the `add` light batch leaves the real mode
+     * at `lighter` for everything that follows, this frame and the next. In
+     * play nothing is drawn after the overlays layer; the sheet is.
+     */
+    this.handle.layers.overlays.renderable = false;
+    const scale = spec.scale ?? 2;
+    const columns: Array<{ clip: RigClip; phase: number }> = spec.clip
+      ? [{ clip: spec.clip as RigClip, phase: spec.phase ?? 0 }]
+      : [
+        { clip: 'idle', phase: 0 },
+        { clip: 'walk', phase: 0 }, { clip: 'walk', phase: 0.25 }, { clip: 'walk', phase: 0.5 }, { clip: 'walk', phase: 0.75 },
+        { clip: 'work', phase: 2 / 6 }, { clip: 'sleep', phase: 0 }, { clip: 'sit', phase: 0 },
+        { clip: 'happy', phase: 0.5 }, { clip: 'angry', phase: 0.25 }, { clip: 'scared', phase: 0.5 },
+      ];
+    // The sheets' own cell, so a rig pose can be laid beside a sheet frame.
+    const cellW = 48 * scale;
+    const cellH = 72 * scale;
+    const sheet = new Container();
+    const ticks = new Graphics();
+    sheet.addChild(ticks);
+    const ids = castIds();
+    const identity = (c: number): number => c;
+    ids.forEach((id, row) => {
+      const look = CAST[id]!;
+      const p = figureFor(look.build, look.height, look.age);
+      columns.forEach((col, i) => {
+        const rig = new CharacterRig();
+        rig.setLook(look, p, identity, scale, id);
+        rig.setExpression(col.clip === 'sleep' ? 'sleep' : col.clip === 'scared' ? 'scared'
+          : col.clip === 'angry' ? 'cross' : col.clip === 'happy' ? 'happy' : look.expression, col.clip === 'sleep');
+        rig.setProp(col.clip === 'work' ? 'work' : 'idle');
+        rig.setSeated(col.clip === 'sit');
+        rig.setLying(col.clip === 'sleep');
+        const rs = createRigState(row * 7 + i);
+        rs.phase = col.clip === 'walk' ? col.phase : rs.phase;
+        const input: RigInput = {
+          ...NEUTRAL_INPUT, clip: col.clip, clipT: col.clip === 'walk' ? 0 : col.phase, frames: 8,
+        };
+        rig.apply(pose(rs, p, input), col.clip === 'sleep');
+        // Feet on the cell's floor line (FOOT_Y 70 of 72), centred in the column.
+        rig.position.set(i * cellW + cellW / 2, row * cellH + 70 * scale);
+        sheet.addChild(rig);
+        ticks.moveTo(i * cellW + 2, row * cellH + 70 * scale).lineTo(i * cellW + cellW - 2, row * cellH + 70 * scale);
+      });
+    });
+    ticks.stroke({ width: 1, color: INK, alpha: 0.35 });
+    ticks.rect(0, 0, columns.length * cellW, ids.length * cellH).stroke({ width: 1, color: INK, alpha: 0.5 });
+    for (let i = 1; i < columns.length; i++) ticks.moveTo(i * cellW, 0).lineTo(i * cellW, ids.length * cellH);
+    for (let r = 1; r < ids.length; r++) ticks.moveTo(0, r * cellH).lineTo(columns.length * cellW, r * cellH);
+    ticks.stroke({ width: 1, color: INK, alpha: 0.18 });
+    this.castSheet = sheet;
+    this.handle.app.stage.addChild(sheet);
   }
 
   /** A measured report against the document's budgets. */
@@ -598,6 +702,7 @@ export class HotelScene {
 
   destroy(): void {
     this.domListeners.abort();
+    this.showCastSheet(null);
     this.rooms.clear();
     this.characters.clear();
     this.lights.destroy();

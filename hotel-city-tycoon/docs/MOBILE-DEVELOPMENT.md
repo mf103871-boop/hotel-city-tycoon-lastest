@@ -65,7 +65,8 @@ ResizeObserver follows the playable rectangle as insets change during rotation.
 
 This is the only measurement that can move a P2 row to `VERIFIED`
 (DEC-005/DEC-009); sandbox numbers from the CI lane are never a substitute.
-Recorded 20-09-2026 with HC-P2-S2.
+Recorded 20-09-2026 with HC-P2-S2; extended 21-09-2026 with HC-P2-S3 (the
+live character rig, DEC-020).
 
 1. Open the Pages URL on the phone with the stress handle:
    `https://mf103871-boop.github.io/hotel-city-tycoon-lastest/?stress=60&warm=900&debug=1`
@@ -85,8 +86,21 @@ Recorded 20-09-2026 with HC-P2-S2.
    Safari > Advanced). Copy the returned object as is.
 4. Paste the object, the device model, the OS version, the build id from
    the badge and the URL used into the step report's evidence section.
+5. Since HC-P2-S3 the people are a live parts rig with two motion tiers, so
+   take three readings and paste all three `window.hct.perf()` objects plus
+   `window.hct.rigStats()` (tier, part count, instruction rebuilds) with the
+   device model and build id: the default URL above (`full` tier — the rig
+   posed every frame; this is the reading the bar applies to), the same URL
+   with `&lite=1` (the frame-grid tier the CI lane draws, springs off), and
+   with `&aa=1` (MSAA on: the rig's outlines are aliased by default on
+   WebGL/WebGPU, while every sandbox capture is antialiased by Canvas2D).
+6. Look at the rig while people walk and while they stand, at `?aa=0` and
+   `?aa=1`: the owner's eye on the jagged outlines and on edge shimmer on
+   idle people decides BL-044 — note which of the two is acceptable.
 
-`p5 >= 55` at 60 rooms / about 60 people is the bar. Inside the Capacitor app the
+`p5 >= 55` at 60 rooms / about 60 people on the default (`full` tier) URL is the
+bar that moves the row to `VERIFIED`; the `lite` and `aa` readings are recorded
+beside it, never in its place. Inside the Capacitor app the
 console is not reachable until HC-P2-S8 wires the native debugging switch
 (BL-040); until then take the reading in the phone's browser.
 

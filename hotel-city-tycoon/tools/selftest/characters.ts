@@ -275,6 +275,17 @@ await check('every character asks for an asset the manifest provides', async () 
   }
 });
 
+await check('every person on screen has a cast identity for the rig', async () => {
+  // The live rig (HC-P2-S3) draws whoever cast.ts knows and falls back to
+  // the sheet for anybody else. Nobody should ever take the fallback.
+  const { lookFor } = await import('../../src/render/anim/cast.ts');
+  for (const s of [busy(), busy(99), opened()]) {
+    for (const view of characterViews(s)) {
+      assert(lookFor(view.assetKey), `${view.id} (${view.assetKey}) has no cast row`);
+    }
+  }
+});
+
 // ---------------------------------------------------------------- motion (HC-P2-S1)
 await check('every clip the bridge asks for is one the character\'s sheet carries', () => {
   for (const s of [busy(), busy(99), opened()]) {

@@ -38,6 +38,9 @@ import {
 } from '../../src/render/backdrop.ts';
 import { nightAmountAt, clockNight } from '../../src/bridge/daylight.ts';
 import { duskTint, quantiseDusk, DUSK_STEPS } from '../../src/render/lighting.ts';
+import { CAST, PALETTE as CAST_PALETTE, castIds, shade } from '../../src/render/anim/cast.ts';
+import { SHOULDER } from '../../src/render/anim/rig.ts';
+import { BODY_HALF_WIDTH_PX } from '../../src/core/systems/roomWaypoints.ts';
 import { loadSimData } from '../balance-sim/load-data.ts';
 import fs from 'node:fs';
 
@@ -725,6 +728,99 @@ check('the backdrop palette is the one the art is drawn from', () => {
   // cityWindow is the one backdrop colour with no hcstyle entry — it is a
   // renderer-only tint — so it is asserted here rather than cross-checked.
   eq(CITY_WINDOW, 0xd8e8f7, 'city windows');
+});
+
+check('the cast table is the one the art is drawn from', () => {
+  // cast.ts is a TypeScript copy of tools/art/characters.py, because the
+  // rig draws at runtime what the Python drew into sheets. A copy drifts —
+  // a chef whose toque the sheets have and the rig lacks is two different
+  // people — so every field of every member is read back out of the Python
+  // and compared, colours resolved through hcstyle's own hex.
+  const style = fs.readFileSync('tools/art/hcstyle.py', 'utf8');
+  const hex = (name: string): number => {
+    const m = new RegExp(`"${name}":\\s*rgb\\("#([0-9A-Fa-f]{6})"\\)`).exec(style);
+    assert(m, `hcstyle.py has no colour named "${name}"`);
+    return parseInt(m[1]!, 16);
+  };
+  const py = fs.readFileSync('tools/art/characters.py', 'utf8');
+  const staffAt = py.indexOf('STAFF = {');
+  const guestsAt = py.indexOf('GUESTS = {');
+  assert(staffAt >= 0 && guestsAt > staffAt, 'characters.py has no STAFF / GUESTS tables');
+  const seen = new Set<string>();
+  for (const m of py.matchAll(/^ {4}"([a-z]+)": Member\(([\s\S]*?)\n {4}\),/gm)) {
+    const id = `${m.index! > guestsAt ? 'guest' : 'staff'}.${m[1]!}`;
+    const block = m[2]!;
+    const colour = (field: string, required = true): number | null => {
+      const c = new RegExp(`\\b${field}=P\\["([A-Za-z0-9]+)"\\]`).exec(block);
+      if (!c) { assert(!required, `${id}: characters.py has no ${field}=`); return null; }
+      return hex(c[1]!);
+    };
+    const word = (field: string, fallback: string | null): string | null => {
+      const w = new RegExp(`\\b${field}="([a-z]+)"`).exec(block);
+      return w ? w[1]! : fallback;
+    };
+    const height = /\bheight=([0-9.]+)/.exec(block);
+    assert(height, `${id}: characters.py has no height=`);
+    const propRaw = /\bprop=(None|"[a-z]+")/.exec(block);
+    assert(propRaw, `${id}: characters.py has no prop=`);
+    const prop = propRaw[1] === 'None' ? null : propRaw[1]!.slice(1, -1);
+    const expected = {
+      skin: colour('skin'), hair: colour('hair'), hairStyle: word('hair_style', null),
+      top: colour('top'), bottom: colour('bottom'), accent: colour('accent'),
+      apron: colour('apron', false), cap: colour('cap', false), capStyle: word('cap_style', null),
+      build: word('build', null), height: Number(height[1]), age: word('age', 'adult'),
+      prop, propWork: word('prop_work', prop), expression: word('expression', 'smile'),
+    };
+    // A cap without a declared style is hcstyle's beanie; no cap, no style.
+    if (expected.cap !== null && expected.capStyle === null) expected.capStyle = 'beanie';
+    const look = CAST[id];
+    assert(look, `characters.py casts ${id}, cast.ts does not`);
+    for (const [field, value] of Object.entries(expected)) {
+      const ours = (look as unknown as Record<string, unknown>)[field];
+      const show = (v: unknown) => (typeof v === 'number' && v > 1.5 ? `0x${v.toString(16)}` : String(v));
+      assert(ours === value, `${id}.${field}: cast.ts has ${show(ours)}, characters.py has ${show(value)}`);
+    }
+    seen.add(id);
+  }
+  eq(seen.size, castIds().length, 'cast size');
+  for (const id of castIds()) assert(seen.has(id), `cast.ts casts ${id}, characters.py does not`);
+  const data = loadSimData();
+  const fromData = [...data.staffRoles.map((r) => `staff.${r.id}`), ...data.guestTypes.map((g) => `guest.${g.id}`)].sort();
+  eq(castIds().sort().join(','), fromData.join(','), 'the cast is not the data\'s roles and guest types');
+  console.log(`      ${seen.size} members, 15 fields each, against characters.py + hcstyle.py`);
+});
+
+check('every cast colour is a named hcstyle colour with the same hex', () => {
+  const style = fs.readFileSync('tools/art/hcstyle.py', 'utf8');
+  for (const [name, value] of Object.entries(CAST_PALETTE)) {
+    const m = new RegExp(`"${name}":\\s*rgb\\("#([0-9A-Fa-f]{6})"\\)`).exec(style);
+    assert(m, `hcstyle.py has no colour named "${name}"`);
+    eq(value, parseInt(m[1]!, 16), `cast palette "${name}"`);
+  }
+});
+
+check('shade() is hcstyle\'s shade', () => {
+  // hcstyle.py:69-71 mixes toward (10, 20, 44) — not P.shadow — and rounds
+  // per channel. Computed from that formula here, not from a literal.
+  const mixPy = (c: number, t: number): number => {
+    const ch = (v: number, target: number) => Math.round(v + (target - v) * t);
+    return (ch(c >> 16, 10) << 16) | (ch((c >> 8) & 0xff, 20) << 8) | ch(c & 0xff, 44);
+  };
+  eq(shade(0xffffff, 0.18), mixPy(0xffffff, 0.18), 'shade(white, 0.18)');
+  eq(shade(0xffffff, 0.18), 0xd3d5d9, 'shade(white, 0.18) literal');
+  for (const c of Object.values(CAST_PALETTE)) {
+    eq(shade(c, 0), c, `shade(${c.toString(16)}, 0)`);
+    eq(shade(c, 0.22), mixPy(c, 0.22), `shade(${c.toString(16)}, 0.22)`);
+  }
+});
+
+check('the rig stands inside the body the waypoints assume', () => {
+  // roomWaypoints keeps people BODY_HALF_WIDTH_PX inside a room's walls; a
+  // torso wider than that on screen would clip the door frame.
+  for (const [build, shoulder] of Object.entries(SHOULDER)) {
+    const half = (shoulder / 2) * 0.82;
+    assert(half <= BODY_HALF_WIDTH_PX, `a ${build} torso is ${half.toFixed(2)} px each side, the waypoints allow ${BODY_HALF_WIDTH_PX}`);
+  }
 });
 
 check('the renderer washes the world with the same night the art is baked in', () => {
