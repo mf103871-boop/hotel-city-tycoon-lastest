@@ -10,7 +10,7 @@
 import { useState } from 'react';
 
 export interface RenderStats {
-  backend: 'webgpu' | 'webgl' | null;
+  backend: 'webgpu' | 'webgl' | 'canvas' | null;
   fps: number;
   rooms: number;
   visibleRooms: number;
@@ -68,7 +68,12 @@ export function DebugBadge({ stats }: { stats: RenderStats }) {
         <>
           <div>
             renderer{' '}
-            <span className={stats.backend === 'webgpu' ? 'text-emerald-400' : 'text-amber-400'}>
+            {/* Rose for the software renderer: a phone that fell through to
+                Canvas2D must be impossible to misread as a healthy GPU
+                (DEC-019). */}
+            <span className={stats.backend === 'webgpu' ? 'text-emerald-400'
+              : stats.backend === 'canvas' ? 'text-rose-400'
+              : 'text-amber-400'}>
               {stats.backend ?? 'starting…'}
             </span>
           </div>

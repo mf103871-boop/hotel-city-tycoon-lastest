@@ -68,7 +68,10 @@ test('a renderer initialises and says which one', async ({ page }) => {
   const messages = await bootFresh(page);
   const line = messages.find((m) => m.text().includes('[hotel-city-tycoon] renderer:'));
   expect(line, 'the renderer never reported which backend it got').toBeTruthy();
-  expect(line!.text()).toMatch(/renderer: (webgpu|webgl)/);
+  // `canvas` is what the DEC-009 lane (--disable-3d-apis) really gets: Pixi
+  // falls through to its CanvasRenderer, and for a while the boot line called
+  // that "webgl". The name must be truthful in every place it lives (DEC-019).
+  expect(line!.text()).toMatch(/renderer: (webgpu|webgl|canvas)/);
 });
 
 test('the room art actually loads', async ({ page }) => {
@@ -245,6 +248,138 @@ test('characters are drawn, not left as placeholder shapes', async ({ page }) =>
 
   const characterFailures = messages.find((m) => /bundle "characters".*missing/.test(m.text()));
   expect(characterFailures?.text(), 'character textures failed to load').toBeUndefined();
+
+  // The console proves the sheets arrived; the scene itself says whether each
+  // person is drawn from one. A capsule left behind after every bundle landed
+  // is the failure this test exists for, asserted directly (HC-P2-S2).
+  type Drawn = {
+    id: string; source: 'rig' | 'sheet' | 'none'; sx: number; sy: number; visible: boolean; sheetReady: boolean;
+  };
+  const people = await page.evaluate(() =>
+    (window as unknown as { hct: { characters: () => Drawn[] } }).hct.characters());
+  // `every` on an empty list is true; a scene that lost its people entirely
+  // is the other way this test's failure can look.
+  expect(people.length, 'no characters in the scene after boot').toBeGreaterThan(0);
+  expect(people.every((p) => p.source !== 'none'),
+    'somebody is still a placeholder capsule after every bundle loaded').toBe(true);
+  // HC-P2-S3: every cast member has a rig identity, so the sheet is only a
+  // fallback for a look the cast table does not know. Somebody drawn from a
+  // sheet means the table and the asset keys drifted apart.
+  expect(people.every((p) => p.source === 'rig'),
+    'somebody is drawn from a sheet although every cast member has a rig identity').toBe(true);
+  // The rig stands in front of the sheet, so `source` alone would no longer
+  // notice a bundle that never landed. The view still reports the arrival.
+  expect(people.every((p) => p.sheetReady),
+    'a character sheet never arrived (the null-cache regression this test was written for)').toBe(true);
+
+  // PIXEL PROOF. The diagnostics say a rig is on duty; they do not say it put
+  // anything on the canvas. This crops the pixels around each visible person's
+  // feet the way 'the world is painted' reads the whole band (proven on the
+  // canvas lane, --disable-3d-apis, where Pixi's CanvasRenderer is a Canvas2D
+  // context and drawImage reads it back; DEC-019 keeps the WebGL buffer
+  // preserved for the same read). A room patch that size — wall, floor,
+  // border — holds at most nine 5-bit colours and no ink; a drawn person adds
+  // skin, hair, top, bottom, shoes, the ink outline and highlights. It catches
+  // a rig that paints nothing on this lane and a broken part pipe; it cannot
+  // stand in for a look at the phone (DEC-005/009).
+  //
+  // The best crop is judged, not the first: the receptionist stands behind
+  // her counter, which hides everything below her head, so her feet crop is
+  // lit desk wood — hundreds of colours and no ink — whichever way she is
+  // drawn. A rig that paints nothing leaves every crop without ink.
+  const visible = people.filter((p) => p.visible);
+  expect(visible.length, 'nobody on screen is visible to crop').toBeGreaterThan(0);
+  const cropAt = ({ sx, sy }: { sx: number; sy: number }) => {
+    const game = document.querySelector<HTMLCanvasElement>('canvas[role="img"]');
+    if (!game) throw new Error('no game canvas');
+    const copy = document.createElement('canvas');
+    copy.width = game.width;
+    copy.height = game.height;
+    const ctx = copy.getContext('2d');
+    if (!ctx) throw new Error('no 2d context');
+    ctx.drawImage(game, 0, 0);
+    // The diagnostics report CSS px; the backing store is CSS × the renderer's
+    // resolution, which app.ts caps at 2 (the Pixel 7 project reports 2.625),
+    // so the ratio comes from the canvas itself, not from devicePixelRatio.
+    const k = game.width / Math.max(1, game.clientWidth);
+    const x0 = Math.max(0, Math.round((sx - 20) * k));
+    const y0 = Math.max(0, Math.round((sy - 48) * k));
+    const x1 = Math.min(copy.width, Math.round((sx + 20) * k));
+    const y1 = Math.min(copy.height, Math.round((sy + 4) * k));
+    const w = x1 - x0;
+    const h = y1 - y0;
+    if (w <= 0 || h <= 0) throw new Error(`crop off canvas at ${sx},${sy}`);
+    const d = ctx.getImageData(x0, y0, w, h).data;
+    const seen = new Set<number>();
+    let ink = 0;
+    const n = w * h;
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i]!;
+      const g = d[i + 1]!;
+      const b = d[i + 2]!;
+      seen.add(((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3));
+      if (Math.max(r, g, b) < 0x40) ink++;
+    }
+    return { w, h, distinctColours: seen.size, inkFrac: ink / n };
+  };
+  type Crop = { id: string; sx: number; sy: number; w: number; h: number; distinctColours: number; inkFrac: number };
+  const crops: Crop[] = [];
+  for (const who of visible) {
+    crops.push({ id: who.id, sx: who.sx, sy: who.sy, ...(await page.evaluate(cropAt, { sx: who.sx, sy: who.sy })) });
+  }
+  const best = crops.reduce((a, b) => (b.inkFrac > a.inkFrac ? b : a));
+  const where = crops.map((c) => `${c.id}@${c.sx},${c.sy}: ${c.distinctColours} colours, ${(c.inkFrac * 100).toFixed(1)}% ink`).join('; ');
+  expect(best.distinctColours, `every person is a flat patch — the rig painted nothing (${where})`)
+    .toBeGreaterThanOrEqual(10);
+  expect(best.inkFrac, `no person has an ink outline (${where})`)
+    .toBeGreaterThanOrEqual(0.02);
+});
+
+test('the world is painted, not left blank', async ({ page }) => {
+  // The renderer can initialise, load every texture and still put nothing on
+  // screen. This reads the game canvas back through a fresh 2D canvas and asks
+  // three things of the band between the HUD bars: that it is opaque, that it
+  // holds more than a handful of colours (sky, building, rooms, street), and
+  // that no single colour owns it (a solid clear colour is not a hotel).
+  //
+  // Proven on the canvas lane (--disable-3d-apis): Pixi's CanvasRenderer is a
+  // Canvas2D context and drawImage always reads it back. On real WebGL the
+  // readback needs the drawing buffer preserved, which the VITE_E2E dev server
+  // this suite starts switches on (DEC-019). The default headless SwiftShader
+  // lane captures blank and is not a target (BL-020).
+  await bootFresh(page);
+  await page.waitForTimeout(2000);
+  const paint = await page.evaluate(() => {
+    const game = document.querySelector<HTMLCanvasElement>('canvas[role="img"]');
+    if (!game) throw new Error('no game canvas');
+    const copy = document.createElement('canvas');
+    copy.width = game.width;
+    copy.height = game.height;
+    const ctx = copy.getContext('2d');
+    if (!ctx) throw new Error('no 2d context');
+    ctx.drawImage(game, 0, 0);
+    // The middle half of the canvas is always world; the HUD bars sit over the
+    // top and bottom quarters and may hide the canvas there anyway.
+    const top = Math.floor(copy.height * 0.25);
+    const d = ctx.getImageData(0, top, copy.width, Math.floor(copy.height * 0.5)).data;
+    const seen = new Map<number, number>();
+    let opaque = 0;
+    let n = 0;
+    // Every 8th pixel is plenty; 5-bit channels merge the dithering and
+    // anti-aliasing noise that would otherwise count as hundreds of colours.
+    for (let i = 0; i < d.length; i += 32) {
+      n++;
+      if (d[i + 3] === 255) opaque++;
+      const key = ((d[i]! >> 3) << 10) | ((d[i + 1]! >> 3) << 5) | (d[i + 2]! >> 3);
+      seen.set(key, (seen.get(key) ?? 0) + 1);
+    }
+    let dominant = 0;
+    for (const count of seen.values()) dominant = Math.max(dominant, count);
+    return { opaqueFrac: opaque / n, distinctColours: seen.size, dominantFrac: dominant / n };
+  });
+  expect(paint.opaqueFrac, 'the canvas is transparent where the world should be').toBeGreaterThanOrEqual(0.98);
+  expect(paint.distinctColours, 'the world is a flat fill, not a hotel').toBeGreaterThanOrEqual(8);
+  expect(paint.dominantFrac, 'one colour owns the screen').toBeLessThanOrEqual(0.7);
 });
 
 test('the people are animated, not standing in one frame', async ({ page }) => {

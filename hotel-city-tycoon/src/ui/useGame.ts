@@ -103,7 +103,9 @@ function boot(): Promise<Booted> {
     const stress = stressRequest(window.location.search);
     if (stress) {
       console.info(`[hotel-city-tycoon] stress mode: ${stress.rooms} rooms, ${stress.seconds}s warm-up`);
-      const state = buildStressState(data, { ...stress, epochMs: systemClock.now() });
+      // `?epoch=` pins the simulation clock so an evidence capture can be taken
+      // at a chosen hour of the day/night cycle; otherwise the device's now.
+      const state = buildStressState(data, { ...stress, epochMs: stress.epochMs ?? systemClock.now() });
       const engine = new GameEngine(data, state, {
         clock: systemClock,
         scheduler: intervalScheduler(),

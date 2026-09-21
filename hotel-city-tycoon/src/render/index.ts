@@ -31,4 +31,20 @@ export {
 } from './assets.ts';
 export type { AssetEntry, AssetManifest } from './assets.ts';
 export { GestureTracker, TAP_SLOP_PX } from './gestures.ts';
+export { quantiseDusk, lerpTint, duskTint, poolAlpha, starAlpha, DUSK_STEPS } from './lighting.ts';
+export { LightLayer } from './lightLayer.ts';
 export type { GestureAction, Point } from './gestures.ts';
+// The live rig (HC-P2-S3, DEC-020).
+export {
+  pose as rigPose, createRigState, resetRigState, figureFor, ik, cycle as rigCycle, boundsOf, headExtent,
+  walkSlidePx, NEUTRAL_INPUT,
+  STRIDE_PX, STRIDE_AMP, BOB_WALK_MAX, BOB_IDLE_MAX, SQUASH_MAX, SQUASH_IDLE, HEAD_LAG_MAX, LEAN_MAX, HOP_MAX,
+  STAMP_MAX, STAND_SPACE_PX, CELL_HALF_WIDTH_PX, RIG_TOTAL_PER_HEIGHT, RIG_HEAD_R,
+} from './anim/rig.ts';
+export type { Pose, RigState, RigInput, RigProportions, RigClip } from './anim/rig.ts';
+export { CAST, lookFor, castIds, PROP_EXTENT, PALETTE as CAST_PALETTE, shade as castShade } from './anim/cast.ts';
+export type { Look } from './anim/cast.ts';
+export { CharacterRig } from './characterRig.ts';
+export { progress as clipProgress } from './anim/clipPlayer.ts';
+export { setMotionTier, motionTier, tierFor, renderFlags } from './quality.ts';
+export type { MotionTier, RenderFlags } from './quality.ts';

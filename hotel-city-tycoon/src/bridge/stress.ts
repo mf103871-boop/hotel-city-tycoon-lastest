@@ -80,15 +80,26 @@ export function buildStressState(data: SimData, opts: StressOptions): GameState 
   return state;
 }
 
-/** Read the stress request from the url, or null for a normal session. */
-export function stressRequest(search: string): { rooms: number; seconds: number } | null {
+/**
+ * Read the stress request from the url, or null for a normal session.
+ *
+ * `epochMs` is the simulation's starting clock, so an evidence capture can be
+ * taken at a chosen hour instead of waiting for dusk (HC-P2-S2). Stress mode
+ * only: a normal session keeps the device's clock.
+ */
+export function stressRequest(search: string): { rooms: number; seconds: number; epochMs?: number } | null {
   try {
     const params = new URLSearchParams(search);
     if (!params.has('stress')) return null;
     const rooms = Number(params.get('stress'));
+    // Digits only: `Number('')` is 0, so a bare `?epoch=` would otherwise
+    // start the hotel at midnight 1970 instead of now.
+    const rawEpoch = params.get('epoch');
+    const epoch = rawEpoch !== null && /^\d+$/.test(rawEpoch) ? Number(rawEpoch) : Number.NaN;
     return {
       rooms: Number.isFinite(rooms) && rooms > 0 ? Math.min(200, rooms) : 60,
       seconds: Number(params.get('warm') ?? 900),
+      ...(Number.isInteger(epoch) && epoch >= 0 ? { epochMs: epoch } : {}),
     };
   } catch {
     return null;

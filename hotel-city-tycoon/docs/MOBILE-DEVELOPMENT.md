@@ -61,6 +61,57 @@ edges. CSS accepts both standard `env(safe-area-inset-*)` values and the
 plugin on Android. See [SystemBars inset handling](https://capacitorjs.com/docs/apis/system-bars).
 ResizeObserver follows the playable rectangle as insets change during rotation.
 
+## Taking the fps reading on a phone
+
+This is the only measurement that can move a P2 row to `VERIFIED`
+(DEC-005/DEC-009); sandbox numbers from the CI lane are never a substitute.
+Recorded 20-09-2026 with HC-P2-S2; extended 21-09-2026 with HC-P2-S3 (the
+live character rig, DEC-020).
+
+1. Open the Pages URL on the phone with the stress handle:
+   `https://mf103871-boop.github.io/hotel-city-tycoon-lastest/?stress=60&warm=900&debug=1`
+   (60 rooms warmed for 900 simulated seconds; the stress hotel reaches
+   about 60 people — 61 measured on the canvas lane on 20-09-2026, and
+   `tools/selftest/characters.ts` holds the count at 40 or more). Add
+   `&epoch=<milliseconds since 1970>` to force the simulation
+   clock to a chosen hour, for example a night reading with the light pools
+   and the dark sky up; without it the hour is the phone's local time.
+2. Let the hotel run for at least a minute, then read `p5` from the debug
+   badge (bottom of the screen). The badge also names the backend
+   (`webgpu`, `webgl` or `canvas`): a `canvas` reading on a phone is a
+   software fallback and must be reported as such.
+3. For the full report run `window.hct.perf()` in the phone's console:
+   Android via `chrome://inspect` on a desktop Chrome with USB debugging,
+   iOS via Safari > Develop > <device> (Web Inspector enabled in Settings >
+   Safari > Advanced). Copy the returned object as is.
+4. Paste the object, the device model, the OS version, the build id from
+   the badge and the URL used into the step report's evidence section.
+5. Since HC-P2-S3 the people are a live parts rig with two motion tiers, so
+   take three readings and paste all three `window.hct.perf()` objects plus
+   `window.hct.rigStats()` (tier, part count, `rebuilds` = frames that began
+   with the draw list already flagged for a rebuild, `viewUpdates` = frames
+   that began with a view update queued — a context swap or a Graphics
+   redraw, the class the flag alone cannot show) with the
+   device model and build id: the default URL above (`full` tier — the rig
+   posed every frame; this is the reading the bar applies to), the same URL
+   with `&lite=1` (the frame-grid tier the CI lane draws, springs off), and
+   with `&aa=1` (MSAA on: the rig's outlines are aliased by default on
+   WebGL/WebGPU, while every sandbox capture is antialiased by Canvas2D).
+6. Look at the rig while people walk and while they stand, at `?aa=0` and
+   `?aa=1`: the owner's eye on the jagged outlines and on edge shimmer on
+   idle people decides BL-044 — note which of the two is acceptable.
+
+`p5 >= 55` at 60 rooms / about 60 people on the default (`full` tier) URL is the
+bar that moves the row to `VERIFIED`; the `lite` and `aa` readings are recorded
+beside it, never in its place. For orientation only (not a phone number, never
+compared with the bar): the same URL on the sandbox's software Canvas2D lane
+read p5 30 for the rig at either tier against p5 59.5 for the S2 sheets on the
+same day (`docs/HC-P2-S3-REPORT.md` §6.2), so a phone reading well above 30 on
+WebGL/WebGPU is the expected shape, and one near it would reopen BL-046.
+Inside the Capacitor app the
+console is not reachable until HC-P2-S8 wires the native debugging switch
+(BL-040); until then take the reading in the phone's browser.
+
 ## Required before a device beta
 
 - Build an Android debug APK and an iOS simulator/device build with the actual toolchains.

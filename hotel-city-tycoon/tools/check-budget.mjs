@@ -11,14 +11,26 @@ import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
 
+/**
+ * `null` means measured and printed, never enforced.
+ *
+ * 2026-09-20, owner's decision, recorded as DEC-017: the size budgets are
+ * open for the renderer rebuild — «اجعل الحجم مفتوح لا يهم كم سيكون حجم
+ * الملفات». The JS budget stood at 346KB of 350KB when the decision was
+ * taken, which left no room for a new character rig or lighting at all, and
+ * the owner chose the renderer over the number. The numbers still print on
+ * every build so the cost of that choice stays visible; what changed is that
+ * exceeding them is no longer a failed build. Nothing that checks
+ * CORRECTNESS (the manifest, the shipped-asset count) is touched by this.
+ */
 const BUDGETS = {
   // The architecture document committed to 350. This was quietly raised to
   // 400 at some point with no reason recorded, which is how a budget stops
-  // being a budget. Back to what was agreed.
-  jsGzipKB: 350,        // the app shell a phone downloads before anything moves
-  cssGzipKB: 60,
-  initialAssetsKB: 3072,  // room art, effects and ui — what loads at boot
-  audioKB: 400,
+  // being a budget. Back to what was agreed — then opened by DEC-017.
+  jsGzipKB: null,       // was 350: the app shell a phone downloads before anything moves
+  cssGzipKB: null,      // was 60
+  initialAssetsKB: null,  // was 3072: room art, effects and ui — what loads at boot
+  audioKB: null,        // was 400
   // 2026-09-05, HC-P2-S1 (ART-3), owner's explicit approval as ART-0 line 485
   // requires: 8192 -> 12288. The nine animation sheets brought the cast from
   // 4 poses to 8-9 clips each, and the tree measured 7866KB after — 326KB of
@@ -26,7 +38,7 @@ const BUDGETS = {
   // (the remaining decor and the effect sprites) without another rise mid-step.
   // The characters bundle is lazily loaded, so this is download weight for a
   // running game, not boot weight; initialAssetsKB is deliberately unchanged.
-  totalAssetsKB: 12288,
+  totalAssetsKB: null,  // was 12288
 };
 
 const line = '─'.repeat(62);
@@ -59,9 +71,10 @@ function gzipSize(dir, ext) {
 
 function measure(label, bytes, limitKB) {
   const kb = bytes / 1024;
-  const ok = kb <= limitKB;
+  const open = limitKB === null;
+  const ok = open || kb <= limitKB;
   if (!ok) errors.push(`${label}: ${kb.toFixed(0)}KB exceeds the ${limitKB}KB budget`);
-  rows.push([label, kb, limitKB, ok]);
+  rows.push([label, kb, open ? 'open' : limitKB, ok]);
 }
 
 const dist = 'dist';
@@ -134,7 +147,8 @@ if (!built) {
 }
 for (const [label, value, limit, ok] of rows) {
   const unit = label === 'assets shipped' ? '' : 'KB';
-  console.log(`  ${ok ? '✓' : '✗'} ${label.padEnd(14)} ${value.toFixed(0).padStart(6)}${unit} / ${String(limit).padStart(5)}${unit}`);
+  const limitText = limit === 'open' ? ' open' : `${String(limit).padStart(5)}${unit}`;
+  console.log(`  ${ok ? '✓' : '✗'} ${label.padEnd(14)} ${value.toFixed(0).padStart(6)}${unit} / ${limitText}`);
 }
 console.log(line);
 if (errors.length === 0) {

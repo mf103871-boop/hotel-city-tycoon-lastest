@@ -92,6 +92,7 @@ P = {
     # --- ART-0 §7, measured from the reference -------------------------------
     "sky":        rgb("#6FBCF9"),
     "skyHi":      rgb("#8FD0FB"),
+    "skyLow":     rgb("#D9EEFD"),   # horizon haze: the sky gradient's third stop (renderer only, DEC-018)
     "roomBlue":   rgb("#4F8EE7"),
     "roomBlueDk": rgb("#4784D6"),
     "mint":       rgb("#B4E7C3"),

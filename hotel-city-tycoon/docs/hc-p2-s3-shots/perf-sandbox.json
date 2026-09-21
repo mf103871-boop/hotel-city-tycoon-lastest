@@ -1,0 +1,242 @@
+{
+ "perf canvas lite phone": {
+  "bootLine": "[hotel-city-tycoon] renderer: canvas, resolution 2x (+927ms)",
+  "tPeople": 2.2,
+  "tReset": 6.3,
+  "tRead": 16.3,
+  "perf": {
+   "samples": 496,
+   "fpsAverage": 49.519282458853766,
+   "fpsMin": 14.992504434085346,
+   "fpsP95Low": 29.940118392664818,
+   "worstFrameMs": 66.69999694824219,
+   "lateFrames": 101,
+   "lateFraction": 0.20362903225806453,
+   "rooms": 60,
+   "characters": 61,
+   "drawnRooms": 49,
+   "backend": "canvas",
+   "memoryMB": 39.45345592498779,
+   "firstPaintMs": 476,
+   "devicePixelRatio": 2,
+   "viewport": "412x915",
+   "verdict": {
+    "sustained60": false,
+    "memory": true,
+    "firstPaint": true,
+    "atDocumentScale": true
+   }
+  },
+  "rigStatsStart": {
+   "tier": "lite",
+   "parts": 3233,
+   "rebuilds": 10,
+   "viewUpdates": 18
+  },
+  "rigStatsEnd": {
+   "tier": "lite",
+   "parts": 3233,
+   "rebuilds": 25,
+   "viewUpdates": 54
+  },
+  "rebuildsInWindow": 15,
+  "viewUpdatesInWindow": 36,
+  "chars": {
+   "n": 61,
+   "visible": 37,
+   "walking": 10,
+   "sources": [
+    "rig"
+   ]
+  },
+  "badge": [
+   "renderer canvas",
+   "fps 60 \u00b7 p5 30",
+   "memory 35MB",
+   "rooms 49/60 drawn",
+   "people 37/61 drawn",
+   "60 rooms \u00b7 123 guests served"
+  ],
+  "lines": []
+ },
+ "perf canvas full phone": {
+  "bootLine": "[hotel-city-tycoon] renderer: canvas, resolution 2x (+872ms)",
+  "tPeople": 2.1,
+  "tReset": 6.1,
+  "tRead": 16.2,
+  "perf": {
+   "samples": 507,
+   "fpsAverage": 50.61749218823473,
+   "fpsMin": 20,
+   "fpsP95Low": 29.940118392664818,
+   "worstFrameMs": 50,
+   "lateFrames": 93,
+   "lateFraction": 0.1834319526627219,
+   "rooms": 60,
+   "characters": 61,
+   "drawnRooms": 49,
+   "backend": "canvas",
+   "memoryMB": 43.5962028503418,
+   "firstPaintMs": 456,
+   "devicePixelRatio": 2,
+   "viewport": "412x915",
+   "verdict": {
+    "sustained60": false,
+    "memory": true,
+    "firstPaint": true,
+    "atDocumentScale": true
+   }
+  },
+  "rigStatsStart": {
+   "tier": "full",
+   "parts": 3233,
+   "rebuilds": 9,
+   "viewUpdates": 18
+  },
+  "rigStatsEnd": {
+   "tier": "full",
+   "parts": 3233,
+   "rebuilds": 25,
+   "viewUpdates": 54
+  },
+  "rebuildsInWindow": 16,
+  "viewUpdatesInWindow": 36,
+  "chars": {
+   "n": 61,
+   "visible": 37,
+   "walking": 11,
+   "sources": [
+    "rig"
+   ]
+  },
+  "badge": [
+   "renderer canvas",
+   "fps 60 \u00b7 p5 30",
+   "memory 39MB",
+   "rooms 49/60 drawn",
+   "people 37/61 drawn",
+   "60 rooms \u00b7 123 guests served"
+  ],
+  "lines": []
+ },
+ "perf canvas lite desktop": {
+  "bootLine": "[hotel-city-tycoon] renderer: canvas, resolution 1x (+900ms)",
+  "tPeople": 2.2,
+  "tReset": 6.2,
+  "tRead": 16.3,
+  "perf": {
+   "samples": 378,
+   "fpsAverage": 37.73886260062262,
+   "fpsMin": 20,
+   "fpsP95Low": 29.940118392664818,
+   "worstFrameMs": 50,
+   "lateFrames": 219,
+   "lateFraction": 0.5793650793650794,
+   "rooms": 60,
+   "characters": 61,
+   "drawnRooms": 60,
+   "backend": "canvas",
+   "memoryMB": 52.2119140625,
+   "firstPaintMs": 856,
+   "devicePixelRatio": 1,
+   "viewport": "1280x720",
+   "verdict": {
+    "sustained60": false,
+    "memory": true,
+    "firstPaint": true,
+    "atDocumentScale": true
+   }
+  },
+  "rigStatsStart": {
+   "tier": "lite",
+   "parts": 3233,
+   "rebuilds": 10,
+   "viewUpdates": 48
+  },
+  "rigStatsEnd": {
+   "tier": "lite",
+   "parts": 3233,
+   "rebuilds": 25,
+   "viewUpdates": 148
+  },
+  "rebuildsInWindow": 15,
+  "viewUpdatesInWindow": 100,
+  "chars": {
+   "n": 61,
+   "visible": 61,
+   "walking": 10,
+   "sources": [
+    "rig"
+   ]
+  },
+  "badge": [
+   "renderer canvas",
+   "fps 60 \u00b7 p5 30",
+   "memory 46MB",
+   "rooms 60/60 drawn",
+   "people 61/61 drawn",
+   "60 rooms \u00b7 123 guests served"
+  ],
+  "lines": []
+ },
+ "perf canvas full desktop": {
+  "bootLine": "[hotel-city-tycoon] renderer: canvas, resolution 1x (+936ms)",
+  "tPeople": 2.3,
+  "tReset": 6.3,
+  "tRead": 16.3,
+  "perf": {
+   "samples": 379,
+   "fpsAverage": 37.90151563266019,
+   "fpsMin": 20,
+   "fpsP95Low": 29.940118392664818,
+   "worstFrameMs": 50,
+   "lateFrames": 215,
+   "lateFraction": 0.5672823218997362,
+   "rooms": 60,
+   "characters": 61,
+   "drawnRooms": 60,
+   "backend": "canvas",
+   "memoryMB": 42.460734367370605,
+   "firstPaintMs": 460,
+   "devicePixelRatio": 1,
+   "viewport": "1280x720",
+   "verdict": {
+    "sustained60": false,
+    "memory": true,
+    "firstPaint": true,
+    "atDocumentScale": true
+   }
+  },
+  "rigStatsStart": {
+   "tier": "full",
+   "parts": 3233,
+   "rebuilds": 10,
+   "viewUpdates": 51
+  },
+  "rigStatsEnd": {
+   "tier": "full",
+   "parts": 3233,
+   "rebuilds": 25,
+   "viewUpdates": 151
+  },
+  "rebuildsInWindow": 15,
+  "viewUpdatesInWindow": 100,
+  "chars": {
+   "n": 61,
+   "visible": 61,
+   "walking": 10,
+   "sources": [
+    "rig"
+   ]
+  },
+  "badge": [
+   "renderer canvas",
+   "fps 30 \u00b7 p5 30",
+   "memory 36MB",
+   "rooms 60/60 drawn",
+   "people 61/61 drawn",
+   "60 rooms \u00b7 123 guests served"
+  ],
+  "lines": []
+ }
+}

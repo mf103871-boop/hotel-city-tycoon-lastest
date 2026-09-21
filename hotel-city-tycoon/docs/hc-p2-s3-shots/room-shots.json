@@ -1,0 +1,1294 @@
+[
+ {
+  "name": "room-reception-full-phone",
+  "tier": "full",
+  "query": "/?stress=12&epoch=1789992000000&debug=1&lite=0",
+  "viewport": {
+   "width": 412,
+   "height": 915
+  },
+  "dpr": 2,
+  "who": {
+   "id": "s0",
+   "clip": "idle",
+   "x": 174,
+   "y": 948,
+   "visible": true,
+   "source": "rig",
+   "sx": 206,
+   "sy": 503,
+   "sheetReady": true
+  },
+  "zoom": 2.022,
+  "steps": 17,
+  "roomNear": [
+   {
+    "id": "r0",
+    "x": -146,
+    "y": 333,
+    "w": 518,
+    "h": 194
+   },
+   {
+    "id": "r1",
+    "x": 372,
+    "y": 333,
+    "w": 259,
+    "h": 194
+   }
+  ],
+  "inFrame": [
+   {
+    "id": "s1",
+    "clip": "idle",
+    "sx": 64,
+    "sy": 309,
+    "source": "rig"
+   },
+   {
+    "id": "s0",
+    "clip": "idle",
+    "sx": 206,
+    "sy": 503,
+    "source": "rig"
+   }
+  ],
+  "measure": {
+   "k": 2,
+   "figureDevPx": 247,
+   "figureCssPx": 123.5,
+   "headDevPx": 40,
+   "headRatio": 0.16194331983805668,
+   "widestDevPx": 136,
+   "top": 5,
+   "bottom": 251,
+   "neck": 45
+  },
+  "rig": {
+   "tier": "full",
+   "parts": 636,
+   "rebuilds": 2
+  },
+  "lines": []
+ },
+ {
+  "name": "room-reception-full-desktop",
+  "tier": "full",
+  "query": "/?stress=12&epoch=1789992000000&debug=1&lite=0",
+  "viewport": {
+   "width": 1280,
+   "height": 720
+  },
+  "dpr": 1,
+  "who": {
+   "id": "s0",
+   "clip": "idle",
+   "x": 174,
+   "y": 948,
+   "visible": true,
+   "source": "rig",
+   "sx": 611,
+   "sy": 396,
+   "sheetReady": true
+  },
+  "zoom": 2.022,
+  "steps": 17,
+  "roomNear": [
+   {
+    "id": "r0",
+    "x": 259,
+    "y": 226,
+    "w": 518,
+    "h": 194
+   },
+   {
+    "id": "r1",
+    "x": 776,
+    "y": 226,
+    "w": 259,
+    "h": 194
+   }
+  ],
+  "inFrame": [
+   {
+    "id": "s1",
+    "clip": "idle",
+    "sx": 469,
+    "sy": 202,
+    "source": "rig"
+   },
+   {
+    "id": "g33",
+    "clip": "sit",
+    "sx": 938,
+    "sy": 202,
+    "source": "rig"
+   },
+   {
+    "id": "s3",
+    "clip": "work",
+    "sx": 1120,
+    "sy": 202,
+    "source": "rig"
+   },
+   {
+    "id": "s0",
+    "clip": "idle",
+    "sx": 611,
+    "sy": 396,
+    "source": "rig"
+   },
+   {
+    "id": "g39",
+    "clip": "idle",
+    "sx": 1148,
+    "sy": 396,
+    "source": "rig"
+   },
+   {
+    "id": "g17",
+    "clip": "walk",
+    "sx": 77,
+    "sy": 455,
+    "source": "rig"
+   }
+  ],
+  "measure": {
+   "k": 1,
+   "figureDevPx": 122,
+   "figureCssPx": 122,
+   "headDevPx": 18,
+   "headRatio": 0.14754098360655737,
+   "widestDevPx": 68,
+   "top": 4,
+   "bottom": 125,
+   "neck": 22
+  },
+  "rig": {
+   "tier": "full",
+   "parts": 636,
+   "rebuilds": 2
+  },
+  "lines": []
+ },
+ {
+  "name": "room-reception-lite-phone",
+  "tier": "lite",
+  "query": "/?stress=12&epoch=1789992000000&debug=1&lite=1",
+  "viewport": {
+   "width": 412,
+   "height": 915
+  },
+  "dpr": 2,
+  "who": {
+   "id": "s0",
+   "clip": "idle",
+   "x": 174,
+   "y": 948,
+   "visible": true,
+   "source": "rig",
+   "sx": 206,
+   "sy": 503,
+   "sheetReady": true
+  },
+  "zoom": 2.022,
+  "steps": 17,
+  "roomNear": [
+   {
+    "id": "r0",
+    "x": -146,
+    "y": 333,
+    "w": 518,
+    "h": 194
+   },
+   {
+    "id": "r1",
+    "x": 372,
+    "y": 333,
+    "w": 259,
+    "h": 194
+   }
+  ],
+  "inFrame": [
+   {
+    "id": "s1",
+    "clip": "idle",
+    "sx": 64,
+    "sy": 309,
+    "source": "rig"
+   },
+   {
+    "id": "s0",
+    "clip": "idle",
+    "sx": 206,
+    "sy": 503,
+    "source": "rig"
+   }
+  ],
+  "measure": {
+   "k": 2,
+   "figureDevPx": 247,
+   "figureCssPx": 123.5,
+   "headDevPx": 40,
+   "headRatio": 0.16194331983805668,
+   "widestDevPx": 136,
+   "top": 5,
+   "bottom": 251,
+   "neck": 45
+  },
+  "rig": {
+   "tier": "lite",
+   "parts": 636,
+   "rebuilds": 2
+  },
+  "lines": []
+ },
+ {
+  "name": "room-reception-lite-desktop",
+  "tier": "lite",
+  "query": "/?stress=12&epoch=1789992000000&debug=1&lite=1",
+  "viewport": {
+   "width": 1280,
+   "height": 720
+  },
+  "dpr": 1,
+  "who": {
+   "id": "s0",
+   "clip": "idle",
+   "x": 174,
+   "y": 948,
+   "visible": true,
+   "source": "rig",
+   "sx": 611,
+   "sy": 396,
+   "sheetReady": true
+  },
+  "zoom": 2.022,
+  "steps": 17,
+  "roomNear": [
+   {
+    "id": "r0",
+    "x": 259,
+    "y": 226,
+    "w": 518,
+    "h": 194
+   },
+   {
+    "id": "r1",
+    "x": 776,
+    "y": 226,
+    "w": 259,
+    "h": 194
+   }
+  ],
+  "inFrame": [
+   {
+    "id": "s1",
+    "clip": "idle",
+    "sx": 469,
+    "sy": 202,
+    "source": "rig"
+   },
+   {
+    "id": "g33",
+    "clip": "sit",
+    "sx": 938,
+    "sy": 202,
+    "source": "rig"
+   },
+   {
+    "id": "s3",
+    "clip": "work",
+    "sx": 1120,
+    "sy": 202,
+    "source": "rig"
+   },
+   {
+    "id": "s0",
+    "clip": "idle",
+    "sx": 611,
+    "sy": 396,
+    "source": "rig"
+   },
+   {
+    "id": "g39",
+    "clip": "idle",
+    "sx": 1148,
+    "sy": 396,
+    "source": "rig"
+   },
+   {
+    "id": "g17",
+    "clip": "walk",
+    "sx": 75,
+    "sy": 455,
+    "source": "rig"
+   }
+  ],
+  "measure": {
+   "k": 1,
+   "figureDevPx": 122,
+   "figureCssPx": 122,
+   "headDevPx": 18,
+   "headRatio": 0.14754098360655737,
+   "widestDevPx": 68,
+   "top": 4,
+   "bottom": 125,
+   "neck": 22
+  },
+  "rig": {
+   "tier": "lite",
+   "parts": 636,
+   "rebuilds": 2
+  },
+  "lines": []
+ },
+ {
+  "name": "room-bedroom-full-phone",
+  "tier": "full",
+  "query": "/?stress=12&epoch=1789992000000&debug=1&lite=0",
+  "viewport": {
+   "width": 412,
+   "height": 915
+  },
+  "dpr": 2,
+  "who": {
+   "id": "g42",
+   "clip": "sleep",
+   "x": 808,
+   "y": 948,
+   "visible": true,
+   "source": "rig",
+   "sx": 206,
+   "sy": 503,
+   "sheetReady": true
+  },
+  "zoom": 2.022,
+  "steps": 17,
+  "roomNear": [
+   {
+    "id": "r5",
+    "x": -134,
+    "y": 333,
+    "w": 259,
+    "h": 194
+   },
+   {
+    "id": "r6",
+    "x": 125,
+    "y": 333,
+    "w": 518,
+    "h": 194
+   }
+  ],
+  "inFrame": [
+   {
+    "id": "g42",
+    "clip": "sleep",
+    "sx": 206,
+    "sy": 503,
+    "source": "rig"
+   },
+   {
+    "id": "g43",
+    "clip": "sleep",
+    "sx": 368,
+    "sy": 503,
+    "source": "rig"
+   }
+  ],
+  "measure": {
+   "k": 2,
+   "figureDevPx": 244,
+   "figureCssPx": 122,
+   "headDevPx": 36,
+   "headRatio": 0.14754098360655737,
+   "widestDevPx": 136,
+   "top": 8,
+   "bottom": 251,
+   "neck": 44
+  },
+  "rig": {
+   "tier": "full",
+   "parts": 636,
+   "rebuilds": 2
+  },
+  "lines": []
+ },
+ {
+  "name": "room-bedroom-full-desktop",
+  "tier": "full",
+  "query": "/?stress=12&epoch=1789992000000&debug=1&lite=0",
+  "viewport": {
+   "width": 1280,
+   "height": 720
+  },
+  "dpr": 1,
+  "who": {
+   "id": "g42",
+   "clip": "sleep",
+   "x": 808,
+   "y": 948,
+   "visible": true,
+   "source": "rig",
+   "sx": 640,
+   "sy": 396,
+   "sheetReady": true
+  },
+  "zoom": 2.022,
+  "steps": 17,
+  "roomNear": [
+   {
+    "id": "r5",
+    "x": 301,
+    "y": 226,
+    "w": 259,
+    "h": 194
+   },
+   {
+    "id": "r6",
+    "x": 559,
+    "y": 226,
+    "w": 518,
+    "h": 194
+   }
+  ],
+  "inFrame": [
+   {
+    "id": "g44",
+    "clip": "sleep",
+    "sx": 359,
+    "sy": 396,
+    "source": "rig"
+   },
+   {
+    "id": "g42",
+    "clip": "sleep",
+    "sx": 640,
+    "sy": 396,
+    "source": "rig"
+   },
+   {
+    "id": "g43",
+    "clip": "sleep",
+    "sx": 802,
+    "sy": 396,
+    "source": "rig"
+   },
+   {
+    "id": "g40",
+    "clip": "sleep",
+    "sx": 1158,
+    "sy": 396,
+    "source": "rig"
+   }
+  ],
+  "measure": {
+   "k": 1,
+   "figureDevPx": 122,
+   "figureCssPx": 122,
+   "headDevPx": 18,
+   "headRatio": 0.14754098360655737,
+   "widestDevPx": 68,
+   "top": 4,
+   "bottom": 125,
+   "neck": 22
+  },
+  "rig": {
+   "tier": "full",
+   "parts": 636,
+   "rebuilds": 2
+  },
+  "lines": []
+ },
+ {
+  "name": "room-gym-full-phone",
+  "tier": "full",
+  "query": "/?stress=12&epoch=1789992000000&debug=1&lite=0",
+  "viewport": {
+   "width": 412,
+   "height": 915
+  },
+  "dpr": 2,
+  "who": {
+   "id": "s2",
+   "clip": "idle",
+   "x": 1856,
+   "y": 948,
+   "visible": true,
+   "source": "rig",
+   "sx": 390,
+   "sy": 503,
+   "sheetReady": true
+  },
+  "zoom": 2.022,
+  "steps": 17,
+  "roomNear": [
+   {
+    "id": "r10",
+    "x": 2,
+    "y": 333,
+    "w": 518,
+    "h": 194
+   }
+  ],
+  "inFrame": [
+   {
+    "id": "s2",
+    "clip": "idle",
+    "sx": 390,
+    "sy": 503,
+    "source": "rig"
+   }
+  ],
+  "measure": {
+   "k": 2,
+   "figureDevPx": 252,
+   "figureCssPx": 126,
+   "headDevPx": 112,
+   "headRatio": 0.4444444444444444,
+   "widestDevPx": 112,
+   "top": 0,
+   "bottom": 251,
+   "neck": 112
+  },
+  "rig": {
+   "tier": "full",
+   "parts": 742,
+   "rebuilds": 9
+  },
+  "lines": []
+ },
+ {
+  "name": "room-gym-full-desktop",
+  "tier": "full",
+  "query": "/?stress=12&epoch=1789992000000&debug=1&lite=0",
+  "viewport": {
+   "width": 1280,
+   "height": 720
+  },
+  "dpr": 1,
+  "who": {
+   "id": "s2",
+   "clip": "idle",
+   "x": 1856,
+   "y": 948,
+   "visible": true,
+   "source": "rig",
+   "sx": 892,
+   "sy": 396,
+   "sheetReady": true
+  },
+  "zoom": 2.022,
+  "steps": 17,
+  "roomNear": [
+   {
+    "id": "r10",
+    "x": 504,
+    "y": 226,
+    "w": 518,
+    "h": 194
+   }
+  ],
+  "inFrame": [
+   {
+    "id": "s2",
+    "clip": "idle",
+    "sx": 892,
+    "sy": 396,
+    "source": "rig"
+   }
+  ],
+  "measure": {
+   "k": 1,
+   "figureDevPx": 126,
+   "figureCssPx": 126,
+   "headDevPx": 19,
+   "headRatio": 0.15079365079365079,
+   "widestDevPx": 68,
+   "top": 0,
+   "bottom": 125,
+   "neck": 19
+  },
+  "rig": {
+   "tier": "full",
+   "parts": 742,
+   "rebuilds": 9
+  },
+  "lines": []
+ },
+ {
+  "name": "room-restaurant-full-phone",
+  "tier": "full",
+  "query": "/?stress=12&epoch=1789992000000&debug=1&lite=0",
+  "viewport": {
+   "width": 412,
+   "height": 915
+  },
+  "dpr": 2,
+  "who": {
+   "id": "s3",
+   "clip": "work",
+   "x": 426,
+   "y": 852,
+   "visible": true,
+   "source": "rig",
+   "sx": 206,
+   "sy": 504,
+   "sheetReady": true
+  },
+  "zoom": 2.022,
+  "steps": 17,
+  "roomNear": [
+   {
+    "id": "r1",
+    "x": -138,
+    "y": 528,
+    "w": 259,
+    "h": 194
+   },
+   {
+    "id": "r2",
+    "x": 121,
+    "y": 528,
+    "w": 259,
+    "h": 194
+   },
+   {
+    "id": "r4",
+    "x": 380,
+    "y": 528,
+    "w": 259,
+    "h": 194
+   },
+   {
+    "id": "r11",
+    "x": -396,
+    "y": 334,
+    "w": 776,
+    "h": 194
+   }
+  ],
+  "inFrame": [
+   {
+    "id": "g33",
+    "clip": "sit",
+    "sx": 24,
+    "sy": 504,
+    "source": "rig"
+   },
+   {
+    "id": "s3",
+    "clip": "work",
+    "sx": 206,
+    "sy": 504,
+    "source": "rig"
+   },
+   {
+    "id": "g39",
+    "clip": "idle",
+    "sx": 234,
+    "sy": 698,
+    "source": "rig"
+   }
+  ],
+  "measure": {
+   "k": 2,
+   "figureDevPx": 223,
+   "figureCssPx": 111.5,
+   "headDevPx": 36,
+   "headRatio": 0.16143497757847533,
+   "widestDevPx": 136,
+   "top": 29,
+   "bottom": 251,
+   "neck": 65
+  },
+  "rig": {
+   "tier": "full",
+   "parts": 636,
+   "rebuilds": 2
+  },
+  "lines": []
+ },
+ {
+  "name": "room-restaurant-full-desktop",
+  "tier": "full",
+  "query": "/?stress=12&epoch=1789992000000&debug=1&lite=0",
+  "viewport": {
+   "width": 1280,
+   "height": 720
+  },
+  "dpr": 1,
+  "who": {
+   "id": "s3",
+   "clip": "work",
+   "x": 426,
+   "y": 852,
+   "visible": true,
+   "source": "rig",
+   "sx": 640,
+   "sy": 396,
+   "sheetReady": true
+  },
+  "zoom": 2.022,
+  "steps": 17,
+  "roomNear": [
+   {
+    "id": "r1",
+    "x": 296,
+    "y": 420,
+    "w": 259,
+    "h": 194
+   },
+   {
+    "id": "r2",
+    "x": 555,
+    "y": 420,
+    "w": 259,
+    "h": 194
+   },
+   {
+    "id": "r4",
+    "x": 814,
+    "y": 420,
+    "w": 259,
+    "h": 194
+   },
+   {
+    "id": "r11",
+    "x": 38,
+    "y": 226,
+    "w": 776,
+    "h": 194
+   }
+  ],
+  "inFrame": [
+   {
+    "id": "g33",
+    "clip": "sit",
+    "sx": 458,
+    "sy": 396,
+    "source": "rig"
+   },
+   {
+    "id": "s3",
+    "clip": "work",
+    "sx": 640,
+    "sy": 396,
+    "source": "rig"
+   },
+   {
+    "id": "s0",
+    "clip": "idle",
+    "sx": 131,
+    "sy": 590,
+    "source": "rig"
+   },
+   {
+    "id": "g39",
+    "clip": "idle",
+    "sx": 668,
+    "sy": 590,
+    "source": "rig"
+   },
+   {
+    "id": "g44",
+    "clip": "sleep",
+    "sx": 1130,
+    "sy": 590,
+    "source": "rig"
+   }
+  ],
+  "measure": {
+   "k": 1,
+   "figureDevPx": 111,
+   "figureCssPx": 111,
+   "headDevPx": 17,
+   "headRatio": 0.15315315315315314,
+   "widestDevPx": 68,
+   "top": 15,
+   "bottom": 125,
+   "neck": 32
+  },
+  "rig": {
+   "tier": "full",
+   "parts": 636,
+   "rebuilds": 2
+  },
+  "lines": []
+ },
+ {
+  "name": "room-bedroom-lite-phone",
+  "tier": "lite",
+  "query": "/?stress=12&epoch=1789992000000&debug=1&lite=1",
+  "viewport": {
+   "width": 412,
+   "height": 915
+  },
+  "dpr": 2,
+  "who": {
+   "id": "g42",
+   "clip": "sleep",
+   "x": 808,
+   "y": 948,
+   "visible": true,
+   "source": "rig",
+   "sx": 206,
+   "sy": 503,
+   "sheetReady": true
+  },
+  "zoom": 2.022,
+  "steps": 17,
+  "roomNear": [
+   {
+    "id": "r5",
+    "x": -134,
+    "y": 333,
+    "w": 259,
+    "h": 194
+   },
+   {
+    "id": "r6",
+    "x": 125,
+    "y": 333,
+    "w": 518,
+    "h": 194
+   }
+  ],
+  "inFrame": [
+   {
+    "id": "g42",
+    "clip": "sleep",
+    "sx": 206,
+    "sy": 503,
+    "source": "rig"
+   },
+   {
+    "id": "g43",
+    "clip": "sleep",
+    "sx": 368,
+    "sy": 503,
+    "source": "rig"
+   }
+  ],
+  "measure": {
+   "k": 2,
+   "figureDevPx": 244,
+   "figureCssPx": 122,
+   "headDevPx": 36,
+   "headRatio": 0.14754098360655737,
+   "widestDevPx": 136,
+   "top": 8,
+   "bottom": 251,
+   "neck": 44
+  },
+  "rig": {
+   "tier": "lite",
+   "parts": 636,
+   "rebuilds": 2
+  },
+  "lines": []
+ },
+ {
+  "name": "room-bedroom-lite-desktop",
+  "tier": "lite",
+  "query": "/?stress=12&epoch=1789992000000&debug=1&lite=1",
+  "viewport": {
+   "width": 1280,
+   "height": 720
+  },
+  "dpr": 1,
+  "who": {
+   "id": "g42",
+   "clip": "sleep",
+   "x": 808,
+   "y": 948,
+   "visible": true,
+   "source": "rig",
+   "sx": 640,
+   "sy": 396,
+   "sheetReady": true
+  },
+  "zoom": 2.022,
+  "steps": 17,
+  "roomNear": [
+   {
+    "id": "r5",
+    "x": 301,
+    "y": 226,
+    "w": 259,
+    "h": 194
+   },
+   {
+    "id": "r6",
+    "x": 559,
+    "y": 226,
+    "w": 518,
+    "h": 194
+   }
+  ],
+  "inFrame": [
+   {
+    "id": "g44",
+    "clip": "sleep",
+    "sx": 357,
+    "sy": 396,
+    "source": "rig"
+   },
+   {
+    "id": "g42",
+    "clip": "sleep",
+    "sx": 640,
+    "sy": 396,
+    "source": "rig"
+   },
+   {
+    "id": "g43",
+    "clip": "sleep",
+    "sx": 802,
+    "sy": 396,
+    "source": "rig"
+   },
+   {
+    "id": "g40",
+    "clip": "sleep",
+    "sx": 1158,
+    "sy": 396,
+    "source": "rig"
+   }
+  ],
+  "measure": {
+   "k": 1,
+   "figureDevPx": 122,
+   "figureCssPx": 122,
+   "headDevPx": 18,
+   "headRatio": 0.14754098360655737,
+   "widestDevPx": 68,
+   "top": 4,
+   "bottom": 125,
+   "neck": 22
+  },
+  "rig": {
+   "tier": "lite",
+   "parts": 636,
+   "rebuilds": 2
+  },
+  "lines": []
+ },
+ {
+  "name": "room-gym-lite-phone",
+  "tier": "lite",
+  "query": "/?stress=12&epoch=1789992000000&debug=1&lite=1",
+  "viewport": {
+   "width": 412,
+   "height": 915
+  },
+  "dpr": 2,
+  "who": {
+   "id": "s2",
+   "clip": "idle",
+   "x": 1856,
+   "y": 948,
+   "visible": true,
+   "source": "rig",
+   "sx": 383,
+   "sy": 503,
+   "sheetReady": true
+  },
+  "zoom": 2.022,
+  "steps": 17,
+  "roomNear": [
+   {
+    "id": "r10",
+    "x": -5,
+    "y": 333,
+    "w": 518,
+    "h": 194
+   }
+  ],
+  "inFrame": [
+   {
+    "id": "s2",
+    "clip": "idle",
+    "sx": 383,
+    "sy": 503,
+    "source": "rig"
+   }
+  ],
+  "measure": {
+   "k": 2,
+   "figureDevPx": 252,
+   "figureCssPx": 126,
+   "headDevPx": 40,
+   "headRatio": 0.15873015873015872,
+   "widestDevPx": 126,
+   "top": 0,
+   "bottom": 251,
+   "neck": 40
+  },
+  "rig": {
+   "tier": "lite",
+   "parts": 742,
+   "rebuilds": 9
+  },
+  "lines": []
+ },
+ {
+  "name": "room-gym-lite-desktop",
+  "tier": "lite",
+  "query": "/?stress=12&epoch=1789992000000&debug=1&lite=1",
+  "viewport": {
+   "width": 1280,
+   "height": 720
+  },
+  "dpr": 1,
+  "who": {
+   "id": "s2",
+   "clip": "idle",
+   "x": 1856,
+   "y": 948,
+   "visible": true,
+   "source": "rig",
+   "sx": 892,
+   "sy": 396,
+   "sheetReady": true
+  },
+  "zoom": 2.022,
+  "steps": 17,
+  "roomNear": [
+   {
+    "id": "r10",
+    "x": 504,
+    "y": 226,
+    "w": 518,
+    "h": 194
+   }
+  ],
+  "inFrame": [
+   {
+    "id": "s2",
+    "clip": "idle",
+    "sx": 892,
+    "sy": 396,
+    "source": "rig"
+   }
+  ],
+  "measure": {
+   "k": 1,
+   "figureDevPx": 126,
+   "figureCssPx": 126,
+   "headDevPx": 19,
+   "headRatio": 0.15079365079365079,
+   "widestDevPx": 68,
+   "top": 0,
+   "bottom": 125,
+   "neck": 19
+  },
+  "rig": {
+   "tier": "lite",
+   "parts": 742,
+   "rebuilds": 9
+  },
+  "lines": []
+ },
+ {
+  "name": "room-restaurant-lite-phone",
+  "tier": "lite",
+  "query": "/?stress=12&epoch=1789992000000&debug=1&lite=1",
+  "viewport": {
+   "width": 412,
+   "height": 915
+  },
+  "dpr": 2,
+  "who": {
+   "id": "s3",
+   "clip": "work",
+   "x": 426,
+   "y": 852,
+   "visible": true,
+   "source": "rig",
+   "sx": 206,
+   "sy": 504,
+   "sheetReady": true
+  },
+  "zoom": 2.022,
+  "steps": 17,
+  "roomNear": [
+   {
+    "id": "r1",
+    "x": -138,
+    "y": 528,
+    "w": 259,
+    "h": 194
+   },
+   {
+    "id": "r2",
+    "x": 121,
+    "y": 528,
+    "w": 259,
+    "h": 194
+   },
+   {
+    "id": "r4",
+    "x": 380,
+    "y": 528,
+    "w": 259,
+    "h": 194
+   },
+   {
+    "id": "r11",
+    "x": -396,
+    "y": 334,
+    "w": 776,
+    "h": 194
+   }
+  ],
+  "inFrame": [
+   {
+    "id": "g33",
+    "clip": "sit",
+    "sx": 24,
+    "sy": 504,
+    "source": "rig"
+   },
+   {
+    "id": "s3",
+    "clip": "work",
+    "sx": 206,
+    "sy": 504,
+    "source": "rig"
+   },
+   {
+    "id": "g39",
+    "clip": "idle",
+    "sx": 234,
+    "sy": 698,
+    "source": "rig"
+   }
+  ],
+  "measure": {
+   "k": 2,
+   "figureDevPx": 222,
+   "figureCssPx": 111,
+   "headDevPx": 35,
+   "headRatio": 0.15765765765765766,
+   "widestDevPx": 136,
+   "top": 30,
+   "bottom": 251,
+   "neck": 65
+  },
+  "rig": {
+   "tier": "lite",
+   "parts": 636,
+   "rebuilds": 2
+  },
+  "lines": []
+ },
+ {
+  "name": "room-restaurant-lite-desktop",
+  "tier": "lite",
+  "query": "/?stress=12&epoch=1789992000000&debug=1&lite=1",
+  "viewport": {
+   "width": 1280,
+   "height": 720
+  },
+  "dpr": 1,
+  "who": {
+   "id": "s3",
+   "clip": "work",
+   "x": 426,
+   "y": 852,
+   "visible": true,
+   "source": "rig",
+   "sx": 640,
+   "sy": 396,
+   "sheetReady": true
+  },
+  "zoom": 2.022,
+  "steps": 17,
+  "roomNear": [
+   {
+    "id": "r1",
+    "x": 296,
+    "y": 420,
+    "w": 259,
+    "h": 194
+   },
+   {
+    "id": "r2",
+    "x": 555,
+    "y": 420,
+    "w": 259,
+    "h": 194
+   },
+   {
+    "id": "r4",
+    "x": 814,
+    "y": 420,
+    "w": 259,
+    "h": 194
+   },
+   {
+    "id": "r11",
+    "x": 38,
+    "y": 226,
+    "w": 776,
+    "h": 194
+   }
+  ],
+  "inFrame": [
+   {
+    "id": "g33",
+    "clip": "sit",
+    "sx": 458,
+    "sy": 396,
+    "source": "rig"
+   },
+   {
+    "id": "s3",
+    "clip": "work",
+    "sx": 640,
+    "sy": 396,
+    "source": "rig"
+   },
+   {
+    "id": "s0",
+    "clip": "idle",
+    "sx": 131,
+    "sy": 590,
+    "source": "rig"
+   },
+   {
+    "id": "g39",
+    "clip": "idle",
+    "sx": 668,
+    "sy": 590,
+    "source": "rig"
+   },
+   {
+    "id": "g44",
+    "clip": "sleep",
+    "sx": 1137,
+    "sy": 590,
+    "source": "rig"
+   }
+  ],
+  "measure": {
+   "k": 1,
+   "figureDevPx": 111,
+   "figureCssPx": 111,
+   "headDevPx": 17,
+   "headRatio": 0.15315315315315314,
+   "widestDevPx": 68,
+   "top": 15,
+   "bottom": 125,
+   "neck": 32
+  },
+  "rig": {
+   "tier": "lite",
+   "parts": 636,
+   "rebuilds": 2
+  },
+  "lines": []
+ }
+]

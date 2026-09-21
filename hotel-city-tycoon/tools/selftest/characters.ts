@@ -21,7 +21,8 @@ import { buildStressState } from '../../src/bridge/stress.ts';
 import { measure, describe } from './measure.ts';
 
 const data = loadSimData();
-const { initSelectors } = await import('../../src/bridge/selectors.ts');
+const selectors = await import('../../src/bridge/selectors.ts');
+const { initSelectors } = selectors;
 initSelectors(data);
 const { characterViews, guestPosition, guestPose, guestNear, unmetDesires, cleanerTarget } =
   await import('../../src/bridge/characters.ts');
@@ -274,6 +275,17 @@ await check('every character asks for an asset the manifest provides', async () 
   }
 });
 
+await check('every person on screen has a cast identity for the rig', async () => {
+  // The live rig (HC-P2-S3) draws whoever cast.ts knows and falls back to
+  // the sheet for anybody else. Nobody should ever take the fallback.
+  const { lookFor } = await import('../../src/render/anim/cast.ts');
+  for (const s of [busy(), busy(99), opened()]) {
+    for (const view of characterViews(s)) {
+      assert(lookFor(view.assetKey), `${view.id} (${view.assetKey}) has no cast row`);
+    }
+  }
+});
+
 // ---------------------------------------------------------------- motion (HC-P2-S1)
 await check('every clip the bridge asks for is one the character\'s sheet carries', () => {
   for (const s of [busy(), busy(99), opened()]) {
@@ -440,6 +452,42 @@ await check('deriving every view of a full hotel is cheap', () => {
   const timing = measure(() => stress, (state) => { characterViews(state); }, 9);
   console.log(`      ${characterViews(stress).length} people: ${describe(timing)}`);
   assert(timing.median < 2, `characterViews takes ${timing.median.toFixed(1)}ms median for the stress hotel`);
+});
+
+// ── HC-P2-S2 (DEC-018): the sky's night is a function of the state.
+
+await check('nightAmount is a pure function of the state', () => {
+  // The renderer paints the outside by this number, so it must come from the
+  // simulation's own clock and nothing else: the same state gives the same
+  // sky, a shut hotel is always full night, and dusk is where the decision
+  // says it is (18:00–20:00 local). Time zone zero, so the hours are UTC.
+  const { nightAmount, hotelIsOpen } = selectors;
+  const atUtc = (h: number): number => Date.UTC(2026, 8, 20, h, 0, 0);
+  // A short warm-up: enough to open the doors, not enough to reach dusk.
+  const at = (h: number): GameState => buildStressState(data, { rooms: 12, seconds: 60, epochMs: atUtc(h) });
+  const noon = at(12);
+  assert(hotelIsOpen(noon), 'the stress hotel did not open');
+  eq(nightAmount(noon, 0), 0, 'an open hotel at noon is not full day');
+  eq(nightAmount(noon, 0), nightAmount(noon, 0), 'the same state gave two skies');
+  const dusk = nightAmount(at(19), 0);
+  assert(Math.abs(dusk - 0.5) <= 0.02, `seven in the evening is ${dusk}, not half way to night`);
+  eq(nightAmount(at(22), 0), 1, 'ten at night is not full night');
+  // The shift ends: the same state is now a shut hotel, and shut means night.
+  const shut = at(12);
+  shut.shift.endsAtTick = shut.tick;
+  assert(!hotelIsOpen(shut), 'ending the shift did not shut the hotel');
+  eq(nightAmount(shut, 0), 1, 'a shut hotel at noon is not drawn as night');
+  // And the offset has the JavaScript sign: UTC+3 (offset −180) at 16:00Z is 19:00 local.
+  assert(Math.abs(nightAmount(at(16), -180) - 0.5) <= 0.02, 'the time-zone offset sign is wrong');
+});
+
+await check('the stress hotel reaches the documented cast size', () => {
+  // The perf budget names forty people at sixty rooms; the stress hotel is
+  // what every frame-rate reading is taken on, so it has to actually hold
+  // that many or the reading is of a smaller hotel than the document asks about.
+  const people = characterViews(buildStressState(data, { rooms: 60, seconds: 900, epochMs: 0 })).length;
+  console.log(`      ${people} people in the stress hotel`);
+  assert(people >= 40, `the stress hotel holds ${people} people, under the documented forty`);
 });
 
 })();

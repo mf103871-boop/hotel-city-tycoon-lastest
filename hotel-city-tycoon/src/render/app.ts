@@ -5,6 +5,18 @@
  * optional: WebGPU support on Android is still uneven, and a black screen on
  * a mid-range phone is worse than a slightly slower renderer.
  *
+ * There is a third floor under both: since 8.16 Pixi falls through to its
+ * CanvasRenderer when no 3D context exists, which is what the DEC-009 test
+ * lane (`--disable-3d-apis`) has been running on all along while the badge
+ * and the boot line called it `webgl`. It is reported as `canvas` now, so a
+ * software backend on a phone, or in a CI log, is named for what it is
+ * (DEC-019).
+ *
+ * Antialiasing stays off by default. The live rig (HC-P2-S3, DEC-020) draws
+ * outlines as geometry, which WebGL/WebGPU leave aliased under that default
+ * while the canvas lane antialiases regardless; `antialias` is the knob the
+ * device reading compares (BL-044), reached through `?aa=1`.
+ *
  * NOTE: this file cannot be verified without a browser. Everything in the
  * render layer that could be tested headlessly — camera, culling, pooling,
  * layout — deliberately lives elsewhere.
@@ -19,7 +31,7 @@ export interface RendererHandle {
   /** Everything that moves with the camera. */
   world: Container;
   layers: Record<LayerName, Container>;
-  backend: 'webgpu' | 'webgl';
+  backend: 'webgpu' | 'webgl' | 'canvas';
   destroy: () => void;
 }
 
@@ -30,6 +42,8 @@ export interface RendererOptions {
   /** Capped at 2: beyond that the pixel cost buys nothing visible on a phone. */
   maxResolution?: number;
   background?: number;
+  /** Smooth edges on WebGL/WebGPU. Off by default: crisp, and cheaper. */
+  antialias?: boolean;
 }
 
 export async function createRenderer(opts: RendererOptions): Promise<RendererHandle> {
@@ -44,10 +58,18 @@ export async function createRenderer(opts: RendererOptions): Promise<RendererHan
     // wide margin, but the clear colour is what shows for the instant before
     // the first snapshot lands and at the very edge of a hard fling.
     background: opts.background ?? SKY,
-    antialias: false,          // crisp pixel art; also cheaper
+    antialias: opts.antialias ?? false,   // crisp pixel art; also cheaper
     resolution,
     autoDensity: true,
     powerPreference: 'high-performance' as const,
+    // Test builds only. Keeping the WebGL drawing buffer is what lets an
+    // in-page `drawImage` of the canvas read pixels back (measured: without
+    // it the readback is fully transparent). It does NOT change what
+    // Playwright screenshots (measured identical with and without), and the
+    // white capture on a GPU-less SwiftShader host is BL-020, not this flag.
+    // Vite inlines the env at build time, so production compiles the branch
+    // away and check:cheats finds no `VITE_E2E` in dist (DEC-019).
+    ...(import.meta.env.VITE_E2E === '1' ? { preserveDrawingBuffer: true } : {}),
   };
 
   try {
@@ -100,7 +122,7 @@ export async function createRenderer(opts: RendererOptions): Promise<RendererHan
  *
  * Checked three ways, cheapest first, so no single API change can break it.
  */
-function detectBackend(app: Application): 'webgpu' | 'webgl' {
+function detectBackend(app: Application): 'webgpu' | 'webgl' | 'canvas' {
   const renderer = app.renderer as unknown as {
     type?: number;
     name?: string;
@@ -108,8 +130,10 @@ function detectBackend(app: Application): 'webgpu' | 'webgl' {
     gpu?: unknown;
   };
 
-  // 1. The enum, when Pixi exposes it.
+  // 1. The enum, when Pixi exposes it. CANVAS (4) is checked first because
+  //    it is the case the old two-way test silently misfiled as webgl.
   if (typeof renderer.type === 'number' && typeof RendererType?.WEBGPU === 'number') {
+    if (renderer.type === RendererType.CANVAS) return 'canvas';
     if (renderer.type === RendererType.WEBGPU) return 'webgpu';
     if (renderer.type === RendererType.WEBGL) return 'webgl';
   }
@@ -117,7 +141,10 @@ function detectBackend(app: Application): 'webgpu' | 'webgl' {
   if (renderer.gpu != null) return 'webgpu';
   if (renderer.gl != null) return 'webgl';
   // 3. The name, as a last resort.
-  return String(renderer.name ?? '').toLowerCase().includes('webgpu') ? 'webgpu' : 'webgl';
+  const name = String(renderer.name ?? '').toLowerCase();
+  if (name.includes('webgpu')) return 'webgpu';
+  if (name.includes('canvas')) return 'canvas';
+  return 'webgl';
 }
 
 /** Apply a camera to the world container. Called once per frame, allocation-free. */

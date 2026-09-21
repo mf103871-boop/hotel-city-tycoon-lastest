@@ -11,6 +11,9 @@
  * base clip is simply there again; nothing has to remember to restore it,
  * which is why there is no `returnTo` in the animation files.
  *
+ * The live rig (HC-P2-S3) samples the clip's own duration through
+ * `progress()`, so the JSON stays the clock for computed poses too.
+ *
  * Pure maths, no Pixi.
  */
 
@@ -119,4 +122,22 @@ export function advance(
     return { clip: p.base, frame: Math.floor(p.elapsedMs / 1000 * row.fps) % row.frames };
   }
   return { clip: p.base, frame: Math.min(row.frames - 1, Math.floor(p.elapsedMs / 1000 * row.fps)) };
+}
+
+/**
+ * How far through the showing clip the player is, 0..1.
+ *
+ * The same expression `advance()` uses for its frame index — elapsed seconds
+ * times the clip's rate, over its frame count — so both share the rounding;
+ * a loop's `elapsedMs` is already reduced modulo its length by `advance()`,
+ * and a one-shot or a non-looping clip clamps at 1. Call after `advance()`
+ * in the same frame. No row for the clip means 0.
+ */
+export function progress(p: PlayerState, timing: (clip: string) => ClipTiming | null): number {
+  const clip = p.oneShot ?? p.base;
+  const row = timing(clip);
+  if (!row) return 0;
+  const through = (p.elapsedMs / 1000 * row.fps) / row.frames;
+  if (p.oneShot || !row.loop) return Math.min(1, through);
+  return through % 1;
 }

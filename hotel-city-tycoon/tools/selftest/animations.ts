@@ -16,8 +16,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadSimData } from '../balance-sim/load-data.ts';
 import { createMotion, resetMotion, step, snapTo } from '../../src/render/anim/motion.ts';
-import { createPlayer, advance } from '../../src/render/anim/clipPlayer.ts';
+import { createPlayer, advance, progress } from '../../src/render/anim/clipPlayer.ts';
 import { createScheduler, tick } from '../../src/render/anim/scheduler.ts';
+import {
+  pose, createRigState, figureFor, boundsOf, headExtent, walkSlidePx, NEUTRAL_INPUT,
+  STRIDE_PX, STRIDE_AMP, BOB_WALK_MAX, BOB_IDLE_MAX, SQUASH_MAX, SQUASH_IDLE, HEAD_LAG_MAX, HOP_MAX, LEAN_MAX,
+  STAND_SPACE_PX, CELL_HALF_WIDTH_PX, RIG_BODY_TOP,
+} from '../../src/render/anim/rig.ts';
+import type { Pose, Pt, RigClip, RigHold, RigInput, RigMood, RigProportions } from '../../src/render/anim/rig.ts';
+import { CAST, PROP_EXTENT, castIds } from '../../src/render/anim/cast.ts';
+import type { Look } from '../../src/render/anim/cast.ts';
+import { BODY_HALF_WIDTH_PX } from '../../src/core/systems/roomWaypoints.ts';
 import { readPng } from './png.ts';
 
 let passed = 0;
@@ -457,6 +466,289 @@ check('a pooled view keeps nothing from the character before it', () => {
   step(m, { x: 2, y: 1, vx: 0, vy: 0, toX: 2, toY: 1, segment: 'new' }, 16.7);
   eq(m.x, 2, 'a recycled view slid in from the last character\'s position');
   eq(m.y, 1, 'a recycled view slid in from the last character\'s row');
+});
+
+// ---- the live rig (HC-P2-S3, DEC-020)
+// The rig's maths is pure, so the properties DEC-020 signs are restated here
+// for a cold checkout, computed from `pose()` over every clip and phase. The
+// numbers vitest pins in depth (tests/unit/rig.test.ts) are printed per member
+// so the report can quote them from a log rather than from the plan.
+const RIG_CLIPS: readonly RigClip[] = ['idle', 'walk', 'work', 'sleep', 'sit', 'happy', 'angry', 'scared'];
+const walkRow = (raw.get(files[0]!) as { clips: Record<string, { frames: number }> }).clips;
+const rigFrames = (clip: RigClip): number => walkRow[clip]?.frames ?? 1;
+const rigInput = (over: Partial<RigInput> = {}): RigInput => ({ ...NEUTRAL_INPUT, ...over });
+const rigDist = (a: Pt, b: Pt): number => Math.hypot(a.x - b.x, a.y - b.y);
+const NOMINAL = figureFor('normal', 1, 'adult');
+const boundsLook = (look: Look, clip: RigClip) => {
+  const prop = clip === 'work' ? look.propWork : look.prop;
+  const ext = prop ? PROP_EXTENT[prop] : { halfWidth: 0, above: 0 };
+  return { hairStyle: look.hairStyle, capStyle: look.capStyle, propHalfWidth: ext.halfWidth, propAbove: ext.above };
+};
+function bonesHold(p: Pose, f: RigProportions, where: string): void {
+  const pairs: [Pt, Pt, number, string][] = [
+    [p.kneeL, p.hipL, f.thigh, 'left thigh'], [p.kneeR, p.hipR, f.thigh, 'right thigh'],
+    [p.footL, p.kneeL, f.shin, 'left shin'], [p.footR, p.kneeR, f.shin, 'right shin'],
+    [p.elbowL, p.shoulderL, f.upperArm, 'left upper arm'], [p.elbowR, p.shoulderR, f.upperArm, 'right upper arm'],
+    [p.handL, p.elbowL, f.foreArm, 'left forearm'], [p.handR, p.elbowR, f.foreArm, 'right forearm'],
+  ];
+  for (const [a, b, len, name] of pairs) {
+    const d = rigDist(a, b);
+    assert(Number.isFinite(d) && Math.abs(d - len) <= 1e-6, `${where}: the ${name} is ${d.toFixed(4)} long, not ${len.toFixed(4)}`);
+  }
+}
+const stripSrc = (src: string): string => src.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ');
+
+check('the stride is driven by distance, not time', () => {
+  for (const frames of [3, 30, 300]) {
+    const rs = createRigState(5);
+    const start = rs.phase;
+    for (let i = 0; i < frames; i++) pose(rs, NOMINAL, rigInput({ clip: 'walk', frames: rigFrames('walk'), movedPx: STRIDE_PX / frames, dtS: 1 / 60 }));
+    const turned = ((rs.phase - start) % 1 + 1) % 1;
+    assert(Math.min(turned, 1 - turned) <= 1e-9, `${STRIDE_PX} px in ${frames} frames turned the cycle ${turned.toFixed(6)}, not 1`);
+  }
+  const rs = createRigState(5);
+  const start = rs.phase;
+  for (let i = 0; i < 60; i++) pose(rs, NOMINAL, rigInput({ clip: 'walk', frames: rigFrames('walk'), movedPx: 0, dtS: 1 / 60 }));
+  eq(rs.phase, start, 'a second of standing still moved the walk phase');
+});
+
+check('the stance foot is planted, the leg always reaches, and the pivot never moves', () => {
+  for (const id of castIds()) {
+    const look = CAST[id]!;
+    const f = figureFor(look.build, look.height, look.age);
+    const legs = f.thigh + f.shin;
+    assert(-f.hipY <= legs - 0.001, `${id}: hip ${(-f.hipY).toFixed(2)} is higher than the legs are long (${legs.toFixed(2)})`);
+    const rs = createRigState(1);
+    for (let i = 0; i < 64; i++) {
+      const p = pose(rs, f, rigInput({ clip: 'walk', frames: rigFrames('walk'), movedPx: STRIDE_PX / 64, dtS: 1 / 60 }));
+      const lower = Math.max(p.footL.y, p.footR.y);
+      assert(Math.abs(lower) <= 1e-9, `${id} phase ${i}/64: the stance foot is at y ${lower.toFixed(4)}, not on the floor`);
+      assert(p.hip.y >= f.hipY - 1e-12, `${id} phase ${i}/64: the hip rose ${(f.hipY - p.hip.y).toFixed(3)} above nominal while walking`);
+      eq(p.hip.x, 0, `${id} phase ${i}/64: the pivot moved`);
+      bonesHold(p, f, `${id} walk ${i}/64`);
+    }
+  }
+});
+
+check('secondary motion stays inside the bounds DEC-020 signs', () => {
+  let idleLo = Infinity; let idleHi = -Infinity; let worstLag = 0;
+  for (const id of castIds()) {
+    const look = CAST[id]!;
+    const f = figureFor(look.build, look.height, look.age);
+    for (const clip of RIG_CLIPS) {
+      const rs = createRigState(4);
+      for (let i = 0; i < 200; i++) {
+        const p = pose(rs, f, rigInput({ clip, frames: rigFrames(clip), clipT: i / 200, movedPx: 1, dtS: 1 / 60 }));
+        assert(p.squash >= 1 - SQUASH_MAX - 1e-12 && p.squash <= 1 + SQUASH_IDLE + 1e-12, `${id} ${clip}: squash ${p.squash}`);
+        assert(Math.abs(p.lean) <= LEAN_MAX + 1e-12, `${id} ${clip}: lean ${p.lean}`);
+        if (clip === 'walk') assert(p.hipDrop >= 0 && p.hipDrop <= BOB_WALK_MAX + 1e-12, `${id} walk: hipDrop ${p.hipDrop}`);
+        if (clip === 'happy') assert(-p.hipDrop <= HOP_MAX + 1e-12, `${id} happy: hop ${-p.hipDrop}`);
+        if (clip === 'idle') { idleLo = Math.min(idleLo, p.hipDrop); idleHi = Math.max(idleHi, p.hipDrop); }
+        // The head rides the squashed neck: its target is the drawn neck, not the unsquashed one.
+        const neckY = (f.bodyTop + p.hipDrop) * p.squash;
+        const off = Math.abs(p.head.y - rs.headLag.y - (neckY - RIG_BODY_TOP * f.headR));
+        assert(off <= 1e-6, `${id} ${clip}: the head floats ${off.toExponential(2)} off the squashed neck`);
+      }
+    }
+  }
+  assert(idleHi - idleLo <= BOB_IDLE_MAX, `idle bob is ${(idleHi - idleLo).toFixed(3)} peak to peak`);
+  const rs = createRigState(6);
+  for (let i = 0; i < 5000; i++) {
+    pose(rs, NOMINAL, rigInput({ clip: 'scared', frames: 2, clipT: i % 2 ? 0.5 : 0, facing: i % 2 ? -1 : 1, dtS: 0.001 }));
+    worstLag = Math.max(worstLag, Math.abs(rs.headLag.x), Math.abs(rs.headLag.y));
+  }
+  assert(worstLag <= HEAD_LAG_MAX, `head lag reached ${worstLag.toFixed(3)} under jitter`);
+  assert(worstLag > 0, 'the head spring was never excited');
+  console.log(`      idle bob ${(idleHi - idleLo).toFixed(2)} p-p, worst head lag ${worstLag.toFixed(2)} of ${HEAD_LAG_MAX}`);
+});
+
+check('no pose is ever NaN', () => {
+  const f = figureFor('slim', 0.92, 'adult');
+  const moods: RigMood[] = ['neutral', 'impatient', 'happy', 'angry'];
+  const holds: RigHold[] = [null, 'shiftWeight', 'glance'];
+  let combos = 0;
+  for (const clip of RIG_CLIPS) for (const mood of moods) for (const holding of holds) {
+    for (const facing of [1, -1] as const) for (const reduced of [false, true]) for (const lite of [false, true]) for (const dtS of [0, 1 / 60, 10]) {
+      const rs = createRigState(1);
+      const p = pose(rs, f, rigInput({ clip, mood, holding, holdT: 0.5, facing, reduced, lite, dtS, movedPx: 300, frames: rigFrames(clip), clipT: 0.37 }));
+      for (const v of Object.values(p)) {
+        if (typeof v === 'number') assert(Number.isFinite(v), `${clip} ${mood} ${holding}: a scalar is ${v}`);
+        else if (typeof v === 'object' && v !== null) assert(Number.isFinite((v as Pt).x) && Number.isFinite((v as Pt).y), `${clip} ${mood} ${holding}: a joint is NaN`);
+      }
+      bonesHold(p, f, `${clip} ${mood} ${holding} facing ${facing} reduced ${reduced} lite ${lite} dt ${dtS}`);
+      combos++;
+    }
+  }
+  console.log(`      ${combos} combinations, four bone lengths exact in each`);
+});
+
+check('reduced motion freezes the pose and keeps the transit', () => {
+  for (const clip of RIG_CLIPS) for (const facing of [1, -1] as const) {
+    const a = createRigState(11);
+    const b = createRigState(22);
+    for (let i = 0; i < 9; i++) pose(a, NOMINAL, rigInput({ clip: 'walk', frames: 8, movedPx: 10, dtS: 1 / 60 }));
+    const pa = JSON.stringify(pose(a, NOMINAL, rigInput({ clip, facing, reduced: true, movedPx: 40, dtS: 1 / 60, clipT: 0.6, frames: rigFrames(clip) })));
+    const pb = JSON.stringify(pose(b, NOMINAL, rigInput({ clip, facing, reduced: true, movedPx: 3, dtS: 10, clipT: 0.1, frames: rigFrames(clip) })));
+    eq(pa, pb, `${clip} facing ${facing}: two seeds pose differently under reduced motion`);
+    eq(a.pose.squash, 1, `${clip}: squash under reduced motion`);
+    eq(a.pose.head.x, a.pose.neck.x, `${clip}: head lag under reduced motion`);
+  }
+  // The position is a separate concern and keeps travelling (animations.ts, the sheet path's rule).
+  const m = createMotion();
+  const s = { x: 0, y: 0, vx: 1, vy: 0, toX: 5, toY: 0, segment: 'w' };
+  step(m, s, 16.7);
+  const before = m.x;
+  step(m, s, 16.7);
+  assert(m.x > before, 'reduced motion stopped the character travelling');
+});
+
+check('same seed, same person; different seeds do not breathe in unison', () => {
+  const run = (seed: number): string => {
+    const rs = createRigState(seed);
+    const out: string[] = [];
+    for (let i = 0; i < 300; i++) {
+      const clip: RigClip = i < 100 ? 'idle' : i < 200 ? 'walk' : 'work';
+      out.push(JSON.stringify(pose(rs, NOMINAL, rigInput({ clip, frames: rigFrames(clip), clipT: (i % 50) / 50, movedPx: 2, dtS: 1 / 60 }))));
+    }
+    return out.join('\n');
+  };
+  eq(run(11), run(11), 'the same seed posed differently the second time');
+  const gap = Math.abs(createRigState(11).phase - createRigState(22).phase);
+  assert(gap >= 0.05, `seeds 11 and 22 start their stride only ${gap.toFixed(3)} apart`);
+});
+
+check('every cast member fits the body the rooms assume and the cell a bake would need', () => {
+  let tallest = 0; let tallestAt = ''; let widest = 0; let widestAt = '';
+  for (const id of castIds()) {
+    const look = CAST[id]!;
+    const f = figureFor(look.build, look.height, look.age);
+    assert((f.shoulder / 2) * 0.82 <= BODY_HALF_WIDTH_PX, `${id}: torso half-width ${((f.shoulder / 2) * 0.82).toFixed(2)} px is wider than the ${BODY_HALF_WIDTH_PX} px the waypoints assume`);
+    const bare = (2 * f.headR) / f.total;
+    const ext = headExtent(look.hairStyle, look.capStyle);
+    const dressed = ((ext.up + 1) * f.headR) / (f.total - f.headR + ext.up * f.headR);
+    assert(bare >= 0.5 && bare <= 0.6, `${id}: bare head ratio ${bare.toFixed(3)}`);
+    assert(dressed >= 0.5 && dressed <= 0.6, `${id}: head ratio with headwear ${dressed.toFixed(3)}`);
+    const tops: string[] = [];
+    for (const clip of RIG_CLIPS) {
+      let top = 0; let half = 0;
+      for (const mood of ['neutral', 'impatient'] as const) for (const holding of [null, 'shiftWeight'] as const) {
+        const rs = createRigState(7);
+        for (let i = 0; i < 16; i++) {
+          const p = pose(rs, f, rigInput({ clip, frames: rigFrames(clip), clipT: i / 16, movedPx: STRIDE_PX / 16, dtS: 1 / 60, mood, holding, holdT: i / 16 }));
+          const b = boundsOf(p, f, boundsLook(look, clip));
+          top = Math.max(top, b.top); half = Math.max(half, b.halfWidth);
+        }
+      }
+      assert(top <= STAND_SPACE_PX, `${id} ${clip}: top ${top.toFixed(2)} rig px is above ${STAND_SPACE_PX}`);
+      assert(half <= CELL_HALF_WIDTH_PX, `${id} ${clip}: half-width ${half.toFixed(2)} rig px is beyond ${CELL_HALF_WIDTH_PX}`);
+      tops.push(`${clip} ${top.toFixed(1)}/${half.toFixed(1)}`);
+      if (top > tallest) { tallest = top; tallestAt = `${id} ${clip}`; }
+      if (half > widest) { widest = half; widestAt = `${id} ${clip}`; }
+    }
+    const amp = STRIDE_AMP * f.total;
+    console.log(`      ${id}: ${f.total.toFixed(1)} rig px (${(f.total * 0.82).toFixed(1)} px), head ${(bare * 100).toFixed(0)}% bare / ${(dressed * 100).toFixed(1)}% dressed, slide ${walkSlidePx(amp, STRIDE_PX, 0.82).toFixed(1)} px/step at ${STRIDE_PX} and ${walkSlidePx(amp, 64, 0.82).toFixed(1)} at 64`);
+    console.log(`        top/half per clip: ${tops.join(', ')}`);
+  }
+  console.log(`      tallest ${tallest.toFixed(2)} (${tallestAt}) ≤ ${STAND_SPACE_PX}; widest ${widest.toFixed(2)} (${widestAt}) ≤ ${CELL_HALF_WIDTH_PX}`);
+});
+
+check('the rig never redraws geometry per frame', () => {
+  // characterRig.ts poses fixed parts by transform and alpha only. Any
+  // `new`, clear(), fill(), stroke(), context swap or visible/renderable
+  // toggle inside apply() would rebuild geometry or the world's instruction
+  // set every frame (DEC-020 §6); a RenderTexture anywhere breaks DEC-019.
+  const file = 'src/render/characterRig.ts';
+  assert(fs.existsSync(file), `${file} does not exist yet`);
+  const src = fs.readFileSync(file, 'utf8');
+  const stripped = stripSrc(src);
+  const start = stripped.search(/\n\s+apply\(/);
+  assert(start >= 0, 'characterRig.ts has no apply( method');
+  let depth = 0; let i = stripped.indexOf('{', start); const open = i;
+  for (; i < stripped.length; i++) {
+    if (stripped[i] === '{') depth++;
+    else if (stripped[i] === '}') { depth--; if (depth === 0) break; }
+  }
+  const body = stripped.slice(open, i + 1);
+  for (const bad of ['new ', '.clear(', '.fill(', '.stroke(', '.context =', '.visible =', '.renderable =']) {
+    assert(!body.includes(bad), `apply() contains "${bad}"`);
+  }
+  assert(/batchMode\s*=\s*'batch'/.test(stripped), 'contextFor does not set batchMode = \'batch\'');
+  eq((stripped.match(/new GraphicsContext\(/g) ?? []).length, 1, 'new GraphicsContext( count');
+  assert(!/cacheAsTexture/.test(stripped), 'characterRig.ts uses cacheAsTexture (DEC-019)');
+  assert(!/RenderTexture/.test(stripped), 'characterRig.ts uses a RenderTexture (DEC-019)');
+});
+
+check('the sheet path is still there behind the rig', () => {
+  const view = fs.readFileSync('src/render/characterView.ts', 'utf8');
+  for (const literal of ['clipOf(', 'assetGeneration()', 'framesFor(', 'lookFor(']) {
+    assert(view.includes(literal), `characterView.ts lost "${literal}"`);
+  }
+  assert(view.includes('if (beat.play && clipOf(this.lastAssetKey, beat.play)) playOnce(this.player, beat.play);'),
+    'the sheet path\'s one-shot line is no longer byte-identical');
+});
+
+check('a recycled view re-tints the rig it inherits', () => {
+  // The pool hands one view to many people; reset() forgets the view's keys
+  // while the rig keeps the look it wears, so the next occupant with the
+  // same look arrives already dressed — in the last one's light. The view
+  // owes the tints whenever the dressing did not run (review of S3).
+  const view = fs.readFileSync('src/render/characterView.ts', 'utf8');
+  assert(view.includes('if (!dressed && (lookChanged || lightKey !== this.lightKey)) this.rig.setTints(lit);'),
+    'characterView.ts no longer re-tints a rig that setLook() left dressed');
+  const rig = stripSrc(fs.readFileSync('src/render/characterRig.ts', 'utf8'));
+  assert(/setLook\([^{]*\): boolean \{\s*if \(lookKey === this\.lookKey\) return false;/.test(rig),
+    'CharacterRig.setLook() does not say whether it dressed');
+});
+
+check('the JSON is still the clock', () => {
+  const view = fs.readFileSync('src/render/characterView.ts', 'utf8');
+  assert(view.includes('progress('), 'characterView.ts never reads the clip\'s progress');
+  assert(view.includes("clipOf(this.lastAssetKey, 'blink')"), 'the blink\'s duration is not read from the blink row');
+  for (const bad of ['WALK_FRAMES =', 'WALK_CYCLE_MS =', 'FIDGET_MS.blink']) {
+    assert(!view.includes(bad), `characterView.ts carries its own clock: "${bad}"`);
+  }
+  const rig = stripSrc(fs.readFileSync('src/render/anim/rig.ts', 'utf8'));
+  assert(!/\bfps\b/.test(rig), 'rig.ts knows a frame rate of its own');
+  const player = stripSrc(fs.readFileSync('src/render/anim/clipPlayer.ts', 'utf8'));
+  assert(/export function progress\(/.test(player), 'clipPlayer.ts has no progress()');
+  const rows = { walk: { frames: 8, fps: 11, loop: true } } as Record<string, { frames: number; fps: number; loop: boolean }>;
+  const p = createPlayer('walk');
+  advance(p, 300, (n) => rows[n] ?? null);
+  const t = progress(p, (n) => rows[n] ?? null);
+  assert(t >= 0 && t < 1, `progress ${t} is outside [0, 1)`);
+  eq(Math.floor(t * 8), Math.floor(0.3 * 11) % 8, 'progress disagrees with the frame index');
+});
+
+check('no presentation module rolls its own dice or touches the DOM at import', () => {
+  // Every random number the renderer draws is seeded (mulberry32 through the
+  // scheduler, a hash for the skyline and the stars), so a frame is the same
+  // frame on every device and in every capture. And the pure modules — the
+  // animation maths, the lighting maths, the bridge's clock — are loaded
+  // headlessly by this suite and by vitest, which they can only be while they
+  // import no Pixi and touch no DOM (HC-P2-S2; no earlier guard covered this).
+  const strip = (src: string): string => src.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ');
+  for (const file of sources('src/render')) {
+    assert(!/Math\.random/.test(strip(fs.readFileSync(file, 'utf8'))), `${file} uses Math.random`);
+  }
+  // sheet.ts is the one anim module that is not pure: it hands out Pixi
+  // textures, so it is the renderer's and is left out here on purpose.
+  const pure = [
+    'src/render/anim/motion.ts',
+    'src/render/anim/clipPlayer.ts',
+    'src/render/anim/scheduler.ts',
+    'src/render/anim/rig.ts',
+    'src/render/anim/cast.ts',
+    'src/render/quality.ts',
+    'src/render/lighting.ts',
+    'src/bridge/daylight.ts',
+  ];
+  for (const file of pure) {
+    const src = strip(fs.readFileSync(file, 'utf8'));
+    assert(!/from 'pixi\.js'/.test(src), `${file} imports Pixi and can no longer load headlessly`);
+    assert(!/\bdocument\b/.test(src), `${file} touches document`);
+    assert(!/\bwindow\b/.test(src), `${file} touches window`);
+  }
+  console.log(`      ${pure.length} pure modules, ${sources('src/render').length} render files`);
 });
 
 console.log(line);
