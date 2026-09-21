@@ -1,0 +1,122 @@
+{
+ "perf canvas sheet-baseline phone": {
+  "bootLine": "[hotel-city-tycoon] renderer: canvas, resolution 2x (+901ms)",
+  "tPeople": 1.9,
+  "tReset": 6,
+  "tRead": 16,
+  "perf": {
+   "samples": 598,
+   "fpsAverage": 59.70327879347511,
+   "fpsMin": 14.992504434085346,
+   "fpsP95Low": 59.52381222696814,
+   "worstFrameMs": 66.69999694824219,
+   "lateFrames": 1,
+   "lateFraction": 0.0016722408026755853,
+   "rooms": 60,
+   "characters": 61,
+   "drawnRooms": 49,
+   "backend": "canvas",
+   "memoryMB": 33.20452690124512,
+   "firstPaintMs": 464,
+   "devicePixelRatio": 2,
+   "viewport": "412x915",
+   "verdict": {
+    "sustained60": true,
+    "memory": true,
+    "firstPaint": true,
+    "atDocumentScale": true
+   }
+  },
+  "rigStatsStart": {
+   "tier": "sheet",
+   "parts": 0,
+   "rebuilds": 0,
+   "viewUpdates": 0
+  },
+  "rigStatsEnd": {
+   "tier": "sheet",
+   "parts": 0,
+   "rebuilds": 0,
+   "viewUpdates": 0
+  },
+  "rebuildsInWindow": 0,
+  "viewUpdatesInWindow": 0,
+  "chars": {
+   "n": 61,
+   "visible": 37,
+   "walking": 11,
+   "sources": [
+    "sheet"
+   ]
+  },
+  "badge": [
+   "renderer canvas",
+   "fps 60 \u00b7 p5 60",
+   "memory 33MB",
+   "rooms 49/60 drawn",
+   "people 37/61 drawn",
+   "60 rooms \u00b7 123 guests served"
+  ],
+  "lines": []
+ },
+ "perf canvas sheet-baseline desktop": {
+  "bootLine": "[hotel-city-tycoon] renderer: canvas, resolution 1x (+907ms)",
+  "tPeople": 1.8,
+  "tReset": 5.8,
+  "tRead": 15.9,
+  "perf": {
+   "samples": 600,
+   "fpsAverage": 59.90295521992223,
+   "fpsMin": 29.940118392664818,
+   "fpsP95Low": 59.880236785329636,
+   "worstFrameMs": 33.400001525878906,
+   "lateFrames": 1,
+   "lateFraction": 0.0016666666666666668,
+   "rooms": 60,
+   "characters": 61,
+   "drawnRooms": 60,
+   "backend": "canvas",
+   "memoryMB": 38.92521667480469,
+   "firstPaintMs": 456,
+   "devicePixelRatio": 1,
+   "viewport": "1280x720",
+   "verdict": {
+    "sustained60": true,
+    "memory": true,
+    "firstPaint": true,
+    "atDocumentScale": true
+   }
+  },
+  "rigStatsStart": {
+   "tier": "sheet",
+   "parts": 0,
+   "rebuilds": 0,
+   "viewUpdates": 0
+  },
+  "rigStatsEnd": {
+   "tier": "sheet",
+   "parts": 0,
+   "rebuilds": 0,
+   "viewUpdates": 0
+  },
+  "rebuildsInWindow": 0,
+  "viewUpdatesInWindow": 0,
+  "chars": {
+   "n": 61,
+   "visible": 61,
+   "walking": 9,
+   "sources": [
+    "sheet"
+   ]
+  },
+  "badge": [
+   "renderer canvas",
+   "fps 60 \u00b7 p5 60",
+   "memory 30MB",
+   "rooms 60/60 drawn",
+   "people 61/61 drawn",
+   "60 rooms \u00b7 123 guests served"
+  ],
+  "lines": []
+ }
+}

@@ -1,0 +1,289 @@
+== reduced2
+{"tag":"reduced","reducedMediaMatches":true,"zoom":2.022,"a":{"id":"g45","clip":"walk","x":543,"sx":1047,"sy":389},"b":{"id":"g45","clip":"walk","x":109,"sx":168,"sy":389},"gapMs":722,"sxDelta":-879,"xDelta":-434,"cropDevPx":62400,"changedPx":27008,"changedFrac":0.4328,"meanAbsChan":24.61,"inkPx":10603,"inkMismatch":2038,"inkMismatchFrac":0.1922,"lines":["placed s0: {\"sx\":300,\"sy\":330}"]}
+== motion2
+{"tag":"motion","reducedMediaMatches":false,"zoom":2.022,"a":{"id":"g45","clip":"walk","x":615,"sx":1191,"sy":389},"b":{"id":"g45","clip":"walk","x":150,"sx":252,"sy":389},"gapMs":740,"sxDelta":-939,"xDelta":-465,"cropDevPx":62400,"changedPx":35606,"changedFrac":0.5706,"meanAbsChan":41.03,"inkPx":15476,"inkMismatch":8373,"inkMismatchFrac":0.541,"lines":["placed s0: {\"sx\":300,\"sy\":330}"]}
+== e2ecrop
+,
+   {
+    "id": "g41",
+    "clip": "sleep",
+    "source": "rig",
+    "sx": 296,
+    "sy": 603,
+    "w": 80,
+    "h": 104,
+    "distinctColours": 331,
+    "inkFrac": 0.08353365384615384
+   }
+  ]
+ }
+]
+== perf canvas lite phone
+  "width": 412,
+  "height": 915,
+  "dpr": 2
+ },
+ "bootLine": "[hotel-city-tycoon] renderer: canvas, resolution 2x (+862ms)",
+ "tPeople": 2.1,
+ "tReset": 6.1,
+ "tRead": 16.2,
+ "perf": {
+  "samples": 529,
+  "fpsAverage": 52.814439304808204,
+  "fpsMin": 29.940118392664818,
+  "fpsP95Low": 30.030030718050906,
+  "worstFrameMs": 33.400001525878906,
+  "lateFrames": 72,
+  "lateFraction": 0.13610586011342155,
+  "rooms": 60,
+  "characters": 61,
+  "drawnRooms": 49,
+  "backend": "canvas",
+  "memoryMB": 46.288350105285645,
+  "firstPaintMs": 456,
+  "devicePixelRatio": 2,
+  "viewport": "412x915",
+  "verdict": {
+   "sustained60": false,
+   "memory": true,
+   "firstPaint": true,
+   "atDocumentScale": true
+  }
+ },
+ "rigStatsStart": {
+  "tier": "lite",
+  "parts": 3233,
+  "rebuilds": 9
+ },
+ "rigStatsEnd": {
+  "tier": "lite",
+  "parts": 3233,
+  "rebuilds": 25
+ },
+ "rebuildsInWindow": 16,
+ "chars": {
+  "n": 61,
+  "visible": 37,
+  "walking": 11,
+  "sources": [
+   "rig"
+  ]
+ },
+ "badge": [
+  "renderer canvas",
+  "fps 60 · p5 30",
+  "memory 41MB",
+  "rooms 49/60 drawn",
+  "people 37/61 drawn",
+  "60 rooms · 123 guests served"
+ ],
+ "lines": []
+}
+== perf canvas full phone
+  "width": 412,
+  "height": 915,
+  "dpr": 2
+ },
+ "bootLine": "[hotel-city-tycoon] renderer: canvas, resolution 2x (+844ms)",
+ "tPeople": 2.1,
+ "tReset": 6.1,
+ "tRead": 16.1,
+ "perf": {
+  "samples": 519,
+  "fpsAverage": 51.81553933075204,
+  "fpsMin": 29.850746268656717,
+  "fpsP95Low": 29.940118392664818,
+  "worstFrameMs": 33.5,
+  "lateFrames": 82,
+  "lateFraction": 0.1579961464354528,
+  "rooms": 60,
+  "characters": 61,
+  "drawnRooms": 49,
+  "backend": "canvas",
+  "memoryMB": 37.870049476623535,
+  "firstPaintMs": 436,
+  "devicePixelRatio": 2,
+  "viewport": "412x915",
+  "verdict": {
+   "sustained60": false,
+   "memory": true,
+   "firstPaint": true,
+   "atDocumentScale": true
+  }
+ },
+ "rigStatsStart": {
+  "tier": "full",
+  "parts": 3233,
+  "rebuilds": 9
+ },
+ "rigStatsEnd": {
+  "tier": "full",
+  "parts": 3233,
+  "rebuilds": 25
+ },
+ "rebuildsInWindow": 16,
+ "chars": {
+  "n": 61,
+  "visible": 37,
+  "walking": 11,
+  "sources": [
+   "rig"
+  ]
+ },
+ "badge": [
+  "renderer canvas",
+  "fps 60 · p5 30",
+  "memory 33MB",
+  "rooms 49/60 drawn",
+  "people 37/61 drawn",
+  "60 rooms · 123 guests served"
+ ],
+ "lines": []
+}
+== perf canvas lite desktop
+  "width": 1280,
+  "height": 720,
+  "dpr": 1
+ },
+ "bootLine": "[hotel-city-tycoon] renderer: canvas, resolution 1x (+1079ms)",
+ "tPeople": 2.3,
+ "tReset": 6.4,
+ "tRead": 16.4,
+ "perf": {
+  "samples": 403,
+  "fpsAverage": 40.234417258313684,
+  "fpsMin": 20,
+  "fpsP95Low": 29.940118392664818,
+  "worstFrameMs": 50,
+  "lateFrames": 196,
+  "lateFraction": 0.48635235732009924,
+  "rooms": 60,
+  "characters": 61,
+  "drawnRooms": 60,
+  "backend": "canvas",
+  "memoryMB": 38.675774574279785,
+  "firstPaintMs": 604,
+  "devicePixelRatio": 1,
+  "viewport": "1280x720",
+  "verdict": {
+   "sustained60": false,
+   "memory": true,
+   "firstPaint": true,
+   "atDocumentScale": true
+  }
+ },
+ "rigStatsStart": {
+  "tier": "lite",
+  "parts": 3233,
+  "rebuilds": 9
+ },
+ "rigStatsEnd": {
+  "tier": "lite",
+  "parts": 3233,
+  "rebuilds": 25
+ },
+ "rebuildsInWindow": 16,
+ "chars": {
+  "n": 61,
+  "visible": 61,
+  "walking": 11,
+  "sources": [
+   "rig"
+  ]
+ },
+ "badge": [
+  "renderer canvas",
+  "fps 60 · p5 30",
+  "memory 33MB",
+  "rooms 60/60 drawn",
+  "people 61/61 drawn",
+  "60 rooms · 123 guests served"
+ ],
+ "lines": []
+}
+== perf canvas full desktop
+  "width": 1280,
+  "height": 720,
+  "dpr": 1
+ },
+ "bootLine": "[hotel-city-tycoon] renderer: canvas, resolution 1x (+898ms)",
+ "tPeople": 2.1,
+ "tReset": 6.1,
+ "tRead": 16.2,
+ "perf": {
+  "samples": 393,
+  "fpsAverage": 39.17112653198347,
+  "fpsMin": 20,
+  "fpsP95Low": 29.940118392664818,
+  "worstFrameMs": 50,
+  "lateFrames": 207,
+  "lateFraction": 0.5267175572519084,
+  "rooms": 60,
+  "characters": 61,
+  "drawnRooms": 60,
+  "backend": "canvas",
+  "memoryMB": 39.11814594268799,
+  "firstPaintMs": 480,
+  "devicePixelRatio": 1,
+  "viewport": "1280x720",
+  "verdict": {
+   "sustained60": false,
+   "memory": true,
+   "firstPaint": true,
+   "atDocumentScale": true
+  }
+ },
+ "rigStatsStart": {
+  "tier": "full",
+  "parts": 3233,
+  "rebuilds": 9
+ },
+ "rigStatsEnd": {
+  "tier": "full",
+  "parts": 3233,
+  "rebuilds": 25
+ },
+ "rebuildsInWindow": 16,
+ "chars": {
+  "n": 61,
+  "visible": 61,
+  "walking": 11,
+  "sources": [
+   "rig"
+  ]
+ },
+ "badge": [
+  "renderer canvas",
+  "fps 30 · p5 30",
+  "memory 34MB",
+  "rooms 60/60 drawn",
+  "people 61/61 drawn",
+  "60 rooms · 123 guests served"
+ ],
+ "lines": []
+}
+== perf webgl full phone
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+page.waitForFunction: Timeout 30000ms exceeded.
+    at /tmp/claude-0/-home-user-hotel-city-tycoon-lastest/aad45d81-f985-5543-96bd-3a3d18f881e7/scratchpad/build/s3ev-perf.mjs:14:9 {
+  log: [],
+  name: 'TimeoutError'
+}
+
+Node.js v22.22.2
+== perf webgl lite phone
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+page.waitForFunction: Timeout 30000ms exceeded.
+    at /tmp/claude-0/-home-user-hotel-city-tycoon-lastest/aad45d81-f985-5543-96bd-3a3d18f881e7/scratchpad/build/s3ev-perf.mjs:14:9 {
+  log: [],
+  name: 'TimeoutError'
+}
+
+Node.js v22.22.2
+== done2

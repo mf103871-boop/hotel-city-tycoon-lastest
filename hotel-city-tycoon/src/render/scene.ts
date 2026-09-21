@@ -125,6 +125,8 @@ export class HotelScene {
   private gridDrawn = false;
   /** Frames that began with the world's draw list marked for a rebuild (DEC-020 §6): read, never written. */
   private rebuilds = 0;
+  /** Frames that began with a view update queued — a context swap, a Graphics redraw, a texture change. */
+  private viewUpdates = 0;
   /** The debug contact sheet of the cast, on the stage, or null. */
   private castSheet: Container | null = null;
 
@@ -275,10 +277,20 @@ export class HotelScene {
   /** Per-frame work. Cheap by design: culling, a camera transform, and strides. */
   render(deltaMs = 16.7): void {
     this.frames.record(deltaMs);
-    // One boolean, read before Pixi rebuilds: a context swap or a visible
-    // toggle anywhere in the world since the last frame leaves this flag on,
-    // and the rig is designed so a moving crowd never sets it.
-    if (this.handle.world.parentRenderGroup?.structureDidChange) this.rebuilds++;
+    // Two signals, read before Pixi's own render consumes them. A visible or
+    // renderable toggle, or a child added anywhere in the world, raises
+    // `structureDidChange` at once. A context swap or a Graphics redraw only
+    // queues the view into `childrenRenderablesToUpdate`; Pixi decides inside
+    // its render whether that forces a rebuild and clears the flag in the
+    // same call, so the first counter never sees that class — the second
+    // does (`_updateRenderGroups` empties the queue after it). The rig is
+    // designed so a moving crowd raises neither: transforms, alpha and tint
+    // go down the transform path, not this one.
+    const group = this.handle.world.parentRenderGroup;
+    if (group) {
+      if (group.structureDidChange) this.rebuilds++;
+      if (group.childrenRenderablesToUpdate.index > 0) this.viewUpdates++;
+    }
     applyCamera(this.handle.world, this.camera, this.view);
 
     const visible = visibleRect(this.camera, this.view);
@@ -414,11 +426,17 @@ export class HotelScene {
     return out;
   }
 
-  /** The rig's tier, how many parts it is drawing, and how many frames so far began with a draw-list rebuild. */
-  rigStats(): { tier: MotionTier; parts: number; rebuilds: number } {
+  /**
+   * The rig's tier, how many parts it is drawing, how many frames so far
+   * began with a draw-list rebuild already flagged (`rebuilds`), and how
+   * many began with a view update queued (`viewUpdates`) — the class a
+   * context swap or a Graphics redraw falls into, which the flag alone
+   * cannot show at this read point.
+   */
+  rigStats(): { tier: MotionTier; parts: number; rebuilds: number; viewUpdates: number } {
     let parts = 0;
     for (const [, view] of this.characters.entries()) parts += view.rigPartCount();
-    return { tier: motionTier(), parts, rebuilds: this.rebuilds };
+    return { tier: motionTier(), parts, rebuilds: this.rebuilds, viewUpdates: this.viewUpdates };
   }
 
   /**

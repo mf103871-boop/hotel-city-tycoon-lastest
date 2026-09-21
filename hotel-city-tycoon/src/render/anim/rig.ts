@@ -397,7 +397,11 @@ export function pose(rs: RigState, p: RigProportions, inp: RigInput): Pose {
         zDrift = cycle(SLEEP_DRIFT, t);
         break;
     }
-    if (inp.holding === 'shiftWeight') hipX += SHIFT_WEIGHT_PX * Math.sin(Math.PI * inp.holdT);
+    // A weight shift is secondary motion like the springs: on the lite tier
+    // the view re-poses only when its quantised key moves on, and holdT is
+    // not in that key, so a shift there would freeze at whatever sample the
+    // last key change happened to catch.
+    if (secondary && inp.holding === 'shiftWeight') hipX += SHIFT_WEIGHT_PX * Math.sin(Math.PI * inp.holdT);
   } else if (clip === 'sit') {
     hipDrop = SIT_DROP;
   }

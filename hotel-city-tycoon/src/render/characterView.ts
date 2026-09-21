@@ -344,8 +344,13 @@ export class CharacterView extends Container {
       this.drawn = '';
       this.sprite.visible = false;
       if (lookChanged) this.fallback.clear();
-      this.rig.setLook(this.look, this.proportions, lit, CHARACTER_ART_SCALE, lookKey);
-      if (!lookChanged && lightKey !== this.lightKey) this.rig.setTints(lit);
+      const dressed = this.rig.setLook(this.look, this.proportions, lit, CHARACTER_ART_SCALE, lookKey);
+      // reset() forgets this view's keys but the rig keeps the look it wears
+      // (re-dressing would swap every context for nothing), so a recycled
+      // view handed a person with the same look is already dressed — in the
+      // last occupant's light. Tint on any key change the dressing did not
+      // cover, or a guest arriving at noon walks in night tints.
+      if (!dressed && (lookChanged || lightKey !== this.lightKey)) this.rig.setTints(lit);
       this.rig.setExpression(expressionFor(data.clip, data.mood, this.look.expression), data.clip === 'sleep');
       this.rig.setProp(data.clip === 'work' ? 'work' : 'idle');
       this.rig.setSeated(data.clip === 'sit');
@@ -498,8 +503,10 @@ export class CharacterView extends Container {
     const p = pose(this.rigState, this.proportions, inp);
     const eyesShut = this.blinkLeftMs > 0 || rigClip === 'sleep';
     if (lite) {
-      // Only when the sampled key changes: Pixi's setters are equality-guarded
-      // anyway, but on the canvas lane the pose itself is the cost to skip.
+      // The pose is computed every frame regardless (its stride phase has to
+      // follow the distance walked); what the key skips is apply(), so the
+      // rig's transforms — and the Canvas2D paths behind them — hold still
+      // between clip frames instead of moving by fractions of a pixel.
       const key = (((RIG_CLIP_INDEX.get(rigClip) ?? 0) * 64 + frame) * 64
         + Math.floor(this.rigState.phase * frames)) * 4 + (facing > 0 ? 2 : 0) + (eyesShut ? 1 : 0);
       if (key !== this.rigKey) {

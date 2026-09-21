@@ -270,7 +270,8 @@ export function HotelCanvas({ onRoomTap, onEmptyTap, onStats }: HotelCanvasProps
         // fixed scale — the contact sheet the art review reads (DEC-020).
         castSheet: (spec?: { clip?: string; phase?: number; scale?: number }) => scene?.showCastSheet(spec ?? {}),
         castSheetOff: () => scene?.showCastSheet(null),
-        // The tier, the part count and how many frames rebuilt the draw list.
+        // The tier, the part count, and how many frames began with a draw-list
+        // rebuild flagged or a view update queued (see HotelScene.rigStats).
         rigStats: () => scene?.rigStats(),
       };
 

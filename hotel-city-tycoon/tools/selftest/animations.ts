@@ -687,6 +687,19 @@ check('the sheet path is still there behind the rig', () => {
     'the sheet path\'s one-shot line is no longer byte-identical');
 });
 
+check('a recycled view re-tints the rig it inherits', () => {
+  // The pool hands one view to many people; reset() forgets the view's keys
+  // while the rig keeps the look it wears, so the next occupant with the
+  // same look arrives already dressed — in the last one's light. The view
+  // owes the tints whenever the dressing did not run (review of S3).
+  const view = fs.readFileSync('src/render/characterView.ts', 'utf8');
+  assert(view.includes('if (!dressed && (lookChanged || lightKey !== this.lightKey)) this.rig.setTints(lit);'),
+    'characterView.ts no longer re-tints a rig that setLook() left dressed');
+  const rig = stripSrc(fs.readFileSync('src/render/characterRig.ts', 'utf8'));
+  assert(/setLook\([^{]*\): boolean \{\s*if \(lookKey === this\.lookKey\) return false;/.test(rig),
+    'CharacterRig.setLook() does not say whether it dressed');
+});
+
 check('the JSON is still the clock', () => {
   const view = fs.readFileSync('src/render/characterView.ts', 'utf8');
   assert(view.includes('progress('), 'characterView.ts never reads the clip\'s progress');

@@ -1,0 +1,47 @@
+0.5s [info] [hotel-city-tycoon] build 0.1.0+20260921T0205, 361 assets declared
+0.5s navigated
+0.5s [info] [hotel-city-tycoon] stress mode: 60 rooms, 900s warm-up
+1.0s [info] [hotel-city-tycoon] renderer: webgl, resolution 2x
+1.0s [info] [hotel-city-tycoon] renderer: webgl, resolution 2x
+1.3s [info] [assets] 117 room textures loaded at @2x
+1.5s [error] PixiJS Error: Could not retrieve shader source (WebGL context may be lost).
+1.5s [error] PixiJS Error: Could not retrieve shader source (WebGL context may be lost).
+1.5s [error] PixiJS Error: Could not initialize shader.
+1.5s [warning] PixiJS Warning: gl.getProgramInfoLog() null
+1.5s [warning] PixiJS Warning:  Attribute aPosition is not present in the shader, but is present in the geometry. Unable to infer attribute details.
+1.5s [warning] PixiJS Warning:  Attribute aUV is not present in the shader, but is present in the geometry. Unable to infer attribute details.
+1.5s [warning] PixiJS Warning:  Attribute aColor is not present in the shader, but is present in the geometry. Unable to infer attribute details.
+1.5s [warning] PixiJS Warning:  Attribute aTextureIdAndRound is not present in the shader, but is present in the geometry. Unable to infer attribute details.
+1.5s [error] PixiJS Error: Could not retrieve shader source (WebGL context may be lost).
+1.5s [error] PixiJS Error: Could not retrieve shader source (WebGL context may be lost).
+1.5s [error] PixiJS Error: Could not initialize shader.
+1.5s [warning] PixiJS Warning: gl.getProgramInfoLog() null
+1.5s [warning] PixiJS Warning:  Attribute aPosition is not present in the shader, but is present in the geometry. Unable to infer attribute details.
+1.5s [warning] PixiJS Warning:  Attribute aUV is not present in the shader, but is present in the geometry. Unable to infer attribute details.
+1.5s [warning] PixiJS Warning:  Attribute aColor is not present in the shader, but is present in the geometry. Unable to infer attribute details.
+1.5s [warning] PixiJS Warning:  Attribute aTextureIdAndRound is not present in the shader, but is present in the geometry. Unable to infer attribute details.
+1.5s [warning] PixiJS Warning:  Attribute aPosition is not present in the shader, but is present in the geometry. Unable to infer attribute details.
+1.5s [warning] PixiJS Warning:  Attribute aUV is not present in the shader, but is present in the geometry. Unable to infer attribute details.
+1.5s [warning] PixiJS Warning:  Attribute aColor is not present in the shader, but is present in the geometry. Unable to infer attribute details.
+1.5s [warning] PixiJS Warning:  Attribute aTextureIdAndRound is not present in the shader, but is present in the geometry. Unable to infer attribute details.
+1.5s [warning] PixiJS Warning:  Attribute aPosition is not present in the shader, but is present in the geometry. Unable to infer attribute details.
+1.5s [warning] PixiJS Warning:  Attribute aUV is not present in the shader, but is present in the geometry. Unable to infer attribute details.
+1.5s [warning] PixiJS Warning:  Attribute aColor is not present in the shader, but is present in the geometry. Unable to infer attribute details.
+1.5s [warning] PixiJS Warning:  Attribute aTextureIdAndRound is not present in the shader, but is present in the geometry. Unable to infer attribute details.
+1.5s ready true
+1.6s rigStats {"tier":"full","parts":3180,"rebuilds":1}
+1.6s [log] [perf] sampling restarted
+1.6s resetPerf
+2.2s [info] [assets] complete: all 361 declared textures available
+9.6s [log] 
+===== PERFORMANCE =====
+renderer          webgl
+viewport          412x915 @2x
+scene             60 rooms (49 drawn), 59 characters
+frames sampled    480
+
+fps a
+9.6s PERF reset@1.6s read@9.6s {"samples":480,"fpsAverage":59.87724962822263,"fpsMin":29.940118392664818,"fpsP95Low":59.880236785329636,"worstFrameMs":33.400001525878906,"lateFraction":0.0020833333333333333,"characters":59,"drawnRooms":49,"backend":"webgl","memoryMB":55.26207637786865,"viewport":"412x915","dpr":2}
+9.6s rigStats {"tier":"full","parts":3127,"rebuilds":16} rebuilds in window 15
+9.6s chars {"n":59,"visible":36,"walking":5,"sources":["rig"]}
+9.6s closing

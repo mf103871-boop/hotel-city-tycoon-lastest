@@ -428,6 +428,21 @@ describe('tiers and grids', () => {
     expect(snapshot(pose(rs, NOMINAL, input({ clip: 'walk', frames: 8, lite: true, movedPx: 0, dtS: 1 / 60 })))).not.toBe(b);
   });
 
+  it('lite: a weight shift is secondary motion, so the hip holds still on the frame grid', () => {
+    // The view re-poses a lite person only when its quantised key moves on,
+    // and holdT is not in that key: a shift there would freeze mid-sway.
+    const still = snapshot(pose(createRigState(3), NOMINAL, input({ clip: 'idle', frames: 4, lite: true, dtS: 1 / 60 })));
+    for (const holdT of [0.25, 0.5, 0.75]) {
+      const shifted = snapshot(pose(createRigState(3), NOMINAL,
+        input({ clip: 'idle', frames: 4, lite: true, dtS: 1 / 60, holding: 'shiftWeight', holdT })));
+      expect(shifted).toBe(still);
+    }
+    // On the full tier the same hold does move the hip.
+    const rs = createRigState(3);
+    pose(rs, NOMINAL, input({ clip: 'idle', frames: 4, dtS: 1 / 60, holding: 'shiftWeight', holdT: 0.5 }));
+    expect(rs.pose.hip.x).not.toBe(0);
+  });
+
   it('idle, sit and sleep are grid-sampled on the full tier too', () => {
     expect([...GRID_CLIPS].sort()).toEqual(['idle', 'sit', 'sleep']);
     for (const clip of GRID_CLIPS) {

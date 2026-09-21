@@ -614,10 +614,11 @@ export class CharacterRig extends Container {
    * Dress the rig as one person. Assigns every part's geometry by size key
    * and every tint; returns at once when the look key is the one it already
    * wears, so a snapshot never touches a context (a context change rebuilds
-   * the world's instructions).
+   * the world's instructions). Returns whether it dressed: a dressing tints
+   * as well, and the caller owes the tints itself when it did not.
    */
-  setLook(look: Look, p: RigProportions, lit: (c: number) => number, scale: number, lookKey: string): void {
-    if (lookKey === this.lookKey) return;
+  setLook(look: Look, p: RigProportions, lit: (c: number) => number, scale: number, lookKey: string): boolean {
+    if (lookKey === this.lookKey) return false;
     this.lookKey = lookKey;
     this.look = look;
     this.p = p;
@@ -655,6 +656,7 @@ export class CharacterRig extends Container {
     this.artScale = scale;
     this.scale.set(scale * this.facing, scale);
     this.setTints(lit);
+    return true;
   }
 
   /** Re-colour for the light — night, dusk — without touching any geometry. */
