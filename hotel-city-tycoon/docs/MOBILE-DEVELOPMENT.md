@@ -88,7 +88,10 @@ live character rig, DEC-020).
    the badge and the URL used into the step report's evidence section.
 5. Since HC-P2-S3 the people are a live parts rig with two motion tiers, so
    take three readings and paste all three `window.hct.perf()` objects plus
-   `window.hct.rigStats()` (tier, part count, instruction rebuilds) with the
+   `window.hct.rigStats()` (tier, part count, `rebuilds` = frames that began
+   with the draw list already flagged for a rebuild, `viewUpdates` = frames
+   that began with a view update queued — a context swap or a Graphics
+   redraw, the class the flag alone cannot show) with the
    device model and build id: the default URL above (`full` tier — the rig
    posed every frame; this is the reading the bar applies to), the same URL
    with `&lite=1` (the frame-grid tier the CI lane draws, springs off), and
@@ -100,7 +103,12 @@ live character rig, DEC-020).
 
 `p5 >= 55` at 60 rooms / about 60 people on the default (`full` tier) URL is the
 bar that moves the row to `VERIFIED`; the `lite` and `aa` readings are recorded
-beside it, never in its place. Inside the Capacitor app the
+beside it, never in its place. For orientation only (not a phone number, never
+compared with the bar): the same URL on the sandbox's software Canvas2D lane
+read p5 30 for the rig at either tier against p5 59.5 for the S2 sheets on the
+same day (`docs/HC-P2-S3-REPORT.md` §6.2), so a phone reading well above 30 on
+WebGL/WebGPU is the expected shape, and one near it would reopen BL-046.
+Inside the Capacitor app the
 console is not reachable until HC-P2-S8 wires the native debugging switch
 (BL-040); until then take the reading in the phone's browser.
 
