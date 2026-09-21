@@ -490,7 +490,7 @@ export class ParticleLayer {
     labelScale: number;
     /**
      * The compensation a live number is *actually* drawn at, read back off
-     * the sprite, and 0 when none is live.
+     * its sprites — the smallest of them — and 0 when none is live.
      *
      * Two numbers rather than one because the interesting failure is the one
      * where they disagree: a stored scale that never reached a sprite is
@@ -505,7 +505,17 @@ export class ParticleLayer {
     for (const label of this.labels) {
       if (!label.live) continue;
       labels++;
-      if (drawn === 0) drawn = label.sign.scale.x;
+      if (drawn !== 0) continue;
+      // The **smallest** scale on any sprite this number is using, not the
+      // sign's. Reading the sign alone left the hole it was added to close:
+      // lose the digit loop's `scale.set` and the sign is still magnified, so
+      // the stored and the drawn scale still agree while the phone shows a
+      // giant plus in front of six unscaled smudges.
+      drawn = label.sign.scale.x;
+      for (let d = 0; d < label.n; d++) {
+        const digit = label.digits[d]!;
+        if (digit.scale.x < drawn) drawn = digit.scale.x;
+      }
     }
     return {
       live: this.field.live, labels, bubbles: this.bubbleLive,
@@ -618,26 +628,56 @@ export class ParticleLayer {
   /**
    * Where a number sits before it starts rising, in world px.
    *
-   * Both seats pin an **edge**, not the centre, and that is the whole of the
-   * arithmetic here. A sprite anchored at (0.5, 0.5) grows downward exactly
-   * as fast as it grows upward, so a scale of 5 about the cue's own anchor —
-   * the top of the drawn head (`scene.ts` `playCues`) — would push 30 world
-   * px of ink down over the person the number is about, three quarters of a
-   * standing figure, instead of over their head. So:
+   * A sprite anchored at (0.5, 0.5) grows downward exactly as fast as it
+   * grows upward, and the cue's anchor is the **top of the drawn head**
+   * (`scene.ts` `playCues`). So a scale of 4 about it, untouched, would push
+   * 18 world px of ink down over the person the number is about. The no-card
+   * seat therefore pins the number's **bottom edge** where it has always
+   * been, `GLYPH_H / 2` below the head, and the number grows upward out of
+   * the person rather than down across them.
    *
-   * - no card: the number's **bottom** edge stays where it has always been,
-   *   `GLYPH_H / 2` below the head, and the number grows upward out of the
-   *   person rather than down across them;
-   * - a card: the number's **top** edge stays where it has always been,
-   *   clear below the card, because there the thing not to cover is above.
+   * The card seat does **not** get the mirror treatment, and that is the
+   * correction of a measured mistake rather than an omission. Pinning the top
+   * edge below the card pushed the bottom edge down by the same
+   * `GLYPH_H * (scale - 1)`, and measured against the shipped cast — whose
+   * `standingTopPx` runs 46.86 to 54.05 world px — that put the number 11.95
+   * to 19.14 px *below the payer's own feet* at the camera floor: through the
+   * floor line, into the room underneath. The drop is the card's own height
+   * and nothing more, at every scale, so the number stands 16.86 px above the
+   * feet at scale 1 and 1.14 px below them at the ceiling. That last number is
+   * a change, not a restoration: at scale 1 a card-seated number never came
+   * near the payer's feet, and at the ceiling it just reaches them for the
+   * shortest of the cast. It is the smaller of two evils — the seat it
+   * replaced hung 11.95 to 19.14 px below those feet — and it is accepted,
+   * not unnoticed. A magnified number then overlaps the card as it rises, which
+   * costs nothing: the `numbers` group is drawn after `cards`, so DEC-021's
+   * invariant — a floating number is never hidden under a reaction card —
+   * holds by construction, and at the zoom where the number is magnified the
+   * card is a ten-pixel dot nobody reads (BL-053).
    *
-   * At scale 1 both reduce to exactly what the channel shipped with — `wy`
-   * and `wy + BUBBLE_H` — so the S4 captures still show what they showed.
+   * At scale 1 both seats are exactly what the channel shipped with, `wy` and
+   * `wy + BUBBLE_H`, so the S4 captures still show what they showed.
+   *
+   * Note which quantity each seat holds: with no card an **edge** is pinned,
+   * under a card the sprite's **centre** is, because the drop carries no
+   * scale term. So a magnified number's top edge under a card sits higher
+   * than it did — `dropY` at the ceiling against `dropY + 18` at scale 1 —
+   * and crosses the card as it rises. Said here because an earlier draft
+   * called both seats edge-pinned.
+   *
+   * **What this does not do, stated because the first draft claimed it:** it
+   * does not keep the whole drawn number inside the storey that paid. The
+   * measurement has one home — `tools/selftest/effects.ts` computes it from
+   * the shipped cast and prints it on every run — and at the shipped ceiling
+   * it reads 119.39 world px above the floor line against a `BLOCK_H` of 96.
+   * That is not fixable alongside the thing the owner asked for: the tallest
+   * head already stands 54.05 px up a 96 px storey, so a number that fits the
+   * remaining 42 px is 9.6 CSS px on a phone — twice the smudge, and still
+   * not a number.
    */
   private labelBaseY(label: Label): number {
-    const grown = (GLYPH_H * (this.labelScale - 1)) / 2;
-    if (!label.dropped) return label.wy - grown;
-    return label.dropY + BUBBLE_H + grown;
+    if (label.dropped) return label.dropY + BUBBLE_H;
+    return label.wy - (GLYPH_H * (this.labelScale - 1)) / 2;
   }
 
   /**

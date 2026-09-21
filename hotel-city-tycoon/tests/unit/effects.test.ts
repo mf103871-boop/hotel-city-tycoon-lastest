@@ -347,8 +347,11 @@ describe('the floating number', () => {
       const x0 = labelOriginX(100, n, scale);
       const last = x0 + (n - 1) * GLYPH_ADVANCE_PX * scale;
       expect((x0 + last) / 2).toBeCloseTo(100, 10);
-      // Neighbouring glyph boxes still cannot touch.
-      expect(GLYPH_ADVANCE_PX * scale).toBeGreaterThanOrEqual(GLYPH_W * scale);
+      // Neighbouring glyph boxes still cannot touch: the gap between two
+      // drawn boxes is the advance minus the box, scaled, and it must stay
+      // positive — which is a statement about the shipped constants, not the
+      // scale (`10s >= 9s` would be true for any s).
+      expect((GLYPH_ADVANCE_PX - GLYPH_W) * scale).toBeGreaterThan(0);
     }
   });
 
@@ -362,9 +365,16 @@ describe('the floating number', () => {
     }
     // And the rise is NOT scaled by the screen-space compensation: the size
     // is pinned to the glass, the travel stays in the world, which is what
-    // keeps a magnified number inside the room that earned it and below the
-    // reaction card it was re-seated under (HC-P2-S4 §9).
-    expect(labelRiseOf.length).toBe(2);
+    // keeps a magnified number below the reaction card it was re-seated under
+    // (HC-P2-S4 §9) and stops it climbing a whole storey.
+    //
+    // Asserted by VALUE, not by `labelRiseOf.length`: arity stops counting at
+    // the first defaulted parameter, so `(step, steps, scale = 1)` — exactly
+    // the shape `labelOriginX` has in this same commit — would still read 2
+    // and the assertion would pass while the rise was scaled.
+    const withThird = (labelRiseOf as unknown as (a: number, b: number, c: number) => number);
+    expect(withThird(FX_STEPS, FX_STEPS, 5)).toBeCloseTo(LABEL_RISE_PX, 6);
+    expect(withThird(FX_STEPS, FX_STEPS, 0)).toBeCloseTo(LABEL_RISE_PX, 6);
   });
 });
 
@@ -409,7 +419,11 @@ describe('the number is pinned to the glass, not to the world («كبر الرق
     // above as readily as against the room that earned it, and one wider than
     // a room stops pointing at anything. Half a storey is the rule, the width
     // is the consequence, and both are measured here rather than trusted.
-    expect(LABEL_SCALE_ROOM_MAX).toBe(BLOCK_H / (2 * GLYPH_H));
+    // The literal it stands for, not its own definition copied token for
+    // token: `expect(X).toBe(<the expression that defines X>)` can never go
+    // red, because both sides move together.
+    expect(LABEL_SCALE_ROOM_MAX).toBe(4);
+    expect(GLYPH_H * LABEL_SCALE_ROOM_MAX).toBe(BLOCK_H / 2);
     for (let z = MIN_ZOOM; z <= MAX_ZOOM + 1e-9; z += 0.001) {
       expect(GLYPH_H * labelScaleFor(z)).toBeLessThanOrEqual(BLOCK_H / 2 + 1e-9);
     }
@@ -420,9 +434,16 @@ describe('the number is pinned to the glass, not to the world («كبر الرق
     const cell = (n: number): number => (n - 1) * GLYPH_ADVANCE_PX * k + GLYPH_W * k;
     expect(cell(3)).toBeLessThanOrEqual(BLOCK_W);
     expect(cell(4)).toBeGreaterThan(BLOCK_W);
-    // And the number's whole travel — its own half-height plus its rise —
-    // never climbs a storey, because the rise is not scaled.
-    expect((GLYPH_H * k) / 2 + LABEL_RISE_PX).toBeLessThanOrEqual(BLOCK_H);
+    // And the travel is bounded in world px whatever the scale, which is the
+    // reason the rise was left unscaled. What this does NOT say — and the
+    // first draft of this test did say it, wrongly — is that the whole drawn
+    // number stays inside the storey that paid: the seat is edge-pinned and
+    // the cue's anchor is the top of a head, most of a storey up already.
+    // `tools/selftest/effects.ts` measures that reach against the real cast
+    // and prints it; here the claim is only that the rise itself is a world
+    // distance and a small one.
+    expect(LABEL_RISE_PX).toBeLessThanOrEqual(BLOCK_H / 2);
+    expect(labelRiseOf(FX_STEPS, FX_STEPS)).toBeCloseTo(LABEL_RISE_PX, 6);
   });
 
   it('is magnified from the sheet no more than the owner already read without effort', () => {
@@ -449,7 +470,10 @@ describe('the number is pinned to the glass, not to the world («كبر الرق
     // binary floating point, and a clamp its own value can exceed is not one).
     expect(LABEL_SCALE_MAX)
       .toBeCloseTo(Math.min(LABEL_SCREEN_PX / (GLYPH_H * MIN_ZOOM), LABEL_SCALE_ROOM_MAX), 10);
-    expect(LABEL_SCALE_MAX * LABEL_SCALE_STEPS).toBe(Math.round(LABEL_SCALE_MAX * LABEL_SCALE_STEPS));
+    // (No `LABEL_SCALE_MAX * STEPS is an integer` assertion here: `ceil(x*16)/16`
+    // times 16 is exactly an integer for every finite x, so it would be true
+    // whatever the constants are. The grid is checked where it can fail —
+    // over `labelScaleFor`'s own answers, below.)
     // The camera cannot ask for more than the floor of its own zoom range.
     for (let z = MIN_ZOOM; z <= MAX_ZOOM; z += 0.01) {
       const k = labelScaleFor(clampZoom(z));

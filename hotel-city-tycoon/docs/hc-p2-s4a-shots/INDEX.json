@@ -985,7 +985,7 @@
   "dataFiles": [
     {
       "file": "plusN-after-measured.json",
-      "shows": "الأرقام من التشغيل نفسه الذي أنتج الصور المجاورة"
+      "shows": "أرقام §4.3: تشغيل **مستقل** بـ`?stress=0` و`reducedMotion: reduce` — عالم ساكن وعملة واحدة في مكانها. **لا صورة في هذا المجلد من هذا التشغيل**: كل الصور بحركة كاملة (`live` 5..8) والرقم فيها يصعد."
     },
     {
       "file": "plusN-after-still.json",
@@ -997,7 +997,7 @@
     },
     {
       "file": "plusN-before-measured.json",
-      "shows": "الأرقام من التشغيل نفسه الذي أنتج الصور المجاورة"
+      "shows": "أرقام §4.3: تشغيل **مستقل** بـ`?stress=0` و`reducedMotion: reduce` — عالم ساكن وعملة واحدة في مكانها. **لا صورة في هذا المجلد من هذا التشغيل**: كل الصور بحركة كاملة (`live` 5..8) والرقم فيها يصعد."
     },
     {
       "file": "plusN-before-still.json",
@@ -1018,5 +1018,14 @@
     "dataFiles": 7,
     "indexFile": 1,
     "total": 89
-  }
+  },
+  "corrections": [
+    {
+      "date": "21-09-2026",
+      "where": "plusN-before-measured.json and plusN-after-measured.json, field `isolation`",
+      "wrong": "only the number rises above the head, so the bbox height is the number",
+      "right": "The gold bounding box isolates nothing: it is dominated by the room rim flash. These files own numbers refute the sentence — the box reads 154x74 before and 154x76 after, while the derived number in the same files is 24x9.6 then 96x38.4 device px. If the box were the number its width could not be identical across a change that quadrupled it. What this measurement does support is the COUNT (gold 1176 -> 1729 device px, changed 1870 -> 3366) with the caveat already stated beside it: the count includes one coin and the rim flash.",
+      "note": "The capture files are left exactly as measured; this entry is the correction of record."
+    }
+  ]
 }

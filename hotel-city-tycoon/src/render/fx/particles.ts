@@ -107,13 +107,17 @@ export const LABEL_MAX_VALUE = 999999;
 /**
  * The height a floating number is held at on the glass, in CSS px.
  *
- * Not a number somebody liked the look of. The one capture in this project's
- * evidence that the owner looked at and called readable is
- * `docs/hc-p2-s4-shots/burst-room-phone-full-withhud.png`, taken at room zoom
- * 2.02x, where a digit stands `GLYPH_H * 2.02 = 24.2` CSS px tall and the
- * step report's verdict on that very picture is «الرقم مقروء بلا جهد». This
- * is that height, floored to an integer: the number is never smaller on the
- * glass than the size that was read without effort.
+ * Not a number somebody liked the look of, and not an owner's verdict either
+ * — an earlier draft of this comment said it was one, and that was wrong in
+ * both halves. `GLYPH_H * 2.02 = 24.24`, floored: the room zoom at which
+ * HC-P2-S4's report — its own author, in a box measurement on a software
+ * canvas — wrote «الرقم مقروء بلا جهد». No eye and no device stand behind it;
+ * the same report disqualifies its whole capture class for exactly this
+ * question («قياس صندوق … لا قراءة عين على هاتف»), and the owner's only
+ * recorded words are «كبر الرقم». So this constant claims **geometry**: the
+ * number is never smaller on the glass than a size this project has measured
+ * and called readable in writing. Whether it *is* readable is open until a
+ * phone says so (`docs/MOBILE-DEVELOPMENT.md`).
  */
 export const LABEL_SCREEN_PX = 24;
 /**
@@ -122,9 +126,10 @@ export const LABEL_SCREEN_PX = 24;
  * A pinch moves the zoom every frame and a label's layout is written only
  * when its scale moves, so an unquantised scale would re-lay out every live
  * number on every frame of a pinch. Sixteen steps per unit is 6.25% at scale
- * 1 and 1.25% at scale 5 — below what an eye resolves on a 24 px digit — and
- * bounds a whole pinch to some sixty re-layouts. The same reasoning that put
- * `DUSK_STEPS` in `src/render/lighting.ts`.
+ * 1 and 1.56% at `LABEL_SCALE_MAX` — below what an eye resolves on a 24 px
+ * digit — and a pinch across the camera's whole range crosses some fifty grid
+ * values, which is the bound on how often it re-lays out. The same reasoning
+ * that put `DUSK_STEPS` in `src/render/lighting.ts`.
  */
 export const LABEL_SCALE_STEPS = 16;
 /**
@@ -436,16 +441,27 @@ export function labelScaleFor(zoom: number): number {
  *
  * **Not** scaled by the screen-space compensation, and that is a decision
  * rather than an omission. The size is pinned to the glass because a number
- * nobody can read is not information; the *travel* is what ties the number to
- * the room that earned it, and it belongs to the world. Scaling it by 5 was
- * measured doing two things wrong at the phone's fit zoom: a number rose 120
- * world px against a 96 px floor and ended up drawn over the room one storey
- * up (`docs/hc-p2-s4a-shots/plusN-*-still-phonefit-full-t250ms.png` caught it
- * above the roof), and it climbed back through the reaction card that
- * HC-P2-S4 §9 re-seated it below. Left in world px, the number's top edge
- * follows exactly the path it followed before this step at every zoom —
- * which is why the card clearance needs no new arithmetic and S4's
- * `inspector-paid-and-praised-*` captures still describe what happens.
+ * nobody can read is not information; the travel belongs to the world.
+ * Scaling it was measured doing two things wrong at the phone's fit zoom: the
+ * number rose 120 world px against a 96 px storey — half a storey further
+ * than it had any business travelling — and it climbed back through the
+ * reaction card that HC-P2-S4 §9 re-seated it below. Both were computed from
+ * the constants and seen in an interim capture; **no rise-scaled arm is in
+ * the shipped evidence folder**, so this is a measurement and not a
+ * photograph, and an earlier draft of this comment cited a picture for it
+ * that shows the shipped number instead. Left in world px the travel is the
+ * same small lift at every zoom, which is why the card seat needs no new
+ * arithmetic.
+ *
+ * **What it does not buy, because the first draft of this comment claimed it
+ * did:** it does not keep the drawn number inside the storey that paid. The
+ * seat pins an edge and the cue's anchor is the top of a head, so at the
+ * shipped ceiling the top edge reaches 119.39 world px above the floor line
+ * against a `BLOCK_H` of 96 — measured over the real cast by
+ * `tools/selftest/effects.ts`, which prints the number on every run. The
+ * containment and the legibility are not both available: the tallest head
+ * already stands 54.05 px up a 96 px storey, and a number that fits the rest
+ * is 9.6 CSS px on a phone.
  */
 export function labelRiseOf(step: number, steps: number): number {
   const u = steps > 0 ? step / steps : 0;

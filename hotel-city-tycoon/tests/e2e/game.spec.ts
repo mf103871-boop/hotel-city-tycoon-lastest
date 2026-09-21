@@ -978,6 +978,60 @@ test('the effects put pixels on the canvas', async ({ page }) => {
     .toBeGreaterThanOrEqual(6);
 });
 
+test('a number already in the air is re-laid out when the camera zooms', async ({ page }) => {
+  /*
+   * The one assertion that reaches the re-layout loop (DEC-024, «كبر الرقم»).
+   *
+   * `the effects put pixels on the canvas` reads `labelScale` and
+   * `labelScaleDrawn` and requires them equal, but in that test the camera
+   * never moves: both numbers are written by the same `layoutLabel` call one
+   * assignment apart, so the equality is forced by construction and a
+   * `setZoom` whose re-layout loop was deleted would still pass it. The
+   * failure that matters is the other one — a number already in the air
+   * keeping its old size while the stored scale moves — and only a zoom
+   * *during* a label's 500 ms life can see it.
+   *
+   * So: fire a payout, zoom in on the next frames with real wheel events
+   * (`scene.ts` binds them at 1.1 per notch), and read the pair again while
+   * the number is still live.
+   */
+  await bootEffects(page, 12);
+  await page.setViewportSize({ width: 900, height: 640 });
+  await page.waitForTimeout(400);
+
+  const moved = await page.evaluate(async () => {
+    const hct = (window as unknown as FxWindow).hct;
+    if (!hct) throw new Error('no handle');
+    const canvas = document.querySelector('canvas[role="img"]') as HTMLCanvasElement;
+    const anchor = hct.fx('payout');
+    const before = hct.fxStats();
+    // Twelve notches in, then one frame to let render() carry the camera to
+    // the layer. The label lives 500 ms; this takes about two.
+    for (let i = 0; i < 12; i++) {
+      canvas.dispatchEvent(new WheelEvent('wheel', {
+        deltaY: -100, clientX: 450, clientY: 320, bubbles: true, cancelable: true,
+      }));
+    }
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const after = hct.fxStats();
+    return { anchor, before, after };
+  });
+
+  expect(moved.anchor, 'the cue found nobody inside the viewport to anchor on').not.toBe('');
+  expect(moved.before.labels, 'the payout drew no number to re-lay out').toBeGreaterThan(0);
+  expect(moved.after.labels, 'the number expired before the zoom landed').toBeGreaterThan(0);
+  // The camera moved, so the compensation must have moved with it...
+  expect(moved.after.labelScale, 'zooming in did not change the label scale')
+    .toBeLessThan(moved.before.labelScale);
+  // ...and it must have reached the sprites of a number that was already in
+  // the air when the zoom happened. This is the assertion the other test
+  // cannot make.
+  expect(moved.after.labelScaleDrawn, 'a number in the air kept its old size through a zoom')
+    .toBe(moved.after.labelScale);
+  expect(moved.before.labelScaleDrawn, 'the scale never reached the sprite at birth')
+    .toBe(moved.before.labelScale);
+});
+
 test('a room can flash while a character keeps its outline', async ({ page }) => {
   // The regression test the pulse arithmetic earns. The room pulse is the one
   // additive thing S4 adds, and the obvious way to get it wrong is to flood

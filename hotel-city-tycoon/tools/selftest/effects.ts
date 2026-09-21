@@ -21,11 +21,14 @@ import {
   FX, FIELD_CAP_LITE, FX_LIFE_MS, FX_STEPS,
   createField, emit, stepField, burst, stepsOf, stepOf, ambientCap, dustCap,
   BURST_SPEED_MIN, BURST_SPEED_SPAN, BURST_SPREAD_RAD,
-  labelScaleFor, LABEL_SCREEN_PX, LABEL_SCALE_MAX, LABEL_SCALE_ROOM_MAX, LABEL_RISE_PX,
+  labelScaleFor, LABEL_SCREEN_PX, LABEL_SCALE_MAX, LABEL_SCALE_ROOM_MAX,
+  labelRiseOf, LABEL_LIFE_MS,
 } from '../../src/render/fx/particles.ts';
 import { BLOCK_H } from '../../src/render/layout.ts';
+import { figureFor, headExtent } from '../../src/render/anim/rig.ts';
+import { CAST } from '../../src/render/anim/cast.ts';
 import { MIN_ZOOM, MAX_ZOOM } from '../../src/render/camera.ts';
-import { GLYPHS, GLYPH_COUNT, DIGIT_COUNT, GLYPH_H } from '../../src/render/fx/glyphs.ts';
+import { GLYPHS, GLYPH_COUNT, DIGIT_COUNT, GLYPH_H, BUBBLE_H } from '../../src/render/fx/glyphs.ts';
 import { effectsFor, CUE, MAX_CUES_PER_BATCH } from '../../src/bridge/effects.ts';
 import type { EffectCue } from '../../src/bridge/effects.ts';
 import { PALETTE, shade, lighten } from '../../src/render/anim/cast.ts';
@@ -200,8 +203,8 @@ check('the particle tick allocates nothing', () => {
     // is called from inside `tick`, which is earlier in the file, and
     // `indexOf` would have extracted that call's enclosing braces instead of
     // the method — a check that reads the wrong body is worse than none.
-    for (const sig of ['tick(dtMs', 'setZoom(zoom', 'private layoutLabel(label',
-      'private labelBaseY(label', 'private labelsLive(']) {
+    for (const sig of ['tick(dtMs', 'setZoom(zoom', 'private layoutLabel(',
+      'private labelBaseY(', 'private labelsLive(']) {
       bodies.push([`particleLayer.ts ${sig}`, bodyOf(layer, sig)]);
     }
   }
@@ -459,12 +462,16 @@ check('the floating number is pinned to the glass and reaches it before it is dr
   // 1. The camera reaches the numbers, and does so BEFORE they are drawn: a
   //    setZoom after the tick is last frame's size for one frame on every
   //    frame that zooms.
-  const zoomAt = scene.indexOf('this.fx.setZoom(');
-  const tickAt = scene.indexOf('this.fx.tick(');
-  assert(zoomAt >= 0, 'scene.ts never hands the camera zoom to the effects channel');
-  assert(tickAt >= 0, 'scene.ts no longer ticks the effects channel');
-  assert(zoomAt < tickAt, 'scene.ts sets the label scale after drawing with it');
-  assert(/this\.fx\.setZoom\(this\.camera\.zoom\)/.test(scene),
+  // Inside `render()`'s own braces, not anywhere in the file: a byte offset
+  // is not a call order, and `setZoom` moved into a resize handler would
+  // still read `zoomAt < tickAt` while never running on a pinch.
+  const frame = bodyOf(scene, 'render(deltaMs');
+  const zoomAt = frame.indexOf('this.fx.setZoom(');
+  const tickAt = frame.indexOf('this.fx.tick(');
+  assert(zoomAt >= 0, 'the per-frame body no longer hands the camera zoom to the effects channel');
+  assert(tickAt >= 0, 'the per-frame body no longer ticks the effects channel');
+  assert(zoomAt < tickAt, 'the frame sets the label scale after drawing with it');
+  assert(/this\.fx\.setZoom\(this\.camera\.zoom\)/.test(frame),
     'the effects channel is handed something other than the camera\'s own zoom');
 
   // 2. A label's geometry is derived from its anchor every time it is drawn,
@@ -485,9 +492,22 @@ check('the floating number is pinned to the glass and reaches it before it is dr
   //    it is born on and any frame the scale moves go through it, or the two
   //    would drift apart and only one of them would be tested.
   const layout = bodyOf(layer, 'private layoutLabel(');
-  for (const want of ['labelOriginX(', 'GLYPH_ADVANCE_PX * scale', 'scale.set(scale)', 'label.drawn = -1']) {
+  for (const want of ['GLYPH_ADVANCE_PX * scale', 'label.drawn = -1']) {
     assert(layout.includes(want), `layoutLabel no longer does '${want}'`);
   }
+  // The call, not the callee, and the **digit's** scale, not the sign's. Both
+  // were greps a broken layout satisfied: `labelOriginX` takes its scale
+  // through a defaulted parameter, so dropping the argument compiles and
+  // slides the whole number 30 world px off its room; and
+  // `label.sign.scale.set(scale)` already contains the substring
+  // `scale.set(scale)`, so deleting the digit loop's line left a giant plus
+  // in front of six unchanged 4.8 px smudges with every gate green.
+  assert(/labelOriginX\(\s*label\.wx,\s*label\.n \+ 1,\s*scale\s*\)/.test(layout),
+    'layoutLabel no longer passes the scale to labelOriginX, so a magnified number sits off its room');
+  assert(/label\.sign\.scale\.set\(\s*scale\s*\)/.test(layout), 'the sign is no longer scaled');
+  const digitLoop = layout.slice(layout.indexOf('for (let d = 0'));
+  assert(/sprite\.scale\.set\(\s*scale\s*\)/.test(digitLoop),
+    'the digits are no longer scaled — only the plus sign would be magnified');
   assert((layer.match(/this\.layoutLabel\(/g) ?? []).length >= 3,
     'not every path that moves a number goes through layoutLabel');
   assert(bodyOf(layer, 'setZoom(zoom').includes('this.layoutLabel('),
@@ -500,11 +520,12 @@ check('the floating number is pinned to the glass and reaches it before it is dr
   //    covered is above. The two rules are one line of arithmetic each and
   //    both reduce to the shipped seat at scale 1, which is what keeps S4's
   //    `inspector-paid-and-praised-*` captures true.
-  const seat = bodyOf(layer, 'private labelBaseY(label');
-  assert(/GLYPH_H \* \(this\.labelScale - 1\)\) \/ 2/.test(seat),
-    'the label seat no longer compensates for the height its scale added');
-  assert(/label\.wy - grown/.test(seat), 'a number with no card over it grows down across the person again');
-  assert(/label\.dropY \+ BUBBLE_H \+ grown/.test(seat), 'a number under a card no longer clears it as it grows');
+  const seat = bodyOf(layer, 'private labelBaseY(');
+  assert(/GLYPH_H\s*\*\s*\(\s*this\.labelScale\s*-\s*1\s*\)\s*\)?\s*\/\s*2/.test(seat),
+    'the no-card seat no longer compensates for the height its scale added');
+  assert(/label\.wy\s*-/.test(seat), 'a number with no card over it grows down across the person again');
+  assert(/label\.dropY \+ BUBBLE_H;/.test(seat),
+    'the card seat scales its drop again — measured, that put the number through the floor of the room that paid');
 
   // 5. The clamp's promise, and it is narrower than it sounds: the scale is 1
   //    only at and above 2x. The room zoom the S4 stills were shot at is
@@ -537,10 +558,52 @@ check('the floating number is pinned to the glass and reaches it before it is dr
     assert(GLYPH_H * labelScaleFor(z) <= BLOCK_H / 2 + 1e-9,
       `a digit is ${(GLYPH_H * labelScaleFor(z)).toFixed(2)} world px at zoom ${z.toFixed(4)}, over half a storey`);
   }
-  // The rise stays in world px, so the number's whole reach — its own
-  // half-height plus its travel — cannot climb into the room above.
-  assert((GLYPH_H * LABEL_SCALE_MAX) / 2 + LABEL_RISE_PX <= BLOCK_H,
-    'a floating number now reaches into the storey above the room that earned it');
+  // 7b. And the geometry the seat ACTUALLY produces, measured from the floor
+  //     line the storey is measured from — not from the cue's anchor, which
+  //     is the top of a head and is itself most of a storey up. The first
+  //     draft of this guard asserted `(GLYPH_H * k)/2 + LABEL_RISE_PX <= BLOCK_H`
+  //     — a centre-anchored sprite measured from the anchor — and passed at 48
+  //     against 96 while the real reach was 119. The numbers are pinned rather
+  //     than bounded, because the honest finding is that the number *does*
+  //     enter the storey above and the step accepts it: a number that fits the
+  //     42 px left above the tallest head is 9.6 CSS px on a phone.
+  // Both extremes, because the two failures this pins are worst at opposite
+  // ends of the cast: the number reaches highest over the TALLEST head, and
+  // hangs lowest below the feet of the SHORTEST one. A guard that evaluates
+  // both with the same head under-reports one of them — this one did.
+  let worstTop = 0;
+  let shortestTop = Infinity;
+  for (const look of Object.values(CAST)) {
+    const fig = figureFor(look.build, look.height, look.age);
+    const ext = headExtent(look.hairStyle, look.capStyle);
+    const top = (-fig.headCy + ext.up * fig.headR + ext.upStroke) * 0.82;
+    if (top > worstTop) worstTop = top;
+    if (top < shortestTop) shortestTop = top;
+  }
+  const lastRise = labelRiseOf(stepsOf(LABEL_LIFE_MS) - 1, stepsOf(LABEL_LIFE_MS));
+  const reachAboveFloor = (k: number): number =>
+    worstTop + GLYPH_H * k - GLYPH_H / 2 + lastRise;
+  const belowFeet = (k: number): number => BUBBLE_H + (GLYPH_H * k) / 2 - shortestTop;
+  assert(reachAboveFloor(1) <= BLOCK_H,
+    'an unmagnified number now leaves the storey that paid — that is a regression, not a trade');
+  assert(reachAboveFloor(LABEL_SCALE_MAX) <= BLOCK_H + 24,
+    `a magnified number reaches ${reachAboveFloor(LABEL_SCALE_MAX).toFixed(1)} world px above the floor,`
+    + ` more than the ${(BLOCK_H + 24)} the step measured and accepted`);
+  assert(belowFeet(LABEL_SCALE_MAX) <= 4,
+    `a number under a card hangs ${belowFeet(LABEL_SCALE_MAX).toFixed(1)} world px below the payer's feet`);
+  console.log(`      heads ${shortestTop.toFixed(2)}..${worstTop.toFixed(2)} px; the number reaches`
+    + ` ${reachAboveFloor(1).toFixed(2)} px above the floor at 1x and`
+    + ` ${reachAboveFloor(LABEL_SCALE_MAX).toFixed(2)} at ${LABEL_SCALE_MAX}x, against a ${BLOCK_H} px storey;`
+    + ` under a card it sits ${(-belowFeet(1)).toFixed(2)} px above the feet at 1x and`
+    + ` ${(-belowFeet(LABEL_SCALE_MAX)).toFixed(2)} at ${LABEL_SCALE_MAX}x`);
+  // And the rise itself stays in world px: neither call site may scale it.
+  // (Which bounds the travel, not the number's whole extent — see 7b.)
+  for (const call of [/labelRiseOf\(step, steps\)/, /labelRiseOf\(step, stepsOf\(LABEL_LIFE_MS\)\)/]) {
+    assert(call.test(layer), `a label's rise is no longer read as ${call.source} — check it did not gain a scale`);
+  }
+  assert(!/labelScale\s*\*\s*labelRiseOf|labelRiseOf\([^)]*\)\s*\*/.test(layer),
+    'the rise is multiplied by something — it is a world distance, and scaling it was measured'
+    + ' lifting a magnified number clean over the roof and back up through the reaction card');
   // A camera change is the one edit that can silently double the number.
   assert(LABEL_SCALE_MAX <= 6,
     `MIN_ZOOM moved and a +N now grows to ${LABEL_SCALE_MAX}x — re-read the overlap and card findings before shipping`);
