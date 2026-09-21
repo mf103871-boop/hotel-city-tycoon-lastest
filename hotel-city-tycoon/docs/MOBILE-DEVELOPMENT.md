@@ -107,6 +107,16 @@ live character rig, DEC-020). Extended again 21-09-2026 with HC-P2-S4
    effects live** at `?stress=60&warm=900`: take one reading with the channel
    idle and one with `window.hct.fx('payout')` fired every 500 ms, and report
    the pair, because an A/B delta is the honest number and an absolute is not.
+   Since HC-P2-S4A (DEC-024) `fxStats()` also reports **`labelScale` and
+   `labelScaleDrawn`**, and on a phone they are the point of the whole step:
+   the first is the screen-space compensation the layer holds, the second the
+   one read back off a live sprite. Open the hotel without touching the
+   camera, fire a payout, and report both. Expected at the zoom a phone opens
+   at: **4**, and equal. If `labelScaleDrawn` comes back 0 while a number is
+   visible, the number is being drawn at a scale nobody wrote — say so. And
+   this is the reading that can settle the one thing the sandbox cannot:
+   **whether a 19.2 CSS px `+25` is actually readable at arm's length**, which
+   is the only question standing between this step and `VERIFIED`.
 7. Look at the rig while people walk and while they stand, at `?aa=0` and
    `?aa=1`: the owner's eye on the jagged outlines and on edge shimmer on
    idle people decides BL-044 — note which of the two is acceptable.

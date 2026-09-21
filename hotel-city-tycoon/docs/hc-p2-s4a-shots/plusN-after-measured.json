@@ -1,0 +1,260 @@
+{
+  "tag": "after",
+  "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer)",
+  "tier": "full",
+  "viewport": "412x915@2",
+  "reducedMotion": "reduce, so the reference frame is exact and one coin is emitted in place of five",
+  "isolation": "strong-gold changed pixels = the number + one 9-world-px coin + any rim-flash pixel over threshold; only the number rises above the head, so the bbox height is the number",
+  "zoomFit": 0.4,
+  "derived": {
+    "note": "GLYPH_H 12 and GLYPH_ADVANCE_PX 10 are world px (src/render/fx/glyphs.ts); the screen-space scale is fxStats().labelScale",
+    "zoomFit": 0.4,
+    "deviceScaleFactor": 2,
+    "labelScale": 4,
+    "glyphHeightCssPx": 19.2,
+    "glyphHeightDevicePx": 38.4,
+    "plusNWidthCssPx": 48,
+    "plusNWidthDevicePx": 96,
+    "riseWorldPx": 24,
+    "riseCssPx": 9.6,
+    "digitHeightWorldPx": 48,
+    "halfStoreyWorldPx": 48
+  },
+  "dprScale": 2,
+  "cueAnchorId": "g211",
+  "anchor": {
+    "id": "g211",
+    "clip": "sleep",
+    "x": 544,
+    "y": 372,
+    "visible": true,
+    "source": "rig",
+    "sx": 40,
+    "sy": 373,
+    "sheetReady": true
+  },
+  "pickedForBox": "g211",
+  "boxCssPx": {
+    "x": 0,
+    "y": 273,
+    "w": 140,
+    "h": 108
+  },
+  "boxDevicePx": {
+    "x": 0,
+    "y": 546,
+    "w": 280,
+    "h": 216
+  },
+  "frameDevicePx": [
+    824,
+    1830
+  ],
+  "out": [
+    {
+      "at": 40,
+      "dt": 50,
+      "changedDevicePx": 3366,
+      "goldDevicePx": 1729,
+      "goldBboxDevicePx": {
+        "x": 0,
+        "y": 132,
+        "w": 154,
+        "h": 76
+      },
+      "fx": {
+        "live": 1,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full",
+        "labelScale": 4,
+        "labelScaleDrawn": 4
+      }
+    },
+    {
+      "at": 120,
+      "dt": 133,
+      "changedDevicePx": 3367,
+      "goldDevicePx": 1729,
+      "goldBboxDevicePx": {
+        "x": 0,
+        "y": 132,
+        "w": 154,
+        "h": 76
+      },
+      "fx": {
+        "live": 1,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full",
+        "labelScale": 4,
+        "labelScaleDrawn": 4
+      }
+    },
+    {
+      "at": 210,
+      "dt": 217,
+      "changedDevicePx": 3371,
+      "goldDevicePx": 1729,
+      "goldBboxDevicePx": {
+        "x": 0,
+        "y": 132,
+        "w": 154,
+        "h": 76
+      },
+      "fx": {
+        "live": 1,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full",
+        "labelScale": 4,
+        "labelScaleDrawn": 4
+      }
+    },
+    {
+      "at": 250,
+      "dt": 267,
+      "changedDevicePx": 3371,
+      "goldDevicePx": 1729,
+      "goldBboxDevicePx": {
+        "x": 0,
+        "y": 132,
+        "w": 154,
+        "h": 76
+      },
+      "fx": {
+        "live": 1,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full",
+        "labelScale": 4,
+        "labelScaleDrawn": 4
+      }
+    },
+    {
+      "at": 340,
+      "dt": 367,
+      "changedDevicePx": 3345,
+      "goldDevicePx": 1644,
+      "goldBboxDevicePx": {
+        "x": 0,
+        "y": 134,
+        "w": 154,
+        "h": 74
+      },
+      "fx": {
+        "live": 1,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full",
+        "labelScale": 4,
+        "labelScaleDrawn": 4
+      }
+    },
+    {
+      "at": 400,
+      "dt": 417,
+      "changedDevicePx": 3178,
+      "goldDevicePx": 1722,
+      "goldBboxDevicePx": {
+        "x": 0,
+        "y": 134,
+        "w": 154,
+        "h": 74
+      },
+      "fx": {
+        "live": 1,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full",
+        "labelScale": 4,
+        "labelScaleDrawn": 4
+      }
+    },
+    {
+      "at": 450,
+      "dt": 467,
+      "changedDevicePx": 3178,
+      "goldDevicePx": 1722,
+      "goldBboxDevicePx": {
+        "x": 0,
+        "y": 134,
+        "w": 154,
+        "h": 74
+      },
+      "fx": {
+        "live": 1,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full",
+        "labelScale": 4,
+        "labelScaleDrawn": 4
+      }
+    },
+    {
+      "at": 490,
+      "dt": 517,
+      "changedDevicePx": 0,
+      "goldDevicePx": 0,
+      "goldBboxDevicePx": null,
+      "fx": {
+        "live": 1,
+        "labels": 0,
+        "bubbles": 1,
+        "pulses": 0,
+        "cap": 192,
+        "tier": "full",
+        "labelScale": 4,
+        "labelScaleDrawn": 0
+      }
+    },
+    {
+      "at": 540,
+      "dt": 550,
+      "changedDevicePx": 0,
+      "goldDevicePx": 0,
+      "goldBboxDevicePx": null,
+      "fx": {
+        "live": 1,
+        "labels": 0,
+        "bubbles": 1,
+        "pulses": 0,
+        "cap": 192,
+        "tier": "full",
+        "labelScale": 4,
+        "labelScaleDrawn": 0
+      }
+    },
+    {
+      "at": 600,
+      "dt": 600,
+      "changedDevicePx": 0,
+      "goldDevicePx": 0,
+      "goldBboxDevicePx": null,
+      "fx": {
+        "live": 2,
+        "labels": 0,
+        "bubbles": 2,
+        "pulses": 0,
+        "cap": 192,
+        "tier": "full",
+        "labelScale": 4,
+        "labelScaleDrawn": 0
+      }
+    }
+  ]
+}

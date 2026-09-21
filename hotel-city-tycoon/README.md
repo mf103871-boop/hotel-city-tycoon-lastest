@@ -7,7 +7,7 @@ everything else — code, art, architecture — is new.
 reference for every decision and the order of work is
 `docs/HOTEL_CITY_MASTER_REFERENCE_AR.md`.** The full game — simulation,
 renderer, save system, live-ops — is built and verified headlessly and in CI.
-Current phase: P2, making the hotel visibly alive — step HC-P2-S4, the effects
+Current phase: P2, making the hotel visibly alive — step HC-P2-S4 + S4A, the effects
 channel (P1, the visible decor system, remains in progress). Step
 reports live under `docs/` as `HC-P{phase}-S{step}-REPORT.md`.
 

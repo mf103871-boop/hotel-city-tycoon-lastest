@@ -529,6 +529,15 @@ export class HotelScene {
       const view = this.characters.get(this.fx.bubbleIdAt(i));
       if (view) this.fx.moveBubble(i, view.x, view.y - view.standingTopPx());
     }
+    /*
+     * The camera reaches the numbers here, before they are drawn (DEC-024).
+     *
+     * A `+N` is information, and information drawn in world space stops being
+     * information when the camera pulls back: at the 0.40x a phone opens the
+     * hotel at, a whole `+25` measured 12 x 4.8 CSS px. `setZoom` pins it to
+     * the glass instead, and costs one compare on a frame that does not zoom.
+     */
+    this.fx.setZoom(this.camera.zoom);
     this.fx.tick(deltaMs);
     this.pulses.tick(deltaMs);
   }
@@ -625,11 +634,23 @@ export class HotelScene {
    * effects are running is to ask them — the same reasoning that already put
    * `characters()` and `rigStats()` on the handle.
    */
-  fxStats(): { live: number; labels: number; bubbles: number; pulses: number; cap: number; tier: MotionTier } {
+  fxStats(): {
+    live: number; labels: number; bubbles: number; pulses: number; cap: number; tier: MotionTier;
+    /**
+     * How much bigger than its world size a `+N` is drawn right now, so the
+     * screen-space compensation can be read off a device instead of measured
+     * off a screenshot (DEC-024, «كبر الرقم»). `labelScaleDrawn` is the same number
+     * read back off a live sprite, 0 when none is live: the two disagreeing
+     * is the one failure a stored scalar cannot report about itself.
+     */
+    labelScale: number;
+    labelScaleDrawn: number;
+  } {
     const fx = this.fx.stats();
     return {
       live: fx.live, labels: fx.labels, bubbles: fx.bubbles,
       pulses: this.pulses.activeCount(), cap: fx.cap, tier: fx.tier,
+      labelScale: fx.labelScale, labelScaleDrawn: fx.labelScaleDrawn,
     };
   }
 

@@ -7,14 +7,17 @@ import {
   createField, resetField, emit, burst, stepField, ambientCap, dustCap,
   stepsOf, stepOf, frameOf, xOf, yOf, alphaOf, scaleOf, bubbleAlphaOf, popScaleOf,
   labelRiseOf, labelOriginX, digitsOf, pulseAlphaAt,
+  labelScaleFor, LABEL_SCREEN_PX, LABEL_SCALE_STEPS, LABEL_SCALE_MAX, LABEL_SCALE_ROOM_MAX,
 } from '../../src/render/fx/particles.ts';
+import { MIN_ZOOM, MAX_ZOOM, clampZoom } from '../../src/render/camera.ts';
+import { BLOCK_H, BLOCK_W } from '../../src/render/layout.ts';
 import type { ParticleField } from '../../src/render/fx/particles.ts';
 import {
   GLYPHS, GLYPH_COUNT, DIGIT_COUNT, GLYPH_W, GLYPH_H, GLYPH_ADVANCE_PX,
   GLYPH_DIGIT_0, GLYPH_PLUS, MARK_SMILE, MARK_SPARKLE,
   FRAME_DIGIT_0, FRAME_PLUS, FRAME_COIN_0, FRAME_SPARK_0, FRAME_DUST_0,
   FRAME_MARK_0, FRAME_BLANK, FRAME_BUBBLE, FRAME_COUNT, FX_FRAMES,
-  CELL, ATLAS_COLS, ATLAS_W, ATLAS_H, BUBBLE_Y, BUBBLE_H, frameForGlyph,
+  CELL, ATLAS_COLS, ATLAS_W, ATLAS_H, ATLAS_RES, BUBBLE_Y, BUBBLE_H, frameForGlyph,
 } from '../../src/render/fx/glyphs.ts';
 import {
   CUE, MAX_CUES_PER_BATCH, DIRTY_REARM_SNAPSHOTS,
@@ -333,6 +336,22 @@ describe('the floating number', () => {
     expect(GLYPH_ADVANCE_PX).toBeGreaterThanOrEqual(GLYPH_W);
   });
 
+  it('centres a magnified label too, and keeps its digits apart', () => {
+    // The advance carries the scale, or the digits of a 5x number sit on top
+    // of one another — the whole run has to grow, not just each glyph.
+    for (const scale of [1, 2.5, LABEL_SCALE_MAX]) {
+      expect(labelOriginX(100, 1, scale)).toBe(100);
+      expect(labelOriginX(100, 3, scale)).toBe(100 - GLYPH_ADVANCE_PX * scale);
+      // The run is centred: the midpoint of first and last sprite is the anchor.
+      const n = 4;
+      const x0 = labelOriginX(100, n, scale);
+      const last = x0 + (n - 1) * GLYPH_ADVANCE_PX * scale;
+      expect((x0 + last) / 2).toBeCloseTo(100, 10);
+      // Neighbouring glyph boxes still cannot touch.
+      expect(GLYPH_ADVANCE_PX * scale).toBeGreaterThanOrEqual(GLYPH_W * scale);
+    }
+  });
+
   it('rises 24 px in six steps, easing out', () => {
     expect(labelRiseOf(0, FX_STEPS)).toBe(0);
     expect(labelRiseOf(FX_STEPS, FX_STEPS)).toBeCloseTo(LABEL_RISE_PX, 6);
@@ -340,6 +359,123 @@ describe('the floating number', () => {
     expect(labelRiseOf(3, FX_STEPS)).toBeGreaterThan(LABEL_RISE_PX / 2);
     for (let s = 1; s <= FX_STEPS; s++) {
       expect(labelRiseOf(s, FX_STEPS)).toBeGreaterThan(labelRiseOf(s - 1, FX_STEPS));
+    }
+    // And the rise is NOT scaled by the screen-space compensation: the size
+    // is pinned to the glass, the travel stays in the world, which is what
+    // keeps a magnified number inside the room that earned it and below the
+    // reaction card it was re-seated under (HC-P2-S4 §9).
+    expect(labelRiseOf.length).toBe(2);
+  });
+});
+
+describe('the number is pinned to the glass, not to the world («كبر الرقم»)', () => {
+  it('never shrinks the number, and changes nothing at or above room zoom', () => {
+    // The whole promise of the clamp: at the zoom the S4 evidence was shot at
+    // the channel draws exactly what it drew before, so no capture, no
+    // measurement and no test taken there is invalidated by this step.
+    expect(labelScaleFor(LABEL_SCREEN_PX / GLYPH_H)).toBe(1);
+    expect(labelScaleFor(2.02)).toBe(1);
+    expect(labelScaleFor(3)).toBe(1);
+    expect(labelScaleFor(MAX_ZOOM)).toBe(1);
+    for (let z = 2; z <= MAX_ZOOM; z += 0.05) expect(labelScaleFor(z)).toBe(1);
+  });
+
+  it('never draws a digit smaller than LABEL_SCREEN_PX, everywhere the pin can reach', () => {
+    // The property the whole step is, written as the inequality it claims to
+    // be. It holds only because the quantisation rounds UP: rounded to
+    // nearest the digit falls to 23.27 CSS px at zoom 1.9394 and the promise
+    // — 'its world size or LABEL_SCREEN_PX, whichever is larger' — would be
+    // false almost everywhere off the grid.
+    const pinFloor = LABEL_SCREEN_PX / (GLYPH_H * LABEL_SCALE_MAX);   // 0.5x today
+    for (let z = pinFloor; z <= MAX_ZOOM + 1e-9; z += 0.0005) {
+      expect(labelScaleFor(z) * GLYPH_H * z).toBeGreaterThanOrEqual(LABEL_SCREEN_PX - 1e-9);
+    }
+    // And it is not larger than it needs to be: within one step of the grid.
+    const step = 1 / LABEL_SCALE_STEPS;
+    for (const zoom of [0.5, 0.75, 1, 1.5, 1.9]) {
+      expect(labelScaleFor(zoom) * GLYPH_H * zoom)
+        .toBeLessThanOrEqual(LABEL_SCREEN_PX + step * GLYPH_H * zoom + 1e-9);
+    }
+    // Below that floor the world's ceiling binds instead, and says so in
+    // numbers: at the phone's fit zoom the digit is 19.2 CSS px, four times
+    // the 4.8 it was, and half a storey tall in the world.
+    expect(labelScaleFor(0.4)).toBe(LABEL_SCALE_ROOM_MAX);
+    expect(labelScaleFor(0.4) * GLYPH_H * 0.4).toBeCloseTo(19.2, 10);
+  });
+
+  it('never lets a number outgrow the room it is about', () => {
+    // The ceiling that is not about the glass at all. A `+N` says *this room
+    // paid*; a number taller than half a storey is read against the floor
+    // above as readily as against the room that earned it, and one wider than
+    // a room stops pointing at anything. Half a storey is the rule, the width
+    // is the consequence, and both are measured here rather than trusted.
+    expect(LABEL_SCALE_ROOM_MAX).toBe(BLOCK_H / (2 * GLYPH_H));
+    for (let z = MIN_ZOOM; z <= MAX_ZOOM + 1e-9; z += 0.001) {
+      expect(GLYPH_H * labelScaleFor(z)).toBeLessThanOrEqual(BLOCK_H / 2 + 1e-9);
+    }
+    // The common three-sprite `+NN` stays inside one room's width at the
+    // camera floor; a four-sprite amount does not, which is recorded rather
+    // than hidden (the step report's own measurement).
+    const k = labelScaleFor(MIN_ZOOM);
+    const cell = (n: number): number => (n - 1) * GLYPH_ADVANCE_PX * k + GLYPH_W * k;
+    expect(cell(3)).toBeLessThanOrEqual(BLOCK_W);
+    expect(cell(4)).toBeGreaterThan(BLOCK_W);
+    // And the number's whole travel — its own half-height plus its rise —
+    // never climbs a storey, because the rise is not scaled.
+    expect((GLYPH_H * k) / 2 + LABEL_RISE_PX).toBeLessThanOrEqual(BLOCK_H);
+  });
+
+  it('is magnified from the sheet no more than the owner already read without effort', () => {
+    // ATLAS_RES stays 2, and this is the number that says why. A pinned digit
+    // on the phone in the evidence (412x915 at device pixel ratio 2) asks for
+    // LABEL_SCREEN_PX * 2 = 48 device px from GLYPH_H * ATLAS_RES = 24
+    // texels: a 2:1 magnification. That is the same 2:1 the same phone
+    // already applied at the room zoom of `burst-room-phone-full-withhud.png`
+    // — 12 * 2.02 * 2 = 48.5 device px from the same 24 texels — which
+    // docs/HC-P2-S4-REPORT.md calls «مقروء بلا جهد». Raising ATLAS_RES to 4
+    // would fix nothing measured and would minify 2:1 on the desktop lane,
+    // where there is no mip chain. If either constant moves, this says so.
+    const DPR = 2;                       // src/render/app.ts caps the renderer here
+    expect((LABEL_SCREEN_PX * DPR) / (GLYPH_H * ATLAS_RES)).toBeLessThanOrEqual(2);
+    // And at the phone's fit zoom, where the world's ceiling binds, it is
+    // less again: 12 * 4 * 0.4 * 2 = 38.4 device px from the same 24 texels.
+    expect((GLYPH_H * labelScaleFor(MIN_ZOOM) * MIN_ZOOM * DPR) / (GLYPH_H * ATLAS_RES))
+      .toBeCloseTo(1.6, 10);
+  });
+
+  it('is bounded by the camera, and answers 1 to anything that is not a camera', () => {
+    // The ceiling is the smaller of the two, rounded onto the grid so that
+    // the quantised answer cannot step over it (`24 / (12 * 0.4)` is not 5 in
+    // binary floating point, and a clamp its own value can exceed is not one).
+    expect(LABEL_SCALE_MAX)
+      .toBeCloseTo(Math.min(LABEL_SCREEN_PX / (GLYPH_H * MIN_ZOOM), LABEL_SCALE_ROOM_MAX), 10);
+    expect(LABEL_SCALE_MAX * LABEL_SCALE_STEPS).toBe(Math.round(LABEL_SCALE_MAX * LABEL_SCALE_STEPS));
+    // The camera cannot ask for more than the floor of its own zoom range.
+    for (let z = MIN_ZOOM; z <= MAX_ZOOM; z += 0.01) {
+      const k = labelScaleFor(clampZoom(z));
+      expect(k).toBeGreaterThanOrEqual(1);
+      expect(k).toBeLessThanOrEqual(LABEL_SCALE_MAX);
+    }
+    expect(labelScaleFor(MIN_ZOOM / 10)).toBe(LABEL_SCALE_MAX);
+    // A camera change is the one edit that can silently double the number.
+    expect(LABEL_SCALE_MAX).toBeLessThanOrEqual(6);
+    for (const bad of [0, -1, NaN, Infinity, -Infinity]) expect(labelScaleFor(bad)).toBe(1);
+  });
+
+  it('answers on a grid, so a pinch does not re-lay out every frame', () => {
+    const seen = new Set<number>();
+    for (let z = MIN_ZOOM; z <= MAX_ZOOM; z += 0.001) seen.add(labelScaleFor(z));
+    // Every answer sits on the quantisation grid...
+    for (const k of seen) expect(Math.abs(k * LABEL_SCALE_STEPS - Math.round(k * LABEL_SCALE_STEPS))).toBeLessThan(1e-9);
+    // ...and the whole zoom range yields a bounded number of them, which is
+    // the bound on how often a pinch re-lays out a live number.
+    expect(seen.size).toBeLessThanOrEqual(Math.round((LABEL_SCALE_MAX - 1) * LABEL_SCALE_STEPS) + 1);
+    // Monotone: zooming out never makes the number smaller.
+    let prev = labelScaleFor(MAX_ZOOM);
+    for (let z = MAX_ZOOM; z >= MIN_ZOOM; z -= 0.001) {
+      const k = labelScaleFor(z);
+      expect(k).toBeGreaterThanOrEqual(prev - 1e-9);
+      prev = k;
     }
   });
 });

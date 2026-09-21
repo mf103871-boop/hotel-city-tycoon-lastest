@@ -21,8 +21,11 @@ import {
   FX, FIELD_CAP_LITE, FX_LIFE_MS, FX_STEPS,
   createField, emit, stepField, burst, stepsOf, stepOf, ambientCap, dustCap,
   BURST_SPEED_MIN, BURST_SPEED_SPAN, BURST_SPREAD_RAD,
+  labelScaleFor, LABEL_SCREEN_PX, LABEL_SCALE_MAX, LABEL_SCALE_ROOM_MAX, LABEL_RISE_PX,
 } from '../../src/render/fx/particles.ts';
-import { GLYPHS, GLYPH_COUNT, DIGIT_COUNT } from '../../src/render/fx/glyphs.ts';
+import { BLOCK_H } from '../../src/render/layout.ts';
+import { MIN_ZOOM, MAX_ZOOM } from '../../src/render/camera.ts';
+import { GLYPHS, GLYPH_COUNT, DIGIT_COUNT, GLYPH_H } from '../../src/render/fx/glyphs.ts';
 import { effectsFor, CUE, MAX_CUES_PER_BATCH } from '../../src/bridge/effects.ts';
 import type { EffectCue } from '../../src/bridge/effects.ts';
 import { PALETTE, shade, lighten } from '../../src/render/anim/cast.ts';
@@ -185,9 +188,22 @@ check('the particle tick allocates nothing', () => {
   const bodies: Array<[string, string]> = [
     ['particles.ts stepField', bodyOf(strip(read('src/render/fx/particles.ts')), 'export function stepField(')],
   ];
-  // The layer's own tick joins this list the moment the file exists.
+  // Every body that runs per frame, not only the one called `tick`. `setZoom`
+  // is called from `scene.render()` right beside it; `layoutLabel` and
+  // `labelBaseY` are what `setZoom` calls; `labelsLive` is called from inside
+  // `tick` but lives outside its braces, so the extractor never read it. A
+  // rule asserted about two of the five bodies that run per frame is not the
+  // rule the file's own header claims.
   if (fs.existsSync('src/render/fx/particleLayer.ts')) {
-    bodies.push(['particleLayer.ts tick', bodyOf(strip(read('src/render/fx/particleLayer.ts')), 'tick(dtMs')]);
+    const layer = strip(read('src/render/fx/particleLayer.ts'));
+    // `private` is part of the signature on purpose: `this.labelBaseY(label)`
+    // is called from inside `tick`, which is earlier in the file, and
+    // `indexOf` would have extracted that call's enclosing braces instead of
+    // the method — a check that reads the wrong body is worse than none.
+    for (const sig of ['tick(dtMs', 'setZoom(zoom', 'private layoutLabel(label',
+      'private labelBaseY(label', 'private labelsLive(']) {
+      bodies.push([`particleLayer.ts ${sig}`, bodyOf(layer, sig)]);
+    }
   }
   for (const [name, body] of bodies) {
     for (const bad of forbidden) {
@@ -425,6 +441,121 @@ check('a floating number is never hidden under a reaction card', () => {
   eq(cues[0]!.charId, cues[1]!.charId, 'the two inspectorFound cues no longer land on one person');
   eq(cues[0]!.kind, CUE.payout, 'inspectorFound no longer pays first');
   eq(cues[1]!.kind, CUE.praise, 'inspectorFound no longer praises');
+});
+
+check('the floating number is pinned to the glass and reaches it before it is drawn', () => {
+  /*
+   * «كبر الرقم» (21-09-2026, signed row #23, DEC-024 — 022 and 023 are
+   * reserved by the signed ladder for HC-P2-S5 and HC-P2-S8). The `+N` is the one
+   * thing this channel draws that is information rather than decoration, and
+   * information drawn in world space stops being information when the camera
+   * pulls back: `docs/HC-P2-S4-REPORT.md` measured a whole `+25` at 12 x 4.8
+   * CSS px at the 0.40x a phone opens the hotel at. Four things have to hold
+   * for the fix, and none of them is visible to a unit test.
+   */
+  const layer = strip(read('src/render/fx/particleLayer.ts'));
+  const scene = strip(read('src/render/scene.ts'));
+
+  // 1. The camera reaches the numbers, and does so BEFORE they are drawn: a
+  //    setZoom after the tick is last frame's size for one frame on every
+  //    frame that zooms.
+  const zoomAt = scene.indexOf('this.fx.setZoom(');
+  const tickAt = scene.indexOf('this.fx.tick(');
+  assert(zoomAt >= 0, 'scene.ts never hands the camera zoom to the effects channel');
+  assert(tickAt >= 0, 'scene.ts no longer ticks the effects channel');
+  assert(zoomAt < tickAt, 'scene.ts sets the label scale after drawing with it');
+  assert(/this\.fx\.setZoom\(this\.camera\.zoom\)/.test(scene),
+    'the effects channel is handed something other than the camera\'s own zoom');
+
+  // 2. A label's geometry is derived from its anchor every time it is drawn,
+  //    never stored laid-out: a stored x is an x that a pinch cannot move,
+  //    which is exactly the bug a half-re-laid-out number would be.
+  const slot = layer.slice(layer.indexOf('interface Label {'), layer.indexOf('interface Bubble {'));
+  // `\b` and not `includes`: `wx: number;` contains `x: number;`, and a check
+  // that its own fix trips is worse than no check.
+  for (const gone of ['x', 'y']) {
+    assert(!new RegExp(`\\b${gone}: number;`).test(slot),
+      `the Label slot stores a laid-out ${gone} again; it must hold the anchor`);
+  }
+  for (const want of ['wx: number;', 'wy: number;', 'dropped: boolean;', 'dropY: number;']) {
+    assert(slot.includes(want), `the Label slot no longer holds ${want}`);
+  }
+
+  // 3. There is exactly one description of where a number is. Both the frame
+  //    it is born on and any frame the scale moves go through it, or the two
+  //    would drift apart and only one of them would be tested.
+  const layout = bodyOf(layer, 'private layoutLabel(');
+  for (const want of ['labelOriginX(', 'GLYPH_ADVANCE_PX * scale', 'scale.set(scale)', 'label.drawn = -1']) {
+    assert(layout.includes(want), `layoutLabel no longer does '${want}'`);
+  }
+  assert((layer.match(/this\.layoutLabel\(/g) ?? []).length >= 3,
+    'not every path that moves a number goes through layoutLabel');
+  assert(bodyOf(layer, 'setZoom(zoom').includes('this.layoutLabel('),
+    'a zoom change no longer re-lays out the live numbers, so they keep the old size');
+
+  // 4. Both seats pin an EDGE, not the centre. A sprite anchored at its own
+  //    centre grows down as fast as it grows up, so a scale of 5 about the
+  //    top of a head would put 30 world px of ink over the person — and the
+  //    card case has the opposite constraint, because there what must not be
+  //    covered is above. The two rules are one line of arithmetic each and
+  //    both reduce to the shipped seat at scale 1, which is what keeps S4's
+  //    `inspector-paid-and-praised-*` captures true.
+  const seat = bodyOf(layer, 'private labelBaseY(label');
+  assert(/GLYPH_H \* \(this\.labelScale - 1\)\) \/ 2/.test(seat),
+    'the label seat no longer compensates for the height its scale added');
+  assert(/label\.wy - grown/.test(seat), 'a number with no card over it grows down across the person again');
+  assert(/label\.dropY \+ BUBBLE_H \+ grown/.test(seat), 'a number under a card no longer clears it as it grows');
+
+  // 5. The clamp's promise, and it is narrower than it sounds: the scale is 1
+  //    only at and above 2x. The room zoom the S4 stills were shot at is
+  //    2.02x, so those are unchanged — but the Playwright canvas lane opens
+  //    at the camera's FLOOR (a 15x10 stress plot does not fit a 900x640
+  //    viewport), so the browser gate runs at the maximum scale, not the
+  //    minimum. Nothing here may be read as 'the browser tests are unchanged'.
+  const ROOM_ZOOM = 2.02;   // docs/hc-p2-s4-shots/INDEX.json, the withhud series
+  eq(labelScaleFor(ROOM_ZOOM), 1, 'the step now changes the picture at the zoom its stills were shot at');
+  eq(labelScaleFor(MAX_ZOOM), 1, 'the number shrinks below its world size when zoomed in');
+  eq(labelScaleFor(LABEL_SCREEN_PX / GLYPH_H), 1, 'the clamp no longer meets its own crossover');
+  assert(labelScaleFor(MIN_ZOOM) > 1, 'the number is not enlarged at the zoom a phone opens the hotel at');
+  eq(labelScaleFor(MIN_ZOOM), LABEL_SCALE_MAX, 'the camera floor no longer reaches the ceiling');
+  // The property the whole step is: a digit is never smaller than
+  // LABEL_SCREEN_PX on the glass, everywhere the pin can reach. It holds only
+  // because the quantisation rounds up; to nearest it fails at 1.9394x.
+  const pinFloor = LABEL_SCREEN_PX / (GLYPH_H * LABEL_SCALE_MAX);
+  for (let z = pinFloor; z <= MAX_ZOOM + 1e-9; z += 0.0007) {
+    const px = labelScaleFor(z) * GLYPH_H * z;
+    assert(px >= LABEL_SCREEN_PX - 1e-9,
+      `a digit is ${px.toFixed(3)} CSS px at zoom ${z.toFixed(4)}, under the pinned ${LABEL_SCREEN_PX}`);
+  }
+  // 7. And the ceiling that has nothing to do with the glass: a `+N` says
+  //    *this room paid*, so a number taller than half a storey is read
+  //    against the floor above as readily as against the room that earned it.
+  //    Below `pinFloor` this is the rule that binds, and it is why the digit
+  //    at the phone's fit zoom is 19.2 CSS px rather than the pinned 24.
+  eq(LABEL_SCALE_ROOM_MAX, BLOCK_H / (2 * GLYPH_H), 'the room ceiling is no longer half a storey');
+  for (let z = MIN_ZOOM; z <= MAX_ZOOM + 1e-9; z += 0.0007) {
+    assert(GLYPH_H * labelScaleFor(z) <= BLOCK_H / 2 + 1e-9,
+      `a digit is ${(GLYPH_H * labelScaleFor(z)).toFixed(2)} world px at zoom ${z.toFixed(4)}, over half a storey`);
+  }
+  // The rise stays in world px, so the number's whole reach — its own
+  // half-height plus its travel — cannot climb into the room above.
+  assert((GLYPH_H * LABEL_SCALE_MAX) / 2 + LABEL_RISE_PX <= BLOCK_H,
+    'a floating number now reaches into the storey above the room that earned it');
+  // A camera change is the one edit that can silently double the number.
+  assert(LABEL_SCALE_MAX <= 6,
+    `MIN_ZOOM moved and a +N now grows to ${LABEL_SCALE_MAX}x — re-read the overlap and card findings before shipping`);
+
+  // 6. And the scale is readable from a device — the only way the reading
+  //    that turns this IMPLEMENTED into VERIFIED can be taken — as two
+  //    numbers, because the failure worth catching is the stored scale never
+  //    reaching a sprite, and a diagnostic that reports only the intention
+  //    cannot see that.
+  assert(/labelScale: fx\.labelScale/.test(scene), 'hct.fxStats() no longer reports the label scale');
+  assert(/labelScaleDrawn: fx\.labelScaleDrawn/.test(scene),
+    'hct.fxStats() no longer reports the scale read back off a live sprite');
+  assert(/drawn = label\.sign\.scale\.x/.test(layer),
+    'the reported drawn scale is no longer read off a sprite, so it cannot disagree with the stored one');
+  console.log(`      1 at ${ROOM_ZOOM}x and ${MAX_ZOOM}x, ${labelScaleFor(MIN_ZOOM)} at ${MIN_ZOOM}x — ${LABEL_SCREEN_PX} CSS px down to ${pinFloor}x, half a storey below it`);
 });
 
 check('the canvas and the bridge agree what a cue number means', () => {

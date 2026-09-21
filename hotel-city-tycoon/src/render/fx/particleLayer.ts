@@ -35,12 +35,12 @@ import { blankTexture } from './glow.ts';
 import { fxFrame } from './atlas.ts';
 import {
   FRAME_BUBBLE, FRAME_MARK_0, FRAME_PLUS, FRAME_DIGIT_0, GLYPH_ADVANCE_PX,
-  MARK_CROSS, MARK_QUERY, MARK_SMILE, MARK_STAR, BUBBLE_H,
+  GLYPH_H, MARK_CROSS, MARK_QUERY, MARK_SMILE, MARK_STAR, BUBBLE_H,
 } from './glyphs.ts';
 import {
   FX, createField, resetField, emit, burst, stepField, stepsOf, stepOf,
   frameOf, xOf, yOf, alphaOf, scaleOf, digitsOf, labelOriginX, labelRiseOf,
-  bubbleAlphaOf, popScaleOf,
+  labelScaleFor, bubbleAlphaOf, popScaleOf,
   FIELD_CAP_FULL, FIELD_CAP_LITE, FX_LIFE_MS, LABEL_LIFE_MS, BUBBLE_LIFE_MS,
   LABEL_MAX_VALUE, SEED_MIX_A, SEED_MIX_B,
   BURST_SPEED_MIN, BURST_SPEED_SPAN, BURST_SPREAD_RAD,
@@ -113,15 +113,31 @@ if (stepsOf(LONGEST_LIFE_MS) >= KEY_STRIDE) {
   throw new Error('an effect life outgrew the memo key; raise KEY_STRIDE in fx/particleLayer.ts');
 }
 
-/** One floating number. Seven sprites, made once, parked at alpha 0. */
+/**
+ * One floating number. Seven sprites, made once, parked at alpha 0.
+ *
+ * The slot holds the **anchor**, not a laid-out position, because the screen
+ * -space scale can change under a pinch while the number is in the air: every
+ * x, y and scale it draws at is derived from these four numbers and the
+ * layer's current `labelScale`, so a re-layout is total and cannot leave half
+ * a number at the old size.
+ */
 interface Label {
   readonly sign: Sprite;
   readonly digits: Sprite[];
   /** Who this number is about, '' for a cue with no person. */
   id: string;
   ageMs: number;
-  x: number;
-  y: number;
+  /** Where the cue happened, in world px. */
+  wx: number;
+  wy: number;
+  /**
+   * Whether a reaction card pushed this number down to be read beside it, and
+   * where that card's own anchor was — the card's, not the number's, which is
+   * what the pre-scale code used and what keeps the two readings identical.
+   */
+  dropped: boolean;
+  dropY: number;
   /** How many digit sprites this label is using; 0 when the slot is free. */
   n: number;
   live: boolean;
@@ -192,6 +208,12 @@ export class ParticleLayer {
 
   private readonly labels: Label[] = [];
   private labelCap = LABELS_FULL;
+  /**
+   * How much bigger than its world size a number is drawn right now, from the
+   * camera's zoom through `labelScaleFor` (DEC-024, «كبر الرقم»). 1 at and
+   * above 2x, where this step changes nothing at all.
+   */
+  private labelScale = 1;
   /** Reused by every label: the digits, least significant first. */
   private readonly digitBuf = new Int8Array(LABEL_DIGITS);
 
@@ -229,6 +251,31 @@ export class ParticleLayer {
     this.field = createField(cap);
     for (let i = 0; i < this.sprites.length; i++) this.park(i);
     this.used = 0;
+  }
+
+  /**
+   * The camera's zoom, handed in once a frame before `tick` (DEC-024).
+   *
+   * The `+N` is the one thing this channel draws that is *information* rather
+   * than decoration, and information that shrinks with the camera is not
+   * information: at the zoom a phone opens the hotel at, 0.40x, a whole `+25`
+   * measured 12 x 4.8 CSS px and read as a gold smudge
+   * (`docs/HC-P2-S4-REPORT.md`). So the number is pinned to the glass instead
+   * of to the world, and this is where the camera reaches it.
+   *
+   * Written only when the quantised scale actually moves, and then the whole
+   * label is re-laid out — position, advance and scale together — because a
+   * partial re-layout would leave the digits spaced for the old size. A frame
+   * that does not pinch does nothing here but one compare.
+   */
+  setZoom(zoom: number): void {
+    const scale = labelScaleFor(zoom);
+    if (scale === this.labelScale) return;
+    this.labelScale = scale;
+    for (let i = 0; i < this.labels.length; i++) {
+      const label = this.labels[i]!;
+      if (label.live) this.layoutLabel(label);
+    }
   }
 
   // ------------------------------------------------------------- emitting
@@ -390,7 +437,7 @@ export class ParticleLayer {
       if (label.drawn === key) continue;
       label.drawn = key;
       const steps = stepsOf(LABEL_LIFE_MS);
-      const y = label.y - labelRiseOf(step, steps);
+      const y = this.labelBaseY(label) - labelRiseOf(step, steps);
       const alpha = alphaOf(FX.label, fade, steps);
       label.sign.y = y;
       label.sign.alpha = alpha;
@@ -437,10 +484,34 @@ export class ParticleLayer {
   }
 
   /** What the channel is drawing right now, for `window.hct.fxStats()`. */
-  stats(): { live: number; labels: number; bubbles: number; cap: number; tier: MotionTier } {
+  stats(): {
+    live: number; labels: number; bubbles: number; cap: number; tier: MotionTier;
+    /** The screen-space compensation the numbers *should* be drawn at. */
+    labelScale: number;
+    /**
+     * The compensation a live number is *actually* drawn at, read back off
+     * the sprite, and 0 when none is live.
+     *
+     * Two numbers rather than one because the interesting failure is the one
+     * where they disagree: a stored scale that never reached a sprite is
+     * exactly the defect this step exists to avoid, and a diagnostic that
+     * reports only the intention cannot see it. The browser test asserts they
+     * agree; so can an eye on a phone.
+     */
+    labelScaleDrawn: number;
+  } {
     let labels = 0;
-    for (const label of this.labels) if (label.live) labels++;
-    return { live: this.field.live, labels, bubbles: this.bubbleLive, cap: this.cap, tier: this.tier };
+    let drawn = 0;
+    for (const label of this.labels) {
+      if (!label.live) continue;
+      labels++;
+      if (drawn === 0) drawn = label.sign.scale.x;
+    }
+    return {
+      live: this.field.live, labels, bubbles: this.bubbleLive,
+      cap: this.cap, tier: this.tier,
+      labelScale: this.labelScale, labelScaleDrawn: drawn,
+    };
   }
 
   destroy(): void {
@@ -516,45 +587,106 @@ export class ParticleLayer {
   private label(wx: number, wy: number, amount: number, charId: string): void {
     const slot = this.freeLabel();
     if (!slot) return;
-    // A card already over this person's head owns the space the number rises
-    // through, so the number starts below it instead of on top of it. The
-    // groups keep it drawn over the card either way; this is so that both can
-    // be read, not just the one in front.
-    const y = this.liveBubble(charId) ? wy + BUBBLE_H : wy;
     const n = digitsOf(Math.min(amount, LABEL_MAX_VALUE), this.digitBuf);
-    const total = n + 1;
-    const x0 = labelOriginX(wx, total);
     slot.sign.texture = fxFrame(FRAME_PLUS);
-    slot.sign.position.set(x0, y);
     slot.sign.alpha = 1;
-    slot.sign.scale.set(1);
     for (let d = 0; d < n; d++) {
       const sprite = slot.digits[d]!;
       // Left to right: the most significant digit is the last one written.
       sprite.texture = fxFrame(FRAME_DIGIT_0 + this.digitBuf[n - 1 - d]!);
-      sprite.position.set(x0 + (d + 1) * GLYPH_ADVANCE_PX, y);
       sprite.alpha = 1;
-      sprite.scale.set(1);
     }
     for (let d = n; d < LABEL_DIGITS; d++) slot.digits[d]!.alpha = 0;
     slot.n = n;
-    slot.x = x0;
-    slot.y = y;
+    slot.wx = wx;
+    slot.wy = wy;
+    // A card already over this person's head owns the space the number rises
+    // through, so the number starts below it instead of on top of it. The
+    // groups keep it drawn over the card either way; this is so that both can
+    // be read, not just the one in front.
+    slot.dropped = this.liveBubble(charId) !== null;
+    slot.dropY = wy;
     slot.id = charId;
     slot.ageMs = 0;
-    slot.drawn = -1;
     slot.live = true;
+    // Position, advance and scale in one place, so there is exactly one
+    // description of where a number is — used here, and again on a pinch.
+    this.layoutLabel(slot);
     this.wake();
   }
 
-  /** A free label slot, or the oldest one recycled. */
+  /**
+   * Where a number sits before it starts rising, in world px.
+   *
+   * Both seats pin an **edge**, not the centre, and that is the whole of the
+   * arithmetic here. A sprite anchored at (0.5, 0.5) grows downward exactly
+   * as fast as it grows upward, so a scale of 5 about the cue's own anchor —
+   * the top of the drawn head (`scene.ts` `playCues`) — would push 30 world
+   * px of ink down over the person the number is about, three quarters of a
+   * standing figure, instead of over their head. So:
+   *
+   * - no card: the number's **bottom** edge stays where it has always been,
+   *   `GLYPH_H / 2` below the head, and the number grows upward out of the
+   *   person rather than down across them;
+   * - a card: the number's **top** edge stays where it has always been,
+   *   clear below the card, because there the thing not to cover is above.
+   *
+   * At scale 1 both reduce to exactly what the channel shipped with — `wy`
+   * and `wy + BUBBLE_H` — so the S4 captures still show what they showed.
+   */
+  private labelBaseY(label: Label): number {
+    const grown = (GLYPH_H * (this.labelScale - 1)) / 2;
+    if (!label.dropped) return label.wy - grown;
+    return label.dropY + BUBBLE_H + grown;
+  }
+
+  /**
+   * Write a whole number's geometry: origin, advance and scale together.
+   *
+   * Called on the frame a number is born and on any frame the camera's zoom
+   * moved it to another scale. It writes `y` as well as `x` so that a number
+   * is never drawn once at last frame's height, and it clears the memo so the
+   * next `tick` writes the alpha even though the step has not moved.
+   */
+  private layoutLabel(label: Label): void {
+    const scale = this.labelScale;
+    const step = stepOf(label.ageMs, LABEL_LIFE_MS, prefersReducedMotion());
+    const y = this.labelBaseY(label) - labelRiseOf(step, stepsOf(LABEL_LIFE_MS));
+    const x0 = labelOriginX(label.wx, label.n + 1, scale);
+    const advance = GLYPH_ADVANCE_PX * scale;
+    label.sign.position.set(x0, y);
+    label.sign.scale.set(scale);
+    for (let d = 0; d < label.n; d++) {
+      const sprite = label.digits[d]!;
+      sprite.position.set(x0 + (d + 1) * advance, y);
+      sprite.scale.set(scale);
+    }
+    label.drawn = -1;
+  }
+
+  /**
+   * A free label slot, or the oldest one recycled.
+   *
+   * The recycle refuses a slot whose number has not been drawn yet, and that
+   * is a fix rather than a nicety. A catch-up batch plays up to
+   * `MAX_CUES_PER_BATCH` cues in one synchronous loop, before any `tick`, so
+   * every live label in it has `ageMs === 0`; the strict `>` below is never
+   * true between equals, so the scan used to return slot 0 every time and
+   * cues 7..12 each overwrote the same slot in turn — six payouts drawn, and
+   * *which* six an artefact of iteration order rather than of anything the
+   * player did. A payout that is never drawn is better than one that erases
+   * another for zero frames.
+   */
   private freeLabel(): Label | null {
     for (const label of this.labels) if (!label.live) return label;
     if (this.labels.length < this.labelCap) {
       const sign = this.makeSprite(this.numbers);
       const digits: Sprite[] = [];
       for (let i = 0; i < LABEL_DIGITS; i++) digits.push(this.makeSprite(this.numbers));
-      const label: Label = { sign, digits, id: '', ageMs: 0, x: 0, y: 0, n: 0, live: false, drawn: -1 };
+      const label: Label = {
+        sign, digits, id: '', ageMs: 0, wx: 0, wy: 0,
+        dropped: false, dropY: 0, n: 0, live: false, drawn: -1,
+      };
       this.labels.push(label);
       return label;
     }
@@ -562,13 +694,14 @@ export class ParticleLayer {
     for (const label of this.labels) {
       if (!oldest || label.ageMs > oldest.ageMs) oldest = label;
     }
-    return oldest;
+    return oldest && oldest.ageMs > 0 ? oldest : null;
   }
 
   private parkLabel(label: Label): void {
     label.live = false;
     label.id = '';
     label.n = 0;
+    label.dropped = false;
     label.drawn = -1;
     label.sign.alpha = 0;
     for (const digit of label.digits) digit.alpha = 0;
@@ -603,12 +736,10 @@ export class ParticleLayer {
      */
     if (charId) {
       for (const label of this.labels) {
-        if (!label.live || label.id !== charId || label.y > wy) continue;
-        const drop = wy + BUBBLE_H - label.y;
-        label.y += drop;
-        label.sign.y += drop;
-        for (const digit of label.digits) digit.y += drop;
-        label.drawn = -1;
+        if (!label.live || label.id !== charId || label.dropped || label.wy > wy) continue;
+        label.dropped = true;
+        label.dropY = wy;
+        this.layoutLabel(label);
       }
     }
     this.wake();

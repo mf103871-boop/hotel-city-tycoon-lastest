@@ -735,7 +735,11 @@ test('rotation keeps the open catalog scrollable inside the safe rectangle', asy
  */
 
 /** The handle `HotelCanvas` installs, beside `characters()` and `rigStats()`. */
-type FxStats = { live: number; labels: number; bubbles: number; pulses: number; cap: number; tier: string };
+type FxStats = {
+  live: number; labels: number; bubbles: number; pulses: number; cap: number; tier: string;
+  /** The screen-space compensation the numbers should be drawn at, and the one they are. */
+  labelScale: number; labelScaleDrawn: number;
+};
 type FxPerson = { id: string; sx: number; sy: number; visible: boolean };
 type FxWindow = {
   hct?: { fx: (cue?: string) => string; fxStats: () => FxStats; characters: () => FxPerson[] };
@@ -951,6 +955,22 @@ test('the effects put pixels on the canvas', async ({ page }) => {
     .toContain(burst.anchor);
   expect(burst.stats.live, 'the cue fired but the field stayed empty').toBeGreaterThan(idle[0]!.stats.live);
   expect(burst.stats.labels, 'a payout drew no floating number').toBeGreaterThan(0);
+  /*
+   * «كبر الرقم». This lane is not the unchanged case, it is the extreme one:
+   * `?stress=12` expands the plot to 15x10, whose world is 2176x1248 px, so
+   * `fitZoom` is below the camera's floor at every project here and the
+   * camera opens clamped to MIN_ZOOM. That is exactly where the number is
+   * magnified most — so the one browser gate that measures pixels measures
+   * the new picture, not the old one.
+   *
+   * Two assertions, not one: the scale the layer holds, and the scale read
+   * back off a live sprite. A stored scalar that never reached a sprite is
+   * the failure this step exists to avoid, and only their agreement rules it
+   * out.
+   */
+  expect(burst.stats.labelScale, 'the camera never reached the numbers').toBeGreaterThan(1);
+  expect(burst.stats.labelScaleDrawn, 'the label scale was stored but never written to a sprite')
+    .toBe(burst.stats.labelScale);
   // 6 is half the smallest gain measured on either project at either hour and
   // half again over the drift of a still box. If this ever needs loosening,
   // the atlas or the layer moved, not the threshold (the HC-P2-S3 §9 rule).

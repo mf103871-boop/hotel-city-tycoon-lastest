@@ -31,10 +31,12 @@
  * is the house precedent for the shape.
  */
 import { mulberry32 } from '../../core/rng/index.ts';
+import { MIN_ZOOM } from '../camera.ts';
+import { BLOCK_H } from '../layout.ts';
 import { POOL_ALPHA_OPEN } from '../lighting.ts';
 import {
   FRAME_BLANK, FRAME_COIN_0, FRAME_DUST_0, FRAME_SPARK_0, FX_FRAMES,
-  GLYPH_ADVANCE_PX, MARK_SPARKLE, frameForGlyph,
+  GLYPH_ADVANCE_PX, GLYPH_H, MARK_SPARKLE, frameForGlyph,
 } from './glyphs.ts';
 
 /**
@@ -102,6 +104,66 @@ export const DUST_DRAG_PER_S = 3.7;   // the prototype's 0.94 per 1/60 s, per se
 export const DUST_ALPHA_PEAK = 0.5;   // prototype main.ts:815
 export const LABEL_RISE_PX = 24;
 export const LABEL_MAX_VALUE = 999999;
+/**
+ * The height a floating number is held at on the glass, in CSS px.
+ *
+ * Not a number somebody liked the look of. The one capture in this project's
+ * evidence that the owner looked at and called readable is
+ * `docs/hc-p2-s4-shots/burst-room-phone-full-withhud.png`, taken at room zoom
+ * 2.02x, where a digit stands `GLYPH_H * 2.02 = 24.2` CSS px tall and the
+ * step report's verdict on that very picture is «الرقم مقروء بلا جهد». This
+ * is that height, floored to an integer: the number is never smaller on the
+ * glass than the size that was read without effort.
+ */
+export const LABEL_SCREEN_PX = 24;
+/**
+ * The quantisation grid of the label's scale, in steps per unit of scale.
+ *
+ * A pinch moves the zoom every frame and a label's layout is written only
+ * when its scale moves, so an unquantised scale would re-lay out every live
+ * number on every frame of a pinch. Sixteen steps per unit is 6.25% at scale
+ * 1 and 1.25% at scale 5 — below what an eye resolves on a 24 px digit — and
+ * bounds a whole pinch to some sixty re-layouts. The same reasoning that put
+ * `DUSK_STEPS` in `src/render/lighting.ts`.
+ */
+export const LABEL_SCALE_STEPS = 16;
+/**
+ * The world's own ceiling on the number: **half a floor**, never more.
+ *
+ * The glass wants the number one size; the hotel wants it another, and the
+ * hotel's rule is the one that stops the number meaning something else. A
+ * `+N` says *this room paid* — so a number taller than half a storey is a
+ * number the eye reads against the floor above as readily as against the
+ * room that earned it. It was measured: pinned at `LABEL_SCREEN_PX` with no
+ * world ceiling, the digit at the camera's floor is 60 world px against a
+ * 96 px storey and a `+25` is 145 px wide against a 128 px room — a gold
+ * banner wider than the room it is about, which is not what «كبر الرقم»
+ * asked for.
+ */
+export const LABEL_SCALE_ROOM_MAX = BLOCK_H / (2 * GLYPH_H);
+
+/**
+ * The largest scale anything can ask for: the smaller of the two ceilings.
+ *
+ * The screen side is derived from the camera's own floor rather than written
+ * down, so moving `MIN_ZOOM` moves it instead of leaving a constant quietly
+ * stale; the world side is `LABEL_SCALE_ROOM_MAX`. Today the world's ceiling
+ * is the binding one (4 against 5), which is why a digit at the phone's fit
+ * zoom measures 19.2 CSS px and not `LABEL_SCREEN_PX` — stated here because
+ * the alternative is a reader deriving 24 and finding 19.2.
+ *
+ * Rounded up onto the quantisation grid, and that is not tidiness. `24 / (12
+ * * 0.4)` is `4.999999999999999` in binary floating point, so an un-gridded
+ * ceiling is a ceiling the quantised answer steps straight over — the
+ * function would return 5 while claiming a maximum of 4.999999999999999, and
+ * a clamp that the value it clamps can exceed is not a clamp. Up rather than
+ * down for the same reason the function below rounds up: the promise is a
+ * floor on the size, so every rounding in the chain has to go the way that
+ * keeps it.
+ */
+export const LABEL_SCALE_MAX = Math.ceil(
+  Math.min(LABEL_SCREEN_PX / (GLYPH_H * MIN_ZOOM), LABEL_SCALE_ROOM_MAX) * LABEL_SCALE_STEPS,
+) / LABEL_SCALE_STEPS;
 export const PULSE_ALPHA_PEAK = 0.30;
 /** Reduced motion holds the pulse at one alpha for its whole life. */
 export const PULSE_REDUCED_FRAC = 0.6;
@@ -335,7 +397,56 @@ export function frameOf(kind: number, step: number): number {
   return FRAME_BLANK;
 }
 
-/** How far a floating number has risen by this step. */
+/**
+ * How much larger than its world size a floating number is drawn, so that it
+ * holds `LABEL_SCREEN_PX` on the glass however far out the camera is
+ * («كبر الرقم», 21-09-2026).
+ *
+ * `max(1, ...)` and never less. At and above zoom `LABEL_SCREEN_PX / GLYPH_H`
+ * — that is 2x, below the room zoom the evidence was shot at — this returns
+ * exactly 1 and the channel draws precisely what it drew before this step: no
+ * new picture where the number was already read without effort. Below it the
+ * number grows until, at the camera's own floor, it is `LABEL_SCALE_MAX`.
+ *
+ * The quantisation rounds **up**, which is the difference between a promise
+ * and an approximation. Rounded to nearest, the drawn digit falls below
+ * `LABEL_SCREEN_PX` almost everywhere it is not exactly on the grid — worst
+ * measured 23.27 CSS px at zoom 1.9394 — so "at its world size or at
+ * `LABEL_SCREEN_PX`, whichever is larger" would be false by up to 3% and the
+ * one property worth testing could not be written as an inequality. Rounding
+ * up costs at most 1/16 of a glyph and makes `labelScaleFor(z) * GLYPH_H * z
+ * >= LABEL_SCREEN_PX` true at every zoom **the pin can reach** — that is,
+ * down to `LABEL_SCREEN_PX / (GLYPH_H * LABEL_SCALE_MAX)`, 0.5x today.
+ * Below that the world's ceiling binds and the digit is what half a storey
+ * allows: 19.2 CSS px at the phone's fit zoom, four times what it was.
+ *
+ * A zoom that is not a positive finite number is nobody's camera and answers
+ * 1, which is the size the label had before any of this existed.
+ */
+export function labelScaleFor(zoom: number): number {
+  if (!(zoom > 0)) return 1;
+  const want = LABEL_SCREEN_PX / (GLYPH_H * zoom);
+  if (!(want > 1)) return 1;
+  const capped = want < LABEL_SCALE_MAX ? want : LABEL_SCALE_MAX;
+  return Math.ceil(capped * LABEL_SCALE_STEPS) / LABEL_SCALE_STEPS;
+}
+
+/**
+ * How far a floating number has risen by this step, in world px.
+ *
+ * **Not** scaled by the screen-space compensation, and that is a decision
+ * rather than an omission. The size is pinned to the glass because a number
+ * nobody can read is not information; the *travel* is what ties the number to
+ * the room that earned it, and it belongs to the world. Scaling it by 5 was
+ * measured doing two things wrong at the phone's fit zoom: a number rose 120
+ * world px against a 96 px floor and ended up drawn over the room one storey
+ * up (`docs/hc-p2-s4a-shots/plusN-*-still-phonefit-full-t250ms.png` caught it
+ * above the roof), and it climbed back through the reaction card that
+ * HC-P2-S4 §9 re-seated it below. Left in world px, the number's top edge
+ * follows exactly the path it followed before this step at every zoom —
+ * which is why the card clearance needs no new arithmetic and S4's
+ * `inspector-paid-and-praised-*` captures still describe what happens.
+ */
 export function labelRiseOf(step: number, steps: number): number {
   const u = steps > 0 ? step / steps : 0;
   const rest = 1 - u;
@@ -445,8 +556,10 @@ export function digitsOf(value: number, out: Int8Array): number {
 /**
  * Where the leftmost sprite of an `n`-sprite label goes, so the whole label
  * is centred on its anchor. Every sprite is anchored at its own centre, so
- * this is the anchor minus half the run of advances.
+ * this is the anchor minus half the run of advances — and the advance carries
+ * the screen-space scale, or a magnified label's digits would sit on top of
+ * one another.
  */
-export function labelOriginX(anchorX: number, n: number): number {
-  return anchorX - ((n - 1) * GLYPH_ADVANCE_PX) / 2;
+export function labelOriginX(anchorX: number, n: number, scale = 1): number {
+  return anchorX - ((n - 1) * GLYPH_ADVANCE_PX * scale) / 2;
 }

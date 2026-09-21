@@ -845,5 +845,6 @@
     "reduced-motion.json",
     "s4-extras.json"
   ],
-  "unindexed": []
+  "unindexed": [],
+  "supersededBy": "21-09-2026 (HC-P2-S4A، DEC-024): اللقطات الاثنتا عشرة `plusN-phonefit-*` وملفّا `plusN-legibility.json` و`plusN-legibility-measured.json` تصف الرقم العائم **قبل** تثبيت حجمه بالشاشة، وتبقى هنا كما هي لأنها الاكتشاف الذي أجابه المالك. ما يخلفها — وذراعا قبل/بعد من الجلسة نفسها وصندوق القصّ نفسه — في `docs/hc-p2-s4a-shots/`. لم يُضَف إلى هذا المجلد ولم يُحذَف منه شيء: `captures` تبقى 116 و`unindexed` صفرًا، وهي أرقام مقتبسة في أربعة نصوص موقّعة."
 }
