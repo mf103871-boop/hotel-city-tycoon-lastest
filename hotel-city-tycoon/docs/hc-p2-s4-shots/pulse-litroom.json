@@ -1,0 +1,121 @@
+[
+  {
+    "when": "22:00",
+    "lane": "canvas (--disable-3d-apis)",
+    "tier": "full",
+    "viewport": "900x640@2",
+    "zoom": 2,
+    "framedTheLitRoom": true,
+    "roomInteriorsOnScreen": [
+      {
+        "id": "r4",
+        "interior": 249.59
+      },
+      {
+        "id": "r5",
+        "interior": 234.36
+      },
+      {
+        "id": "r2",
+        "interior": 233.11
+      },
+      {
+        "id": "r6",
+        "interior": 228.75
+      },
+      {
+        "id": "r11",
+        "interior": 115.12
+      }
+    ],
+    "framedId": "g44",
+    "anchor": {
+      "id": "g44",
+      "clip": "sleep",
+      "x": 672,
+      "y": 948,
+      "visible": true,
+      "source": "rig",
+      "sx": 450,
+      "sy": 352,
+      "sheetReady": true
+    },
+    "room": {
+      "id": "r5",
+      "x": 385.4761890232516,
+      "y": 182.0955659177545,
+      "w": 258.7888785916387,
+      "h": 194.09165894372896
+    },
+    "before": {
+      "rimTop": 178.06,
+      "rimLeft": 138.12,
+      "interior": 234.36,
+      "sky": 96.47
+    },
+    "during": {
+      "at": 0,
+      "dt": 0,
+      "rimTop": 178.06,
+      "rimLeft": 138.12,
+      "interior": 234.36,
+      "pulses": 1,
+      "series": [
+        {
+          "at": 0,
+          "dt": 0,
+          "rimTop": 178.06,
+          "rimLeft": 138.12,
+          "interior": 234.36,
+          "pulses": 1
+        },
+        {
+          "at": 84,
+          "dt": 100,
+          "rimTop": 178.06,
+          "rimLeft": 138.12,
+          "interior": 234.32,
+          "pulses": 1
+        },
+        {
+          "at": 168,
+          "dt": 183,
+          "rimTop": 178.06,
+          "rimLeft": 138.12,
+          "interior": 234.34,
+          "pulses": 1
+        },
+        {
+          "at": 252,
+          "dt": 283,
+          "rimTop": 178.06,
+          "rimLeft": 138.12,
+          "interior": 234.34,
+          "pulses": 1
+        },
+        {
+          "at": 336,
+          "dt": 350,
+          "rimTop": 177.36,
+          "rimLeft": 138.12,
+          "interior": 234.34,
+          "pulses": 1
+        },
+        {
+          "at": 420,
+          "dt": 450,
+          "rimTop": 177.46,
+          "rimLeft": 138.12,
+          "interior": 234.34,
+          "pulses": 1
+        }
+      ]
+    },
+    "after": {
+      "rimTop": 178.06,
+      "rimLeft": 138.12,
+      "interior": 234.36,
+      "sky": 96.47
+    }
+  }
+]

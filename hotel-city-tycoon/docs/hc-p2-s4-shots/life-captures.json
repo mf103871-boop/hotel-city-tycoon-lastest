@@ -1,0 +1,115 @@
+[
+  {
+    "name": "life-sleep-full-desktop",
+    "tier": "full",
+    "what": "sleep",
+    "lane": "canvas (--disable-3d-apis)",
+    "viewport": "1280x720@1",
+    "zoom": 2,
+    "who": {
+      "id": "g39",
+      "clip": "sleep",
+      "x": 408,
+      "y": 948,
+      "visible": true,
+      "source": "rig",
+      "sx": 1084,
+      "sy": 611,
+      "sheetReady": true
+    },
+    "band": {
+      "x": 1040,
+      "y": 491,
+      "w": 88,
+      "h": 70
+    },
+    "n": 195,
+    "markCss": {
+      "x": 1085.1025641025642,
+      "y": 551.4666666666667
+    },
+    "markBboxCss": {
+      "x": 1055,
+      "y": 538,
+      "w": 51,
+      "h": 23
+    },
+    "tries": 25,
+    "fx": {
+      "live": 0,
+      "labels": 0,
+      "bubbles": 0,
+      "pulses": 0,
+      "cap": 192,
+      "tier": "full"
+    },
+    "crop": {
+      "x": 1004,
+      "y": 471,
+      "w": 160,
+      "h": 160
+    },
+    "magnification": 5,
+    "dustPixelsDetected": 195
+  },
+  {
+    "name": "life-sleep-lite-desktop",
+    "tier": "lite",
+    "what": "sleep",
+    "lane": "canvas (--disable-3d-apis)",
+    "viewport": "1280x720@1",
+    "zoom": 2,
+    "who": {
+      "id": "g39",
+      "clip": "sleep",
+      "x": 408,
+      "y": 948,
+      "visible": true,
+      "source": "rig",
+      "sx": 1084,
+      "sy": 611,
+      "sheetReady": true
+    },
+    "band": {
+      "x": 1040,
+      "y": 491,
+      "w": 88,
+      "h": 70
+    },
+    "n": 251,
+    "markCss": {
+      "x": 1085.7330677290836,
+      "y": 553.2988047808765
+    },
+    "markBboxCss": {
+      "x": 1055,
+      "y": 539,
+      "w": 51,
+      "h": 22
+    },
+    "tries": 2,
+    "fx": {
+      "live": 0,
+      "labels": 0,
+      "bubbles": 0,
+      "pulses": 0,
+      "cap": 48,
+      "tier": "lite"
+    },
+    "crop": {
+      "x": 1004,
+      "y": 471,
+      "w": 160,
+      "h": 160
+    },
+    "magnification": 5,
+    "dustPixelsDetected": 251
+  },
+  {
+    "name": "life-work — NOT SHIPPED",
+    "what": "work",
+    "note": "An attempt at the cleaner's glint life shot. The sparkle only fires for a cast role whose propWork is 'mop' (src/render/anim/cast.ts:109 is the only one); the ?stress=12 scene framed a waiter carrying a tray instead, and both detectors (loose difference, then PALETTE.glass-specific) reported the tray's own motion — the lite tier 'found' 10 pixels with fxStats().live = 0, which is the proof it was a false positive. The two plates were deleted rather than shipped as a sparkle; recorded as BL-052.",
+    "lane": "canvas (--disable-3d-apis)",
+    "viewport": "1280x720@1"
+  }
+]

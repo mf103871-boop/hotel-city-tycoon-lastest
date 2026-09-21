@@ -1,0 +1,91 @@
+{
+  "lane": "canvas (--disable-3d-apis)",
+  "tier": "full",
+  "viewport": "900x640@2",
+  "when": "22:00",
+  "skyBoxCssPx": {
+    "name": "sky",
+    "x": 24,
+    "y": 40,
+    "w": 160,
+    "h": 90
+  },
+  "idleSky": {
+    "name": "sky",
+    "px": 57600,
+    "r": 102.81,
+    "g": 138.78,
+    "b": 198.51,
+    "lum": 135.45,
+    "distinctColours": 13,
+    "inkFrac": 0,
+    "goldFrac": 0
+  },
+  "liveFrames": [
+    {
+      "frame": 1,
+      "skyLum": 135.45,
+      "skyColours": 13,
+      "fx": {
+        "live": 33,
+        "labels": 4,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "frame": 2,
+      "skyLum": 135.45,
+      "skyColours": 13,
+      "fx": {
+        "live": 33,
+        "labels": 4,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "frame": 3,
+      "skyLum": 135.45,
+      "skyColours": 13,
+      "fx": {
+        "live": 33,
+        "labels": 4,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    }
+  ],
+  "castSheetSky": {
+    "name": "sky",
+    "px": 57600,
+    "r": 107.46,
+    "g": 121.84,
+    "b": 163.05,
+    "lum": 121.76,
+    "distinctColours": 243,
+    "inkFrac": 0.09,
+    "goldFrac": 0.0064
+  },
+  "afterCastSheetSky": {
+    "name": "sky",
+    "px": 57600,
+    "r": 102.81,
+    "g": 138.78,
+    "b": 198.51,
+    "lum": 135.45,
+    "distinctColours": 13,
+    "inkFrac": 0,
+    "goldFrac": 0
+  },
+  "errors": [
+    "[warning] Failed to create WebGPU Context Provider",
+    "[warning] Failed to create WebGPU Context Provider"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "tier": "full",
+  "lane": "canvas (--disable-3d-apis)",
+  "viewport": "1280x720@1",
+  "zoom": 2,
+  "who": {
+    "id": "g46",
+    "clip": "walk",
+    "x": 95,
+    "y": 948,
+    "visible": true,
+    "source": "rig",
+    "sx": 452,
+    "sy": 611,
+    "sheetReady": true
+  },
+  "before": 0,
+  "after": 1,
+  "addedPx": 250,
+  "mark": {
+    "x": 448.772,
+    "y": 597.088
+  },
+  "bboxCss": {
+    "w": 34,
+    "h": 36
+  },
+  "slideScreenPx": -3.2
+}

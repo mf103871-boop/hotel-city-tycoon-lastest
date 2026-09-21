@@ -1,0 +1,364 @@
+{
+  "lane": "canvas (--disable-3d-apis)",
+  "tier": "full",
+  "viewport": "412x915@2",
+  "zoomFit": 0.4,
+  "anchor": {
+    "id": "s1",
+    "clip": "idle",
+    "x": 104,
+    "y": 852,
+    "visible": true,
+    "source": "rig",
+    "sx": 93,
+    "sy": 565,
+    "sheetReady": true
+  },
+  "full": [
+    {
+      "file": "plusN-phonefit-full-t120ms.png",
+      "at": 120,
+      "actualMs": 133,
+      "stats": {
+        "live": 5,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-phonefit-full-t250ms.png",
+      "at": 250,
+      "actualMs": 250,
+      "stats": {
+        "live": 5,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-phonefit-full-t400ms.png",
+      "at": 400,
+      "actualMs": 400,
+      "stats": {
+        "live": 5,
+        "labels": 1,
+        "bubbles": 1,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-phonefit-full-t500ms.png",
+      "at": 500,
+      "actualMs": 500,
+      "stats": {
+        "live": 0,
+        "labels": 0,
+        "bubbles": 1,
+        "pulses": 0,
+        "cap": 192,
+        "tier": "full"
+      }
+    }
+  ],
+  "native": [
+    {
+      "file": "plusN-phonefit-native-t120ms.png",
+      "at": 120,
+      "actualMs": 133,
+      "crop": {
+        "x": 53,
+        "y": 495,
+        "w": 80,
+        "h": 56,
+        "who": "s1"
+      },
+      "stats": {
+        "live": 5,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-phonefit-native-t250ms.png",
+      "at": 250,
+      "actualMs": 267,
+      "crop": {
+        "x": 53,
+        "y": 495,
+        "w": 80,
+        "h": 56,
+        "who": "s1"
+      },
+      "stats": {
+        "live": 5,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-phonefit-native-t400ms.png",
+      "at": 400,
+      "actualMs": 417,
+      "crop": {
+        "x": 53,
+        "y": 495,
+        "w": 80,
+        "h": 56,
+        "who": "s1"
+      },
+      "stats": {
+        "live": 5,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-phonefit-native-t500ms.png",
+      "at": 500,
+      "actualMs": 517,
+      "crop": {
+        "x": 53,
+        "y": 495,
+        "w": 80,
+        "h": 56,
+        "who": "s1"
+      },
+      "stats": {
+        "live": 0,
+        "labels": 0,
+        "bubbles": 0,
+        "pulses": 0,
+        "cap": 192,
+        "tier": "full"
+      }
+    }
+  ],
+  "mag8": [
+    {
+      "file": "plusN-phonefit-8x-t120ms.png",
+      "at": 120,
+      "actualMs": 133,
+      "crop": {
+        "x": 53,
+        "y": 495,
+        "w": 80,
+        "h": 56,
+        "who": "s1"
+      },
+      "stats": {
+        "live": 5,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-phonefit-8x-t250ms.png",
+      "at": 250,
+      "actualMs": 250,
+      "crop": {
+        "x": 53,
+        "y": 495,
+        "w": 80,
+        "h": 56,
+        "who": "s1"
+      },
+      "stats": {
+        "live": 5,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-phonefit-8x-t400ms.png",
+      "at": 400,
+      "actualMs": 400,
+      "crop": {
+        "x": 53,
+        "y": 495,
+        "w": 80,
+        "h": 56,
+        "who": "s1"
+      },
+      "stats": {
+        "live": 5,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-phonefit-8x-t500ms.png",
+      "at": 500,
+      "actualMs": 500,
+      "crop": {
+        "x": 53,
+        "y": 495,
+        "w": 80,
+        "h": 56,
+        "who": "s1"
+      },
+      "stats": {
+        "live": 0,
+        "labels": 0,
+        "bubbles": 0,
+        "pulses": 0,
+        "cap": 192,
+        "tier": "full"
+      }
+    }
+  ],
+  "measured": {
+    "dpr": 2,
+    "anchor": {
+      "id": "s1",
+      "sx": 93,
+      "sy": 565
+    },
+    "out": [
+      {
+        "at": 120,
+        "dt": 133,
+        "inkPx": 2676,
+        "bboxDevicePx": {
+          "w": 156,
+          "h": 39,
+          "top": 73
+        },
+        "meanInk": {
+          "r": 235,
+          "g": 160,
+          "b": 118
+        },
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "at": 250,
+        "dt": 267,
+        "inkPx": 2692,
+        "bboxDevicePx": {
+          "w": 156,
+          "h": 39,
+          "top": 73
+        },
+        "meanInk": {
+          "r": 235,
+          "g": 160,
+          "b": 119
+        },
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "at": 400,
+        "dt": 417,
+        "inkPx": 2690,
+        "bboxDevicePx": {
+          "w": 156,
+          "h": 41,
+          "top": 71
+        },
+        "meanInk": {
+          "r": 235,
+          "g": 161,
+          "b": 120
+        },
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "at": 500,
+        "dt": 517,
+        "inkPx": 2569,
+        "bboxDevicePx": {
+          "w": 156,
+          "h": 39,
+          "top": 73
+        },
+        "meanInk": {
+          "r": 236,
+          "g": 159,
+          "b": 118
+        },
+        "stats": {
+          "live": 0,
+          "labels": 0,
+          "bubbles": 0,
+          "pulses": 0,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "at": 600,
+        "dt": 617,
+        "inkPx": 2568,
+        "bboxDevicePx": {
+          "w": 156,
+          "h": 39,
+          "top": 73
+        },
+        "meanInk": {
+          "r": 236,
+          "g": 158,
+          "b": 118
+        },
+        "stats": {
+          "live": 0,
+          "labels": 0,
+          "bubbles": 0,
+          "pulses": 0,
+          "cap": 192,
+          "tier": "full"
+        }
+      }
+    ]
+  },
+  "errors": [
+    "[warning] Failed to create WebGPU Context Provider",
+    "[warning] Failed to create WebGPU Context Provider"
+  ]
+}

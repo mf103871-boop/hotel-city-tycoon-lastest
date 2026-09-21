@@ -1,0 +1,850 @@
+{
+  "step": "HC-P2-S4 — the effects channel",
+  "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+  "servers": {
+    "working tree (S4)": "http://127.0.0.1:5311 (vite on the repository)",
+    "S3 baseline": "http://127.0.0.1:5312 (git archive 7222794, exported and served in the same session)"
+  },
+  "honesty": "Every capture here is a sandbox capture: no GPU, no phone, Pixi CanvasRenderer under --disable-3d-apis. No visual or performance claim here has been confirmed by an eye or a device.",
+  "recapture": "Every picture in this folder was taken again after the review of 2026-09-21: the atlas changed (the plus sign's arms, the smile's spacing, the dust strip's opacity and tone), the coin burst's launch speeds changed, and the sleeper's mark was dropped. The numbers in the .json files beside the pictures are from those same runs.",
+  "videoNote": "The four .webm files decode (the browser reports 15.28 s / 1280x720 and 15.44 s / 412x914) but this sandbox has no ffmpeg and its headless Chromium paints no decoded video frame either to a canvas or into a screenshot, so the recordings could not be looked at here. The 84 ms still series covers the same moment and was looked at.",
+  "notTaken": [
+    "The deliberate BL-048 counter-example from a scrap build (decision §7). It needs a knowingly broken build — a Graphics inside layers.effects with the fence removed — and this step did not produce one; what stands in its place is the upstream check in tools/selftest/effects.ts ('Pixi still restores a blend mode it did not set'), which reads the defect out of the installed Pixi sources and fails the day an upgrade fixes it.",
+    "The cleaner's glint life shot (decision §7). The sparkle only fires for a cast role whose propWork is 'mop' (src/render/anim/cast.ts:109 is the only one), and no mop-carrying cleaner could be framed mid-stroke in the ?stress=12 scene during this session; two attempts detected the waiter's tray instead and were deleted rather than shipped as a sparkle.",
+    "The r5 sleeper re-capture (decision §7, BL-047). It was asked for because an S4 sleep mark would rise from a bed drawn as a «BED» placeholder. The channel no longer draws a sleep mark at all (§9 row 1), so the reason is gone; life-sleep-{full,lite}-desktop.png are the sleeper evidence this step has."
+  ],
+  "captures": [
+    {
+      "file": "approved-side-by-side.png",
+      "what": "EVIDENCE 11 — the approved picture's '+25' and smiley bubble (docs/reference/hotel-city-approved-2026-09-07.png, 2x) beside ours (3x), tagged with §3.3's pinned geometry",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "bl048-after-castsheet.png",
+      "what": "EVIDENCE 6 — the sky back to its idle luminance after castSheetOff()",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "bl048-castsheet.png",
+      "what": "EVIDENCE 6 — window.hct.castSheet({clip:'idle',scale:2}) still drawing above the lights",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "bl048-night-idle.png",
+      "what": "EVIDENCE 6 — BL-048 at 22:00 with the pools lit: idle, then three consecutive frames with the effects live",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "bl048-night-live-1.png",
+      "what": "EVIDENCE 6 — BL-048 at 22:00 with the pools lit: idle, then three consecutive frames with the effects live",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "bl048-night-live-2.png",
+      "what": "EVIDENCE 6 — BL-048 at 22:00 with the pools lit: idle, then three consecutive frames with the effects live",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "bl048-night-live-3.png",
+      "what": "EVIDENCE 6 — BL-048 at 22:00 with the pools lit: idle, then three consecutive frames with the effects live",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "bl048-night-particles-live.png",
+      "what": "EVIDENCE 6 — BL-048 at 22:00 with the pools lit: idle, then three consecutive frames with the effects live",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "burst-room-desktop-full-crop4x-t084ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-full-crop4x-t168ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-full-crop4x-t252ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-full-crop4x-t336ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-full-crop4x-t420ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-full-crop4x-t504ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-full-t084ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-full-t168ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-full-t252ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-full-t336ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-full-t420ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-full-t504ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-full-withhud.png",
+      "what": "EVIDENCE 1 — the burst with the HUD, ~150 ms after the cue",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-full.webm",
+      "what": "EVIDENCE 1 — 15 s recording, four payout cues 700 ms apart at room zoom 2.02x",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-lite-crop4x-t084ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-lite-crop4x-t168ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-lite-crop4x-t252ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-lite-crop4x-t336ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-lite-crop4x-t420ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-lite-crop4x-t504ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-lite-t084ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-lite-t168ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-lite-t252ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-lite-t336ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-lite-t420ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-lite-t504ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-lite-withhud.png",
+      "what": "EVIDENCE 1 — the burst with the HUD, ~150 ms after the cue",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-desktop-lite.webm",
+      "what": "EVIDENCE 1 — 15 s recording, four payout cues 700 ms apart at room zoom 2.02x",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "burst-room-phone-full-crop4x-t084ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-full-crop4x-t168ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-full-crop4x-t252ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-full-crop4x-t336ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-full-crop4x-t420ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-full-crop4x-t504ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-full-t084ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-full-t168ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-full-t252ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-full-t336ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-full-t420ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-full-t504ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-full-withhud.png",
+      "what": "EVIDENCE 1 — the burst with the HUD, ~150 ms after the cue",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-full.webm",
+      "what": "EVIDENCE 1 — 15 s recording, four payout cues 700 ms apart at room zoom 2.02x",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-lite-crop4x-t084ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-lite-crop4x-t168ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-lite-crop4x-t252ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-lite-crop4x-t336ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-lite-crop4x-t420ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-lite-crop4x-t504ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, 4x crop, canvas frames on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-lite-t084ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-lite-t168ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-lite-t252ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-lite-t336ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-lite-t420ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-lite-t504ms.png",
+      "what": "EVIDENCE 1 — the checkout burst at room zoom 2.02x, whole frame, on the 12 fps grid (84/168/252/336/420/504 ms after the payout cue)",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-lite-withhud.png",
+      "what": "EVIDENCE 1 — the burst with the HUD, ~150 ms after the cue",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "burst-room-phone-lite.webm",
+      "what": "EVIDENCE 1 — 15 s recording, four payout cues 700 ms apart at room zoom 2.02x",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "inspector-paid-and-praised-t084ms.png",
+      "what": "EVIDENCE 9 — CUE.payout then CUE.praise on one person, the order src/bridge/effects.ts emits for inspectorFound. The card and the '+N' both read: the number is drawn in its own group above the cards and is re-seated below a card that shares its person (§9 row 3)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "inspector-paid-and-praised-t252ms.png",
+      "what": "EVIDENCE 9 — CUE.payout then CUE.praise on one person, the order src/bridge/effects.ts emits for inspectorFound. The card and the '+N' both read: the number is drawn in its own group above the cards and is re-seated below a card that shares its person (§9 row 3)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "inspector-paid-and-praised-t420ms.png",
+      "what": "EVIDENCE 9 — CUE.payout then CUE.praise on one person, the order src/bridge/effects.ts emits for inspectorFound. The card and the '+N' both read: the number is drawn in its own group above the cards and is re-seated below a card that shares its person (§9 row 3)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "inspector-paid-and-praised-t700ms.png",
+      "what": "EVIDENCE 9 — CUE.payout then CUE.praise on one person, the order src/bridge/effects.ts emits for inspectorFound. The card and the '+N' both read: the number is drawn in its own group above the cards and is re-seated below a card that shares its person (§9 row 3)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "life-footdust-isolated-full-desktop.png",
+      "what": "EVIDENCE 3 — the frame a puff is born on: before / after / difference with the rig ink masked, both markers drawn",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "life-footdust-strip-full-desktop.png",
+      "what": "EVIDENCE 3 — 18 consecutive frames at one walker's feet, 8x, at room zoom 2.02x; pink cross = the motion pivot; the per-cell live count is the particle field",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "life-footdust-strip-lite-desktop.png",
+      "what": "EVIDENCE 3 — the same strip at the lite tier: live=0 in all 18 frames, the tier gate",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "life-footdust-strip-z4-full-desktop.png",
+      "what": "EVIDENCE 3 — the same strip at room zoom 4.0x. Re-taken after review: the puff carries one fade now, not two (§9 row 2)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "life-sleep-full-desktop.png",
+      "what": "EVIDENCE 3 — a sleeper on the full tier. Re-taken after review: the channel draws NO sleep mark any more, so both 'z' over the quilt are the rig's own (characterRig.ts:771-772) — §9 row 1",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "life-sleep-lite-desktop.png",
+      "what": "EVIDENCE 3 — the same sleeper on the lite tier: the same two rig 'z', and fxStats().live = 0. The full/lite A/B of a bed is now identical, which is the point",
+      "tier": "lite",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "plusN-phonefit-8x-t120ms.png",
+      "what": "EVIDENCE 2 — the same crop at 8x nearest neighbour, so the legibility can be judged",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "plusN-phonefit-8x-t250ms.png",
+      "what": "EVIDENCE 2 — the same crop at 8x nearest neighbour, so the legibility can be judged",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "plusN-phonefit-8x-t400ms.png",
+      "what": "EVIDENCE 2 — the same crop at 8x nearest neighbour, so the legibility can be judged",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "plusN-phonefit-8x-t500ms.png",
+      "what": "EVIDENCE 2 — the same crop at 8x nearest neighbour, so the legibility can be judged",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "plusN-phonefit-full-t120ms.png",
+      "what": "EVIDENCE 2 — the whole phone frame at FIT ZOOM 0.40x, 120/250/400/500 ms after the burst",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "plusN-phonefit-full-t250ms.png",
+      "what": "EVIDENCE 2 — the whole phone frame at FIT ZOOM 0.40x, 120/250/400/500 ms after the burst",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "plusN-phonefit-full-t400ms.png",
+      "what": "EVIDENCE 2 — the whole phone frame at FIT ZOOM 0.40x, 120/250/400/500 ms after the burst",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "plusN-phonefit-full-t500ms.png",
+      "what": "EVIDENCE 2 — the whole phone frame at FIT ZOOM 0.40x, 120/250/400/500 ms after the burst",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "plusN-phonefit-native-t120ms.png",
+      "what": "EVIDENCE 2 — 1:1 device pixels around the label at FIT ZOOM: this is the size the number actually is",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "plusN-phonefit-native-t250ms.png",
+      "what": "EVIDENCE 2 — 1:1 device pixels around the label at FIT ZOOM: this is the size the number actually is",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "plusN-phonefit-native-t400ms.png",
+      "what": "EVIDENCE 2 — 1:1 device pixels around the label at FIT ZOOM: this is the size the number actually is",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "plusN-phonefit-native-t500ms.png",
+      "what": "EVIDENCE 2 — 1:1 device pixels around the label at FIT ZOOM: this is the size the number actually is",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "pulse-ink-2200-after.png",
+      "what": "EVIDENCE 4 — the exact crop the e2e 'characters are drawn' test uses (sx±20, sy-48..sy+4 css px), 6x, with distinctColours / inkFrac / luminance printed",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "pulse-ink-2200-before.png",
+      "what": "EVIDENCE 4 — the exact crop the e2e 'characters are drawn' test uses (sx±20, sy-48..sy+4 css px), 6x, with distinctColours / inkFrac / luminance printed",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "pulse-ink-2200-during.png",
+      "what": "EVIDENCE 4 — the exact crop the e2e 'characters are drawn' test uses (sx±20, sy-48..sy+4 css px), 6x, with distinctColours / inkFrac / luminance printed",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "pulse-ink-noon-after.png",
+      "what": "EVIDENCE 4 — the exact crop the e2e 'characters are drawn' test uses (sx±20, sy-48..sy+4 css px), 6x, with distinctColours / inkFrac / luminance printed",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "pulse-ink-noon-before.png",
+      "what": "EVIDENCE 4 — the exact crop the e2e 'characters are drawn' test uses (sx±20, sy-48..sy+4 css px), 6x, with distinctColours / inkFrac / luminance printed",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "pulse-ink-noon-during.png",
+      "what": "EVIDENCE 4 — the exact crop the e2e 'characters are drawn' test uses (sx±20, sy-48..sy+4 css px), 6x, with distinctColours / inkFrac / luminance printed",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "pulse-litroom-2200-after.png",
+      "what": "EVIDENCE 4c — the plate the first pass never took: the cue forced onto an OCCUPIED, LIT room at 22:00 (guest g44 asleep in r5, interior 234 against r11's 115). A pulse is live for the whole 500 ms (pulses = 1) and the rim never moves — 178.06 before, during and after. That is the clamp in pulseAlphaAt doing its job, not a missing flash",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "pulse-litroom-2200-before.png",
+      "what": "EVIDENCE 4c — the plate the first pass never took: the cue forced onto an OCCUPIED, LIT room at 22:00 (guest g44 asleep in r5, interior 234 against r11's 115). A pulse is live for the whole 500 ms (pulses = 1) and the rim never moves — 178.06 before, during and after. That is the clamp in pulseAlphaAt doing its job, not a missing flash",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "pulse-litroom-2200-context.png",
+      "what": "EVIDENCE 4c — the whole frame the lit-room plate was cut from",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "pulse-litroom-2200-during.png",
+      "what": "EVIDENCE 4c — the plate the first pass never took: the cue forced onto an OCCUPIED, LIT room at 22:00 (guest g44 asleep in r5, interior 234 against r11's 115). A pulse is live for the whole 500 ms (pulses = 1) and the rim never moves — 178.06 before, during and after. That is the clamp in pulseAlphaAt doing its job, not a missing flash",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "pulse-room-2200-after.png",
+      "what": "EVIDENCE 4 — the same pulse at room scale on an UNLIT room: before / the measured peak / after",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "pulse-room-2200-before.png",
+      "what": "EVIDENCE 4 — the same pulse at room scale on an UNLIT room: before / the measured peak / after",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "pulse-room-2200-context.png",
+      "what": "EVIDENCE 4 — the whole frame the room-scale pulse plate was cut from",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "pulse-room-2200-during.png",
+      "what": "EVIDENCE 4 — the same pulse at room scale on an UNLIT room: before / the measured peak / after",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "pulse-room-noon-after.png",
+      "what": "EVIDENCE 4 — the same pulse at room scale on an UNLIT room: before / the measured peak / after",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "pulse-room-noon-before.png",
+      "what": "EVIDENCE 4 — the same pulse at room scale on an UNLIT room: before / the measured peak / after",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "pulse-room-noon-context.png",
+      "what": "EVIDENCE 4 — the whole frame the room-scale pulse plate was cut from",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "pulse-room-noon-during.png",
+      "what": "EVIDENCE 4 — the same pulse at room scale on an UNLIT room: before / the measured peak / after",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "reduced-normal-t100ms.png",
+      "what": "EVIDENCE 5 — the same pair without the flag",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "reduced-normal-t400ms.png",
+      "what": "EVIDENCE 5 — the same pair without the flag",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "reduced-normal-t800ms.png",
+      "what": "EVIDENCE 5 — the same pair without the flag",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "reduced-reduced-t100ms.png",
+      "what": "EVIDENCE 5 — reducedMotion 'reduce', 100 / 400 / 800 ms over one payout+greet",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "reduced-reduced-t400ms.png",
+      "what": "EVIDENCE 5 — reducedMotion 'reduce', 100 / 400 / 800 ms over one payout+greet",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "reduced-reduced-t800ms.png",
+      "what": "EVIDENCE 5 — reducedMotion 'reduce', 100 / 400 / 800 ms over one payout+greet",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "900x640 @2"
+    },
+    {
+      "file": "rtl-context-phone.png",
+      "what": "EVIDENCE 12 — the whole Arabic frame the RTL crop was cut from. The three Pixi Text nodes that survive in the canvas are not S4's: roomView.ts:172 and :404, decorView.ts:124 (BL-051)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "rtl-plusN-phone.png",
+      "what": "EVIDENCE 12 — the 'no language' frame: a payout under Arabic with dir=\"rtl\" and lang=\"ar\" on a 412x915@2 phone. The '+N' still reads left to right and is the same sprite run as the English capture",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "412x915 @2"
+    },
+    {
+      "file": "triumph-desktop-full-t084ms.png",
+      "what": "EVIDENCE 10 — the level-up burst, window.hct.fx('triumph'), 3x crop at 84/168/252/420 ms (§7 asked for it; the first pass left it in the workspace)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "triumph-desktop-full-t168ms.png",
+      "what": "EVIDENCE 10 — the level-up burst, window.hct.fx('triumph'), 3x crop at 84/168/252/420 ms (§7 asked for it; the first pass left it in the workspace)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "triumph-desktop-full-t252ms.png",
+      "what": "EVIDENCE 10 — the level-up burst, window.hct.fx('triumph'), 3x crop at 84/168/252/420 ms (§7 asked for it; the first pass left it in the workspace)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    },
+    {
+      "file": "triumph-desktop-full-t420ms.png",
+      "what": "EVIDENCE 10 — the level-up burst, window.hct.fx('triumph'), 3x crop at 84/168/252/420 ms (§7 asked for it; the first pass left it in the workspace)",
+      "tier": "full",
+      "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+      "viewport": "1280x720 @1"
+    }
+  ],
+  "dataFiles": [
+    "bl048-pictures.json",
+    "bl048.json",
+    "burst-room.json",
+    "burst-withhud.json",
+    "inspector-paid-and-praised.json",
+    "life-captures.json",
+    "life-footdust-isolated.json",
+    "life-footdust-strip.json",
+    "perf-ab.json",
+    "plusN-legibility-measured.json",
+    "plusN-legibility.json",
+    "pulse-ink.json",
+    "pulse-litroom.json",
+    "pulse-room.json",
+    "reduced-motion.json",
+    "s4-extras.json"
+  ],
+  "unindexed": [],
+  "supersededBy": "21-09-2026 (HC-P2-S4A، DEC-024): اللقطات الاثنتا عشرة `plusN-phonefit-*` وملفّا `plusN-legibility.json` و`plusN-legibility-measured.json` تصف الرقم العائم **قبل** تثبيت حجمه بالشاشة، وتبقى هنا كما هي لأنها الاكتشاف الذي أجابه المالك. ما يخلفها — وذراعا قبل/بعد من الجلسة نفسها وصندوق القصّ نفسه — في `docs/hc-p2-s4a-shots/`. لم يُضَف إلى هذا المجلد ولم يُحذَف منه شيء: `captures` تبقى 116 و`unindexed` صفرًا، وهي أرقام مقتبسة في أربعة نصوص موقّعة."
+}

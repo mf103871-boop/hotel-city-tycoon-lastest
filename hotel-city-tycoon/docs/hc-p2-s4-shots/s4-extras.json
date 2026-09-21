@@ -1,0 +1,141 @@
+{
+  "triumph": {
+    "what": "EVIDENCE — the level-up burst, window.hct.fx('triumph')",
+    "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer, no GPU) — the DEC-009 lane",
+    "tier": "full",
+    "viewport": "1280x720@1",
+    "zoom": 1.671,
+    "magnification": 3,
+    "anchor": "s1",
+    "crop": {
+      "x": 228,
+      "y": 223,
+      "w": 320,
+      "h": 260
+    },
+    "frames": [
+      {
+        "file": "triumph-desktop-full-t084ms.png",
+        "at": 84,
+        "actualMs": 100,
+        "stats": {
+          "live": 19,
+          "labels": 1,
+          "bubbles": 1,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "triumph-desktop-full-t168ms.png",
+        "at": 168,
+        "actualMs": 183,
+        "stats": {
+          "live": 19,
+          "labels": 1,
+          "bubbles": 1,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "triumph-desktop-full-t252ms.png",
+        "at": 252,
+        "actualMs": 267,
+        "stats": {
+          "live": 19,
+          "labels": 1,
+          "bubbles": 1,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "triumph-desktop-full-t420ms.png",
+        "at": 420,
+        "actualMs": 433,
+        "stats": {
+          "live": 19,
+          "labels": 1,
+          "bubbles": 1,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      }
+    ],
+    "errors": [
+      "[warning] Failed to create WebGPU Context Provider",
+      "[warning] Failed to create WebGPU Context Provider"
+    ]
+  },
+  "approved": {
+    "what": "EVIDENCE — the approved picture's '+25' and smiley bubble beside ours, tagged with §3.3's pinned geometry",
+    "reference": "docs/reference/hotel-city-approved-2026-09-07.png",
+    "lane": "canvas (--disable-3d-apis)",
+    "tier": "full",
+    "viewport": "1280x720@1",
+    "zoom": 2.022,
+    "file": "approved-side-by-side.png",
+    "anchor": "s1",
+    "ours": {
+      "x": 394,
+      "y": 262,
+      "w": 150,
+      "h": 150
+    },
+    "refPlus": {
+      "x": 636,
+      "y": 716,
+      "w": 128,
+      "h": 60
+    },
+    "refBubble": {
+      "x": 404,
+      "y": 710,
+      "w": 92,
+      "h": 78
+    },
+    "scale": 3,
+    "cell": {
+      "w": 600,
+      "h": 0
+    },
+    "errors": [
+      "[warning] Failed to create WebGPU Context Provider",
+      "[warning] Failed to create WebGPU Context Provider"
+    ]
+  },
+  "rtl": {
+    "what": "EVIDENCE — the 'no language' frame: a payout under Arabic with dir=\"rtl\"",
+    "lane": "canvas (--disable-3d-apis)",
+    "tier": "full",
+    "viewport": "412x915@2",
+    "document": {
+      "dir": "rtl",
+      "lang": "ar",
+      "canvasTransform": "none"
+    },
+    "survivingTextNodes": "three Pixi Text nodes remain in the canvas and none of them is S4's: src/render/roomView.ts:172 (the fallback room caption) and :404, src/render/decorView.ts:124 (the four-letter decor labels, e.g. BED / SEAT). They are ASCII derived from data ids, never from src/i18n — BL-051 retires them with the real art.",
+    "files": [
+      "rtl-plusN-phone.png",
+      "rtl-context-phone.png"
+    ],
+    "anchor": "s1",
+    "stats": {
+      "live": 5,
+      "labels": 1,
+      "bubbles": 0,
+      "pulses": 1,
+      "cap": 192,
+      "tier": "full"
+    },
+    "errors": [
+      "[warning] Failed to create WebGPU Context Provider",
+      "[warning] Failed to create WebGPU Context Provider"
+    ]
+  }
+}

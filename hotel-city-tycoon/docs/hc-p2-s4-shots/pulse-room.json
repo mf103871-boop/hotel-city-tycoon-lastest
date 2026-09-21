@@ -1,0 +1,192 @@
+[
+  {
+    "when": "12:00",
+    "lane": "canvas (--disable-3d-apis)",
+    "tier": "full",
+    "viewport": "900x640@2",
+    "zoom": 2,
+    "room": {
+      "id": "r3",
+      "x": 239.53179606505853,
+      "y": 201.00390697402577,
+      "w": 258.78887859163865,
+      "h": 194.091658943729
+    },
+    "anchor": {
+      "id": "s1",
+      "clip": "idle",
+      "x": 104,
+      "y": 852,
+      "visible": true,
+      "source": "rig",
+      "sx": 450,
+      "sy": 371,
+      "sheetReady": true
+    },
+    "before": {
+      "rimTop": 114.85,
+      "rimLeft": 113.09,
+      "interior": 193.68,
+      "sky": 183.1
+    },
+    "during": {
+      "at": 252,
+      "dt": 267,
+      "rimTop": 160.73,
+      "rimLeft": 158.57,
+      "interior": 193.68,
+      "pulses": 1,
+      "series": [
+        {
+          "at": 0,
+          "dt": 0,
+          "rimTop": 114.85,
+          "rimLeft": 113.09,
+          "interior": 193.68,
+          "pulses": 1
+        },
+        {
+          "at": 84,
+          "dt": 100,
+          "rimTop": 140.11,
+          "rimLeft": 138.16,
+          "interior": 193.68,
+          "pulses": 1
+        },
+        {
+          "at": 168,
+          "dt": 183,
+          "rimTop": 156.29,
+          "rimLeft": 153.98,
+          "interior": 193.68,
+          "pulses": 1
+        },
+        {
+          "at": 252,
+          "dt": 267,
+          "rimTop": 160.73,
+          "rimLeft": 158.57,
+          "interior": 193.68,
+          "pulses": 1
+        },
+        {
+          "at": 336,
+          "dt": 350,
+          "rimTop": 156.11,
+          "rimLeft": 153.98,
+          "interior": 193.68,
+          "pulses": 1
+        },
+        {
+          "at": 420,
+          "dt": 433,
+          "rimTop": 139.7,
+          "rimLeft": 138.16,
+          "interior": 193.68,
+          "pulses": 1
+        }
+      ]
+    },
+    "after": {
+      "rimTop": 114.85,
+      "rimLeft": 113.09,
+      "interior": 193.68,
+      "sky": 183.1
+    }
+  },
+  {
+    "when": "22:00",
+    "lane": "canvas (--disable-3d-apis)",
+    "tier": "full",
+    "viewport": "900x640@2",
+    "zoom": 2,
+    "room": {
+      "id": "r3",
+      "x": 239.53179606505853,
+      "y": 201.00390697402577,
+      "w": 258.78887859163865,
+      "h": 194.091658943729
+    },
+    "anchor": {
+      "id": "s1",
+      "clip": "idle",
+      "x": 104,
+      "y": 852,
+      "visible": true,
+      "source": "rig",
+      "sx": 450,
+      "sy": 371,
+      "sheetReady": true
+    },
+    "before": {
+      "rimTop": 114.85,
+      "rimLeft": 113.09,
+      "interior": 193.68,
+      "sky": 123.56
+    },
+    "during": {
+      "at": 252,
+      "dt": 283,
+      "rimTop": 160.73,
+      "rimLeft": 158.57,
+      "interior": 193.68,
+      "pulses": 1,
+      "series": [
+        {
+          "at": 0,
+          "dt": 0,
+          "rimTop": 114.85,
+          "rimLeft": 113.09,
+          "interior": 193.68,
+          "pulses": 1
+        },
+        {
+          "at": 84,
+          "dt": 117,
+          "rimTop": 140.11,
+          "rimLeft": 138.16,
+          "interior": 193.68,
+          "pulses": 1
+        },
+        {
+          "at": 168,
+          "dt": 183,
+          "rimTop": 156.29,
+          "rimLeft": 153.98,
+          "interior": 193.68,
+          "pulses": 1
+        },
+        {
+          "at": 252,
+          "dt": 283,
+          "rimTop": 160.73,
+          "rimLeft": 158.57,
+          "interior": 193.68,
+          "pulses": 1
+        },
+        {
+          "at": 336,
+          "dt": 367,
+          "rimTop": 156.11,
+          "rimLeft": 153.98,
+          "interior": 193.68,
+          "pulses": 1
+        },
+        {
+          "at": 420,
+          "dt": 433,
+          "rimTop": 139.7,
+          "rimLeft": 138.16,
+          "interior": 193.68,
+          "pulses": 1
+        }
+      ]
+    },
+    "after": {
+      "rimTop": 114.85,
+      "rimLeft": 113.09,
+      "interior": 193.68,
+      "sky": 123.56
+    }
+  }
+]

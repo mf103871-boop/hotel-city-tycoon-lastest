@@ -1,0 +1,128 @@
+[
+  {
+    "tag": "reduced",
+    "emulateMedia": "reducedMotion 'reduce'",
+    "lane": "canvas (--disable-3d-apis)",
+    "tier": "full",
+    "viewport": "900x640@2",
+    "zoom": 2,
+    "who": {
+      "id": "s1",
+      "clip": "idle",
+      "x": 104,
+      "y": 852,
+      "visible": true,
+      "source": "rig",
+      "sx": 450,
+      "sy": 371,
+      "sheetReady": true
+    },
+    "box": {
+      "x": 680,
+      "y": 402,
+      "w": 440,
+      "h": 400
+    },
+    "out": [
+      {
+        "at": 100,
+        "dt": 117,
+        "fx": {
+          "live": 1,
+          "labels": 1,
+          "bubbles": 1,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "at": 400,
+        "dt": 433,
+        "fx": {
+          "live": 1,
+          "labels": 1,
+          "bubbles": 1,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "at": 800,
+        "dt": 817,
+        "fx": {
+          "live": 0,
+          "labels": 0,
+          "bubbles": 1,
+          "pulses": 0,
+          "cap": 192,
+          "tier": "full"
+        }
+      }
+    ]
+  },
+  {
+    "tag": "normal",
+    "emulateMedia": "none",
+    "lane": "canvas (--disable-3d-apis)",
+    "tier": "full",
+    "viewport": "900x640@2",
+    "zoom": 2,
+    "who": {
+      "id": "s1",
+      "clip": "idle",
+      "x": 104,
+      "y": 852,
+      "visible": true,
+      "source": "rig",
+      "sx": 450,
+      "sy": 371,
+      "sheetReady": true
+    },
+    "box": {
+      "x": 680,
+      "y": 402,
+      "w": 440,
+      "h": 400
+    },
+    "out": [
+      {
+        "at": 100,
+        "dt": 100,
+        "fx": {
+          "live": 7,
+          "labels": 1,
+          "bubbles": 1,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "at": 400,
+        "dt": 417,
+        "fx": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 1,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "at": 800,
+        "dt": 817,
+        "fx": {
+          "live": 0,
+          "labels": 0,
+          "bubbles": 1,
+          "pulses": 0,
+          "cap": 192,
+          "tier": "full"
+        }
+      }
+    ]
+  }
+]

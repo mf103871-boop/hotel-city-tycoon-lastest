@@ -1,0 +1,878 @@
+[
+  {
+    "tier": "full",
+    "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer)",
+    "viewport": "412x915@2",
+    "zoom": 2.022,
+    "anchor": {
+      "id": "g33",
+      "sx": 206,
+      "sy": 531,
+      "clip": "sit"
+    },
+    "full": [
+      {
+        "file": "burst-room-phone-full-t084ms.png",
+        "at": 84,
+        "actualMs": 100,
+        "stats": {
+          "live": 6,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-phone-full-t168ms.png",
+        "at": 168,
+        "actualMs": 183,
+        "stats": {
+          "live": 6,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-phone-full-t252ms.png",
+        "at": 252,
+        "actualMs": 267,
+        "stats": {
+          "live": 6,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-phone-full-t336ms.png",
+        "at": 336,
+        "actualMs": 350,
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-phone-full-t420ms.png",
+        "at": 420,
+        "actualMs": 433,
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-phone-full-t504ms.png",
+        "at": 504,
+        "actualMs": 517,
+        "stats": {
+          "live": 0,
+          "labels": 0,
+          "bubbles": 0,
+          "pulses": 0,
+          "cap": 192,
+          "tier": "full"
+        }
+      }
+    ],
+    "crops": [
+      {
+        "file": "burst-room-phone-full-crop4x-t084ms.png",
+        "at": 84,
+        "actualMs": 100,
+        "crop": {
+          "x": 96,
+          "y": 351,
+          "w": 220,
+          "h": 200,
+          "who": "g33"
+        },
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-phone-full-crop4x-t168ms.png",
+        "at": 168,
+        "actualMs": 183,
+        "crop": {
+          "x": 96,
+          "y": 351,
+          "w": 220,
+          "h": 200,
+          "who": "g33"
+        },
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-phone-full-crop4x-t252ms.png",
+        "at": 252,
+        "actualMs": 283,
+        "crop": {
+          "x": 96,
+          "y": 351,
+          "w": 220,
+          "h": 200,
+          "who": "g33"
+        },
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-phone-full-crop4x-t336ms.png",
+        "at": 336,
+        "actualMs": 350,
+        "crop": {
+          "x": 96,
+          "y": 351,
+          "w": 220,
+          "h": 200,
+          "who": "g33"
+        },
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-phone-full-crop4x-t420ms.png",
+        "at": 420,
+        "actualMs": 433,
+        "crop": {
+          "x": 96,
+          "y": 351,
+          "w": 220,
+          "h": 200,
+          "who": "g33"
+        },
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-phone-full-crop4x-t504ms.png",
+        "at": 504,
+        "actualMs": 517,
+        "crop": {
+          "x": 96,
+          "y": 351,
+          "w": 220,
+          "h": 200,
+          "who": "g33"
+        },
+        "stats": {
+          "live": 0,
+          "labels": 0,
+          "bubbles": 0,
+          "pulses": 0,
+          "cap": 192,
+          "tier": "full"
+        }
+      }
+    ],
+    "video": "burst-room-phone-full.webm",
+    "errors": [
+      "[warning] Failed to create WebGPU Context Provider",
+      "[warning] Failed to create WebGPU Context Provider"
+    ]
+  },
+  {
+    "tier": "full",
+    "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer)",
+    "viewport": "1280x720@1",
+    "zoom": 2.022,
+    "anchor": {
+      "id": "s1",
+      "sx": 469,
+      "sy": 417,
+      "clip": "idle"
+    },
+    "full": [
+      {
+        "file": "burst-room-desktop-full-t084ms.png",
+        "at": 84,
+        "actualMs": 100,
+        "stats": {
+          "live": 7,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-desktop-full-t168ms.png",
+        "at": 168,
+        "actualMs": 183,
+        "stats": {
+          "live": 7,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-desktop-full-t252ms.png",
+        "at": 252,
+        "actualMs": 267,
+        "stats": {
+          "live": 6,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-desktop-full-t336ms.png",
+        "at": 336,
+        "actualMs": 367,
+        "stats": {
+          "live": 6,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-desktop-full-t420ms.png",
+        "at": 420,
+        "actualMs": 450,
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-desktop-full-t504ms.png",
+        "at": 504,
+        "actualMs": 517,
+        "stats": {
+          "live": 0,
+          "labels": 0,
+          "bubbles": 0,
+          "pulses": 0,
+          "cap": 192,
+          "tier": "full"
+        }
+      }
+    ],
+    "crops": [
+      {
+        "file": "burst-room-desktop-full-crop4x-t084ms.png",
+        "at": 84,
+        "actualMs": 100,
+        "crop": {
+          "x": 359,
+          "y": 237,
+          "w": 220,
+          "h": 200,
+          "who": "s1"
+        },
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-desktop-full-crop4x-t168ms.png",
+        "at": 168,
+        "actualMs": 183,
+        "crop": {
+          "x": 359,
+          "y": 237,
+          "w": 220,
+          "h": 200,
+          "who": "s1"
+        },
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-desktop-full-crop4x-t252ms.png",
+        "at": 252,
+        "actualMs": 267,
+        "crop": {
+          "x": 359,
+          "y": 237,
+          "w": 220,
+          "h": 200,
+          "who": "s1"
+        },
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-desktop-full-crop4x-t336ms.png",
+        "at": 336,
+        "actualMs": 350,
+        "crop": {
+          "x": 359,
+          "y": 237,
+          "w": 220,
+          "h": 200,
+          "who": "s1"
+        },
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-desktop-full-crop4x-t420ms.png",
+        "at": 420,
+        "actualMs": 433,
+        "crop": {
+          "x": 359,
+          "y": 237,
+          "w": 220,
+          "h": 200,
+          "who": "s1"
+        },
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "file": "burst-room-desktop-full-crop4x-t504ms.png",
+        "at": 504,
+        "actualMs": 517,
+        "crop": {
+          "x": 359,
+          "y": 237,
+          "w": 220,
+          "h": 200,
+          "who": "s1"
+        },
+        "stats": {
+          "live": 0,
+          "labels": 0,
+          "bubbles": 0,
+          "pulses": 0,
+          "cap": 192,
+          "tier": "full"
+        }
+      }
+    ],
+    "video": "burst-room-desktop-full.webm",
+    "errors": [
+      "[warning] Failed to create WebGPU Context Provider",
+      "[warning] Failed to create WebGPU Context Provider"
+    ]
+  },
+  {
+    "tier": "lite",
+    "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer)",
+    "viewport": "412x915@2",
+    "zoom": 2.022,
+    "anchor": {
+      "id": "g33",
+      "sx": 206,
+      "sy": 531,
+      "clip": "sit"
+    },
+    "full": [
+      {
+        "file": "burst-room-phone-lite-t084ms.png",
+        "at": 84,
+        "actualMs": 100,
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-phone-lite-t168ms.png",
+        "at": 168,
+        "actualMs": 183,
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-phone-lite-t252ms.png",
+        "at": 252,
+        "actualMs": 267,
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-phone-lite-t336ms.png",
+        "at": 336,
+        "actualMs": 350,
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-phone-lite-t420ms.png",
+        "at": 420,
+        "actualMs": 433,
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-phone-lite-t504ms.png",
+        "at": 504,
+        "actualMs": 517,
+        "stats": {
+          "live": 0,
+          "labels": 0,
+          "bubbles": 0,
+          "pulses": 0,
+          "cap": 48,
+          "tier": "lite"
+        }
+      }
+    ],
+    "crops": [
+      {
+        "file": "burst-room-phone-lite-crop4x-t084ms.png",
+        "at": 84,
+        "actualMs": 100,
+        "crop": {
+          "x": 96,
+          "y": 351,
+          "w": 220,
+          "h": 200,
+          "who": "g33"
+        },
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-phone-lite-crop4x-t168ms.png",
+        "at": 168,
+        "actualMs": 200,
+        "crop": {
+          "x": 96,
+          "y": 351,
+          "w": 220,
+          "h": 200,
+          "who": "g33"
+        },
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-phone-lite-crop4x-t252ms.png",
+        "at": 252,
+        "actualMs": 283,
+        "crop": {
+          "x": 96,
+          "y": 351,
+          "w": 220,
+          "h": 200,
+          "who": "g33"
+        },
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-phone-lite-crop4x-t336ms.png",
+        "at": 336,
+        "actualMs": 350,
+        "crop": {
+          "x": 96,
+          "y": 351,
+          "w": 220,
+          "h": 200,
+          "who": "g33"
+        },
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-phone-lite-crop4x-t420ms.png",
+        "at": 420,
+        "actualMs": 433,
+        "crop": {
+          "x": 96,
+          "y": 351,
+          "w": 220,
+          "h": 200,
+          "who": "g33"
+        },
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-phone-lite-crop4x-t504ms.png",
+        "at": 504,
+        "actualMs": 517,
+        "crop": {
+          "x": 96,
+          "y": 351,
+          "w": 220,
+          "h": 200,
+          "who": "g33"
+        },
+        "stats": {
+          "live": 0,
+          "labels": 0,
+          "bubbles": 0,
+          "pulses": 0,
+          "cap": 48,
+          "tier": "lite"
+        }
+      }
+    ],
+    "video": "burst-room-phone-lite.webm",
+    "errors": [
+      "[warning] Failed to create WebGPU Context Provider",
+      "[warning] Failed to create WebGPU Context Provider"
+    ]
+  },
+  {
+    "tier": "lite",
+    "lane": "canvas (--disable-3d-apis, Pixi CanvasRenderer)",
+    "viewport": "1280x720@1",
+    "zoom": 2.022,
+    "anchor": {
+      "id": "s1",
+      "sx": 469,
+      "sy": 417,
+      "clip": "idle"
+    },
+    "full": [
+      {
+        "file": "burst-room-desktop-lite-t084ms.png",
+        "at": 84,
+        "actualMs": 100,
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-desktop-lite-t168ms.png",
+        "at": 168,
+        "actualMs": 183,
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-desktop-lite-t252ms.png",
+        "at": 252,
+        "actualMs": 267,
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-desktop-lite-t336ms.png",
+        "at": 336,
+        "actualMs": 350,
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-desktop-lite-t420ms.png",
+        "at": 420,
+        "actualMs": 433,
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-desktop-lite-t504ms.png",
+        "at": 504,
+        "actualMs": 517,
+        "stats": {
+          "live": 0,
+          "labels": 0,
+          "bubbles": 0,
+          "pulses": 0,
+          "cap": 48,
+          "tier": "lite"
+        }
+      }
+    ],
+    "crops": [
+      {
+        "file": "burst-room-desktop-lite-crop4x-t084ms.png",
+        "at": 84,
+        "actualMs": 100,
+        "crop": {
+          "x": 359,
+          "y": 237,
+          "w": 220,
+          "h": 200,
+          "who": "s1"
+        },
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-desktop-lite-crop4x-t168ms.png",
+        "at": 168,
+        "actualMs": 183,
+        "crop": {
+          "x": 359,
+          "y": 237,
+          "w": 220,
+          "h": 200,
+          "who": "s1"
+        },
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-desktop-lite-crop4x-t252ms.png",
+        "at": 252,
+        "actualMs": 267,
+        "crop": {
+          "x": 359,
+          "y": 237,
+          "w": 220,
+          "h": 200,
+          "who": "s1"
+        },
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-desktop-lite-crop4x-t336ms.png",
+        "at": 336,
+        "actualMs": 350,
+        "crop": {
+          "x": 359,
+          "y": 237,
+          "w": 220,
+          "h": 200,
+          "who": "s1"
+        },
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-desktop-lite-crop4x-t420ms.png",
+        "at": 420,
+        "actualMs": 433,
+        "crop": {
+          "x": 359,
+          "y": 237,
+          "w": 220,
+          "h": 200,
+          "who": "s1"
+        },
+        "stats": {
+          "live": 3,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 48,
+          "tier": "lite"
+        }
+      },
+      {
+        "file": "burst-room-desktop-lite-crop4x-t504ms.png",
+        "at": 504,
+        "actualMs": 517,
+        "crop": {
+          "x": 359,
+          "y": 237,
+          "w": 220,
+          "h": 200,
+          "who": "s1"
+        },
+        "stats": {
+          "live": 0,
+          "labels": 0,
+          "bubbles": 0,
+          "pulses": 0,
+          "cap": 48,
+          "tier": "lite"
+        }
+      }
+    ],
+    "video": "burst-room-desktop-lite.webm",
+    "errors": [
+      "[warning] Failed to create WebGPU Context Provider",
+      "[warning] Failed to create WebGPU Context Provider"
+    ]
+  }
+]

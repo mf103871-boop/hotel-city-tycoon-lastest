@@ -220,6 +220,23 @@ check('animation respects a request for less motion', () => {
     'nothing in the game responds to prefers-reduced-motion, and it animates constantly');
 });
 
+check('the effects answer the same request for less motion', () => {
+  // The effects channel is drawn motion over the whole hotel, so it has to
+  // answer the same query the characters do (HC-P2-S4). The rule it answers
+  // with: the position step is pinned to 0 and no drawn frame cycles, while
+  // the fade still runs — the floating number and the reaction bubble are
+  // information and are never withheld — and the three ambient emitters do
+  // not run at all.
+  for (const file of ['src/render/fx/particleLayer.ts', 'src/render/fx/pulseLayer.ts']) {
+    const src = fs.readFileSync(file, 'utf8');
+    assert(/prefersReducedMotion/.test(src),
+      `${file} draws motion over the hotel and never asks whether that is wanted`);
+  }
+  const particles = fs.readFileSync('src/render/fx/particles.ts', 'utf8');
+  assert(/export function stepOf\([^)]*reduced: boolean/.test(particles.replace(/\s+/g, ' ')),
+    'the effects clock no longer takes a reduced-motion argument');
+});
+
 check('the interface does not depend on colour alone', () => {
   // This assertion used to be `/\{points\}\/\{target\}|\d+\/\d+/`, and its
   // second alternative matches any "digits/digits" in the file — which every

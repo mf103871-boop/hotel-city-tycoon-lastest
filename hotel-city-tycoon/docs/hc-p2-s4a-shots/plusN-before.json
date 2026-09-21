@@ -1,0 +1,460 @@
+{
+  "tag": "before",
+  "lane": "canvas (--disable-3d-apis)",
+  "tier": "full",
+  "viewport": "412x915@2",
+  "zoomFit": 0.4,
+  "fxStatsAtBoot": {
+    "live": 3,
+    "labels": 0,
+    "bubbles": 0,
+    "pulses": 0,
+    "cap": 192,
+    "tier": "full"
+  },
+  "cropS4": {
+    "anchor": {
+      "dx": -40,
+      "dy": -70,
+      "w": 80,
+      "h": 56
+    }
+  },
+  "cropTall": {
+    "anchor": {
+      "dx": -60,
+      "dy": -110,
+      "w": 120,
+      "h": 96
+    }
+  },
+  "full": [
+    {
+      "file": "plusN-before-phonefit-full-t120ms.png",
+      "at": 120,
+      "actualMs": 133,
+      "stats": {
+        "live": 7,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-before-phonefit-full-t250ms.png",
+      "at": 250,
+      "actualMs": 267,
+      "stats": {
+        "live": 7,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-before-phonefit-full-t400ms.png",
+      "at": 400,
+      "actualMs": 400,
+      "stats": {
+        "live": 8,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-before-phonefit-full-t500ms.png",
+      "at": 500,
+      "actualMs": 500,
+      "stats": {
+        "live": 2,
+        "labels": 0,
+        "bubbles": 0,
+        "pulses": 0,
+        "cap": 192,
+        "tier": "full"
+      }
+    }
+  ],
+  "native": [
+    {
+      "file": "plusN-before-phonefit-native-t120ms.png",
+      "at": 120,
+      "actualMs": 133,
+      "crop": {
+        "x": 51,
+        "y": 533,
+        "w": 80,
+        "h": 56,
+        "who": "g44"
+      },
+      "stats": {
+        "live": 5,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-before-phonefit-native-t250ms.png",
+      "at": 250,
+      "actualMs": 267,
+      "crop": {
+        "x": 51,
+        "y": 533,
+        "w": 80,
+        "h": 56,
+        "who": "g44"
+      },
+      "stats": {
+        "live": 5,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-before-phonefit-native-t400ms.png",
+      "at": 400,
+      "actualMs": 417,
+      "crop": {
+        "x": 51,
+        "y": 533,
+        "w": 80,
+        "h": 56,
+        "who": "g44"
+      },
+      "stats": {
+        "live": 5,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-before-phonefit-native-t500ms.png",
+      "at": 500,
+      "actualMs": 517,
+      "crop": {
+        "x": 51,
+        "y": 533,
+        "w": 80,
+        "h": 56,
+        "who": "g44"
+      },
+      "stats": {
+        "live": 0,
+        "labels": 0,
+        "bubbles": 0,
+        "pulses": 0,
+        "cap": 192,
+        "tier": "full"
+      }
+    }
+  ],
+  "mag8": [
+    {
+      "file": "plusN-before-phonefit-8x-t120ms.png",
+      "at": 120,
+      "actualMs": 133,
+      "crop": {
+        "x": 51,
+        "y": 533,
+        "w": 80,
+        "h": 56,
+        "who": "g44"
+      },
+      "stats": {
+        "live": 5,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-before-phonefit-8x-t250ms.png",
+      "at": 250,
+      "actualMs": 250,
+      "crop": {
+        "x": 51,
+        "y": 533,
+        "w": 80,
+        "h": 56,
+        "who": "g44"
+      },
+      "stats": {
+        "live": 5,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-before-phonefit-8x-t400ms.png",
+      "at": 400,
+      "actualMs": 400,
+      "crop": {
+        "x": 51,
+        "y": 533,
+        "w": 80,
+        "h": 56,
+        "who": "g44"
+      },
+      "stats": {
+        "live": 5,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-before-phonefit-8x-t500ms.png",
+      "at": 500,
+      "actualMs": 500,
+      "crop": {
+        "x": 51,
+        "y": 533,
+        "w": 80,
+        "h": 56,
+        "who": "g44"
+      },
+      "stats": {
+        "live": 0,
+        "labels": 0,
+        "bubbles": 0,
+        "pulses": 0,
+        "cap": 192,
+        "tier": "full"
+      }
+    }
+  ],
+  "tall": [
+    {
+      "file": "plusN-before-phonefit-tall-t120ms.png",
+      "at": 120,
+      "actualMs": 167,
+      "crop": {
+        "x": 31,
+        "y": 493,
+        "w": 120,
+        "h": 96,
+        "who": "g44"
+      },
+      "stats": {
+        "live": 5,
+        "labels": 1,
+        "bubbles": 1,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-before-phonefit-tall-t250ms.png",
+      "at": 250,
+      "actualMs": 250,
+      "crop": {
+        "x": 31,
+        "y": 493,
+        "w": 120,
+        "h": 96,
+        "who": "g44"
+      },
+      "stats": {
+        "live": 5,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-before-phonefit-tall-t400ms.png",
+      "at": 400,
+      "actualMs": 400,
+      "crop": {
+        "x": 31,
+        "y": 493,
+        "w": 120,
+        "h": 96,
+        "who": "g44"
+      },
+      "stats": {
+        "live": 5,
+        "labels": 1,
+        "bubbles": 0,
+        "pulses": 1,
+        "cap": 192,
+        "tier": "full"
+      }
+    },
+    {
+      "file": "plusN-before-phonefit-tall-t500ms.png",
+      "at": 500,
+      "actualMs": 517,
+      "crop": {
+        "x": 31,
+        "y": 493,
+        "w": 120,
+        "h": 96,
+        "who": "g44"
+      },
+      "stats": {
+        "live": 0,
+        "labels": 0,
+        "bubbles": 0,
+        "pulses": 0,
+        "cap": 192,
+        "tier": "full"
+      }
+    }
+  ],
+  "measured": {
+    "dpr": 2,
+    "anchor": {
+      "id": "g44",
+      "sx": 91,
+      "sy": 603
+    },
+    "out": [
+      {
+        "at": 120,
+        "dt": 133,
+        "inkPx": 2490,
+        "bboxDevicePx": {
+          "w": 129,
+          "h": 37,
+          "top": 155
+        },
+        "meanInk": {
+          "r": 248,
+          "g": 229,
+          "b": 180
+        },
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "at": 250,
+        "dt": 250,
+        "inkPx": 2386,
+        "bboxDevicePx": {
+          "w": 129,
+          "h": 37,
+          "top": 155
+        },
+        "meanInk": {
+          "r": 248,
+          "g": 231,
+          "b": 182
+        },
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "at": 400,
+        "dt": 417,
+        "inkPx": 2398,
+        "bboxDevicePx": {
+          "w": 129,
+          "h": 37,
+          "top": 155
+        },
+        "meanInk": {
+          "r": 248,
+          "g": 230,
+          "b": 181
+        },
+        "stats": {
+          "live": 5,
+          "labels": 1,
+          "bubbles": 0,
+          "pulses": 1,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "at": 500,
+        "dt": 517,
+        "inkPx": 2400,
+        "bboxDevicePx": {
+          "w": 129,
+          "h": 37,
+          "top": 155
+        },
+        "meanInk": {
+          "r": 248,
+          "g": 227,
+          "b": 181
+        },
+        "stats": {
+          "live": 0,
+          "labels": 0,
+          "bubbles": 0,
+          "pulses": 0,
+          "cap": 192,
+          "tier": "full"
+        }
+      },
+      {
+        "at": 600,
+        "dt": 617,
+        "inkPx": 2400,
+        "bboxDevicePx": {
+          "w": 129,
+          "h": 37,
+          "top": 155
+        },
+        "meanInk": {
+          "r": 248,
+          "g": 227,
+          "b": 181
+        },
+        "stats": {
+          "live": 0,
+          "labels": 0,
+          "bubbles": 0,
+          "pulses": 0,
+          "cap": 192,
+          "tier": "full"
+        }
+      }
+    ]
+  },
+  "errors": [
+    "[warning] Failed to create WebGPU Context Provider",
+    "[warning] Failed to create WebGPU Context Provider"
+  ]
+}
